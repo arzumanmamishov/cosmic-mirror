@@ -68,6 +68,10 @@ func (s *UserService) CreateBirthProfile(ctx context.Context, userID uuid.UUID, 
 	return profile, nil
 }
 
+func (s *UserService) UpdateBirthProfile(ctx context.Context, userID uuid.UUID, input domain.CreateBirthProfileInput) error {
+	return s.profileRepo.Update(ctx, userID, input)
+}
+
 func (s *UserService) GetBirthProfile(ctx context.Context, userID uuid.UUID) (*domain.BirthProfile, error) {
 	return s.profileRepo.GetByUserID(ctx, userID)
 }

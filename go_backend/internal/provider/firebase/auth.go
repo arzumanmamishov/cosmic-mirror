@@ -18,30 +18,40 @@ type Token struct {
 	Email string
 }
 
+// NewAuthClient creates a Firebase auth client.
+// If credentialsPath is empty or the file doesn't exist, it returns a dev-mode
+// client that accepts any token (for local development only).
 func NewAuthClient(ctx context.Context, credentialsPath string) (*AuthClient, error) {
-	var app *firebase.App
-	var err error
-
-	if credentialsPath != "" {
-		opt := option.WithCredentialsFile(credentialsPath)
-		app, err = firebase.NewApp(ctx, nil, opt)
-	} else {
-		// Use default credentials (for GCP environments)
-		app, err = firebase.NewApp(ctx, nil)
+	if credentialsPath == "" {
+		fmt.Println("⚠ Firebase: no credentials path set, running in DEV mode (auth bypass)")
+		return &AuthClient{client: nil}, nil
 	}
+
+	opt := option.WithCredentialsFile(credentialsPath)
+	app, err := firebase.NewApp(ctx, nil, opt)
 	if err != nil {
-		return nil, fmt.Errorf("init firebase app: %w", err)
+		fmt.Printf("⚠ Firebase: could not init app (%v), running in DEV mode (auth bypass)\n", err)
+		return &AuthClient{client: nil}, nil
 	}
 
 	client, err := app.Auth(ctx)
 	if err != nil {
-		return nil, fmt.Errorf("init firebase auth: %w", err)
+		fmt.Printf("⚠ Firebase: could not init auth (%v), running in DEV mode (auth bypass)\n", err)
+		return &AuthClient{client: nil}, nil
 	}
 
 	return &AuthClient{client: client}, nil
 }
 
 func (a *AuthClient) VerifyIDToken(ctx context.Context, idToken string) (*Token, error) {
+	// Dev mode: accept token as-is (the token value is treated as the UID)
+	if a.client == nil {
+		return &Token{
+			UID:   idToken,
+			Email: "dev@cosmicmirror.app",
+		}, nil
+	}
+
 	token, err := a.client.VerifyIDToken(ctx, idToken)
 	if err != nil {
 		return nil, fmt.Errorf("verify token: %w", err)

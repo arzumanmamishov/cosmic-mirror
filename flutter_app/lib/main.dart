@@ -1,14 +1,14 @@
 import 'dart:async';
 
+import 'package:cosmic_mirror/app.dart';
+import 'package:cosmic_mirror/config/env.dart';
+import 'package:cosmic_mirror/firebase_options.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:purchases_flutter/purchases_flutter.dart';
-
-import 'app.dart';
-import 'config/env.dart';
 
 Future<void> main() async {
   runZonedGuarded(
@@ -28,7 +28,9 @@ Future<void> main() async {
         ),
       );
 
-      await Firebase.initializeApp();
+      await Firebase.initializeApp(
+        options: DefaultFirebaseOptions.currentPlatform,
+      );
       await Hive.initFlutter();
 
       await Purchases.configure(

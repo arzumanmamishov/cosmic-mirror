@@ -14,6 +14,7 @@ type Handlers struct {
 	Compatibility *CompatibilityHandler
 	Subscription  *SubscriptionHandler
 	Journal       *JournalHandler
+	Places        *PlacesHandler
 }
 
 type errorResponse struct {

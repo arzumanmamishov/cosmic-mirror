@@ -4,9 +4,12 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"strconv"
+	"strings"
 	"time"
 
 	"cosmic-mirror/internal/domain"
+	"cosmic-mirror/internal/provider/astrologyapi"
 	"cosmic-mirror/internal/repository"
 
 	"github.com/google/uuid"
@@ -14,12 +17,13 @@ import (
 )
 
 type ChartService struct {
-	profileRepo repository.BirthProfileRepository
-	rdb         *redis.Client
+	profileRepo  repository.BirthProfileRepository
+	astrologyAPI *astrologyapi.Client
+	rdb          *redis.Client
 }
 
-func NewChartService(profileRepo repository.BirthProfileRepository, rdb *redis.Client) *ChartService {
-	return &ChartService{profileRepo: profileRepo, rdb: rdb}
+func NewChartService(profileRepo repository.BirthProfileRepository, astrologyAPI *astrologyapi.Client, rdb *redis.Client) *ChartService {
+	return &ChartService{profileRepo: profileRepo, astrologyAPI: astrologyAPI, rdb: rdb}
 }
 
 func (s *ChartService) GetNatalChart(ctx context.Context, userID uuid.UUID) (*domain.NatalChart, error) {
@@ -38,20 +42,40 @@ func (s *ChartService) GetNatalChart(ctx context.Context, userID uuid.UUID) (*do
 		return nil, fmt.Errorf("birth profile not found")
 	}
 
-	// In production: call astrology API here
-	// For now, return data from cached raw chart data if available
-	if profile.RawChartData != nil {
-		var chart domain.NatalChart
-		if err := json.Unmarshal(*profile.RawChartData, &chart); err == nil {
-			// Cache for 7 days
-			if data, err := json.Marshal(chart); err == nil {
-				s.rdb.Set(ctx, cacheKey, data, 7*24*time.Hour)
-			}
-			return &chart, nil
-		}
+	// Parse birth time (default to noon if unknown)
+	hour, min := 12, 0
+	if profile.BirthTimeKnown && profile.BirthTime != nil {
+		hour, min = parseBirthTime(*profile.BirthTime)
 	}
 
-	return nil, fmt.Errorf("chart data not available, astrology provider integration needed")
+	// Calculate timezone offset from timezone name
+	tzone := timezoneOffset(profile.Timezone)
+
+	// Fetch chart from AstrologyAPI
+	chart, err := s.astrologyAPI.GetNatalChart(
+		ctx,
+		profile.BirthDate,
+		hour, min,
+		profile.Latitude, profile.Longitude,
+		tzone,
+	)
+	if err != nil {
+		// Fall back to cached raw chart data if API fails
+		if profile.RawChartData != nil {
+			var fallback domain.NatalChart
+			if json.Unmarshal(*profile.RawChartData, &fallback) == nil {
+				return &fallback, nil
+			}
+		}
+		return nil, fmt.Errorf("failed to fetch chart: %w", err)
+	}
+
+	// Cache for 7 days (natal chart doesn't change)
+	if data, err := json.Marshal(chart); err == nil {
+		s.rdb.Set(ctx, cacheKey, data, 7*24*time.Hour)
+	}
+
+	return chart, nil
 }
 
 func (s *ChartService) GetChartSummary(ctx context.Context, userID uuid.UUID) (*domain.ChartSummary, error) {
@@ -79,6 +103,30 @@ func (s *ChartService) GetChartSummary(ctx context.Context, userID uuid.UUID) (*
 	}
 
 	return summary, nil
+}
+
+// parseBirthTime parses "HH:MM" format into hour and minute.
+func parseBirthTime(t string) (int, int) {
+	parts := strings.Split(t, ":")
+	if len(parts) != 2 {
+		return 12, 0
+	}
+	h, err1 := strconv.Atoi(parts[0])
+	m, err2 := strconv.Atoi(parts[1])
+	if err1 != nil || err2 != nil {
+		return 12, 0
+	}
+	return h, m
+}
+
+// timezoneOffset converts a timezone name (e.g. "America/New_York") to a UTC offset in hours.
+func timezoneOffset(tzName string) float64 {
+	loc, err := time.LoadLocation(tzName)
+	if err != nil {
+		return 0
+	}
+	_, offset := time.Now().In(loc).Zone()
+	return float64(offset) / 3600
 }
 
 func sunDescription(sign string) string {

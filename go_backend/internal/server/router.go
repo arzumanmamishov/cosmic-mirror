@@ -48,6 +48,9 @@ func NewRouter(h *handler.Handlers, auth *middleware.Auth, rl *middleware.RateLi
 		r.Get("/legal/privacy", h.Auth.PrivacyPolicy)
 		r.Get("/legal/terms", h.Auth.TermsOfService)
 
+		// Public: places search (geocoding)
+		r.Get("/places/search", h.Places.Search)
+
 		// Protected routes
 		r.Group(func(r chi.Router) {
 			r.Use(auth.Verify)

@@ -13,6 +13,7 @@ import (
 	"cosmic-mirror/internal/config"
 	"cosmic-mirror/internal/handler"
 	"cosmic-mirror/internal/middleware"
+	"cosmic-mirror/internal/provider/astrologyapi"
 	"cosmic-mirror/internal/provider/firebase"
 	"cosmic-mirror/internal/provider/openai"
 	"cosmic-mirror/internal/repository/postgres"
@@ -74,6 +75,7 @@ func main() {
 
 	// Providers
 	openaiClient := openai.NewClient(cfg.OpenAIAPIKey)
+	astrologyClient := astrologyapi.NewClient(cfg.AstrologyAPIKey, cfg.AstrologyAPIBaseURL)
 
 	// Repositories
 	userRepo := postgres.NewUserRepository(db)
@@ -86,7 +88,7 @@ func main() {
 
 	// Services
 	userSvc := service.NewUserService(userRepo, birthProfileRepo)
-	chartSvc := service.NewChartService(birthProfileRepo, rdb)
+	chartSvc := service.NewChartService(birthProfileRepo, astrologyClient, rdb)
 	readingSvc := service.NewReadingService(readingRepo, birthProfileRepo, openaiClient, rdb)
 	aiSvc := service.NewAIService(chatRepo, birthProfileRepo, openaiClient, cfg.FreeTierChatLimit)
 	compatibilitySvc := service.NewCompatibilityService(compatibilityRepo, birthProfileRepo, openaiClient)
@@ -106,6 +108,7 @@ func main() {
 		Compatibility: handler.NewCompatibilityHandler(compatibilitySvc),
 		Subscription:  handler.NewSubscriptionHandler(subscriptionSvc),
 		Journal:       handler.NewJournalHandler(journalRepo),
+		Places:        handler.NewPlacesHandler(),
 	}
 
 	// Router

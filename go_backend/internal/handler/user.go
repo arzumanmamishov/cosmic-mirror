@@ -71,7 +71,10 @@ func (h *UserHandler) UpdateBirthProfile(w http.ResponseWriter, r *http.Request)
 		respondError(w, http.StatusBadRequest, "invalid_body", "Invalid request body")
 		return
 	}
-	_ = userID // TODO: call profileRepo.Update
+	if err := h.userSvc.UpdateBirthProfile(r.Context(), userID, input); err != nil {
+		respondError(w, http.StatusInternalServerError, "profile_error", err.Error())
+		return
+	}
 	respondNoContent(w)
 }
 

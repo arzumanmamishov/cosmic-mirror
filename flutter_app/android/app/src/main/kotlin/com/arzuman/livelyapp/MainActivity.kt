@@ -1,4 +1,4 @@
-package com.cosmicmirror.cosmic_mirror
+package com.arzuman.livelyapp
 
 import io.flutter.embedding.android.FlutterActivity
 

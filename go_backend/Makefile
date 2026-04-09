@@ -1,4 +1,4 @@
-.PHONY: build run test lint migrate-up migrate-down docker-build docker-up
+.PHONY: build run test lint migrate-up migrate-down docker-build docker-up docker-down dev db-up db-down
 
 build:
 	go build -o bin/server ./cmd/server
@@ -12,18 +12,31 @@ test:
 lint:
 	golangci-lint run ./...
 
+# Start only PostgreSQL + Redis
+db-up:
+	docker compose up -d postgres redis
+
+db-down:
+	docker compose down
+
+# Run migrations via Docker
 migrate-up:
-	psql $(DATABASE_URL) -f migrations/001_initial_schema.sql
-	psql $(DATABASE_URL) -f migrations/002_add_indexes.sql
+	docker compose exec -T postgres psql -U cosmic -d cosmic_mirror < migrations/001_initial_schema.sql
+	docker compose exec -T postgres psql -U cosmic -d cosmic_mirror < migrations/002_add_indexes.sql
 
 migrate-down:
-	psql $(DATABASE_URL) -c "DROP SCHEMA public CASCADE; CREATE SCHEMA public;"
+	docker compose exec -T postgres psql -U cosmic -d cosmic_mirror -c "DROP SCHEMA public CASCADE; CREATE SCHEMA public;"
+
+# Full dev setup: start DB, migrate, run server
+dev: db-up
+	@echo "Waiting for PostgreSQL..."
+	@sleep 5
+	@$(MAKE) migrate-up 2>/dev/null || echo "Tables may already exist"
+	@echo "Starting server on http://localhost:8080"
+	go run ./cmd/server
 
 docker-build:
 	docker compose build
 
 docker-up:
 	docker compose up -d
-
-docker-down:
-	docker compose down
