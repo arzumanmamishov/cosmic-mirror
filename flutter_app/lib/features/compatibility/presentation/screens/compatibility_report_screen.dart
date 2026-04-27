@@ -42,7 +42,7 @@ class CompatibilityReportScreen extends ConsumerWidget {
                 final score = report['overall_score'] as int? ?? 0;
                 Share.share(
                   'My cosmic compatibility with $name is $score%! '
-                  'Check yours on Cosmic Mirror.',
+                  'Check yours on Lively.',
                 );
               }
             },

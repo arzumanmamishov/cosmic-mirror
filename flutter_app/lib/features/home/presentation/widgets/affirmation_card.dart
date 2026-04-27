@@ -30,7 +30,7 @@ class AffirmationCard extends StatelessWidget {
               GestureDetector(
                 onTap: () {
                   Share.share(
-                    '"$affirmation"\n\n~ Cosmic Mirror',
+                    '"$affirmation"\n\n~ Lively',
                   );
                 },
                 child: const Icon(

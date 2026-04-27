@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"cosmic-mirror/internal/domain"
 	"cosmic-mirror/internal/repository"
@@ -52,8 +53,14 @@ func (s *UserService) DeleteUser(ctx context.Context, id uuid.UUID) error {
 }
 
 func (s *UserService) CreateBirthProfile(ctx context.Context, userID uuid.UUID, input domain.CreateBirthProfileInput) (*domain.BirthProfile, error) {
+	birthDate, err := time.Parse("2006-01-02", input.BirthDate)
+	if err != nil {
+		return nil, fmt.Errorf("invalid birth_date format: %w", err)
+	}
+
 	profile := &domain.BirthProfile{
 		UserID:         userID,
+		BirthDate:      birthDate,
 		BirthTime:      input.BirthTime,
 		BirthTimeKnown: input.BirthTimeKnown,
 		BirthPlace:     input.BirthPlace,

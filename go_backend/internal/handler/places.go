@@ -44,7 +44,7 @@ func (h *PlacesHandler) Search(w http.ResponseWriter, r *http.Request) {
 		respondError(w, http.StatusInternalServerError, "request_error", err.Error())
 		return
 	}
-	req.Header.Set("User-Agent", "CosmicMirror/1.0")
+	req.Header.Set("User-Agent", "Lively/1.0")
 
 	resp, err := h.httpClient.Do(req)
 	if err != nil {

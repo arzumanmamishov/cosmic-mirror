@@ -56,7 +56,7 @@ func (a *Auth) Verify(next http.Handler) http.Handler {
 
 		// Look up internal user
 		user, err := a.userRepo.GetByFirebaseUID(r.Context(), token.UID)
-		if err != nil {
+		if err != nil || user == nil {
 			slog.Error("failed to get user by firebase UID", "error", err, "uid", token.UID)
 			respondError(w, http.StatusUnauthorized, "user_not_found", "User not found")
 			return

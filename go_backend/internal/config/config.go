@@ -18,8 +18,7 @@ type Config struct {
 	RedisURL                string
 	FirebaseCredentialsPath string
 	OpenAIAPIKey            string
-	AstrologyAPIKey         string
-	AstrologyAPIBaseURL     string
+	EphemerisPath           string
 	RevenueCatWebhookSecret string
 	FreeTierChatLimit       int
 	FreeTierRateLimit       int
@@ -38,8 +37,7 @@ func Load() (*Config, error) {
 		RedisURL:                getEnv("REDIS_URL", "redis://localhost:6379"),
 		FirebaseCredentialsPath: getEnv("FIREBASE_CREDENTIALS_PATH", ""),
 		OpenAIAPIKey:            getEnv("OPENAI_API_KEY", ""),
-		AstrologyAPIKey:         getEnv("ASTROLOGY_API_KEY", ""),
-		AstrologyAPIBaseURL:     getEnv("ASTROLOGY_API_BASE_URL", ""),
+		EphemerisPath:           getEnv("EPHEMERIS_PATH", "./ephemeris"),
 		RevenueCatWebhookSecret: getEnv("REVENUECAT_WEBHOOK_SECRET", ""),
 		FreeTierChatLimit:       getEnvInt("FREE_TIER_CHAT_LIMIT", 3),
 		FreeTierRateLimit:       getEnvInt("FREE_TIER_RATE_LIMIT", 60),

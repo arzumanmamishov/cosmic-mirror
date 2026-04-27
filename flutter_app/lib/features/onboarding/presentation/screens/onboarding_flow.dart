@@ -132,10 +132,15 @@ class _OnboardingFlowState extends ConsumerState<OnboardingFlow> {
         final success = await notifier.submitName();
         if (success) notifier.nextStep();
       case 4:
+        // Try to load chart, but proceed even if it fails
         await notifier.loadChartReveal();
         notifier.nextStep();
+        // If chart failed, skip reveal and go to home
+        if (state.chartReveal == null && mounted) {
+          context.go('/home');
+        }
       case 5:
-        if (mounted) context.go('/paywall');
+        if (mounted) context.go('/home');
       default:
         notifier.nextStep();
     }

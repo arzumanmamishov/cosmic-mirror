@@ -9,21 +9,32 @@ import (
 	"time"
 
 	"cosmic-mirror/internal/domain"
-	"cosmic-mirror/internal/provider/astrologyapi"
 	"cosmic-mirror/internal/repository"
 
 	"github.com/google/uuid"
 	"github.com/redis/go-redis/v9"
 )
 
-type ChartService struct {
-	profileRepo  repository.BirthProfileRepository
-	astrologyAPI *astrologyapi.Client
-	rdb          *redis.Client
+// ChartProvider is the abstraction over any astronomical calculation engine
+// (Swiss Ephemeris, AstrologyAPI, etc). It returns a complete natal chart for
+// the given birth data. Implementations are expected to be thread-safe.
+type ChartProvider interface {
+	GetNatalChart(
+		ctx context.Context,
+		birthDate time.Time,
+		birthHour, birthMin int,
+		lat, lon, tzone float64,
+	) (*domain.NatalChart, error)
 }
 
-func NewChartService(profileRepo repository.BirthProfileRepository, astrologyAPI *astrologyapi.Client, rdb *redis.Client) *ChartService {
-	return &ChartService{profileRepo: profileRepo, astrologyAPI: astrologyAPI, rdb: rdb}
+type ChartService struct {
+	profileRepo repository.BirthProfileRepository
+	provider    ChartProvider
+	rdb         *redis.Client
+}
+
+func NewChartService(profileRepo repository.BirthProfileRepository, provider ChartProvider, rdb *redis.Client) *ChartService {
+	return &ChartService{profileRepo: profileRepo, provider: provider, rdb: rdb}
 }
 
 func (s *ChartService) GetNatalChart(ctx context.Context, userID uuid.UUID) (*domain.NatalChart, error) {
@@ -51,8 +62,8 @@ func (s *ChartService) GetNatalChart(ctx context.Context, userID uuid.UUID) (*do
 	// Calculate timezone offset from timezone name
 	tzone := timezoneOffset(profile.Timezone)
 
-	// Fetch chart from AstrologyAPI
-	chart, err := s.astrologyAPI.GetNatalChart(
+	// Fetch chart from the configured calculation provider
+	chart, err := s.provider.GetNatalChart(
 		ctx,
 		profile.BirthDate,
 		hour, min,

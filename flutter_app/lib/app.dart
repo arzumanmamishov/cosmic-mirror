@@ -12,7 +12,7 @@ class CosmicMirrorApp extends ConsumerWidget {
     final router = ref.watch(appRouterProvider);
 
     return MaterialApp.router(
-      title: 'Cosmic Mirror',
+      title: 'Lively',
       debugShowCheckedModeBanner: false,
       theme: CosmicTheme.darkTheme,
       routerConfig: router,

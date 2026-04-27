@@ -23,12 +23,22 @@ import '../features/timeline/presentation/screens/timeline_screen.dart';
 import '../features/yearly_forecast/presentation/screens/yearly_forecast_screen.dart';
 import '../shared/providers/user_provider.dart';
 
+/// Notifies GoRouter when Firebase auth state changes.
+class _AuthChangeNotifier extends ChangeNotifier {
+  _AuthChangeNotifier() {
+    FirebaseAuth.instance.authStateChanges().listen((_) => notifyListeners());
+  }
+}
+
+final _authChangeNotifier = _AuthChangeNotifier();
+
 final appRouterProvider = Provider<GoRouter>((ref) {
   final userState = ref.watch(currentUserProvider);
 
   return GoRouter(
     initialLocation: '/',
     debugLogDiagnostics: true,
+    refreshListenable: _authChangeNotifier,
     redirect: (context, state) {
       final isAuthenticated =
           FirebaseAuth.instance.currentUser != null;

@@ -89,7 +89,7 @@ func BuildChatSystemPrompt(profile *domain.BirthProfile) string {
 		}
 	}
 
-	return fmt.Sprintf(`You are a wise, warm, and modern AI astrologer named Cosmic Mirror.
+	return fmt.Sprintf(`You are a wise, warm, and modern AI astrologer named Lively.
 
 The user you're speaking with was %s.
 

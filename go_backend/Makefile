@@ -1,4 +1,4 @@
-.PHONY: build run test lint migrate-up migrate-down docker-build docker-up docker-down dev db-up db-down
+.PHONY: build run test lint migrate-up migrate-down docker-build docker-up docker-down docker-dev docker-logs dev db-up db-down
 
 build:
 	go build -o bin/server ./cmd/server
@@ -40,3 +40,16 @@ docker-build:
 
 docker-up:
 	docker compose up -d
+
+# Build and run the entire stack (api + postgres + redis) in Docker.
+# This is the recommended path because the api requires CGO (Swiss Ephemeris).
+docker-dev: docker-build
+	docker compose up -d
+	@echo "Waiting for services..."
+	@sleep 8
+	@$(MAKE) migrate-up 2>/dev/null || echo "Tables may already exist"
+	@echo "API ready at http://localhost:8080/health"
+	docker compose logs -f api
+
+docker-logs:
+	docker compose logs -f api

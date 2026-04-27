@@ -1,9 +1,12 @@
 import 'package:firebase_core/firebase_core.dart' show FirebaseOptions;
 import 'package:flutter/foundation.dart'
-    show defaultTargetPlatform, TargetPlatform;
+    show defaultTargetPlatform, kIsWeb, TargetPlatform;
 
 class DefaultFirebaseOptions {
   static FirebaseOptions get currentPlatform {
+    if (kIsWeb) {
+      return web;
+    }
     switch (defaultTargetPlatform) {
       case TargetPlatform.android:
         return android;
@@ -31,5 +34,15 @@ class DefaultFirebaseOptions {
     projectId: 'livelyapp-83181',
     storageBucket: 'livelyapp-83181.firebasestorage.app',
     iosBundleId: 'com.arzuman.livelyapp',
+  );
+
+  // TODO: Register a Web app in Firebase Console for a proper web API key
+  static const FirebaseOptions web = FirebaseOptions(
+    apiKey: 'AIzaSyCfc3VVzEF_-fH3q3d9n2fJuOOSYzGdonw',
+    appId: '1:775503499176:android:a84a7373d6d9a47af6579d',
+    messagingSenderId: '775503499176',
+    projectId: 'livelyapp-83181',
+    storageBucket: 'livelyapp-83181.firebasestorage.app',
+    authDomain: 'livelyapp-83181.firebaseapp.com',
   );
 }

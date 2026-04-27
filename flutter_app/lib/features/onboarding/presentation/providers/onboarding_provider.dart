@@ -101,7 +101,8 @@ class OnboardingState {
 }
 
 class OnboardingNotifier extends StateNotifier<OnboardingState> {
-  OnboardingNotifier(this._repository) : super(const OnboardingState());
+  OnboardingNotifier(this._repository)
+      : super(OnboardingState(birthDate: DateTime(1995, 6, 15)));
 
   final OnboardingRepository _repository;
 

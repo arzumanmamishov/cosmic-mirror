@@ -64,11 +64,11 @@ func (h *AuthHandler) TermsOfService(w http.ResponseWriter, r *http.Request) {
 // Minimal placeholders - replace with real legal text
 var _ = middleware.UserIDFromContext
 
-const privacyPolicyText = `Privacy Policy for Cosmic Mirror
+const privacyPolicyText = `Privacy Policy for Lively
 
 Last updated: 2024-01-01
 
-Cosmic Mirror ("we", "our", "us") respects your privacy. This policy explains how we collect, use, and protect your personal data.
+Lively ("we", "our", "us") respects your privacy. This policy explains how we collect, use, and protect your personal data.
 
 Data We Collect:
 - Account information (email, name)
@@ -96,16 +96,16 @@ Your Rights:
 - Export your data
 - Withdraw consent for data processing
 
-Contact: privacy@cosmicmirror.app`
+Contact: privacy@livelyapp.co`
 
-const termsOfServiceText = `Terms of Service for Cosmic Mirror
+const termsOfServiceText = `Terms of Service for Lively
 
 Last updated: 2024-01-01
 
-By using Cosmic Mirror, you agree to these terms.
+By using Lively, you agree to these terms.
 
 Service Description:
-Cosmic Mirror provides entertainment and self-reflection through astrology-based content and AI-powered guidance. Our content is for informational and entertainment purposes only.
+Lively provides entertainment and self-reflection through astrology-based content and AI-powered guidance. Our content is for informational and entertainment purposes only.
 
 Disclaimer:
 Astrological readings and AI-generated content are not substitutes for professional medical, financial, legal, or psychological advice. Always consult qualified professionals for important life decisions.
@@ -122,6 +122,6 @@ User Conduct:
 - Do not attempt to manipulate or abuse the service
 
 Intellectual Property:
-All content, design, and code are owned by Cosmic Mirror.
+All content, design, and code are owned by Lively.
 
-Contact: legal@cosmicmirror.app`
+Contact: legal@livelyapp.co`

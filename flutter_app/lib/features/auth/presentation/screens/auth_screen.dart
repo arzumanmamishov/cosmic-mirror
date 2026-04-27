@@ -1,5 +1,4 @@
-import 'dart:io';
-
+import 'package:flutter/foundation.dart' show defaultTargetPlatform, TargetPlatform;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -26,11 +25,12 @@ class AuthScreen extends ConsumerWidget {
           ),
         ),
         child: SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 24),
-            child: Column(
-              children: [
-                const Spacer(flex: 2),
+          child: Center(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
+              child: Column(
+                children: [
+                  const SizedBox(height: 48),
                 // Logo area
                 Container(
                   width: 100,
@@ -53,7 +53,7 @@ class AuthScreen extends ConsumerWidget {
                   ),
                 ),
                 const SizedBox(height: 32),
-                Text('Cosmic Mirror', style: CosmicTypography.displayLarge),
+                Text('Lively', style: CosmicTypography.displayLarge),
                 const SizedBox(height: 12),
                 Text(
                   'Discover your cosmic blueprint.\nPersonalized astrology & daily guidance.',
@@ -62,7 +62,7 @@ class AuthScreen extends ConsumerWidget {
                   ),
                   textAlign: TextAlign.center,
                 ),
-                const Spacer(flex: 2),
+                const SizedBox(height: 48),
 
                 // Error message
                 if (authState.error != null) ...[
@@ -95,7 +95,7 @@ class AuthScreen extends ConsumerWidget {
                 ],
 
                 // Sign-in buttons
-                if (Platform.isIOS) ...[
+                if (defaultTargetPlatform == TargetPlatform.iOS) ...[
                   CosmicButton(
                     label: 'Continue with Apple',
                     icon: Icons.apple,
@@ -129,6 +129,7 @@ class AuthScreen extends ConsumerWidget {
                 const SizedBox(height: 32),
               ],
             ),
+          ),
           ),
         ),
       ),

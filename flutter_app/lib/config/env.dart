@@ -24,12 +24,12 @@ class Env {
       case Environment.prod:
         return const String.fromEnvironment(
           'API_BASE_URL',
-          defaultValue: 'https://api.cosmicmirror.app',
+          defaultValue: 'https://api.livelyapp.co',
         );
       case Environment.staging:
         return const String.fromEnvironment(
           'API_BASE_URL',
-          defaultValue: 'https://staging-api.cosmicmirror.app',
+          defaultValue: 'https://staging-api.livelyapp.co',
         );
       case Environment.dev:
         return const String.fromEnvironment(

@@ -13,9 +13,9 @@ import (
 	"cosmic-mirror/internal/config"
 	"cosmic-mirror/internal/handler"
 	"cosmic-mirror/internal/middleware"
-	"cosmic-mirror/internal/provider/astrologyapi"
 	"cosmic-mirror/internal/provider/firebase"
 	"cosmic-mirror/internal/provider/openai"
+	"cosmic-mirror/internal/provider/swisseph"
 	"cosmic-mirror/internal/repository/postgres"
 	"cosmic-mirror/internal/server"
 	"cosmic-mirror/internal/service"
@@ -75,7 +75,15 @@ func main() {
 
 	// Providers
 	openaiClient := openai.NewClient(cfg.OpenAIAPIKey)
-	astrologyClient := astrologyapi.NewClient(cfg.AstrologyAPIKey, cfg.AstrologyAPIBaseURL)
+
+	// Swiss Ephemeris: local, accurate astronomical calculations.
+	// Replaces the previous AstrologyAPI HTTP dependency.
+	chartProvider := swisseph.NewClient(cfg.EphemerisPath)
+	if err := chartProvider.Init(); err != nil {
+		slog.Error("failed to init Swiss Ephemeris", "error", err, "path", cfg.EphemerisPath)
+		os.Exit(1)
+	}
+	defer chartProvider.Close()
 
 	// Repositories
 	userRepo := postgres.NewUserRepository(db)
@@ -88,7 +96,7 @@ func main() {
 
 	// Services
 	userSvc := service.NewUserService(userRepo, birthProfileRepo)
-	chartSvc := service.NewChartService(birthProfileRepo, astrologyClient, rdb)
+	chartSvc := service.NewChartService(birthProfileRepo, chartProvider, rdb)
 	readingSvc := service.NewReadingService(readingRepo, birthProfileRepo, openaiClient, rdb)
 	aiSvc := service.NewAIService(chatRepo, birthProfileRepo, openaiClient, cfg.FreeTierChatLimit)
 	compatibilitySvc := service.NewCompatibilityService(compatibilityRepo, birthProfileRepo, openaiClient)

@@ -58,7 +58,7 @@ class SettingsScreen extends ConsumerWidget {
             title: const Text('Help & Support'),
             onTap: () {
               launchUrl(
-                Uri.parse('mailto:support@cosmicmirror.app'),
+                Uri.parse('mailto:support@livelyapp.co'),
               );
             },
           ),
@@ -78,7 +78,7 @@ class SettingsScreen extends ConsumerWidget {
             title: const Text('Privacy Policy'),
             onTap: () {
               launchUrl(
-                Uri.parse('https://cosmicmirror.app/privacy'),
+                Uri.parse('https://livelyapp.co/privacy'),
               );
             },
           ),
@@ -87,7 +87,7 @@ class SettingsScreen extends ConsumerWidget {
             title: const Text('Terms of Service'),
             onTap: () {
               launchUrl(
-                Uri.parse('https://cosmicmirror.app/terms'),
+                Uri.parse('https://livelyapp.co/terms'),
               );
             },
           ),
@@ -166,7 +166,7 @@ class SettingsScreen extends ConsumerWidget {
           const SizedBox(height: 32),
           Center(
             child: Text(
-              'Cosmic Mirror v1.0.0',
+              'Lively v1.0.0',
               style: CosmicTypography.caption,
             ),
           ),

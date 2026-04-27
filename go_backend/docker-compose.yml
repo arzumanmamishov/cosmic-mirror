@@ -5,6 +5,14 @@ services:
       - "8080:8080"
     env_file:
       - .env
+    environment:
+      DATABASE_URL: postgres://cosmic:cosmic_secret@postgres:5432/cosmic_mirror?sslmode=disable
+      REDIS_URL: redis://redis:6379
+      EPHEMERIS_PATH: /app/ephemeris
+      # Swiss Ephemeris C library reads SE_EPHE_PATH env var with highest priority
+      SE_EPHE_PATH: /app/ephemeris
+    volumes:
+      - ./ephemeris:/app/ephemeris:ro
     depends_on:
       postgres:
         condition: service_healthy

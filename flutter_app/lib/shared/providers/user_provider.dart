@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart' as fb;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/network/api_client.dart';
@@ -65,8 +66,14 @@ class UserNotifier extends StateNotifier<UserState> {
   Future<void> bootstrapSession() async {
     state = state.copyWith(isLoading: true);
     try {
+      final firebaseUser = fb.FirebaseAuth.instance.currentUser;
       final data = await _apiClient.post<Map<String, dynamic>>(
         ApiEndpoints.session,
+        data: {
+          'firebase_uid': firebaseUser?.uid ?? '',
+          'email': firebaseUser?.email ?? '',
+          'name': firebaseUser?.displayName ?? '',
+        },
       );
       final user = data['user'] as Map<String, dynamic>;
       final chart = data['chart_summary'] as Map<String, dynamic>?;

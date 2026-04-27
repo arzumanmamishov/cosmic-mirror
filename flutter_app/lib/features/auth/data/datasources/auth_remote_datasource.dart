@@ -9,7 +9,11 @@ class AuthRemoteDataSource {
     FirebaseAuth? firebaseAuth,
     GoogleSignIn? googleSignIn,
   })  : _firebaseAuth = firebaseAuth ?? FirebaseAuth.instance,
-        _googleSignIn = googleSignIn ?? GoogleSignIn();
+        _googleSignIn = googleSignIn ??
+            GoogleSignIn(
+              scopes: ['email'],
+              signInOption: SignInOption.standard,
+            );
 
   final FirebaseAuth _firebaseAuth;
   final GoogleSignIn _googleSignIn;

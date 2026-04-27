@@ -28,7 +28,7 @@ class DailyReadingScreen extends ConsumerWidget {
               if (reading != null) {
                 Share.share(
                   '"${reading.affirmation}"\n\nMy lucky color today: '
-                  '${reading.luckyColor}\n\n~ Cosmic Mirror',
+                  '${reading.luckyColor}\n\n~ Lively',
                 );
               }
             },
