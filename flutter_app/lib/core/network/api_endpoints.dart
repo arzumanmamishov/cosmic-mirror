@@ -64,4 +64,30 @@ class ApiEndpoints {
   // Legal
   static const String privacyPolicy = '$basePath/legal/privacy';
   static const String termsOfService = '$basePath/legal/terms';
+
+  // Community / Spaces forum
+  static const String spaces = '$basePath/spaces';
+  static String space(String id) => '$basePath/spaces/$id';
+  static String spaceJoin(String id) => '$basePath/spaces/$id/join';
+  static String spaceMembers(String id) => '$basePath/spaces/$id/members';
+  static String spacePosts(String id) => '$basePath/spaces/$id/posts';
+
+  static String post(String id) => '$basePath/posts/$id';
+  static String postLike(String id) => '$basePath/posts/$id/like';
+  static String postComments(String id) => '$basePath/posts/$id/comments';
+
+  static String comment(String id) => '$basePath/comments/$id';
+  static String commentLike(String id) => '$basePath/comments/$id/like';
+
+  static const String communityNotifications =
+      '$basePath/community/notifications';
+  static const String communityNotificationsUnreadCount =
+      '$basePath/community/notifications/unread-count';
+  static String communityNotificationRead(String id) =>
+      '$basePath/community/notifications/$id/read';
+  static const String communityNotificationsReadAll =
+      '$basePath/community/notifications/read-all';
+
+  static const String spaceCategories = '$basePath/space-categories';
+  static const String popularHashtags = '$basePath/hashtags/popular';
 }

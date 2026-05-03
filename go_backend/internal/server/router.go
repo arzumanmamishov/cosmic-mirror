@@ -113,6 +113,43 @@ func NewRouter(h *handler.Handlers, auth *middleware.Auth, rl *middleware.RateLi
 
 			// Subscription
 			r.Get("/subscription/status", h.Subscription.GetStatus)
+
+			// Community: spaces
+			r.Get("/spaces", h.Spaces.List)
+			r.Post("/spaces", h.Spaces.Create)
+			r.Get("/spaces/{spaceID}", h.Spaces.Get)
+			r.Put("/spaces/{spaceID}", h.Spaces.Update)
+			r.Delete("/spaces/{spaceID}", h.Spaces.Delete)
+			r.Post("/spaces/{spaceID}/join", h.Spaces.Join)
+			r.Delete("/spaces/{spaceID}/join", h.Spaces.Leave)
+			r.Get("/spaces/{spaceID}/members", h.Spaces.Members)
+
+			// Community: posts (nested under space for create/list, flat for the rest)
+			r.Get("/spaces/{spaceID}/posts", h.Posts.ListBySpace)
+			r.Post("/spaces/{spaceID}/posts", h.Posts.Create)
+			r.Get("/posts/{postID}", h.Posts.Get)
+			r.Put("/posts/{postID}", h.Posts.Update)
+			r.Delete("/posts/{postID}", h.Posts.Delete)
+			r.Post("/posts/{postID}/like", h.Posts.Like)
+			r.Delete("/posts/{postID}/like", h.Posts.Unlike)
+
+			// Community: comments
+			r.Get("/posts/{postID}/comments", h.Comments.ListByPost)
+			r.Post("/posts/{postID}/comments", h.Comments.Create)
+			r.Put("/comments/{commentID}", h.Comments.Update)
+			r.Delete("/comments/{commentID}", h.Comments.Delete)
+			r.Post("/comments/{commentID}/like", h.Comments.Like)
+			r.Delete("/comments/{commentID}/like", h.Comments.Unlike)
+
+			// Community: notifications (in-app activity feed)
+			r.Get("/community/notifications", h.CommunityNotifications.List)
+			r.Get("/community/notifications/unread-count", h.CommunityNotifications.UnreadCount)
+			r.Post("/community/notifications/{notificationID}/read", h.CommunityNotifications.MarkRead)
+			r.Post("/community/notifications/read-all", h.CommunityNotifications.MarkAllRead)
+
+			// Community: discovery (categories + popular hashtags)
+			r.Get("/space-categories", h.Discovery.ListCategories)
+			r.Get("/hashtags/popular", h.Discovery.ListPopularHashtags)
 		})
 	})
 

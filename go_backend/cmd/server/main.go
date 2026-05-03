@@ -93,6 +93,15 @@ func main() {
 	compatibilityRepo := postgres.NewCompatibilityRepository(db)
 	journalRepo := postgres.NewJournalRepository(db)
 	subscriptionRepo := postgres.NewSubscriptionRepository(db)
+	// Community / Spaces forum
+	spaceRepo := postgres.NewSpaceRepository(db)
+	spaceMemberRepo := postgres.NewSpaceMemberRepository(db)
+	spaceCategoryRepo := postgres.NewSpaceCategoryRepository(db)
+	postRepo := postgres.NewPostRepository(db)
+	commentRepo := postgres.NewCommentRepository(db)
+	likeRepo := postgres.NewLikeRepository(db)
+	hashtagRepo := postgres.NewHashtagRepository(db)
+	communityNotifRepo := postgres.NewCommunityNotificationRepository(db)
 
 	// Services
 	userSvc := service.NewUserService(userRepo, birthProfileRepo)
@@ -102,6 +111,12 @@ func main() {
 	aiSvc := service.NewAIService(chatRepo, birthProfileRepo, openaiClient, cfg.FreeTierChatLimit)
 	compatibilitySvc := service.NewCompatibilityService(compatibilityRepo, birthProfileRepo, openaiClient)
 	subscriptionSvc := service.NewSubscriptionService(subscriptionRepo, cfg.RevenueCatWebhookSecret)
+	// Community
+	communityNotifSvc := service.NewCommunityNotificationService(communityNotifRepo)
+	communitySvc := service.NewCommunityService(db, spaceRepo, spaceMemberRepo, spaceCategoryRepo, communityNotifSvc)
+	postSvc := service.NewPostService(db, postRepo, spaceRepo, spaceMemberRepo, hashtagRepo, communityNotifSvc)
+	commentSvc := service.NewCommentService(db, commentRepo, postRepo, communityNotifSvc)
+	likeSvc := service.NewLikeService(db, likeRepo, postRepo, commentRepo, communityNotifSvc)
 
 	// Middleware
 	authMiddleware := middleware.NewAuth(firebaseAuth, userRepo)
@@ -119,6 +134,12 @@ func main() {
 		Subscription:  handler.NewSubscriptionHandler(subscriptionSvc),
 		Journal:       handler.NewJournalHandler(journalRepo),
 		Places:        handler.NewPlacesHandler(),
+		// Community / Spaces forum
+		Spaces:                 handler.NewSpacesHandler(communitySvc),
+		Posts:                  handler.NewPostsHandler(postSvc, likeSvc),
+		Comments:               handler.NewCommentsHandler(commentSvc, likeSvc),
+		CommunityNotifications: handler.NewCommunityNotificationsHandler(communityNotifSvc),
+		Discovery:              handler.NewDiscoveryHandler(communitySvc, hashtagRepo),
 	}
 
 	// Router

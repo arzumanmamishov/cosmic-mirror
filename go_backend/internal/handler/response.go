@@ -16,6 +16,12 @@ type Handlers struct {
 	Subscription  *SubscriptionHandler
 	Journal       *JournalHandler
 	Places        *PlacesHandler
+	// Community / Spaces forum
+	Spaces                 *SpacesHandler
+	Posts                  *PostsHandler
+	Comments               *CommentsHandler
+	CommunityNotifications *CommunityNotificationsHandler
+	Discovery              *DiscoveryHandler
 }
 
 type errorResponse struct {

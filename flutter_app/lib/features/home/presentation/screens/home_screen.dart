@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import 'package:cosmic_mirror/config/theme/app_palette.dart';
 import 'package:cosmic_mirror/features/ai_chat/presentation/screens/chat_threads_screen.dart';
+import 'package:cosmic_mirror/features/community/presentation/screens/spaces_list_screen.dart';
 import 'package:cosmic_mirror/features/home/presentation/widgets/astrologers_section.dart';
 import 'package:cosmic_mirror/features/home/presentation/widgets/discussions_section.dart';
 import 'package:cosmic_mirror/features/home/presentation/widgets/header_bar.dart';
@@ -356,7 +357,7 @@ class _CommunityTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const SafeArea(child: DiscussionsSection());
+    return const SafeArea(child: SpacesListScreen());
   }
 }
 

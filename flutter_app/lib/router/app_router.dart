@@ -20,6 +20,15 @@ import '../features/profile/presentation/screens/profile_screen.dart';
 import '../features/rituals/presentation/screens/rituals_screen.dart';
 import '../features/settings/presentation/screens/settings_screen.dart';
 import '../features/life_timeline/presentation/screens/life_timeline_screen.dart';
+import '../features/community/presentation/screens/category_detail_screen.dart';
+import '../features/community/presentation/screens/create_space_screen.dart';
+import '../features/community/presentation/screens/edit_space_screen.dart';
+import '../features/community/presentation/screens/hashtag_feed_screen.dart';
+import '../features/community/presentation/screens/members_screen.dart';
+import '../features/community/presentation/screens/notifications_screen.dart';
+import '../features/community/presentation/screens/post_detail_screen.dart';
+import '../features/community/presentation/screens/space_detail_screen.dart';
+import '../features/community/presentation/screens/spaces_list_screen.dart';
 import '../features/timeline/presentation/screens/timeline_screen.dart';
 import '../features/vedic_chart/presentation/screens/vedic_chart_screen.dart';
 import '../features/yearly_forecast/presentation/screens/yearly_forecast_screen.dart';
@@ -131,6 +140,88 @@ final appRouterProvider = Provider<GoRouter>((ref) {
           state,
           const VedicChartScreen(),
         ),
+      ),
+      GoRoute(
+        path: '/community',
+        pageBuilder: (context, state) => _slideTransition(
+          state,
+          const SpacesListScreen(),
+        ),
+        routes: [
+          GoRoute(
+            path: 'create',
+            pageBuilder: (context, state) => _slideTransition(
+              state,
+              const CreateSpaceScreen(),
+            ),
+          ),
+          GoRoute(
+            path: 'notifications',
+            pageBuilder: (context, state) => _slideTransition(
+              state,
+              const NotificationsScreen(),
+            ),
+          ),
+          GoRoute(
+            path: 'category/:categoryId',
+            pageBuilder: (context, state) => _slideTransition(
+              state,
+              CategoryDetailScreen(
+                categoryId: state.pathParameters['categoryId']!,
+              ),
+            ),
+          ),
+          GoRoute(
+            path: 'hashtag/:tag',
+            pageBuilder: (context, state) => _slideTransition(
+              state,
+              HashtagFeedScreen(tag: state.pathParameters['tag']!),
+            ),
+          ),
+          GoRoute(
+            path: 'post/:postId',
+            pageBuilder: (context, state) => _slideTransition(
+              state,
+              PostDetailScreen(
+                spaceId: '',
+                postId: state.pathParameters['postId']!,
+              ),
+            ),
+          ),
+          GoRoute(
+            path: ':spaceId',
+            pageBuilder: (context, state) => _slideTransition(
+              state,
+              SpaceDetailScreen(spaceId: state.pathParameters['spaceId']!),
+            ),
+            routes: [
+              GoRoute(
+                path: 'edit',
+                pageBuilder: (context, state) => _slideTransition(
+                  state,
+                  EditSpaceScreen(spaceId: state.pathParameters['spaceId']!),
+                ),
+              ),
+              GoRoute(
+                path: 'members',
+                pageBuilder: (context, state) => _slideTransition(
+                  state,
+                  MembersScreen(spaceId: state.pathParameters['spaceId']!),
+                ),
+              ),
+              GoRoute(
+                path: 'post/:postId',
+                pageBuilder: (context, state) => _slideTransition(
+                  state,
+                  PostDetailScreen(
+                    spaceId: state.pathParameters['spaceId']!,
+                    postId: state.pathParameters['postId']!,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
       ),
       GoRoute(
         path: '/compatibility',
