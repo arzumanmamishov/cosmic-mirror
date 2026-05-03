@@ -5,6 +5,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../config/theme/colors.dart';
 import '../../../../config/theme/typography.dart';
 import '../../../../shared/widgets/cosmic_button.dart';
+import '../../../../shared/widgets/cosmic_pulse.dart';
+import '../../../../shared/widgets/cosmic_starfield.dart';
+import '../../../../shared/widgets/staggered_fade_in.dart';
 import '../providers/auth_provider.dart';
 
 class AuthScreen extends ConsumerWidget {
@@ -16,44 +19,66 @@ class AuthScreen extends ConsumerWidget {
     final authNotifier = ref.read(authActionProvider.notifier);
 
     return Scaffold(
-      body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            colors: [Color(0xFF0A0E27), Color(0xFF1A1040), Color(0xFF0A0E27)],
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
+      body: Stack(
+        children: [
+          // Cosmic gradient backdrop
+          const DecoratedBox(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [
+                  Color(0xFF0A0E27),
+                  Color(0xFF1A1040),
+                  Color(0xFF0A0E27),
+                ],
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+              ),
+            ),
+            child: SizedBox.expand(),
           ),
-        ),
-        child: SafeArea(
-          child: Center(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
-              child: Column(
-                children: [
+          // Twinkling stars
+          const Positioned.fill(
+            child: CosmicStarfield(starCount: 90, intensity: 0.9),
+          ),
+          SafeArea(
+            child: Center(
+              child: SingleChildScrollView(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
+                child: Column(
+                  children: [
                   const SizedBox(height: 48),
-                // Logo area
-                Container(
-                  width: 100,
-                  height: 100,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    gradient: CosmicColors.primaryGradient,
-                    boxShadow: [
-                      BoxShadow(
-                        color: CosmicColors.primary.withOpacity(0.4),
-                        blurRadius: 30,
-                        spreadRadius: 5,
-                      ),
-                    ],
-                  ),
-                  child: const Icon(
-                    Icons.auto_awesome,
-                    size: 48,
-                    color: Colors.white,
+                // Logo area with breathing cosmic pulse
+                CosmicPulse(
+                  color: CosmicColors.primary,
+                  maxRadius: 90,
+                  duration: const Duration(milliseconds: 3500),
+                  child: Container(
+                    width: 100,
+                    height: 100,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      gradient: CosmicColors.primaryGradient,
+                      boxShadow: [
+                        BoxShadow(
+                          color: CosmicColors.primary.withOpacity(0.4),
+                          blurRadius: 30,
+                          spreadRadius: 5,
+                        ),
+                      ],
+                    ),
+                    child: const Icon(
+                      Icons.auto_awesome,
+                      size: 48,
+                      color: Colors.white,
+                    ),
                   ),
                 ),
                 const SizedBox(height: 32),
-                Text('Lively', style: CosmicTypography.displayLarge),
+                FadeSlideIn(
+                  delay: const Duration(milliseconds: 100),
+                  child: Text('Lively', style: CosmicTypography.displayLarge),
+                ),
                 const SizedBox(height: 12),
                 Text(
                   'Discover your cosmic blueprint.\nPersonalized astrology & daily guidance.',
@@ -127,11 +152,12 @@ class AuthScreen extends ConsumerWidget {
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 32),
-              ],
+                ],
+              ),
             ),
           ),
-          ),
         ),
+        ],
       ),
     );
   }

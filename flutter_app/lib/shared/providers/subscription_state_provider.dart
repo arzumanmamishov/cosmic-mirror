@@ -8,6 +8,10 @@ final customerInfoProvider = FutureProvider<CustomerInfo>((ref) async {
 });
 
 final isPremiumProvider = Provider<bool>((ref) {
+  // TESTING OVERRIDE: always premium so all gated features are accessible.
+  // Remove this short-circuit before production.
+  return true;
+  // ignore: dead_code
   final customerInfo = ref.watch(customerInfoProvider);
   return customerInfo.whenOrNull(
         data: (info) =>

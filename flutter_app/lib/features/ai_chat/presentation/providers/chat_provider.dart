@@ -12,10 +12,11 @@ final chatThreadsProvider =
   final data = await client.get<Map<String, dynamic>>(
     ApiEndpoints.chatThreads,
   );
-  final threads = (data['threads'] as List<dynamic>)
+  // Backend may return null for an empty list; treat it as []
+  final raw = data['threads'] as List<dynamic>? ?? const [];
+  return raw
       .map((t) => ChatThreadModel.fromJson(t as Map<String, dynamic>))
       .toList();
-  return threads;
 });
 
 final chatMessagesProvider = FutureProvider.autoDispose
@@ -24,10 +25,11 @@ final chatMessagesProvider = FutureProvider.autoDispose
   final data = await client.get<Map<String, dynamic>>(
     ApiEndpoints.chatMessages(threadId),
   );
-  final messages = (data['messages'] as List<dynamic>)
+  // Backend may return null for an empty list; treat it as []
+  final raw = data['messages'] as List<dynamic>? ?? const [];
+  return raw
       .map((m) => ChatMessageModel.fromJson(m as Map<String, dynamic>))
       .toList();
-  return messages;
 });
 
 final chatInputProvider =
@@ -59,6 +61,16 @@ class ChatInputNotifier extends StateNotifier<ChatInputState> {
     } catch (e) {
       state = ChatInputState(error: e.toString());
       return null;
+    }
+  }
+
+  Future<bool> deleteThread(String threadId) async {
+    try {
+      await _client.delete(ApiEndpoints.chatThread(threadId));
+      return true;
+    } catch (e) {
+      state = ChatInputState(error: e.toString());
+      return false;
     }
   }
 

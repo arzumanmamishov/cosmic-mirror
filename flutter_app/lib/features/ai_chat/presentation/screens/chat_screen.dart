@@ -81,7 +81,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('AI Astrologer'),
+        title: const Text('Astrologer'),
         actions: [
           IconButton(
             icon: const Icon(Icons.more_vert),

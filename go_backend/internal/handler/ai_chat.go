@@ -27,6 +27,9 @@ func (h *AIChatHandler) ListThreads(w http.ResponseWriter, r *http.Request) {
 		respondError(w, http.StatusInternalServerError, "list_error", err.Error())
 		return
 	}
+	if threads == nil {
+		threads = []domain.ChatThread{}
+	}
 	respondSuccess(w, map[string]any{"threads": threads})
 }
 
@@ -64,6 +67,9 @@ func (h *AIChatHandler) GetMessages(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		respondError(w, http.StatusInternalServerError, "messages_error", err.Error())
 		return
+	}
+	if messages == nil {
+		messages = []domain.ChatMessage{}
 	}
 	respondSuccess(w, map[string]any{"messages": messages})
 }

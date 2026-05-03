@@ -97,6 +97,7 @@ func main() {
 	// Services
 	userSvc := service.NewUserService(userRepo, birthProfileRepo)
 	chartSvc := service.NewChartService(birthProfileRepo, chartProvider, rdb)
+	vedicSvc := service.NewVedicService(birthProfileRepo, chartProvider, rdb)
 	readingSvc := service.NewReadingService(readingRepo, birthProfileRepo, openaiClient, rdb)
 	aiSvc := service.NewAIService(chatRepo, birthProfileRepo, openaiClient, cfg.FreeTierChatLimit)
 	compatibilitySvc := service.NewCompatibilityService(compatibilityRepo, birthProfileRepo, openaiClient)
@@ -111,6 +112,7 @@ func main() {
 		Auth:          handler.NewAuthHandler(userSvc, subscriptionSvc),
 		User:          handler.NewUserHandler(userSvc),
 		Chart:         handler.NewChartHandler(chartSvc),
+		Vedic:         handler.NewVedicHandler(vedicSvc),
 		DailyReading:  handler.NewDailyReadingHandler(readingSvc),
 		AIChat:        handler.NewAIChatHandler(aiSvc),
 		Compatibility: handler.NewCompatibilityHandler(compatibilitySvc),

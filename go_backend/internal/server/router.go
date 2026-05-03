@@ -65,9 +65,17 @@ func NewRouter(h *handler.Handlers, auth *middleware.Auth, rl *middleware.RateLi
 			r.Get("/users/me/preferences", h.User.GetPreferences)
 			r.Put("/users/me/preferences", h.User.UpdatePreferences)
 
-			// Chart
+			// Chart (Western tropical)
 			r.Get("/chart", h.Chart.GetChart)
 			r.Get("/chart/summary", h.Chart.GetSummary)
+
+			// Vedic / Jyotish (sidereal)
+			r.Get("/vedic/chart", h.Vedic.GetChart)
+			r.Get("/vedic/chart/divisional/{divisor}", h.Vedic.GetDivisionalChart)
+			r.Get("/vedic/dasha", h.Vedic.GetDasha)
+			r.Get("/vedic/yogas", h.Vedic.GetYogas)
+			r.Get("/vedic/shadbala", h.Vedic.GetShadbala)
+			r.Get("/vedic/ashtakavarga", h.Vedic.GetAshtakavarga)
 
 			// Daily Reading
 			r.Get("/daily-reading", h.DailyReading.GetToday)

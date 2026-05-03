@@ -9,6 +9,7 @@ type Handlers struct {
 	Auth          *AuthHandler
 	User          *UserHandler
 	Chart         *ChartHandler
+	Vedic         *VedicHandler
 	DailyReading  *DailyReadingHandler
 	AIChat        *AIChatHandler
 	Compatibility *CompatibilityHandler

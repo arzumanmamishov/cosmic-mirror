@@ -11,9 +11,18 @@ class ApiEndpoints {
   static const String birthProfile = '$basePath/users/me/birth-profile';
   static const String preferences = '$basePath/users/me/preferences';
 
-  // Chart
+  // Chart (Western tropical)
   static const String chart = '$basePath/chart';
   static const String chartSummary = '$basePath/chart/summary';
+
+  // Vedic / Jyotish (sidereal)
+  static const String vedicChart = '$basePath/vedic/chart';
+  static String vedicDivisional(int divisor) =>
+      '$basePath/vedic/chart/divisional/$divisor';
+  static const String vedicDasha = '$basePath/vedic/dasha';
+  static const String vedicYogas = '$basePath/vedic/yogas';
+  static const String vedicShadbala = '$basePath/vedic/shadbala';
+  static const String vedicAshtakavarga = '$basePath/vedic/ashtakavarga';
 
   // Daily Reading
   static const String dailyReading = '$basePath/daily-reading';

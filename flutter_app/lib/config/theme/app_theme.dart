@@ -1,58 +1,71 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-import 'colors.dart';
+import 'app_palette.dart';
 
 class CosmicTheme {
   CosmicTheme._();
 
-  static ThemeData get darkTheme {
+  static ThemeData get darkTheme => _build(AppPalette.dark, Brightness.dark);
+  static ThemeData get lightTheme => _build(AppPalette.light, Brightness.light);
+
+  static ThemeData _build(AppPalette p, Brightness brightness) {
+    final baseTextTheme = brightness == Brightness.dark
+        ? ThemeData.dark().textTheme
+        : ThemeData.light().textTheme;
+
     return ThemeData(
       useMaterial3: true,
-      brightness: Brightness.dark,
-      scaffoldBackgroundColor: CosmicColors.background,
-      colorScheme: const ColorScheme.dark(
-        primary: CosmicColors.primary,
-        secondary: CosmicColors.accent,
-        surface: CosmicColors.surface,
-        error: CosmicColors.error,
-        onPrimary: CosmicColors.textPrimary,
-        onSecondary: CosmicColors.textPrimary,
-        onSurface: CosmicColors.textPrimary,
-        onError: CosmicColors.textPrimary,
+      brightness: brightness,
+      scaffoldBackgroundColor: p.background,
+      extensions: [p],
+      colorScheme: ColorScheme(
+        brightness: brightness,
+        primary: p.primary,
+        onPrimary: brightness == Brightness.dark
+            ? const Color(0xFFFFFFFF)
+            : const Color(0xFFFFFFFF),
+        secondary: p.accent,
+        onSecondary: const Color(0xFFFFFFFF),
+        surface: p.surface,
+        onSurface: p.textPrimary,
+        error: p.error,
+        onError: const Color(0xFFFFFFFF),
+        surfaceContainerHighest: p.surfaceElevated,
+        outline: p.glassBorder,
       ),
-      textTheme: GoogleFonts.interTextTheme(
-        ThemeData.dark().textTheme,
-      ).apply(
-        bodyColor: CosmicColors.textPrimary,
-        displayColor: CosmicColors.textPrimary,
+      textTheme: GoogleFonts.interTextTheme(baseTextTheme).apply(
+        bodyColor: p.textPrimary,
+        displayColor: p.textPrimary,
       ),
-      appBarTheme: const AppBarTheme(
+      appBarTheme: AppBarTheme(
         backgroundColor: Colors.transparent,
         elevation: 0,
         scrolledUnderElevation: 0,
         centerTitle: true,
-        iconTheme: IconThemeData(color: CosmicColors.textPrimary),
+        iconTheme: IconThemeData(color: p.textPrimary),
         titleTextStyle: TextStyle(
           fontFamily: 'Inter',
           fontSize: 18,
           fontWeight: FontWeight.w600,
-          color: CosmicColors.textPrimary,
+          color: p.textPrimary,
         ),
       ),
       cardTheme: CardThemeData(
-        color: CosmicColors.surface,
+        color: p.surface,
         elevation: 0,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16),
-          side: BorderSide(color: CosmicColors.glassBorder),
+          side: BorderSide(color: p.glassBorder),
         ),
         margin: EdgeInsets.zero,
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
-          backgroundColor: CosmicColors.primary,
-          foregroundColor: CosmicColors.textPrimary,
+          backgroundColor: p.primary,
+          foregroundColor: brightness == Brightness.dark
+              ? p.textPrimary
+              : Colors.white,
           minimumSize: const Size(double.infinity, 52),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
@@ -66,12 +79,12 @@ class CosmicTheme {
       ),
       outlinedButtonTheme: OutlinedButtonThemeData(
         style: OutlinedButton.styleFrom(
-          foregroundColor: CosmicColors.textPrimary,
+          foregroundColor: p.textPrimary,
           minimumSize: const Size(double.infinity, 52),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
           ),
-          side: BorderSide(color: CosmicColors.glassBorder),
+          side: BorderSide(color: p.glassBorder),
           textStyle: const TextStyle(
             fontFamily: 'Inter',
             fontSize: 16,
@@ -81,7 +94,7 @@ class CosmicTheme {
       ),
       textButtonTheme: TextButtonThemeData(
         style: TextButton.styleFrom(
-          foregroundColor: CosmicColors.primary,
+          foregroundColor: p.primary,
           textStyle: const TextStyle(
             fontFamily: 'Inter',
             fontSize: 14,
@@ -91,56 +104,56 @@ class CosmicTheme {
       ),
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
-        fillColor: CosmicColors.surfaceLight,
+        fillColor: p.surfaceElevated,
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
           borderSide: BorderSide.none,
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: CosmicColors.glassBorder),
+          borderSide: BorderSide(color: p.glassBorder),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: CosmicColors.primary),
+          borderSide: BorderSide(color: p.primary),
         ),
         errorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: CosmicColors.error),
+          borderSide: BorderSide(color: p.error),
         ),
-        hintStyle: const TextStyle(color: CosmicColors.textTertiary),
+        hintStyle: TextStyle(color: p.textTertiary),
         contentPadding: const EdgeInsets.symmetric(
           horizontal: 16,
           vertical: 16,
         ),
       ),
-      bottomNavigationBarTheme: const BottomNavigationBarThemeData(
-        backgroundColor: CosmicColors.surface,
-        selectedItemColor: CosmicColors.primary,
-        unselectedItemColor: CosmicColors.textSecondary,
+      bottomNavigationBarTheme: BottomNavigationBarThemeData(
+        backgroundColor: p.surface,
+        selectedItemColor: p.primary,
+        unselectedItemColor: p.textSecondary,
         type: BottomNavigationBarType.fixed,
         elevation: 0,
       ),
       dividerTheme: DividerThemeData(
-        color: CosmicColors.glassBorder,
+        color: p.glassBorder,
         thickness: 1,
       ),
       snackBarTheme: SnackBarThemeData(
-        backgroundColor: CosmicColors.surfaceLight,
-        contentTextStyle: const TextStyle(color: CosmicColors.textPrimary),
+        backgroundColor: p.surfaceElevated,
+        contentTextStyle: TextStyle(color: p.textPrimary),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(12),
         ),
         behavior: SnackBarBehavior.floating,
       ),
-      bottomSheetTheme: const BottomSheetThemeData(
-        backgroundColor: CosmicColors.surface,
-        shape: RoundedRectangleBorder(
+      bottomSheetTheme: BottomSheetThemeData(
+        backgroundColor: p.surface,
+        shape: const RoundedRectangleBorder(
           borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
         ),
       ),
       dialogTheme: DialogThemeData(
-        backgroundColor: CosmicColors.surface,
+        backgroundColor: p.surface,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(20),
         ),
@@ -148,3 +161,4 @@ class CosmicTheme {
     );
   }
 }
+

@@ -10,8 +10,8 @@ class QuickActions extends StatelessWidget {
   static const _actions = [
     ('AI Chat', Icons.chat_bubble_outline, '/chat', CosmicColors.primary),
     ('Compatibility', Icons.favorite_outline, '/compatibility', CosmicColors.accent),
-    ('Timeline', Icons.timeline, '/timeline', CosmicColors.gold),
     ('Full Chart', Icons.auto_awesome, '/chart', CosmicColors.success),
+    ('Vedic', Icons.brightness_5_rounded, '/vedic-chart', CosmicColors.gold),
   ];
 
   @override

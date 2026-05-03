@@ -6,6 +6,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../../../config/theme/colors.dart';
 import '../../../../config/theme/typography.dart';
 import '../../../../shared/providers/subscription_state_provider.dart';
+import '../../../../shared/providers/theme_provider.dart';
 import '../../../../shared/providers/user_provider.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
 
@@ -37,6 +38,10 @@ class SettingsScreen extends ConsumerWidget {
             trailing: const Icon(Icons.chevron_right),
             onTap: () => context.push('/paywall'),
           ),
+
+          const Divider(),
+          _SectionHeader('Appearance'),
+          const _ThemeModeSwitcher(),
 
           const Divider(),
           _SectionHeader('Preferences'),
@@ -188,6 +193,74 @@ class _SectionHeader extends StatelessWidget {
       child: Text(
         title.toUpperCase(),
         style: CosmicTypography.overline,
+      ),
+    );
+  }
+}
+
+/// Three-option segmented switcher for ThemeMode (system / light / dark)
+/// that updates the persisted Riverpod themeModeProvider.
+class _ThemeModeSwitcher extends ConsumerWidget {
+  const _ThemeModeSwitcher();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final mode = ref.watch(themeModeProvider);
+    final notifier = ref.read(themeModeProvider.notifier);
+    final scheme = Theme.of(context).colorScheme;
+
+    Widget option(ThemeMode value, IconData icon, String label) {
+      final selected = mode == value;
+      return Expanded(
+        child: GestureDetector(
+          onTap: () => notifier.set(value),
+          behavior: HitTestBehavior.opaque,
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 200),
+            margin: const EdgeInsets.all(4),
+            padding: const EdgeInsets.symmetric(vertical: 10),
+            decoration: BoxDecoration(
+              color: selected ? scheme.primary : Colors.transparent,
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  icon,
+                  color: selected ? scheme.onPrimary : scheme.onSurface,
+                  size: 20,
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  label,
+                  style: TextStyle(
+                    color: selected ? scheme.onPrimary : scheme.onSurface,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    }
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: Container(
+        decoration: BoxDecoration(
+          color: scheme.surfaceContainerHighest,
+          borderRadius: BorderRadius.circular(14),
+        ),
+        child: Row(
+          children: [
+            option(ThemeMode.system, Icons.brightness_auto, 'System'),
+            option(ThemeMode.light, Icons.light_mode_outlined, 'Light'),
+            option(ThemeMode.dark, Icons.dark_mode_outlined, 'Dark'),
+          ],
+        ),
       ),
     );
   }

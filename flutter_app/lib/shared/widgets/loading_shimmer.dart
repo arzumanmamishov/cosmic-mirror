@@ -53,26 +53,22 @@ class ShimmerList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: padding,
-      child: Column(
-        children: List.generate(
-          itemCount,
-          (index) => Padding(
-            padding: const EdgeInsets.only(bottom: 16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const LoadingShimmer(height: 120, borderRadius: 16),
-                const SizedBox(height: 12),
-                LoadingShimmer(
-                  width: MediaQuery.sizeOf(context).width * 0.6,
-                ),
-                const SizedBox(height: 8),
-                const LoadingShimmer(height: 12),
-              ],
+    return ListView.builder(
+      padding: padding.add(const EdgeInsets.symmetric(vertical: 20)),
+      itemCount: itemCount,
+      itemBuilder: (context, index) => Padding(
+        padding: const EdgeInsets.only(bottom: 16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const LoadingShimmer(height: 120, borderRadius: 16),
+            const SizedBox(height: 12),
+            LoadingShimmer(
+              width: MediaQuery.sizeOf(context).width * 0.6,
             ),
-          ),
+            const SizedBox(height: 8),
+            const LoadingShimmer(height: 12),
+          ],
         ),
       ),
     );

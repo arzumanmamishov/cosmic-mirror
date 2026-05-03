@@ -19,7 +19,9 @@ import '../features/paywall/presentation/screens/paywall_screen.dart';
 import '../features/profile/presentation/screens/profile_screen.dart';
 import '../features/rituals/presentation/screens/rituals_screen.dart';
 import '../features/settings/presentation/screens/settings_screen.dart';
+import '../features/life_timeline/presentation/screens/life_timeline_screen.dart';
 import '../features/timeline/presentation/screens/timeline_screen.dart';
+import '../features/vedic_chart/presentation/screens/vedic_chart_screen.dart';
 import '../features/yearly_forecast/presentation/screens/yearly_forecast_screen.dart';
 import '../shared/providers/user_provider.dart';
 
@@ -124,6 +126,13 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         ),
       ),
       GoRoute(
+        path: '/vedic-chart',
+        pageBuilder: (context, state) => _slideTransition(
+          state,
+          const VedicChartScreen(),
+        ),
+      ),
+      GoRoute(
         path: '/compatibility',
         pageBuilder: (context, state) => _slideTransition(
           state,
@@ -154,6 +163,13 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         pageBuilder: (context, state) => _slideTransition(
           state,
           const TimelineScreen(),
+        ),
+      ),
+      GoRoute(
+        path: '/life-timeline',
+        pageBuilder: (context, state) => _slideTransition(
+          state,
+          const LifeTimelineScreen(),
         ),
       ),
       GoRoute(
