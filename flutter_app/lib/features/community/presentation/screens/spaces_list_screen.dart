@@ -1,5 +1,6 @@
 import 'package:cosmic_mirror/config/theme/app_palette.dart';
 import 'package:cosmic_mirror/features/community/presentation/providers/community_providers.dart';
+import 'package:cosmic_mirror/shared/providers/user_provider.dart';
 import 'package:cosmic_mirror/features/community/presentation/widgets/category_card.dart';
 import 'package:cosmic_mirror/features/community/presentation/widgets/hashtag_chip.dart';
 import 'package:cosmic_mirror/features/community/presentation/widgets/space_card.dart';
@@ -42,7 +43,8 @@ class SpacesListScreen extends ConsumerWidget {
               icon: Icon(Icons.add_circle_outline_rounded, color: p.textPrimary),
               onPressed: () => context.push('/community/create'),
             ),
-            const SizedBox(width: 4),
+            const _MyProfileAvatar(),
+            const SizedBox(width: 8),
           ],
         ),
         const SliverToBoxAdapter(
@@ -248,6 +250,41 @@ class _NotificationsBell extends ConsumerWidget {
             ),
           ),
       ],
+    );
+  }
+}
+
+class _MyProfileAvatar extends ConsumerWidget {
+  const _MyProfileAvatar();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final p = context.palette;
+    final user = ref.watch(currentUserProvider);
+    final name = user.name ?? '';
+    final initial = name.isNotEmpty ? name[0].toUpperCase() : '?';
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
+      child: GestureDetector(
+        onTap: () => context.push('/community/user/me'),
+        child: Container(
+          width: 32,
+          height: 32,
+          alignment: Alignment.center,
+          decoration: BoxDecoration(
+            gradient: p.primaryGradient,
+            shape: BoxShape.circle,
+          ),
+          child: Text(
+            initial,
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 13,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+        ),
+      ),
     );
   }
 }

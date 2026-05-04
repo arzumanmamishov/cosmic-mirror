@@ -21,6 +21,7 @@ import '../features/rituals/presentation/screens/rituals_screen.dart';
 import '../features/settings/presentation/screens/settings_screen.dart';
 import '../features/life_timeline/presentation/screens/life_timeline_screen.dart';
 import '../features/community/presentation/screens/category_detail_screen.dart';
+import '../features/community/presentation/screens/community_profile_screen.dart';
 import '../features/community/presentation/screens/create_space_screen.dart';
 import '../features/community/presentation/screens/edit_space_screen.dart';
 import '../features/community/presentation/screens/hashtag_feed_screen.dart';
@@ -176,6 +177,16 @@ final appRouterProvider = Provider<GoRouter>((ref) {
             pageBuilder: (context, state) => _slideTransition(
               state,
               HashtagFeedScreen(tag: state.pathParameters['tag']!),
+            ),
+          ),
+          GoRoute(
+            // user/:userId — accepts either a UUID or the literal "me".
+            path: 'user/:userId',
+            pageBuilder: (context, state) => _slideTransition(
+              state,
+              CommunityProfileScreen(
+                userIdOrMe: state.pathParameters['userId']!,
+              ),
             ),
           ),
           GoRoute(

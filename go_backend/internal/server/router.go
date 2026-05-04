@@ -147,6 +147,10 @@ func NewRouter(h *handler.Handlers, auth *middleware.Auth, rl *middleware.RateLi
 			r.Post("/community/notifications/{notificationID}/read", h.CommunityNotifications.MarkRead)
 			r.Post("/community/notifications/read-all", h.CommunityNotifications.MarkAllRead)
 
+			// Community: user profile (joined spaces + recent posts).
+			// Path param accepts a UUID or the literal "me".
+			r.Get("/community/users/{userID}", h.Spaces.GetUserProfile)
+
 			// Community: discovery (categories + popular hashtags)
 			r.Get("/space-categories", h.Discovery.ListCategories)
 			r.Get("/hashtags/popular", h.Discovery.ListPopularHashtags)

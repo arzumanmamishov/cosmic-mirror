@@ -134,14 +134,14 @@ class NotificationsScreen extends ConsumerWidget {
       case 'space':
         context.push('/community/${n.targetId}');
       case 'post':
+        // We don't know the spaceId from a notification — push the post
+        // route and let it self-resolve from the post object.
+        context.push('/community/post/${n.targetId}');
       case 'comment':
-        // For comments we'd ideally navigate to the parent post; we don't
-        // have that linkage in the notification itself, so for now navigate
-        // to the post when targetType == post and skip for comment.
-        if (n.targetType == 'post') {
-          // We don't know the spaceId from a notification — push the post
-          // route and let it self-resolve from the post object.
-          context.push('/community/post/${n.targetId}');
+        // For now route to the actor's profile since we don't have a
+        // direct comment-deep-link route.
+        if (n.actorId != null) {
+          context.push('/community/user/${n.actorId}');
         }
     }
   }

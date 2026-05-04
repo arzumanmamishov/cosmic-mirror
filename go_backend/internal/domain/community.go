@@ -164,3 +164,16 @@ type CreateCommentInput struct {
 type UpdateCommentInput struct {
 	Content *string `json:"content"`
 }
+
+// ===== User community profile =====
+
+// UserCommunityProfile is what /api/v1/community/users/{id} returns: the
+// user's display info plus their joined spaces and their recent posts.
+// All seen "from the perspective of" the requesting (current) user, so the
+// per-viewer is_joined / is_liked_by_me flags are still computed.
+type UserCommunityProfile struct {
+	UserID       uuid.UUID         `json:"user_id"`
+	Name         string            `json:"name"`
+	JoinedSpaces []SpaceWithMeta   `json:"joined_spaces"`
+	RecentPosts  []PostWithMeta    `json:"recent_posts"`
+}

@@ -2,6 +2,7 @@ import 'package:cosmic_mirror/features/community/data/repositories/community_rep
 import 'package:cosmic_mirror/features/community/domain/entities/notification.dart';
 import 'package:cosmic_mirror/features/community/domain/entities/post.dart';
 import 'package:cosmic_mirror/features/community/domain/entities/space.dart';
+import 'package:cosmic_mirror/features/community/domain/entities/user_profile.dart';
 import 'package:cosmic_mirror/shared/providers/user_provider.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -82,4 +83,10 @@ final categoriesProvider = FutureProvider<List<SpaceCategory>>((ref) async {
 final popularHashtagsProvider =
     FutureProvider.autoDispose<List<Hashtag>>((ref) async {
   return ref.read(communityRepositoryProvider).popularHashtags();
+});
+
+/// Community-profile of a user, family-keyed by user id (or the literal "me").
+final userCommunityProfileProvider = FutureProvider.autoDispose
+    .family<UserCommunityProfile, String>((ref, userIdOrMe) async {
+  return ref.read(communityRepositoryProvider).getUserProfile(userIdOrMe);
 });

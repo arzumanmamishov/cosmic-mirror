@@ -148,6 +148,25 @@ func (r *SpaceRepository) IncrementMemberCount(ctx context.Context, tx *sqlx.Tx,
 	return err
 }
 
+// ListByMember returns spaces that `targetUserID` has joined, viewed by
+// `currentUserID` (so the per-viewer is_joined flag is set for the viewer,
+// not the target). Used by the user community-profile screen.
+func (r *SpaceRepository) ListByMember(ctx context.Context, targetUserID, currentUserID uuid.UUID, limit, offset int) ([]domain.SpaceWithMeta, error) {
+	var spaces []domain.SpaceWithMeta
+	err := r.db.SelectContext(ctx, &spaces,
+		`SELECT s.*,
+		        c.name AS category_name,
+		        EXISTS(SELECT 1 FROM space_members m2 WHERE m2.space_id = s.id AND m2.user_id = $1) AS is_joined
+		 FROM spaces s
+		 JOIN space_members m ON m.space_id = s.id AND m.user_id = $2
+		 LEFT JOIN space_categories c ON c.id = s.category_id
+		 ORDER BY m.joined_at DESC
+		 LIMIT $3 OFFSET $4`,
+		currentUserID, targetUserID, limit, offset,
+	)
+	return spaces, err
+}
+
 // itoa is a minimal int→string helper that avoids importing strconv just to
 // build dynamic SQL. Inlined for clarity.
 func itoa(i int) string {

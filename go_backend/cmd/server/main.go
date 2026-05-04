@@ -113,7 +113,7 @@ func main() {
 	subscriptionSvc := service.NewSubscriptionService(subscriptionRepo, cfg.RevenueCatWebhookSecret)
 	// Community
 	communityNotifSvc := service.NewCommunityNotificationService(communityNotifRepo)
-	communitySvc := service.NewCommunityService(db, spaceRepo, spaceMemberRepo, spaceCategoryRepo, communityNotifSvc)
+	communitySvc := service.NewCommunityService(db, spaceRepo, spaceMemberRepo, spaceCategoryRepo, postRepo, userRepo, communityNotifSvc)
 	postSvc := service.NewPostService(db, postRepo, spaceRepo, spaceMemberRepo, hashtagRepo, communityNotifSvc)
 	commentSvc := service.NewCommentService(db, commentRepo, postRepo, communityNotifSvc)
 	likeSvc := service.NewLikeService(db, likeRepo, postRepo, commentRepo, communityNotifSvc)

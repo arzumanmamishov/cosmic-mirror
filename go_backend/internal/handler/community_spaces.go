@@ -149,6 +149,35 @@ func (h *SpacesHandler) Leave(w http.ResponseWriter, r *http.Request) {
 	respondNoContent(w)
 }
 
+// GetUserProfile returns the user community-profile (display info + joined
+// spaces + recent posts). Accepts the literal "me" as the path param to mean
+// the currently-authenticated user.
+func (h *SpacesHandler) GetUserProfile(w http.ResponseWriter, r *http.Request) {
+	currentUserID := middleware.UserIDFromContext(r.Context())
+	raw := chi.URLParam(r, "userID")
+	var targetID uuid.UUID
+	if raw == "me" {
+		targetID = currentUserID
+	} else {
+		id, err := uuid.Parse(raw)
+		if err != nil {
+			respondError(w, http.StatusBadRequest, "invalid_id", "Invalid user ID")
+			return
+		}
+		targetID = id
+	}
+	profile, err := h.communitySvc.GetUserCommunityProfile(r.Context(), currentUserID, targetID)
+	if err != nil {
+		if errors.Is(err, service.ErrUserNotFound) {
+			respondError(w, http.StatusNotFound, "not_found", "User not found")
+			return
+		}
+		respondError(w, http.StatusInternalServerError, "user_profile_error", err.Error())
+		return
+	}
+	respondSuccess(w, profile)
+}
+
 func (h *SpacesHandler) Members(w http.ResponseWriter, r *http.Request) {
 	id, err := uuid.Parse(chi.URLParam(r, "spaceID"))
 	if err != nil {
@@ -198,7 +227,8 @@ func respondCommunityError(w http.ResponseWriter, err error) {
 	switch {
 	case errors.Is(err, service.ErrSpaceNotFound),
 		errors.Is(err, service.ErrPostNotFound),
-		errors.Is(err, service.ErrCommentNotFound):
+		errors.Is(err, service.ErrCommentNotFound),
+		errors.Is(err, service.ErrUserNotFound):
 		respondError(w, http.StatusNotFound, "not_found", err.Error())
 	case errors.Is(err, service.ErrForbidden):
 		respondError(w, http.StatusForbidden, "forbidden", err.Error())

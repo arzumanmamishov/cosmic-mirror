@@ -8,20 +8,24 @@ import (
 	"strings"
 
 	"cosmic-mirror/internal/domain"
+	"cosmic-mirror/internal/repository"
 	"cosmic-mirror/internal/repository/postgres"
 
 	"github.com/google/uuid"
 	"github.com/jmoiron/sqlx"
 )
 
-// CommunityService owns spaces + memberships + categories. Posts/comments
-// live in their own services to keep this file focused.
+// CommunityService owns spaces + memberships + categories + the
+// per-user community profile (which joins user data + joined spaces + recent
+// posts). Post + comment services live alongside.
 type CommunityService struct {
-	db        *sqlx.DB
-	spaceRepo *postgres.SpaceRepository
+	db         *sqlx.DB
+	spaceRepo  *postgres.SpaceRepository
 	memberRepo *postgres.SpaceMemberRepository
-	catRepo   *postgres.SpaceCategoryRepository
-	notifSvc  *CommunityNotificationService
+	catRepo    *postgres.SpaceCategoryRepository
+	postRepo   *postgres.PostRepository
+	userRepo   repository.UserRepository
+	notifSvc   *CommunityNotificationService
 }
 
 func NewCommunityService(
@@ -29,11 +33,14 @@ func NewCommunityService(
 	spaceRepo *postgres.SpaceRepository,
 	memberRepo *postgres.SpaceMemberRepository,
 	catRepo *postgres.SpaceCategoryRepository,
+	postRepo *postgres.PostRepository,
+	userRepo repository.UserRepository,
 	notifSvc *CommunityNotificationService,
 ) *CommunityService {
 	return &CommunityService{
 		db: db, spaceRepo: spaceRepo, memberRepo: memberRepo,
-		catRepo: catRepo, notifSvc: notifSvc,
+		catRepo: catRepo, postRepo: postRepo, userRepo: userRepo,
+		notifSvc: notifSvc,
 	}
 }
 
@@ -175,6 +182,35 @@ func (s *CommunityService) ListMembers(ctx context.Context, spaceID uuid.UUID, l
 
 func (s *CommunityService) ListCategories(ctx context.Context) ([]domain.SpaceCategory, error) {
 	return s.catRepo.List(ctx)
+}
+
+var ErrUserNotFound = errors.New("user not found")
+
+// GetUserCommunityProfile returns the public community-profile of `targetID`
+// (display name + joined spaces + recent posts), with all per-viewer flags
+// computed for `currentUserID`.
+func (s *CommunityService) GetUserCommunityProfile(ctx context.Context, currentUserID, targetID uuid.UUID) (*domain.UserCommunityProfile, error) {
+	user, err := s.userRepo.GetByID(ctx, targetID)
+	if err != nil {
+		return nil, err
+	}
+	if user == nil {
+		return nil, ErrUserNotFound
+	}
+	spaces, err := s.spaceRepo.ListByMember(ctx, targetID, currentUserID, 50, 0)
+	if err != nil {
+		return nil, fmt.Errorf("list joined spaces: %w", err)
+	}
+	posts, err := s.postRepo.ListByAuthor(ctx, targetID, currentUserID, 20, 0)
+	if err != nil {
+		return nil, fmt.Errorf("list recent posts: %w", err)
+	}
+	return &domain.UserCommunityProfile{
+		UserID:       user.ID,
+		Name:         user.Name,
+		JoinedSpaces: spaces,
+		RecentPosts:  posts,
+	}, nil
 }
 
 // assertOwner returns ErrForbidden if user is not the space's creator.

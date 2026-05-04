@@ -3,6 +3,7 @@ import 'package:cosmic_mirror/core/network/api_endpoints.dart';
 import 'package:cosmic_mirror/features/community/domain/entities/notification.dart';
 import 'package:cosmic_mirror/features/community/domain/entities/post.dart';
 import 'package:cosmic_mirror/features/community/domain/entities/space.dart';
+import 'package:cosmic_mirror/features/community/domain/entities/user_profile.dart';
 
 /// Spaces filter mode for the list endpoint.
 enum SpaceFilter {
@@ -288,6 +289,15 @@ class CommunityRepository {
             .map((e) => SpaceCategory.fromJson(e as Map<String, dynamic>))
             .toList();
       },
+    );
+  }
+
+  /// User community-profile. Pass `userId` or the literal "me".
+  Future<UserCommunityProfile> getUserProfile(String userIdOrMe) async {
+    return _client.get<UserCommunityProfile>(
+      ApiEndpoints.communityUser(userIdOrMe),
+      fromJson: (raw) =>
+          UserCommunityProfile.fromJson(raw as Map<String, dynamic>),
     );
   }
 

@@ -2,6 +2,7 @@ import 'package:cosmic_mirror/config/theme/app_palette.dart';
 import 'package:cosmic_mirror/features/community/domain/entities/post.dart';
 import 'package:cosmic_mirror/features/community/presentation/widgets/like_button.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 class CommentTile extends StatelessWidget {
   const CommentTile({
@@ -23,22 +24,25 @@ class CommentTile extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Container(
-            width: 28,
-            height: 28,
-            alignment: Alignment.center,
-            decoration: BoxDecoration(
-              color: p.primary.withValues(alpha: 0.2),
-              shape: BoxShape.circle,
-            ),
-            child: Text(
-              comment.authorName.isNotEmpty
-                  ? comment.authorName[0].toUpperCase()
-                  : '?',
-              style: TextStyle(
-                color: p.primary,
-                fontSize: 11,
-                fontWeight: FontWeight.w800,
+          GestureDetector(
+            onTap: () => context.push('/community/user/${c.authorId}'),
+            child: Container(
+              width: 28,
+              height: 28,
+              alignment: Alignment.center,
+              decoration: BoxDecoration(
+                color: p.primary.withValues(alpha: 0.2),
+                shape: BoxShape.circle,
+              ),
+              child: Text(
+                comment.authorName.isNotEmpty
+                    ? comment.authorName[0].toUpperCase()
+                    : '?',
+                style: TextStyle(
+                  color: p.primary,
+                  fontSize: 11,
+                  fontWeight: FontWeight.w800,
+                ),
               ),
             ),
           ),
@@ -59,12 +63,16 @@ class CommentTile extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        comment.authorName,
-                        style: TextStyle(
-                          color: p.textPrimary,
-                          fontSize: 12,
-                          fontWeight: FontWeight.w700,
+                      GestureDetector(
+                        onTap: () =>
+                            context.push('/community/user/${c.authorId}'),
+                        child: Text(
+                          comment.authorName,
+                          style: TextStyle(
+                            color: p.textPrimary,
+                            fontSize: 12,
+                            fontWeight: FontWeight.w700,
+                          ),
                         ),
                       ),
                       const SizedBox(height: 2),

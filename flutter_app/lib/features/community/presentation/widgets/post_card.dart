@@ -26,30 +26,34 @@ class PostCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Row(
-              children: [
-                _AuthorDot(name: post.authorName, palette: p),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        post.authorName,
-                        style: TextStyle(
-                          color: p.textPrimary,
-                          fontSize: 13,
-                          fontWeight: FontWeight.w600,
+            InkWell(
+              onTap: () => context.push('/community/user/${pst.authorId}'),
+              borderRadius: BorderRadius.circular(8),
+              child: Row(
+                children: [
+                  _AuthorDot(name: post.authorName, palette: p),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          post.authorName,
+                          style: TextStyle(
+                            color: p.textPrimary,
+                            fontSize: 13,
+                            fontWeight: FontWeight.w600,
+                          ),
                         ),
-                      ),
-                      Text(
-                        '@${post.spaceHandle} · ${_relativeTime(pst.createdAt)}',
-                        style: TextStyle(color: p.textTertiary, fontSize: 11),
-                      ),
-                    ],
+                        Text(
+                          '@${post.spaceHandle} · ${_relativeTime(pst.createdAt)}',
+                          style: TextStyle(color: p.textTertiary, fontSize: 11),
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
             const SizedBox(height: 10),
             Text(

@@ -90,4 +90,8 @@ class ApiEndpoints {
 
   static const String spaceCategories = '$basePath/space-categories';
   static const String popularHashtags = '$basePath/hashtags/popular';
+
+  /// User community-profile. Pass a UUID or the literal "me".
+  static String communityUser(String userIdOrMe) =>
+      '$basePath/community/users/$userIdOrMe';
 }

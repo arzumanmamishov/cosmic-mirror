@@ -5,6 +5,7 @@ import 'package:cosmic_mirror/shared/widgets/error_view.dart';
 import 'package:cosmic_mirror/shared/widgets/loading_shimmer.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 class MembersScreen extends ConsumerWidget {
   const MembersScreen({required this.spaceId, super.key});
@@ -43,46 +44,50 @@ class MembersScreen extends ConsumerWidget {
               separatorBuilder: (_, __) => const SizedBox(height: 8),
               itemBuilder: (_, i) {
                 final m = members[i];
-                return Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: p.surface,
-                    borderRadius: BorderRadius.circular(14),
-                    border: Border.all(color: p.glassBorder),
-                  ),
-                  child: Row(
-                    children: [
-                      Container(
-                        width: 38,
-                        height: 38,
-                        alignment: Alignment.center,
-                        decoration: BoxDecoration(
-                          gradient: p.primaryGradient,
-                          shape: BoxShape.circle,
-                        ),
-                        child: Text(
-                          m.userName.isNotEmpty
-                              ? m.userName[0].toUpperCase()
-                              : '?',
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.w800,
+                return InkWell(
+                  onTap: () => context.push('/community/user/${m.userId}'),
+                  borderRadius: BorderRadius.circular(14),
+                  child: Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: p.surface,
+                      borderRadius: BorderRadius.circular(14),
+                      border: Border.all(color: p.glassBorder),
+                    ),
+                    child: Row(
+                      children: [
+                        Container(
+                          width: 38,
+                          height: 38,
+                          alignment: Alignment.center,
+                          decoration: BoxDecoration(
+                            gradient: p.primaryGradient,
+                            shape: BoxShape.circle,
+                          ),
+                          child: Text(
+                            m.userName.isNotEmpty
+                                ? m.userName[0].toUpperCase()
+                                : '?',
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.w800,
+                            ),
                           ),
                         ),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Text(
-                          m.userName.isEmpty ? 'Unknown' : m.userName,
-                          style: TextStyle(
-                            color: p.textPrimary,
-                            fontSize: 14,
-                            fontWeight: FontWeight.w600,
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Text(
+                            m.userName.isEmpty ? 'Unknown' : m.userName,
+                            style: TextStyle(
+                              color: p.textPrimary,
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600,
+                            ),
                           ),
                         ),
-                      ),
-                      _RoleChip(role: m.role, palette: p),
-                    ],
+                        _RoleChip(role: m.role, palette: p),
+                      ],
+                    ),
                   ),
                 );
               },

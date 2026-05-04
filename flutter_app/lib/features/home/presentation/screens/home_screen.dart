@@ -10,6 +10,7 @@ import 'package:cosmic_mirror/features/home/presentation/widgets/discussions_sec
 import 'package:cosmic_mirror/features/home/presentation/widgets/header_bar.dart';
 import 'package:cosmic_mirror/features/home/presentation/widgets/premium_upgrade_card.dart';
 import 'package:cosmic_mirror/features/home/presentation/widgets/todays_insight_card.dart';
+import 'package:cosmic_mirror/features/profile/presentation/screens/profile_screen.dart';
 import 'package:cosmic_mirror/shared/widgets/cosmic_starfield.dart';
 import 'package:cosmic_mirror/shared/widgets/staggered_fade_in.dart';
 
@@ -43,6 +44,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 _ChartsTab(),
                 ChatThreadsScreen(),
                 _CommunityTab(),
+                ProfileScreen(),
               ],
             ),
           ),
@@ -414,6 +416,14 @@ class _CustomBottomNav extends StatelessWidget {
                 label: 'Community',
                 active: currentIndex == 3,
                 onTap: () => onTap(3),
+                palette: p,
+              ),
+              _NavItem(
+                icon: Icons.person_outline_rounded,
+                activeIcon: Icons.person_rounded,
+                label: 'Profile',
+                active: currentIndex == 4,
+                onTap: () => onTap(4),
                 palette: p,
               ),
             ],
