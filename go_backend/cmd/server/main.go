@@ -117,6 +117,9 @@ func main() {
 	postSvc := service.NewPostService(db, postRepo, spaceRepo, spaceMemberRepo, hashtagRepo, communityNotifSvc)
 	commentSvc := service.NewCommentService(db, commentRepo, postRepo, communityNotifSvc)
 	likeSvc := service.NewLikeService(db, likeRepo, postRepo, commentRepo, communityNotifSvc)
+	// Numerology + Human Design
+	numerologySvc := service.NewNumerologyService(userRepo, birthProfileRepo)
+	humanDesignSvc := service.NewHumanDesignService(birthProfileRepo, chartProvider, rdb)
 
 	// Middleware
 	authMiddleware := middleware.NewAuth(firebaseAuth, userRepo)
@@ -140,6 +143,9 @@ func main() {
 		Comments:               handler.NewCommentsHandler(commentSvc, likeSvc),
 		CommunityNotifications: handler.NewCommunityNotificationsHandler(communityNotifSvc),
 		Discovery:              handler.NewDiscoveryHandler(communitySvc, hashtagRepo),
+		// Numerology + Human Design
+		Numerology:  handler.NewNumerologyHandler(numerologySvc),
+		HumanDesign: handler.NewHumanDesignHandler(humanDesignSvc),
 	}
 
 	// Router

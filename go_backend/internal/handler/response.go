@@ -22,6 +22,9 @@ type Handlers struct {
 	Comments               *CommentsHandler
 	CommunityNotifications *CommunityNotificationsHandler
 	Discovery              *DiscoveryHandler
+	// Numerology + Human Design
+	Numerology  *NumerologyHandler
+	HumanDesign *HumanDesignHandler
 }
 
 type errorResponse struct {

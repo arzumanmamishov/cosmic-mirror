@@ -22,6 +22,9 @@ import '../features/settings/presentation/screens/settings_screen.dart';
 import '../features/life_timeline/presentation/screens/life_timeline_screen.dart';
 import '../features/community/presentation/screens/category_detail_screen.dart';
 import '../features/community/presentation/screens/community_profile_screen.dart';
+import '../features/human_design/presentation/screens/human_design_screen.dart';
+import '../features/numerology/presentation/screens/numerology_compat_screen.dart';
+import '../features/numerology/presentation/screens/numerology_screen.dart';
 import '../features/community/presentation/screens/create_space_screen.dart';
 import '../features/community/presentation/screens/edit_space_screen.dart';
 import '../features/community/presentation/screens/hashtag_feed_screen.dart';
@@ -140,6 +143,29 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         pageBuilder: (context, state) => _slideTransition(
           state,
           const VedicChartScreen(),
+        ),
+      ),
+      GoRoute(
+        path: '/numerology',
+        pageBuilder: (context, state) => _slideTransition(
+          state,
+          const NumerologyScreen(),
+        ),
+        routes: [
+          GoRoute(
+            path: 'compatibility',
+            pageBuilder: (context, state) => _slideTransition(
+              state,
+              const NumerologyCompatScreen(),
+            ),
+          ),
+        ],
+      ),
+      GoRoute(
+        path: '/human-design',
+        pageBuilder: (context, state) => _slideTransition(
+          state,
+          const HumanDesignScreen(),
         ),
       ),
       GoRoute(

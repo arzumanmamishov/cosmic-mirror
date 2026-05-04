@@ -198,6 +198,36 @@ class _ChartsTab extends StatelessWidget {
           ),
           const SizedBox(height: 14),
           FadeSlideIn(
+            delay: const Duration(milliseconds: 165),
+            child: _ChartFeatureCard(
+              icon: Icons.numbers_rounded,
+              title: 'Numerology',
+              subtitle:
+                  'Life path, soul urge, cycles\n+ karmic patterns + compatibility.',
+              onTap: () => context.push('/numerology'),
+              gradient: LinearGradient(
+                colors: [p.accent, p.gold],
+              ),
+              badge: 'New',
+            ),
+          ),
+          const SizedBox(height: 14),
+          FadeSlideIn(
+            delay: const Duration(milliseconds: 175),
+            child: _ChartFeatureCard(
+              icon: Icons.account_tree_rounded,
+              title: 'Human Design',
+              subtitle:
+                  'Type, strategy, authority,\nyour body graph blueprint.',
+              onTap: () => context.push('/human-design'),
+              gradient: LinearGradient(
+                colors: [p.primary, p.accent],
+              ),
+              badge: 'New',
+            ),
+          ),
+          const SizedBox(height: 14),
+          FadeSlideIn(
             delay: const Duration(milliseconds: 180),
             child: _ChartFeatureCard(
               icon: Icons.timeline_rounded,

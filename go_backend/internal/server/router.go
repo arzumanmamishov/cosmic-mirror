@@ -154,6 +154,13 @@ func NewRouter(h *handler.Handlers, auth *middleware.Auth, rl *middleware.RateLi
 			// Community: discovery (categories + popular hashtags)
 			r.Get("/space-categories", h.Discovery.ListCategories)
 			r.Get("/hashtags/popular", h.Discovery.ListPopularHashtags)
+
+			// Numerology
+			r.Get("/numerology", h.Numerology.GetReading)
+			r.Post("/numerology/compatibility", h.Numerology.Compare)
+
+			// Human Design
+			r.Get("/human-design", h.HumanDesign.GetChart)
 		})
 	})
 

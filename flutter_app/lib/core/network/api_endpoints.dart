@@ -94,4 +94,12 @@ class ApiEndpoints {
   /// User community-profile. Pass a UUID or the literal "me".
   static String communityUser(String userIdOrMe) =>
       '$basePath/community/users/$userIdOrMe';
+
+  // Numerology
+  static const String numerology = '$basePath/numerology';
+  static const String numerologyCompatibility =
+      '$basePath/numerology/compatibility';
+
+  // Human Design
+  static const String humanDesign = '$basePath/human-design';
 }
