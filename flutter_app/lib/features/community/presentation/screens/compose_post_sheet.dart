@@ -22,7 +22,19 @@ class _ComposePostSheetState extends ConsumerState<ComposePostSheet> {
   String? _error;
 
   @override
+  void initState() {
+    super.initState();
+    // Rebuild whenever the user types so the Post button enables/disables.
+    _content.addListener(_onChanged);
+  }
+
+  void _onChanged() {
+    if (mounted) setState(() {});
+  }
+
+  @override
   void dispose() {
+    _content.removeListener(_onChanged);
     _content.dispose();
     _link.dispose();
     super.dispose();

@@ -19,13 +19,18 @@ class ProfileScreen extends ConsumerWidget {
     final isPremium = ref.watch(isPremiumProvider);
     final p = context.palette;
 
+    // ProfileScreen is rendered both as a pushed route (/profile) AND as
+    // the 5th bottom-nav tab inside HomeScreen. As a tab there is nothing
+    // to pop, so suppress the back arrow.
+    final canPop = Navigator.of(context).canPop();
     return Scaffold(
       backgroundColor: p.background,
       extendBodyBehindAppBar: true,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        leading: const BackButton(),
+        leading: canPop ? const BackButton() : null,
+        automaticallyImplyLeading: canPop,
         actions: [
           IconButton(
             icon: const Icon(Icons.settings_outlined),

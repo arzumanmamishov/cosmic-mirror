@@ -1,12 +1,13 @@
 import 'package:cosmic_mirror/config/theme/app_palette.dart';
 import 'package:cosmic_mirror/features/community/presentation/providers/community_providers.dart';
-import 'package:cosmic_mirror/shared/providers/user_provider.dart';
 import 'package:cosmic_mirror/features/community/presentation/widgets/category_card.dart';
 import 'package:cosmic_mirror/features/community/presentation/widgets/hashtag_chip.dart';
 import 'package:cosmic_mirror/features/community/presentation/widgets/space_card.dart';
 import 'package:cosmic_mirror/features/community/presentation/widgets/space_filter_tabs.dart';
+import 'package:cosmic_mirror/shared/providers/user_provider.dart';
 import 'package:cosmic_mirror/shared/widgets/error_view.dart';
 import 'package:cosmic_mirror/shared/widgets/loading_shimmer.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -75,14 +76,19 @@ class SpacesListScreen extends ConsumerWidget {
                   ),
                   const SizedBox(height: 8),
                   SizedBox(
-                    height: 70,
-                    child: ListView.separated(
-                      scrollDirection: Axis.horizontal,
-                      itemCount: cats.length,
-                      separatorBuilder: (_, __) => const SizedBox(width: 8),
-                      itemBuilder: (_, i) => SizedBox(
-                        width: 130,
-                        child: CategoryCard(category: cats[i]),
+                    height: 96,
+                    child: ScrollConfiguration(
+                      // Enable mouse-drag scrolling on Flutter web; the
+                      // default web scroll behavior only allows wheel.
+                      behavior: const _DragScrollBehavior(),
+                      child: ListView.separated(
+                        scrollDirection: Axis.horizontal,
+                        itemCount: cats.length,
+                        separatorBuilder: (_, __) => const SizedBox(width: 8),
+                        itemBuilder: (_, i) => SizedBox(
+                          width: 130,
+                          child: CategoryCard(category: cats[i]),
+                        ),
                       ),
                     ),
                   ),
@@ -287,4 +293,19 @@ class _MyProfileAvatar extends ConsumerWidget {
       ),
     );
   }
+}
+
+/// ScrollBehavior that re-enables mouse-drag on Flutter web. The default
+/// MaterialScrollBehavior only treats touch + stylus as drag-capable
+/// pointers, which makes horizontal lists feel "frozen" in the browser.
+class _DragScrollBehavior extends MaterialScrollBehavior {
+  const _DragScrollBehavior();
+
+  @override
+  Set<PointerDeviceKind> get dragDevices => const {
+        PointerDeviceKind.touch,
+        PointerDeviceKind.mouse,
+        PointerDeviceKind.stylus,
+        PointerDeviceKind.trackpad,
+      };
 }
