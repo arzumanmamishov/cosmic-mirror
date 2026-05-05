@@ -8,6 +8,8 @@ class ApiEndpoints {
 
   // User
   static const String me = '$basePath/users/me';
+  static const String avatar = '$basePath/users/me/avatar';
+  static const String userStats = '$basePath/users/me/stats';
   static const String birthProfile = '$basePath/users/me/birth-profile';
   static const String preferences = '$basePath/users/me/preferences';
 
@@ -31,6 +33,7 @@ class ApiEndpoints {
 
   // AI Chat
   static const String chatThreads = '$basePath/ai/threads';
+  static const String chatUsage = '$basePath/ai/usage';
   static String chatThread(String id) => '$basePath/ai/threads/$id';
   static String chatMessages(String threadId) =>
       '$basePath/ai/threads/$threadId/messages';

@@ -3,10 +3,12 @@ package service
 import (
 	"context"
 	"fmt"
+	"io"
 	"time"
 
 	"cosmic-mirror/internal/domain"
 	"cosmic-mirror/internal/repository"
+	"cosmic-mirror/internal/storage"
 
 	"github.com/google/uuid"
 )
@@ -14,10 +16,22 @@ import (
 type UserService struct {
 	userRepo    repository.UserRepository
 	profileRepo repository.BirthProfileRepository
+	statsRepo   repository.StatsRepository
+	avatars     *storage.AvatarStore
 }
 
-func NewUserService(userRepo repository.UserRepository, profileRepo repository.BirthProfileRepository) *UserService {
-	return &UserService{userRepo: userRepo, profileRepo: profileRepo}
+func NewUserService(
+	userRepo repository.UserRepository,
+	profileRepo repository.BirthProfileRepository,
+	statsRepo repository.StatsRepository,
+	avatars *storage.AvatarStore,
+) *UserService {
+	return &UserService{
+		userRepo:    userRepo,
+		profileRepo: profileRepo,
+		statsRepo:   statsRepo,
+		avatars:     avatars,
+	}
 }
 
 func (s *UserService) CreateOrGetUser(ctx context.Context, firebaseUID, email, name string) (*domain.User, error) {
@@ -86,4 +100,36 @@ func (s *UserService) GetBirthProfile(ctx context.Context, userID uuid.UUID) (*d
 func (s *UserService) HasCompletedOnboarding(ctx context.Context, userID uuid.UUID) bool {
 	profile, err := s.profileRepo.GetByUserID(ctx, userID)
 	return err == nil && profile != nil
+}
+
+// SetAvatar saves the uploaded image to the avatar store and persists the
+// resulting public URL on the user row. Returns the new URL.
+func (s *UserService) SetAvatar(
+	ctx context.Context,
+	userID uuid.UUID,
+	originalName string,
+	src io.Reader,
+) (string, error) {
+	url, err := s.avatars.SaveAvatar(userID, originalName, src)
+	if err != nil {
+		return "", fmt.Errorf("save avatar: %w", err)
+	}
+	if err := s.userRepo.SetAvatarURL(ctx, userID, &url); err != nil {
+		return "", fmt.Errorf("update avatar url: %w", err)
+	}
+	return url, nil
+}
+
+// GetStats returns the engagement snapshot rendered on the profile
+// stats row (streak / journal entries / AI chats).
+func (s *UserService) GetStats(ctx context.Context, userID uuid.UUID) (*domain.UserStats, error) {
+	return s.statsRepo.GetStats(ctx, userID)
+}
+
+// ClearAvatar deletes the on-disk file and nulls out the user's avatar URL.
+func (s *UserService) ClearAvatar(ctx context.Context, userID uuid.UUID) error {
+	if err := s.avatars.DeleteAvatar(userID); err != nil {
+		return fmt.Errorf("delete avatar: %w", err)
+	}
+	return s.userRepo.SetAvatarURL(ctx, userID, nil)
 }

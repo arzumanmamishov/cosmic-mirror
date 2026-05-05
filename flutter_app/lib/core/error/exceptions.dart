@@ -43,10 +43,27 @@ class RateLimitException implements Exception {
   const RateLimitException({
     this.message = 'Rate limit exceeded.',
     this.retryAfter,
+    this.code,
+    this.used,
+    this.limit,
+    this.resetAt,
   });
 
   final String message;
   final Duration? retryAfter;
+
+  /// Stable error code from the backend (e.g. `chat_limit_reached`) so
+  /// callers can match against specific limits without parsing strings.
+  final String? code;
+
+  /// How many actions the user has consumed today.
+  final int? used;
+
+  /// Daily cap that triggered the limit.
+  final int? limit;
+
+  /// Server-provided UTC timestamp when the counter resets.
+  final DateTime? resetAt;
 
   @override
   String toString() => 'RateLimitException: $message';

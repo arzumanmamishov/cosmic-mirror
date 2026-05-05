@@ -1,4 +1,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Required by image_picker for ImageSource.camera. The gallery
+         picker uses scoped storage on Android 13+ and needs no extra
+         permission. -->
+    <uses-permission android:name="android.permission.CAMERA"/>
     <application
         android:label="Lively App"
         android:name="${applicationName}"

@@ -19,6 +19,7 @@ class UserState {
     this.sunSign,
     this.moonSign,
     this.risingSign,
+    this.avatarUrl,
     this.hasCompletedOnboarding = false,
     this.isLoading = false,
   });
@@ -29,6 +30,13 @@ class UserState {
   final String? sunSign;
   final String? moonSign;
   final String? risingSign;
+
+  /// Public URL of the user's avatar served by the backend
+  /// (e.g. `/uploads/avatars/{id}_{ts}.jpg`). `null` means use the
+  /// initial-letter fallback in the UI. The backend is the source of
+  /// truth — uploads are POSTed to /users/me/avatar.
+  final String? avatarUrl;
+
   final bool hasCompletedOnboarding;
   final bool isLoading;
 
@@ -41,6 +49,8 @@ class UserState {
     String? sunSign,
     String? moonSign,
     String? risingSign,
+    String? avatarUrl,
+    bool clearAvatar = false,
     bool? hasCompletedOnboarding,
     bool? isLoading,
   }) {
@@ -51,6 +61,7 @@ class UserState {
       sunSign: sunSign ?? this.sunSign,
       moonSign: moonSign ?? this.moonSign,
       risingSign: risingSign ?? this.risingSign,
+      avatarUrl: clearAvatar ? null : (avatarUrl ?? this.avatarUrl),
       hasCompletedOnboarding:
           hasCompletedOnboarding ?? this.hasCompletedOnboarding,
       isLoading: isLoading ?? this.isLoading,
@@ -77,6 +88,7 @@ class UserNotifier extends StateNotifier<UserState> {
       );
       final user = data['user'] as Map<String, dynamic>;
       final chart = data['chart_summary'] as Map<String, dynamic>?;
+      final rawAvatarUrl = user['avatar_url'] as String?;
 
       state = state.copyWith(
         id: user['id'] as String,
@@ -85,6 +97,8 @@ class UserNotifier extends StateNotifier<UserState> {
         sunSign: chart?['sun_sign'] as String?,
         moonSign: chart?['moon_sign'] as String?,
         risingSign: chart?['rising_sign'] as String?,
+        avatarUrl: rawAvatarUrl,
+        clearAvatar: rawAvatarUrl == null,
         hasCompletedOnboarding:
             user['has_completed_onboarding'] as bool? ?? false,
         isLoading: false,
@@ -97,6 +111,35 @@ class UserNotifier extends StateNotifier<UserState> {
 
   void updateName(String name) {
     state = state.copyWith(name: name);
+  }
+
+  /// Uploads [filePath] to the backend and stores the returned URL.
+  /// Returns the new URL or `null` on failure.
+  Future<String?> setAvatar(String filePath) async {
+    try {
+      final data = await _apiClient.uploadFile<Map<String, dynamic>>(
+        ApiEndpoints.avatar,
+        filePath: filePath,
+      );
+      final url = data['avatar_url'] as String?;
+      if (url == null) return null;
+      // Bust any previously-cached image at the same URL by appending a
+      // tiny query string. The backend already changes the filename per
+      // upload, so this is just belt-and-braces.
+      final cacheBusted = '$url?v=${DateTime.now().millisecondsSinceEpoch}';
+      state = state.copyWith(avatarUrl: cacheBusted);
+      return cacheBusted;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  /// Deletes the user's avatar on the backend and clears local state.
+  Future<void> clearAvatar() async {
+    try {
+      await _apiClient.delete(ApiEndpoints.avatar);
+    } catch (_) {/* surface to the user via UI if needed */}
+    state = state.copyWith(clearAvatar: true);
   }
 
   void markOnboardingComplete({

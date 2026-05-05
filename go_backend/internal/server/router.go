@@ -36,6 +36,14 @@ func NewRouter(h *handler.Handlers, auth *middleware.Auth, rl *middleware.RateLi
 		json.NewEncoder(w).Encode(map[string]string{"status": "ok"})
 	})
 
+	// Public static-file serve for user-uploaded assets (avatars, etc.).
+	// Files live under cfg.UploadsDir; the URL prefix is /uploads.
+	uploadsServer := http.StripPrefix(
+		"/uploads/",
+		http.FileServer(http.Dir(cfg.UploadsDir)),
+	)
+	r.Get("/uploads/*", uploadsServer.ServeHTTP)
+
 	// API v1
 	r.Route("/api/v1", func(r chi.Router) {
 		// Public: auth
@@ -60,6 +68,10 @@ func NewRouter(h *handler.Handlers, auth *middleware.Auth, rl *middleware.RateLi
 			r.Get("/users/me", h.User.GetMe)
 			r.Put("/users/me", h.User.UpdateMe)
 			r.Delete("/users/me", h.User.DeleteMe)
+			r.Post("/users/me/avatar", h.User.UploadAvatar)
+			r.Delete("/users/me/avatar", h.User.DeleteAvatar)
+			r.Get("/users/me/stats", h.User.GetStats)
+			r.Get("/users/me/birth-profile", h.User.GetBirthProfile)
 			r.Post("/users/me/birth-profile", h.User.CreateBirthProfile)
 			r.Put("/users/me/birth-profile", h.User.UpdateBirthProfile)
 			r.Get("/users/me/preferences", h.User.GetPreferences)
@@ -86,6 +98,7 @@ func NewRouter(h *handler.Handlers, auth *middleware.Auth, rl *middleware.RateLi
 			r.Post("/ai/threads", h.AIChat.CreateThread)
 			r.Get("/ai/threads/{threadID}/messages", h.AIChat.GetMessages)
 			r.Post("/ai/threads/{threadID}/messages", h.AIChat.SendMessage)
+			r.Get("/ai/usage", h.AIChat.GetUsage)
 
 			// People & Compatibility
 			r.Get("/people", h.Compatibility.ListPeople)

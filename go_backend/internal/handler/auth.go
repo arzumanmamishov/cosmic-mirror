@@ -40,6 +40,7 @@ func (h *AuthHandler) CreateSession(w http.ResponseWriter, r *http.Request) {
 			"id":                       user.ID,
 			"email":                    user.Email,
 			"name":                     user.Name,
+			"avatar_url":               user.AvatarURL,
 			"has_completed_onboarding": hasOnboarding,
 		},
 	}

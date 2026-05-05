@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../../core/error/exceptions.dart';
 import '../../../../core/network/api_client.dart';
 import '../../../../core/network/api_endpoints.dart';
 import '../../../../shared/providers/user_provider.dart';
@@ -19,6 +20,17 @@ final chatThreadsProvider =
       .toList();
 });
 
+/// User's AI-chat consumption for today. Refresh by invalidating this
+/// provider after each successful send (or after a 429) so the counter
+/// stays in sync with the server.
+final chatUsageProvider = FutureProvider.autoDispose<ChatUsage>((ref) async {
+  final client = ref.read(apiClientProvider);
+  final data = await client.get<Map<String, dynamic>>(
+    ApiEndpoints.chatUsage,
+  );
+  return ChatUsage.fromJson(data);
+});
+
 final chatMessagesProvider = FutureProvider.autoDispose
     .family<List<ChatMessage>, String>((ref, threadId) async {
   final client = ref.read(apiClientProvider);
@@ -34,22 +46,30 @@ final chatMessagesProvider = FutureProvider.autoDispose
 
 final chatInputProvider =
     StateNotifierProvider.autoDispose<ChatInputNotifier, ChatInputState>((ref) {
-  return ChatInputNotifier(ref.read(apiClientProvider));
+  return ChatInputNotifier(ref);
 });
 
 class ChatInputState {
   const ChatInputState({
     this.isSending = false,
     this.error,
+    this.limitReached = false,
   });
 
   final bool isSending;
   final String? error;
+
+  /// True when the last send was rejected with a 429 (daily cap hit).
+  /// Use this to render the paywall card without re-querying state.
+  final bool limitReached;
 }
 
 class ChatInputNotifier extends StateNotifier<ChatInputState> {
-  ChatInputNotifier(this._client) : super(const ChatInputState());
+  ChatInputNotifier(this._ref)
+      : _client = _ref.read(apiClientProvider),
+        super(const ChatInputState());
 
+  final Ref _ref;
   final ApiClient _client;
 
   Future<String?> createThread() async {
@@ -82,10 +102,26 @@ class ChatInputNotifier extends StateNotifier<ChatInputState> {
         data: {'content': content},
       );
       state = const ChatInputState();
+      // Bump the usage counter so the UI updates immediately.
+      _ref.invalidate(chatUsageProvider);
       return ChatMessageModel.fromJson(data);
+    } on RateLimitException catch (e) {
+      state = ChatInputState(
+        error: e.message,
+        limitReached: true,
+      );
+      // Refresh usage so the counter shows the cap.
+      _ref.invalidate(chatUsageProvider);
+      return null;
     } catch (e) {
       state = ChatInputState(error: e.toString());
       return null;
+    }
+  }
+
+  void clearLimitReached() {
+    if (state.limitReached) {
+      state = const ChatInputState();
     }
   }
 }

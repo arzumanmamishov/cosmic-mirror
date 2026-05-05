@@ -1,14 +1,19 @@
-import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
-
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:cosmic_mirror/config/env.dart';
 import 'package:cosmic_mirror/config/theme/app_palette.dart';
+import 'package:cosmic_mirror/core/network/api_client.dart';
+import 'package:cosmic_mirror/core/network/api_endpoints.dart';
 import 'package:cosmic_mirror/features/auth/presentation/providers/auth_provider.dart';
+import 'package:cosmic_mirror/features/profile/presentation/providers/profile_providers.dart';
 import 'package:cosmic_mirror/shared/providers/subscription_state_provider.dart';
 import 'package:cosmic_mirror/shared/providers/user_provider.dart';
 import 'package:cosmic_mirror/shared/widgets/cosmic_pulse.dart';
 import 'package:cosmic_mirror/shared/widgets/cosmic_starfield.dart';
 import 'package:cosmic_mirror/shared/widgets/staggered_fade_in.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import 'package:image_picker/image_picker.dart';
 
 class ProfileScreen extends ConsumerWidget {
   const ProfileScreen({super.key});
@@ -32,6 +37,11 @@ class ProfileScreen extends ConsumerWidget {
         leading: canPop ? const BackButton() : null,
         automaticallyImplyLeading: canPop,
         actions: [
+          IconButton(
+            icon: const Icon(Icons.edit_outlined),
+            tooltip: 'Edit profile',
+            onPressed: () => _showEditProfileSheet(context, ref),
+          ),
           IconButton(
             icon: const Icon(Icons.settings_outlined),
             onPressed: () => context.push('/settings'),
@@ -140,14 +150,348 @@ class ProfileScreen extends ConsumerWidget {
   }
 }
 
-// =================== Hero ===================
+// =================== Edit profile sheet ===================
 
-class _ProfileHero extends StatelessWidget {
-  const _ProfileHero({required this.user});
-  final UserState user;
+Future<void> _showEditProfileSheet(BuildContext context, WidgetRef ref) async {
+  final p = context.palette;
+  final user = ref.read(currentUserProvider);
+  final nameCtrl = TextEditingController(text: user.name ?? '');
+
+  await showModalBottomSheet<void>(
+    context: context,
+    backgroundColor: p.surface,
+    isScrollControlled: true,
+    shape: const RoundedRectangleBorder(
+      borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+    ),
+    builder: (sheetContext) {
+      return Padding(
+        padding: EdgeInsets.fromLTRB(
+          20,
+          16,
+          20,
+          MediaQuery.of(sheetContext).viewInsets.bottom + 24,
+        ),
+        child: _EditProfileForm(
+          nameCtrl: nameCtrl,
+          email: user.email,
+          onSave: (newName) async {
+            final apiClient = ref.read(apiClientProvider);
+            try {
+              await apiClient.put<dynamic>(
+                ApiEndpoints.me,
+                data: {'name': newName},
+              );
+              ref.read(currentUserProvider.notifier).updateName(newName);
+              if (sheetContext.mounted) Navigator.pop(sheetContext);
+            } catch (e) {
+              if (sheetContext.mounted) {
+                ScaffoldMessenger.of(sheetContext).showSnackBar(
+                  SnackBar(content: Text("Couldn't save: $e")),
+                );
+              }
+            }
+          },
+          onEditBirthData: () {
+            Navigator.pop(sheetContext);
+            context.push('/profile/edit-birth-data');
+          },
+        ),
+      );
+    },
+  );
+  nameCtrl.dispose();
+}
+
+class _EditProfileForm extends StatefulWidget {
+  const _EditProfileForm({
+    required this.nameCtrl,
+    required this.email,
+    required this.onSave,
+    required this.onEditBirthData,
+  });
+
+  final TextEditingController nameCtrl;
+  final String? email;
+  final ValueChanged<String> onSave;
+  final VoidCallback onEditBirthData;
+
+  @override
+  State<_EditProfileForm> createState() => _EditProfileFormState();
+}
+
+class _EditProfileFormState extends State<_EditProfileForm> {
+  bool _saving = false;
 
   @override
   Widget build(BuildContext context) {
+    final p = context.palette;
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Center(
+          child: Container(
+            width: 36,
+            height: 4,
+            decoration: BoxDecoration(
+              color: p.glassBorder,
+              borderRadius: BorderRadius.circular(2),
+            ),
+          ),
+        ),
+        const SizedBox(height: 16),
+        Text(
+          'Edit profile',
+          style: TextStyle(
+            color: p.textPrimary,
+            fontSize: 20,
+            fontWeight: FontWeight.w800,
+          ),
+        ),
+        const SizedBox(height: 16),
+        Text(
+          'NAME',
+          style: TextStyle(
+            color: p.textTertiary,
+            fontSize: 11,
+            letterSpacing: 1.4,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+        const SizedBox(height: 6),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 14),
+          decoration: BoxDecoration(
+            color: p.background,
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(color: p.glassBorder),
+          ),
+          child: TextField(
+            controller: widget.nameCtrl,
+            textCapitalization: TextCapitalization.words,
+            style: TextStyle(color: p.textPrimary, fontSize: 15),
+            decoration: const InputDecoration(
+              hintText: 'Your name',
+              border: InputBorder.none,
+              isCollapsed: true,
+              contentPadding: EdgeInsets.symmetric(vertical: 14),
+            ),
+          ),
+        ),
+        const SizedBox(height: 16),
+        Text(
+          'EMAIL',
+          style: TextStyle(
+            color: p.textTertiary,
+            fontSize: 11,
+            letterSpacing: 1.4,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+        const SizedBox(height: 6),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+          decoration: BoxDecoration(
+            color: p.background,
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(color: p.glassBorder),
+          ),
+          child: Row(
+            children: [
+              Expanded(
+                child: Text(
+                  widget.email ?? '—',
+                  style: TextStyle(color: p.textSecondary, fontSize: 14),
+                ),
+              ),
+              Icon(Icons.lock_outline, color: p.textTertiary, size: 14),
+            ],
+          ),
+        ),
+        const SizedBox(height: 6),
+        Text(
+          'Email is managed by your sign-in provider.',
+          style: TextStyle(color: p.textTertiary, fontSize: 11),
+        ),
+        const SizedBox(height: 18),
+        InkWell(
+          onTap: widget.onEditBirthData,
+          borderRadius: BorderRadius.circular(14),
+          child: Container(
+            padding: const EdgeInsets.all(14),
+            decoration: BoxDecoration(
+              color: p.surfaceElevated,
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(color: p.glassBorder),
+            ),
+            child: Row(
+              children: [
+                Icon(Icons.cake_rounded, color: p.accent, size: 18),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Text(
+                    'Edit birth data',
+                    style: TextStyle(
+                      color: p.textPrimary,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+                Icon(
+                  Icons.arrow_forward_ios_rounded,
+                  color: p.textTertiary,
+                  size: 12,
+                ),
+              ],
+            ),
+          ),
+        ),
+        const SizedBox(height: 22),
+        SizedBox(
+          width: double.infinity,
+          child: ElevatedButton(
+            onPressed: _saving
+                ? null
+                : () async {
+                    final newName = widget.nameCtrl.text.trim();
+                    if (newName.isEmpty) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Name cannot be empty.')),
+                      );
+                      return;
+                    }
+                    setState(() => _saving = true);
+                    widget.onSave(newName);
+                    if (mounted) setState(() => _saving = false);
+                  },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: p.primary,
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(vertical: 14),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(14),
+              ),
+            ),
+            child: _saving
+                ? const SizedBox(
+                    width: 18,
+                    height: 18,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2.4,
+                      valueColor: AlwaysStoppedAnimation(Colors.white),
+                    ),
+                  )
+                : const Text(
+                    'Save',
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+// =================== Hero ===================
+
+class _ProfileHero extends ConsumerWidget {
+  const _ProfileHero({required this.user});
+  final UserState user;
+
+  Future<void> _pickAvatar(BuildContext context, WidgetRef ref) async {
+    final p = context.palette;
+    final hasAvatar = user.avatarUrl != null;
+    final action = await showModalBottomSheet<_AvatarAction>(
+      context: context,
+      backgroundColor: p.surface,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (sheetContext) {
+        return SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const SizedBox(height: 8),
+              Container(
+                width: 36,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: p.glassBorder,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              const SizedBox(height: 12),
+              ListTile(
+                leading: Icon(Icons.photo_library_rounded, color: p.primary),
+                title: const Text('Choose from gallery'),
+                onTap: () =>
+                    Navigator.pop(sheetContext, _AvatarAction.gallery),
+              ),
+              ListTile(
+                leading: Icon(Icons.photo_camera_rounded, color: p.primary),
+                title: const Text('Take a photo'),
+                onTap: () => Navigator.pop(sheetContext, _AvatarAction.camera),
+              ),
+              if (hasAvatar)
+                ListTile(
+                  leading: Icon(Icons.delete_outline_rounded, color: p.error),
+                  title: Text(
+                    'Remove photo',
+                    style: TextStyle(color: p.error),
+                  ),
+                  onTap: () =>
+                      Navigator.pop(sheetContext, _AvatarAction.remove),
+                ),
+              const SizedBox(height: 8),
+            ],
+          ),
+        );
+      },
+    );
+
+    if (action == null || !context.mounted) return;
+
+    final notifier = ref.read(currentUserProvider.notifier);
+
+    if (action == _AvatarAction.remove) {
+      await notifier.clearAvatar();
+      return;
+    }
+
+    final picker = ImagePicker();
+    try {
+      final file = await picker.pickImage(
+        source: action == _AvatarAction.camera
+            ? ImageSource.camera
+            : ImageSource.gallery,
+        maxWidth: 1024,
+        maxHeight: 1024,
+        imageQuality: 88,
+      );
+      if (file == null) return;
+      final saved = await notifier.setAvatar(file.path);
+      if (saved == null && context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Couldn't save photo. Try again.")),
+        );
+      }
+    } catch (_) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Couldn't open the picker.")),
+        );
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
     final p = context.palette;
     final initial = (user.name?.isNotEmpty ?? false)
         ? user.name![0].toUpperCase()
@@ -155,40 +499,66 @@ class _ProfileHero extends StatelessWidget {
 
     return Column(
       children: [
-        // Pulsing avatar with gradient ring
-        CosmicPulse(
-          color: p.primary,
-          maxRadius: 70,
-          duration: const Duration(seconds: 4),
-          child: Container(
-            width: 100,
-            height: 100,
-            padding: const EdgeInsets.all(3),
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              gradient: p.primaryGradient,
-              boxShadow: [
-                BoxShadow(
-                  color: p.primary.withValues(alpha: 0.35),
-                  blurRadius: 24,
-                  spreadRadius: 2,
+        // Pulsing avatar with gradient ring — tap to change photo.
+        GestureDetector(
+          onTap: () => _pickAvatar(context, ref),
+          child: CosmicPulse(
+            color: p.primary,
+            maxRadius: 70,
+            duration: const Duration(seconds: 4),
+            child: Stack(
+              clipBehavior: Clip.none,
+              children: [
+                Container(
+                  width: 100,
+                  height: 100,
+                  padding: const EdgeInsets.all(3),
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    gradient: p.primaryGradient,
+                    boxShadow: [
+                      BoxShadow(
+                        color: p.primary.withValues(alpha: 0.35),
+                        blurRadius: 24,
+                        spreadRadius: 2,
+                      ),
+                    ],
+                  ),
+                  child: ClipOval(
+                    child: user.avatarUrl != null
+                        ? CachedNetworkImage(
+                            imageUrl: _resolveAvatarUrl(user.avatarUrl!),
+                            fit: BoxFit.cover,
+                            width: 94,
+                            height: 94,
+                            placeholder: (_, __) =>
+                                _AvatarFallback(initial: initial),
+                            errorWidget: (_, __, ___) =>
+                                _AvatarFallback(initial: initial),
+                          )
+                        : _AvatarFallback(initial: initial),
+                  ),
+                ),
+                // Small camera badge in the lower right.
+                Positioned(
+                  right: -2,
+                  bottom: -2,
+                  child: Container(
+                    width: 30,
+                    height: 30,
+                    decoration: BoxDecoration(
+                      color: p.primary,
+                      shape: BoxShape.circle,
+                      border: Border.all(color: p.background, width: 2),
+                    ),
+                    child: const Icon(
+                      Icons.photo_camera_rounded,
+                      size: 14,
+                      color: Colors.white,
+                    ),
+                  ),
                 ),
               ],
-            ),
-            child: Container(
-              decoration: BoxDecoration(
-                color: p.surface,
-                shape: BoxShape.circle,
-              ),
-              alignment: Alignment.center,
-              child: Text(
-                initial,
-                style: TextStyle(
-                  color: p.textPrimary,
-                  fontSize: 36,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
             ),
           ),
         ),
@@ -207,6 +577,46 @@ class _ProfileHero extends StatelessWidget {
           style: TextStyle(color: p.textSecondary, fontSize: 13),
         ),
       ],
+    );
+  }
+}
+
+enum _AvatarAction { gallery, camera, remove }
+
+/// Backend stores avatar_url as a relative path like
+/// `/uploads/avatars/{id}_{ts}.jpg?v=...`. Image widgets need an absolute
+/// URL — resolve it against [Env.apiBaseUrl]. Already-absolute URLs are
+/// returned as-is so this works if storage moves to S3/GCS later.
+String _resolveAvatarUrl(String urlOrPath) {
+  if (urlOrPath.startsWith('http://') || urlOrPath.startsWith('https://')) {
+    return urlOrPath;
+  }
+  final base = Env.apiBaseUrl;
+  final trimmedBase = base.endsWith('/') ? base.substring(0, base.length - 1) : base;
+  return '$trimmedBase$urlOrPath';
+}
+
+class _AvatarFallback extends StatelessWidget {
+  const _AvatarFallback({required this.initial});
+  final String initial;
+
+  @override
+  Widget build(BuildContext context) {
+    final p = context.palette;
+    return Container(
+      decoration: BoxDecoration(
+        color: p.surface,
+        shape: BoxShape.circle,
+      ),
+      alignment: Alignment.center,
+      child: Text(
+        initial,
+        style: TextStyle(
+          color: p.textPrimary,
+          fontSize: 36,
+          fontWeight: FontWeight.w700,
+        ),
+      ),
     );
   }
 }
@@ -322,37 +732,39 @@ class _SignTile extends StatelessWidget {
 
 // =================== Stats ===================
 
-class _StatsRow extends StatelessWidget {
+class _StatsRow extends ConsumerWidget {
   const _StatsRow();
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final statsAsync = ref.watch(userStatsProvider);
+    final stats = statsAsync.asData?.value;
     return Row(
-      children: const [
+      children: [
         Expanded(
           child: _StatPill(
             icon: Icons.local_fire_department_rounded,
-            value: '12',
+            value: stats == null ? '—' : '${stats.streak}',
             label: 'Day streak',
-            color: Color(0xFFF07C82),
+            color: const Color(0xFFF07C82),
           ),
         ),
-        SizedBox(width: 10),
+        const SizedBox(width: 10),
         Expanded(
           child: _StatPill(
             icon: Icons.book_rounded,
-            value: '8',
+            value: stats == null ? '—' : '${stats.journalEntries}',
             label: 'Journal entries',
-            color: Color(0xFF5ED39A),
+            color: const Color(0xFF5ED39A),
           ),
         ),
-        SizedBox(width: 10),
+        const SizedBox(width: 10),
         Expanded(
           child: _StatPill(
-            icon: Icons.auto_awesome_rounded,
-            value: '24',
-            label: 'Insights saved',
-            color: Color(0xFF7B61FF),
+            icon: Icons.chat_bubble_outline_rounded,
+            value: stats == null ? '—' : '${stats.aiChats}',
+            label: 'AI chats',
+            color: const Color(0xFF7B61FF),
           ),
         ),
       ],
@@ -531,6 +943,26 @@ class _BirthDataCard extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final p = context.palette;
+    final profileAsync = ref.watch(birthProfileProvider);
+    final profile = profileAsync.asData?.value;
+
+    String birthDate = '—';
+    String birthTime = '—';
+    String birthPlace = '—';
+    if (profile != null) {
+      final d = profile.birthDate;
+      birthDate =
+          '${_monthName(d.month)} ${d.day}, ${d.year}';
+      birthPlace = profile.birthPlace.isNotEmpty ? profile.birthPlace : '—';
+      if (profile.birthTimeKnown && profile.birthTime != null) {
+        final t = profile.birthTime!;
+        birthTime =
+            '${t.hour.toString().padLeft(2, '0')}:${t.minute.toString().padLeft(2, '0')}';
+      } else {
+        birthTime = 'Not known';
+      }
+    }
+
     return Container(
       decoration: BoxDecoration(
         color: p.surface,
@@ -542,33 +974,41 @@ class _BirthDataCard extends ConsumerWidget {
           _BirthRow(
             icon: Icons.cake_rounded,
             label: 'Birth date',
-            value: '—',
+            value: birthDate,
             color: p.accent,
           ),
           _RowDivider(p: p),
           _BirthRow(
             icon: Icons.access_time_rounded,
             label: 'Birth time',
-            value: '—',
+            value: birthTime,
             color: p.gold,
           ),
           _RowDivider(p: p),
           _BirthRow(
             icon: Icons.place_rounded,
             label: 'Birthplace',
-            value: '—',
+            value: birthPlace,
             color: p.primary,
           ),
           _RowDivider(p: p),
           _ActionRow(
             icon: Icons.edit_rounded,
             label: 'Edit Birth Data',
-            onTap: () => context.push('/onboarding'),
+            onTap: () => context.push('/profile/edit-birth-data'),
             primary: true,
           ),
         ],
       ),
     );
+  }
+
+  String _monthName(int m) {
+    const months = [
+      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
+    ];
+    return months[(m - 1).clamp(0, 11)];
   }
 }
 

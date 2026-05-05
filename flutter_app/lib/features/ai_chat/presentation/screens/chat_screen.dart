@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../../config/theme/colors.dart';
 import '../../../../config/theme/typography.dart';
@@ -9,6 +10,8 @@ import '../../domain/entities/chat_entities.dart';
 import '../providers/chat_provider.dart';
 import '../widgets/message_bubble.dart';
 import '../widgets/suggested_prompts.dart';
+
+const _kGold = Color(0xFFD4B16A);
 
 class ChatScreen extends ConsumerStatefulWidget {
   const ChatScreen({required this.threadId, super.key});
@@ -185,6 +188,9 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
               ),
             ),
 
+          // Usage strip + paywall card pinned just above the input.
+          _UsageStrip(),
+
           // Input bar
           Container(
             padding: EdgeInsets.fromLTRB(
@@ -199,59 +205,257 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                 top: BorderSide(color: CosmicColors.glassBorder),
               ),
             ),
-            child: Row(
-              children: [
-                Expanded(
-                  child: TextField(
-                    controller: _controller,
-                    focusNode: _focusNode,
-                    maxLines: 4,
-                    minLines: 1,
-                    textCapitalization: TextCapitalization.sentences,
-                    decoration: InputDecoration(
-                      hintText: 'Ask your astrologer...',
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(24),
-                        borderSide: BorderSide.none,
-                      ),
-                      filled: true,
-                      fillColor: CosmicColors.surfaceLight,
-                      contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 20,
-                        vertical: 12,
+            child: Consumer(
+              builder: (context, innerRef, _) {
+                final usage = innerRef.watch(chatUsageProvider).asData?.value;
+                final atLimit = usage?.atLimit ?? false;
+                final disabled = chatState.isSending || atLimit;
+                return Row(
+                  children: [
+                    Expanded(
+                      child: TextField(
+                        controller: _controller,
+                        focusNode: _focusNode,
+                        maxLines: 4,
+                        minLines: 1,
+                        textCapitalization: TextCapitalization.sentences,
+                        enabled: !atLimit,
+                        decoration: InputDecoration(
+                          hintText: atLimit
+                              ? 'Daily limit reached — upgrade to continue'
+                              : 'Ask your astrologer...',
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(24),
+                            borderSide: BorderSide.none,
+                          ),
+                          filled: true,
+                          fillColor: CosmicColors.surfaceLight,
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 20,
+                            vertical: 12,
+                          ),
+                        ),
+                        onSubmitted: disabled ? null : _sendMessage,
                       ),
                     ),
-                    onSubmitted: _sendMessage,
-                  ),
-                ),
-                const SizedBox(width: 8),
-                GestureDetector(
-                  onTap: chatState.isSending
-                      ? null
-                      : () => _sendMessage(_controller.text),
-                  child: Container(
-                    width: 44,
-                    height: 44,
-                    decoration: BoxDecoration(
-                      gradient: chatState.isSending
+                    const SizedBox(width: 8),
+                    GestureDetector(
+                      onTap: disabled
                           ? null
-                          : CosmicColors.primaryGradient,
-                      color: chatState.isSending
-                          ? CosmicColors.surfaceLight
-                          : null,
-                      shape: BoxShape.circle,
+                          : () => _sendMessage(_controller.text),
+                      child: Container(
+                        width: 44,
+                        height: 44,
+                        decoration: BoxDecoration(
+                          gradient: disabled
+                              ? null
+                              : CosmicColors.primaryGradient,
+                          color: disabled ? CosmicColors.surfaceLight : null,
+                          shape: BoxShape.circle,
+                        ),
+                        child: Icon(
+                          atLimit
+                              ? Icons.lock_outline_rounded
+                              : Icons.arrow_upward,
+                          color: Colors.white,
+                          size: 22,
+                        ),
+                      ),
                     ),
-                    child: const Icon(
-                      Icons.arrow_upward,
-                      color: Colors.white,
-                      size: 22,
-                    ),
+                  ],
+                );
+              },
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Above-input strip that shows daily usage ("3 of 5 messages today")
+/// for free users, a "Premium · Unlimited" badge for paying users, and
+/// a tappable paywall card after a 429 lands.
+class _UsageStrip extends ConsumerWidget {
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final input = ref.watch(chatInputProvider);
+    final usageAsync = ref.watch(chatUsageProvider);
+
+    final usage = usageAsync.asData?.value;
+    if (usage == null) return const SizedBox.shrink();
+
+    if (input.limitReached) {
+      return _PaywallCard(
+        onTap: () {
+          ref.read(chatInputProvider.notifier).clearLimitReached();
+          context.push('/paywall');
+        },
+      );
+    }
+    if (usage.isPremium) {
+      return const _PremiumBadge();
+    }
+    return _CounterPill(used: usage.used, limit: usage.limit);
+  }
+}
+
+class _CounterPill extends StatelessWidget {
+  const _CounterPill({required this.used, required this.limit});
+  final int used;
+  final int limit;
+
+  @override
+  Widget build(BuildContext context) {
+    final atLimit = used >= limit;
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+            decoration: BoxDecoration(
+              color: atLimit
+                  ? _kGold.withValues(alpha: 0.14)
+                  : CosmicColors.surfaceLight,
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(
+                color: atLimit ? _kGold : CosmicColors.glassBorder,
+              ),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  atLimit
+                      ? Icons.lock_outline_rounded
+                      : Icons.bolt_rounded,
+                  size: 14,
+                  color: atLimit ? _kGold : CosmicColors.textSecondary,
+                ),
+                const SizedBox(width: 6),
+                Text(
+                  atLimit
+                      ? 'Daily limit reached'
+                      : '$used of $limit messages today',
+                  style: CosmicTypography.caption.copyWith(
+                    color: atLimit ? _kGold : CosmicColors.textSecondary,
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
               ],
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _PremiumBadge extends StatelessWidget {
+  const _PremiumBadge();
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+            decoration: BoxDecoration(
+              color: _kGold.withValues(alpha: 0.14),
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(color: _kGold),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: const [
+                Icon(
+                  Icons.workspace_premium_rounded,
+                  size: 14,
+                  color: _kGold,
+                ),
+                SizedBox(width: 6),
+                Text(
+                  'Premium · Unlimited',
+                  style: TextStyle(
+                    color: _kGold,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: 0.3,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _PaywallCard extends StatelessWidget {
+  const _PaywallCard({required this.onTap});
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(16),
+          child: Ink(
+            padding: const EdgeInsets.all(14),
+            decoration: BoxDecoration(
+              color: _kGold.withValues(alpha: 0.10),
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: _kGold),
+            ),
+            child: Row(
+              children: [
+                const Icon(
+                  Icons.workspace_premium_rounded,
+                  color: _kGold,
+                  size: 20,
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        "You've reached today's free limit.",
+                        style: CosmicTypography.bodySmall.copyWith(
+                          color: CosmicColors.textPrimary,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        'Upgrade to Premium for unlimited chat with your astrologer.',
+                        style: CosmicTypography.caption.copyWith(
+                          color: CosmicColors.textSecondary,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 8),
+                const Icon(
+                  Icons.arrow_forward_ios_rounded,
+                  color: _kGold,
+                  size: 14,
+                ),
+              ],
+            ),
+          ),
+        ),
       ),
     );
   }

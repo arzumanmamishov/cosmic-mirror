@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"errors"
 	"net/http"
 	"strconv"
 
@@ -13,11 +14,12 @@ import (
 )
 
 type AIChatHandler struct {
-	aiSvc *service.AIService
+	aiSvc  *service.AIService
+	subSvc *service.SubscriptionService
 }
 
-func NewAIChatHandler(aiSvc *service.AIService) *AIChatHandler {
-	return &AIChatHandler{aiSvc: aiSvc}
+func NewAIChatHandler(aiSvc *service.AIService, subSvc *service.SubscriptionService) *AIChatHandler {
+	return &AIChatHandler{aiSvc: aiSvc, subSvc: subSvc}
 }
 
 func (h *AIChatHandler) ListThreads(w http.ResponseWriter, r *http.Request) {
@@ -93,13 +95,41 @@ func (h *AIChatHandler) SendMessage(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Check premium status (would come from middleware context in production)
-	isPremium := false // TODO: read from context
+	isPremium := h.subSvc.IsPremium(r.Context(), userID)
 
 	response, err := h.aiSvc.SendMessage(r.Context(), userID, threadID, input.Content, isPremium)
 	if err != nil {
+		// Surface the daily-cap error as a structured 429 so the client
+		// can show a paywall + counter rather than a generic failure.
+		var limitErr *service.ChatLimitError
+		if errors.As(err, &limitErr) {
+			respondJSON(w, http.StatusTooManyRequests, map[string]any{
+				"error": map[string]any{
+					"code":     "chat_limit_reached",
+					"message":  limitErr.Error(),
+					"used":     limitErr.Used,
+					"limit":    limitErr.Limit,
+					"reset_at": limitErr.ResetAt,
+				},
+			})
+			return
+		}
 		respondError(w, http.StatusInternalServerError, "send_error", err.Error())
 		return
 	}
 	respondSuccess(w, response)
+}
+
+// GetUsage returns the user's current AI-chat consumption for the day.
+// Used by the client to render the "X of Y messages today" counter and
+// to disable the input proactively when the cap is reached.
+func (h *AIChatHandler) GetUsage(w http.ResponseWriter, r *http.Request) {
+	userID := middleware.UserIDFromContext(r.Context())
+	isPremium := h.subSvc.IsPremium(r.Context(), userID)
+	usage, err := h.aiSvc.GetUsage(r.Context(), userID, isPremium)
+	if err != nil {
+		respondError(w, http.StatusInternalServerError, "usage_error", err.Error())
+		return
+	}
+	respondSuccess(w, usage)
 }

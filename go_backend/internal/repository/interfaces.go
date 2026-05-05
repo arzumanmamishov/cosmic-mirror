@@ -14,7 +14,12 @@ type UserRepository interface {
 	GetByID(ctx context.Context, id uuid.UUID) (*domain.User, error)
 	GetByFirebaseUID(ctx context.Context, uid string) (*domain.User, error)
 	Update(ctx context.Context, id uuid.UUID, input domain.UpdateUserInput) error
+	SetAvatarURL(ctx context.Context, id uuid.UUID, url *string) error
 	SoftDelete(ctx context.Context, id uuid.UUID) error
+}
+
+type StatsRepository interface {
+	GetStats(ctx context.Context, userID uuid.UUID) (*domain.UserStats, error)
 }
 
 type BirthProfileRepository interface {

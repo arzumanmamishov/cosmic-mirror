@@ -71,6 +71,22 @@ class ApiClient {
   Future<void> delete(String path) async {
     await _dio.delete<dynamic>(path);
   }
+
+  /// Upload a file as a multipart form POST. The file is sent under the
+  /// field name `file` so the backend can read `r.FormFile("file")`.
+  Future<T> uploadFile<T>(
+    String path, {
+    required String filePath,
+    String fieldName = 'file',
+    T Function(dynamic)? fromJson,
+  }) async {
+    final formData = FormData.fromMap({
+      fieldName: await MultipartFile.fromFile(filePath),
+    });
+    final response = await _dio.post<dynamic>(path, data: formData);
+    if (fromJson != null) return fromJson(response.data);
+    return response.data as T;
+  }
 }
 
 class _AuthInterceptor extends Interceptor {
@@ -119,7 +135,28 @@ class _ErrorInterceptor extends Interceptor {
           );
         }
         if (statusCode == 429) {
-          throw RateLimitException(message: message ?? 'Rate limit exceeded.');
+          // Parse the structured limit payload (used / limit / reset_at)
+          // when the backend provides it — used by the AI chat cap and
+          // any future per-day quota error.
+          int? used;
+          int? limit;
+          DateTime? resetAt;
+          if (data is Map<String, dynamic>) {
+            final errorMap = data['error'];
+            if (errorMap is Map<String, dynamic>) {
+              used = (errorMap['used'] as num?)?.toInt();
+              limit = (errorMap['limit'] as num?)?.toInt();
+              final raw = errorMap['reset_at'];
+              if (raw is String) resetAt = DateTime.tryParse(raw);
+            }
+          }
+          throw RateLimitException(
+            message: message ?? 'Rate limit exceeded.',
+            code: code,
+            used: used,
+            limit: limit,
+            resetAt: resetAt,
+          );
         }
         throw ServerException(
           message: message ?? 'An unexpected error occurred.',

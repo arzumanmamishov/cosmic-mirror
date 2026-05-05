@@ -12,6 +12,7 @@ type User struct {
 	FirebaseUID string     `db:"firebase_uid" json:"-"`
 	Email       string     `db:"email" json:"email"`
 	Name        string     `db:"name" json:"name"`
+	AvatarURL   *string    `db:"avatar_url" json:"avatar_url"`
 	CreatedAt   time.Time  `db:"created_at" json:"created_at"`
 	UpdatedAt   time.Time  `db:"updated_at" json:"updated_at"`
 	DeletedAt   *time.Time `db:"deleted_at" json:"-"`
@@ -49,6 +50,15 @@ type CreateUserInput struct {
 type UpdateUserInput struct {
 	Name  *string `json:"name"`
 	Email *string `json:"email"`
+}
+
+// UserStats is a user-engagement snapshot used to populate the profile
+// stats row. Streak counts consecutive UTC days ending today with any
+// activity; the other fields are simple totals.
+type UserStats struct {
+	Streak         int `json:"streak"`
+	JournalEntries int `json:"journal_entries"`
+	AIChats        int `json:"ai_chats"`
 }
 
 type CreateBirthProfileInput struct {

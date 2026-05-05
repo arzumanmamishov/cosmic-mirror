@@ -36,7 +36,7 @@ func (r *UserRepository) Create(ctx context.Context, user *domain.User) error {
 func (r *UserRepository) GetByID(ctx context.Context, id uuid.UUID) (*domain.User, error) {
 	var user domain.User
 	err := r.db.GetContext(ctx, &user,
-		`SELECT id, firebase_uid, email, name, created_at, updated_at
+		`SELECT id, firebase_uid, email, name, avatar_url, created_at, updated_at
 		 FROM users WHERE id = $1 AND deleted_at IS NULL`, id,
 	)
 	if errors.Is(err, sql.ErrNoRows) {
@@ -48,13 +48,23 @@ func (r *UserRepository) GetByID(ctx context.Context, id uuid.UUID) (*domain.Use
 func (r *UserRepository) GetByFirebaseUID(ctx context.Context, uid string) (*domain.User, error) {
 	var user domain.User
 	err := r.db.GetContext(ctx, &user,
-		`SELECT id, firebase_uid, email, name, created_at, updated_at
+		`SELECT id, firebase_uid, email, name, avatar_url, created_at, updated_at
 		 FROM users WHERE firebase_uid = $1 AND deleted_at IS NULL`, uid,
 	)
 	if errors.Is(err, sql.ErrNoRows) {
 		return nil, nil
 	}
 	return &user, err
+}
+
+// SetAvatarURL writes the new avatar URL (or NULL when url is nil) and
+// bumps updated_at.
+func (r *UserRepository) SetAvatarURL(ctx context.Context, id uuid.UUID, url *string) error {
+	_, err := r.db.ExecContext(ctx,
+		`UPDATE users SET avatar_url = $1, updated_at = $2 WHERE id = $3`,
+		url, time.Now(), id,
+	)
+	return err
 }
 
 func (r *UserRepository) Update(ctx context.Context, id uuid.UUID, input domain.UpdateUserInput) error {

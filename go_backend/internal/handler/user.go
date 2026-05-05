@@ -49,6 +49,46 @@ func (h *UserHandler) DeleteMe(w http.ResponseWriter, r *http.Request) {
 	respondNoContent(w)
 }
 
+// UploadAvatar reads a multipart "file" field, saves it via the avatar
+// store, and returns the new public URL on the user object.
+func (h *UserHandler) UploadAvatar(w http.ResponseWriter, r *http.Request) {
+	userID := middleware.UserIDFromContext(r.Context())
+
+	// Cap to 8MB so a misbehaving client can't fill the disk in one shot.
+	const maxBytes = 8 << 20
+	r.Body = http.MaxBytesReader(w, r.Body, maxBytes)
+
+	if err := r.ParseMultipartForm(maxBytes); err != nil {
+		respondError(w, http.StatusBadRequest, "upload_too_large",
+			"File is too large or malformed (max 8MB).")
+		return
+	}
+	file, header, err := r.FormFile("file")
+	if err != nil {
+		respondError(w, http.StatusBadRequest, "missing_file",
+			"Form must include a file field named 'file'.")
+		return
+	}
+	defer file.Close()
+
+	url, err := h.userSvc.SetAvatar(r.Context(), userID, header.Filename, file)
+	if err != nil {
+		respondError(w, http.StatusInternalServerError, "save_error", err.Error())
+		return
+	}
+	respondSuccess(w, map[string]string{"avatar_url": url})
+}
+
+// DeleteAvatar removes the user's avatar file and clears the column.
+func (h *UserHandler) DeleteAvatar(w http.ResponseWriter, r *http.Request) {
+	userID := middleware.UserIDFromContext(r.Context())
+	if err := h.userSvc.ClearAvatar(r.Context(), userID); err != nil {
+		respondError(w, http.StatusInternalServerError, "clear_error", err.Error())
+		return
+	}
+	respondNoContent(w)
+}
+
 func (h *UserHandler) CreateBirthProfile(w http.ResponseWriter, r *http.Request) {
 	userID := middleware.UserIDFromContext(r.Context())
 	var input domain.CreateBirthProfileInput
@@ -76,6 +116,34 @@ func (h *UserHandler) UpdateBirthProfile(w http.ResponseWriter, r *http.Request)
 		return
 	}
 	respondNoContent(w)
+}
+
+// GetStats returns the engagement snapshot for the profile screen
+// (streak, journal entry count, AI chat thread count).
+func (h *UserHandler) GetStats(w http.ResponseWriter, r *http.Request) {
+	userID := middleware.UserIDFromContext(r.Context())
+	stats, err := h.userSvc.GetStats(r.Context(), userID)
+	if err != nil {
+		respondError(w, http.StatusInternalServerError, "stats_error", err.Error())
+		return
+	}
+	respondSuccess(w, stats)
+}
+
+// GetBirthProfile returns the user's stored birth data so the profile
+// screen can show real values instead of placeholders.
+func (h *UserHandler) GetBirthProfile(w http.ResponseWriter, r *http.Request) {
+	userID := middleware.UserIDFromContext(r.Context())
+	profile, err := h.userSvc.GetBirthProfile(r.Context(), userID)
+	if err != nil {
+		respondError(w, http.StatusInternalServerError, "profile_error", err.Error())
+		return
+	}
+	if profile == nil {
+		respondError(w, http.StatusNotFound, "not_found", "Birth profile not found")
+		return
+	}
+	respondSuccess(w, profile)
 }
 
 func (h *UserHandler) GetPreferences(w http.ResponseWriter, r *http.Request) {

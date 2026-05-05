@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"cosmic-mirror/internal/domain"
 	"cosmic-mirror/internal/provider/openai"
@@ -10,6 +11,26 @@ import (
 
 	"github.com/google/uuid"
 )
+
+// ChatLimitError is returned by SendMessage when a free user has hit
+// the daily message cap. Handlers can type-assert to map it to a 429.
+type ChatLimitError struct {
+	Used    int
+	Limit   int
+	ResetAt time.Time
+}
+
+func (e *ChatLimitError) Error() string {
+	return fmt.Sprintf("daily chat limit reached (%d/%d)", e.Used, e.Limit)
+}
+
+// ChatUsage describes a user's current AI-chat consumption for the day.
+type ChatUsage struct {
+	Used      int       `json:"used"`
+	Limit     int       `json:"limit"`
+	IsPremium bool      `json:"is_premium"`
+	ResetAt   time.Time `json:"reset_at"`
+}
 
 type AIService struct {
 	chatRepo    repository.ChatRepository
@@ -48,15 +69,42 @@ func (s *AIService) GetMessages(ctx context.Context, threadID uuid.UUID, limit, 
 	return s.chatRepo.GetMessages(ctx, threadID, limit, offset)
 }
 
+// GetUsage reports a user's current AI-chat consumption for the day so
+// the client can render a counter and disable the input proactively
+// instead of finding out at send-time.
+func (s *AIService) GetUsage(ctx context.Context, userID uuid.UUID, isPremium bool) (*ChatUsage, error) {
+	used, err := s.chatRepo.CountUserMessagesToday(ctx, userID)
+	if err != nil {
+		return nil, fmt.Errorf("count messages: %w", err)
+	}
+	return &ChatUsage{
+		Used:      used,
+		Limit:     s.freeChatLimit,
+		IsPremium: isPremium,
+		ResetAt:   nextResetAt(),
+	}, nil
+}
+
+// nextResetAt returns the next UTC midnight — the moment a free user's
+// per-day count resets to zero. Always in the future.
+func nextResetAt() time.Time {
+	now := time.Now().UTC()
+	return time.Date(now.Year(), now.Month(), now.Day()+1, 0, 0, 0, 0, time.UTC)
+}
+
 func (s *AIService) SendMessage(ctx context.Context, userID uuid.UUID, threadID uuid.UUID, content string, isPremium bool) (*domain.ChatMessage, error) {
-	// Check rate limit for free users
+	// Daily cap for free users — premium bypasses entirely.
 	if !isPremium {
 		count, err := s.chatRepo.CountUserMessagesToday(ctx, userID)
 		if err != nil {
 			return nil, fmt.Errorf("count messages: %w", err)
 		}
 		if count >= s.freeChatLimit {
-			return nil, fmt.Errorf("daily message limit reached. Upgrade to Premium for unlimited chat")
+			return nil, &ChatLimitError{
+				Used:    count,
+				Limit:   s.freeChatLimit,
+				ResetAt: nextResetAt(),
+			}
 		}
 	}
 

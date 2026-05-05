@@ -19,6 +19,7 @@ type Config struct {
 	FirebaseCredentialsPath string
 	OpenAIAPIKey            string
 	EphemerisPath           string
+	UploadsDir              string
 	RevenueCatWebhookSecret string
 	FreeTierChatLimit       int
 	FreeTierRateLimit       int
@@ -38,8 +39,9 @@ func Load() (*Config, error) {
 		FirebaseCredentialsPath: getEnv("FIREBASE_CREDENTIALS_PATH", ""),
 		OpenAIAPIKey:            getEnv("OPENAI_API_KEY", ""),
 		EphemerisPath:           getEnv("EPHEMERIS_PATH", "./ephemeris"),
+		UploadsDir:              getEnv("UPLOADS_DIR", "/app/uploads"),
 		RevenueCatWebhookSecret: getEnv("REVENUECAT_WEBHOOK_SECRET", ""),
-		FreeTierChatLimit:       getEnvInt("FREE_TIER_CHAT_LIMIT", 3),
+		FreeTierChatLimit:       getEnvInt("FREE_TIER_CHAT_LIMIT", 5),
 		FreeTierRateLimit:       getEnvInt("FREE_TIER_RATE_LIMIT", 60),
 		PremiumRateLimit:        getEnvInt("PREMIUM_RATE_LIMIT", 120),
 	}

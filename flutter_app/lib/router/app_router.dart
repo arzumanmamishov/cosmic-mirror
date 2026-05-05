@@ -17,6 +17,7 @@ import '../features/journal/presentation/screens/journal_screen.dart';
 import '../features/onboarding/presentation/screens/onboarding_flow.dart';
 import '../features/onboarding/presentation/screens/welcome_screen.dart';
 import '../features/paywall/presentation/screens/paywall_screen.dart';
+import '../features/profile/presentation/screens/edit_birth_data_screen.dart';
 import '../features/profile/presentation/screens/profile_screen.dart';
 import '../features/rituals/presentation/screens/rituals_screen.dart';
 import '../features/settings/presentation/screens/settings_screen.dart';
@@ -360,6 +361,15 @@ final appRouterProvider = Provider<GoRouter>((ref) {
           state,
           const ProfileScreen(),
         ),
+        routes: [
+          GoRoute(
+            path: 'edit-birth-data',
+            pageBuilder: (context, state) => _slideTransition(
+              state,
+              const EditBirthDataScreen(),
+            ),
+          ),
+        ],
       ),
       GoRoute(
         path: '/settings',

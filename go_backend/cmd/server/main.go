@@ -19,6 +19,7 @@ import (
 	"cosmic-mirror/internal/repository/postgres"
 	"cosmic-mirror/internal/server"
 	"cosmic-mirror/internal/service"
+	"cosmic-mirror/internal/storage"
 
 	"github.com/jmoiron/sqlx"
 	_ "github.com/jackc/pgx/v5/stdlib"
@@ -104,7 +105,9 @@ func main() {
 	communityNotifRepo := postgres.NewCommunityNotificationRepository(db)
 
 	// Services
-	userSvc := service.NewUserService(userRepo, birthProfileRepo)
+	avatarStore := storage.NewAvatarStore(cfg.UploadsDir, "/uploads")
+	statsRepo := postgres.NewStatsRepository(db)
+	userSvc := service.NewUserService(userRepo, birthProfileRepo, statsRepo, avatarStore)
 	chartSvc := service.NewChartService(birthProfileRepo, chartProvider, rdb)
 	vedicSvc := service.NewVedicService(birthProfileRepo, chartProvider, rdb)
 	readingSvc := service.NewReadingService(readingRepo, birthProfileRepo, openaiClient, rdb)
@@ -132,7 +135,7 @@ func main() {
 		Chart:         handler.NewChartHandler(chartSvc),
 		Vedic:         handler.NewVedicHandler(vedicSvc),
 		DailyReading:  handler.NewDailyReadingHandler(readingSvc),
-		AIChat:        handler.NewAIChatHandler(aiSvc),
+		AIChat:        handler.NewAIChatHandler(aiSvc, subscriptionSvc),
 		Compatibility: handler.NewCompatibilityHandler(compatibilitySvc),
 		Subscription:  handler.NewSubscriptionHandler(subscriptionSvc),
 		Journal:       handler.NewJournalHandler(journalRepo),
