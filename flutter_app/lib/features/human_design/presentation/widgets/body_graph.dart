@@ -30,11 +30,14 @@ class BodyGraph extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final p = context.palette;
+    // Aspect 1:1.65 — slightly taller than 1:1.5 so the bigger shapes
+    // (now sized to comfortably fit interior gate numbers + center labels)
+    // don't crowd into each other.
     return SizedBox(
       width: size,
-      height: size * 1.5,
+      height: size * 1.65,
       child: CustomPaint(
-        size: Size(size, size * 1.5),
+        size: Size(size, size * 1.65),
         painter: _BodyGraphPainter(
           chart: chart,
           background: p.background,
@@ -90,121 +93,134 @@ class _BodyGraphPainter extends CustomPainter {
     'Root': Color(0xFFB87333), // copper-brown
   };
 
-  // ===== Center positions (fractional w, h where h = 1.5w) =====
+  // ===== Center positions (fractional w, h where h = 1.65w) =====
+  // Positions spread out vertically to leave clean spacing between the
+  // bigger shapes below.
   static const Map<String, Offset> _centerPositions = {
-    'Head': Offset(0.50, 0.06),
-    'Ajna': Offset(0.50, 0.18),
-    'Throat': Offset(0.50, 0.32),
-    'G': Offset(0.50, 0.50),
-    'Heart': Offset(0.66, 0.59),
-    'Spleen': Offset(0.16, 0.68),
-    'Sacral': Offset(0.50, 0.68),
-    'SolarPlexus': Offset(0.84, 0.68),
-    'Root': Offset(0.50, 0.86),
+    'Head': Offset(0.50, 0.07),
+    'Ajna': Offset(0.50, 0.20),
+    'Throat': Offset(0.50, 0.36),
+    'G': Offset(0.50, 0.54),
+    'Heart': Offset(0.71, 0.62),
+    'Spleen': Offset(0.16, 0.73),
+    'Sacral': Offset(0.50, 0.73),
+    'SolarPlexus': Offset(0.84, 0.73),
+    'Root': Offset(0.50, 0.91),
   };
 
+  // Center sizes (fractions of chart width). Triangle centers (Ajna,
+  // Spleen, Solar Plexus) and Heart get extra width because their narrow
+  // apexes leave less room for gate numbers; the squares are already
+  // generous.
   static const Map<String, double> _centerSizes = {
-    'Head': 0.16, 'Ajna': 0.16, 'Throat': 0.20, 'G': 0.16,
-    'Heart': 0.10, 'Spleen': 0.18, 'Sacral': 0.18, 'SolarPlexus': 0.18,
-    'Root': 0.18,
+    'Head': 0.20, 'Ajna': 0.22, 'Throat': 0.28, 'G': 0.22,
+    'Heart': 0.18, 'Spleen': 0.24, 'Sacral': 0.24, 'SolarPlexus': 0.24,
+    'Root': 0.24,
   };
 
-  // ===== Per-center gate anchor offsets (in unit-radius from center) =====
-  // Each gate anchors at a specific point on the center's outline. Offsets
-  // are (dx, dy) where ±1 spans the center's bounding box.
+  // ===== Per-center gate positions (interior, in unit-radius from center) =====
+  // Each gate sits INSIDE its shape at a canonical position chosen to
+  // *encircle* the central label rather than overlap it. The center of
+  // each shape is reserved for the label text; gates fan around it.
   static const Map<String, Map<int, Offset>> _gateOffsets = {
     'Head': {
-      // Triangle pointing UP — three gates along the bottom edge.
-      64: Offset(-0.60, 0.70),
-      61: Offset(0.00, 0.80),
-      63: Offset(0.60, 0.70),
+      // Triangle ↑ — three gates along the bottom; label sits above them.
+      64: Offset(-0.45, 0.50),
+      61: Offset(0.00, 0.55),
+      63: Offset(0.45, 0.50),
     },
     'Ajna': {
-      // Triangle pointing DOWN — three gates on top edge, three on lower
-      // edges near the apex.
-      47: Offset(-0.70, -0.70),
-      24: Offset(0.00, -0.80),
-      4: Offset(0.70, -0.70),
-      17: Offset(-0.40, 0.30),
-      43: Offset(0.00, 0.70),
-      11: Offset(0.40, 0.30),
+      // Triangle ↓ — top row of 3 + side "ears" at the widest point + apex.
+      // All gates pulled in to stay inside the triangle's narrowing apex.
+      47: Offset(-0.45, -0.50),
+      24: Offset(0.00, -0.55),
+      4: Offset(0.45, -0.50),
+      17: Offset(-0.40, -0.05),
+      11: Offset(0.40, -0.05),
+      43: Offset(0.00, 0.50),
     },
     'Throat': {
-      // Square — eleven gates around all four edges, evenly spaced.
-      62: Offset(-0.60, -0.95),
-      23: Offset(0.00, -0.95),
-      56: Offset(0.60, -0.95),
-      35: Offset(0.95, -0.40),
-      12: Offset(0.95, 0.40),
-      45: Offset(0.60, 0.95),
-      33: Offset(0.20, 0.95),
-      8: Offset(-0.20, 0.95),
-      31: Offset(-0.60, 0.95),
-      20: Offset(-0.95, 0.40),
-      16: Offset(-0.95, -0.40),
+      // Square — 11 gates around all four edges, no interior gates.
+      62: Offset(-0.60, -0.70),
+      23: Offset(0.00, -0.70),
+      56: Offset(0.60, -0.70),
+      16: Offset(-0.75, -0.30),
+      35: Offset(0.75, -0.30),
+      20: Offset(-0.75, 0.30),
+      12: Offset(0.75, 0.30),
+      31: Offset(-0.60, 0.70),
+      8: Offset(-0.20, 0.70),
+      33: Offset(0.20, 0.70),
+      45: Offset(0.60, 0.70),
     },
     'G': {
-      // Diamond — eight gates around the four diagonal arms.
-      1: Offset(0.00, -0.90),
-      13: Offset(0.45, -0.45),
-      25: Offset(0.90, 0.00),
-      46: Offset(0.45, 0.45),
-      2: Offset(0.00, 0.90),
-      15: Offset(-0.45, 0.45),
-      10: Offset(-0.90, 0.00),
-      7: Offset(-0.45, -0.45),
+      // Diamond — 8 gates pulled inward from the sharp diamond points so
+      // every number sits comfortably inside the shape, encircling the label.
+      1: Offset(0.00, -0.55),
+      7: Offset(-0.35, -0.35),
+      13: Offset(0.35, -0.35),
+      10: Offset(-0.55, 0.00),
+      25: Offset(0.55, 0.00),
+      15: Offset(-0.35, 0.35),
+      46: Offset(0.35, 0.35),
+      2: Offset(0.00, 0.55),
     },
     'Heart': {
-      // Small triangle pointing UP — four gates.
-      51: Offset(0.00, -0.90),
-      21: Offset(-0.55, -0.20),
-      26: Offset(-0.55, 0.55),
-      40: Offset(0.55, 0.55),
+      // Small triangle ↑ — 4 gates around the central label, all kept
+      // inside the triangle's narrowing apex.
+      21: Offset(-0.20, -0.30),
+      51: Offset(0.20, -0.30),
+      26: Offset(-0.40, 0.30),
+      40: Offset(0.40, 0.30),
     },
     'Sacral': {
-      // Square — nine gates around the perimeter.
-      5: Offset(-0.60, -0.95),
-      14: Offset(0.00, -0.95),
-      29: Offset(0.60, -0.95),
-      59: Offset(0.95, -0.30),
-      9: Offset(0.95, 0.50),
-      3: Offset(0.50, 0.95),
-      42: Offset(0.00, 0.95),
-      27: Offset(-0.50, 0.95),
-      34: Offset(-0.95, 0.20),
+      // Square — top row, side rails (pushed up so they sit ABOVE the
+      // central label), 27 in the lower-left corner, bottom row.
+      5: Offset(-0.55, -0.70),
+      14: Offset(0.00, -0.70),
+      29: Offset(0.55, -0.70),
+      34: Offset(-0.75, -0.35),
+      59: Offset(0.75, -0.35),
+      27: Offset(-0.70, 0.40),
+      42: Offset(-0.40, 0.70),
+      3: Offset(0.00, 0.70),
+      9: Offset(0.40, 0.70),
     },
     'Spleen': {
-      // Triangle pointing RIGHT (apex on right toward Sacral) — seven gates.
-      48: Offset(-0.50, -0.85),
-      57: Offset(-0.50, -0.20),
-      44: Offset(-0.50, 0.45),
-      50: Offset(0.05, -0.65),
-      32: Offset(0.50, -0.20),
-      28: Offset(0.50, 0.40),
-      18: Offset(0.05, 0.75),
+      // Triangle ▶ — left rail (48/57/44), upper/lower fans (50/28),
+      // gate near the apex (32), and bottom-left interior (18).
+      // All offsets kept inside the right-pointing triangle.
+      48: Offset(-0.35, -0.55),
+      57: Offset(-0.40, -0.10),
+      44: Offset(-0.35, 0.55),
+      50: Offset(0.05, -0.40),
+      32: Offset(0.45, 0),
+      28: Offset(0.05, 0.40),
+      18: Offset(-0.30, 0.20),
     },
     'SolarPlexus': {
-      // Triangle pointing LEFT (apex toward Sacral) — seven gates,
-      // mirrored from Spleen.
-      36: Offset(0.50, -0.85),
-      22: Offset(0.50, -0.20),
-      37: Offset(0.50, 0.45),
-      6: Offset(-0.05, -0.65),
-      49: Offset(-0.50, -0.20),
-      55: Offset(-0.50, 0.40),
-      30: Offset(-0.05, 0.75),
+      // Triangle ◀ — mirror of Spleen. All offsets kept inside the
+      // left-pointing triangle's apex.
+      36: Offset(0.35, -0.55),
+      22: Offset(0.40, -0.10),
+      37: Offset(0.35, 0.55),
+      6: Offset(-0.45, 0),
+      49: Offset(-0.05, -0.40),
+      55: Offset(-0.05, 0.40),
+      30: Offset(0.30, 0.20),
     },
     'Root': {
-      // Square — nine gates.
-      53: Offset(-0.60, -0.95),
-      60: Offset(0.00, -0.95),
-      52: Offset(0.60, -0.95),
-      19: Offset(0.95, -0.30),
-      39: Offset(0.95, 0.50),
-      41: Offset(0.50, 0.95),
-      58: Offset(0.00, 0.95),
-      38: Offset(-0.50, 0.95),
-      54: Offset(-0.95, 0.20),
+      // Square — top row, side rails pushed to ±0.35 (out of label band),
+      // bottom rails for 38/39, two-gate bottom for 58/41.
+      53: Offset(-0.55, -0.70),
+      60: Offset(0.00, -0.70),
+      52: Offset(0.55, -0.70),
+      54: Offset(-0.75, -0.35),
+      19: Offset(0.75, -0.35),
+      38: Offset(-0.65, 0.30),
+      39: Offset(0.65, 0.30),
+      58: Offset(-0.25, 0.70),
+      41: Offset(0.25, 0.70),
     },
   };
 
@@ -436,15 +452,14 @@ class _BodyGraphPainter extends CustomPainter {
         outlineColor: defined ? color : glassBorder.withValues(alpha: 0.7),
       );
 
-      // Label inside — scales proportionally with chart width.
+      // Label inside — Title Case, regular weight, smaller.
       _paintText(
         canvas,
-        _shortLabel(name).toUpperCase(),
+        _shortLabel(name),
         Offset(cx, cy),
-        color: defined ? Colors.white : textTertiary,
-        size: w * 0.030,
-        weight: FontWeight.w800,
-        letterSpacing: 0.8,
+        color: defined ? Colors.white : textSecondary,
+        size: w * 0.028,
+        weight: FontWeight.w400,
       );
     }
   }
@@ -587,14 +602,13 @@ class _BodyGraphPainter extends CustomPainter {
     Set<int> designGates,
   ) {
     // Text size scales with chart width — bold yellow numbers, no disc.
-    // Active gates are full-opacity yellow; inactive gates fade.
-    final fontSize = w * 0.022;
+    // Active gates are full-opacity yellow; inactive gates fade. Sized
+    // small enough that every number stays inside its shape.
+    final fontSize = w * 0.016;
 
-    // Each gate sits OUTSIDE its center's outline. We compute the anchor
-    // along the unit-radius offset, then push it further out by one
-    // font-size of padding so the numeric label clears the shape edge.
-    final padding = fontSize * 1.1;
-
+    // Gates sit INSIDE each shape at canonical layout positions (matches
+    // the reference HD body-graph rendering). Offsets are unit-radius, so
+    // we just multiply by `radius` and translate by the center position.
     for (final centerEntry in _gateOffsets.entries) {
       final centerName = centerEntry.key;
       final gates = centerEntry.value;
@@ -607,14 +621,8 @@ class _BodyGraphPainter extends CustomPainter {
       for (final ge in gates.entries) {
         final gate = ge.key;
         final off = ge.value;
-        // Direction unit vector (defaults to "down" if the offset is zero).
-        final mag = math.sqrt(off.dx * off.dx + off.dy * off.dy);
-        final ux = mag > 0 ? off.dx / mag : 0.0;
-        final uy = mag > 0 ? off.dy / mag : 1.0;
-        // Place the gate at the offset's natural anchor, then nudge outward
-        // by `padding` pixels so the number clears the shape outline.
-        final gx = cx + off.dx * radius + ux * padding;
-        final gy = cy + off.dy * radius + uy * padding;
+        final gx = cx + off.dx * radius;
+        final gy = cy + off.dy * radius;
 
         final inP = personalityGates.contains(gate);
         final inD = designGates.contains(gate);
