@@ -12,6 +12,10 @@ android {
     ndkVersion = flutter.ndkVersion
 
     compileOptions {
+        // flutter_local_notifications needs the desugared java.time API on
+        // older Android versions. Enabling core library desugaring lets it
+        // build against a low minSdk without runtime crashes.
+        isCoreLibraryDesugaringEnabled = true
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
     }
@@ -25,7 +29,7 @@ android {
         applicationId = "com.arzuman.livelyapp"
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
-        minSdk = 23
+        minSdk = flutter.minSdkVersion
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
@@ -42,4 +46,10 @@ android {
 
 flutter {
     source = "../.."
+}
+
+dependencies {
+    // Required by flutter_local_notifications (and any other plugin that
+    // uses java.time / NIO APIs) when targeting older minSdk levels.
+    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.4")
 }

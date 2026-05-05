@@ -9,6 +9,10 @@ class CosmicTheme {
   static ThemeData get darkTheme => _build(AppPalette.dark, Brightness.dark);
   static ThemeData get lightTheme => _build(AppPalette.light, Brightness.light);
 
+  // Brand gold — used for text selection / cursor / handles so the
+  // platform's default blue/purple selection chrome never leaks through.
+  static const _gold = Color(0xFFD4B16A);
+
   static ThemeData _build(AppPalette p, Brightness brightness) {
     final baseTextTheme = brightness == Brightness.dark
         ? ThemeData.dark().textTheme
@@ -102,25 +106,25 @@ class CosmicTheme {
           ),
         ),
       ),
+      textSelectionTheme: TextSelectionThemeData(
+        cursorColor: _gold,
+        selectionColor: _gold.withValues(alpha: 0.35),
+        selectionHandleColor: _gold,
+      ),
+      // Neutral InputDecorationTheme — no fill, no border, transparent
+      // hover/focus tints. Each search/text-field widget styles its own
+      // wrapping Container with the universal "dark surface + subtle
+      // outline" so we get a single shape and color everywhere.
       inputDecorationTheme: InputDecorationTheme(
-        filled: true,
-        fillColor: p.surfaceElevated,
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide.none,
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: p.glassBorder),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: p.primary),
-        ),
-        errorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: p.error),
-        ),
+        filled: false,
+        border: InputBorder.none,
+        enabledBorder: InputBorder.none,
+        focusedBorder: InputBorder.none,
+        disabledBorder: InputBorder.none,
+        errorBorder: InputBorder.none,
+        focusedErrorBorder: InputBorder.none,
+        hoverColor: Colors.transparent,
+        focusColor: Colors.transparent,
         hintStyle: TextStyle(color: p.textTertiary),
         contentPadding: const EdgeInsets.symmetric(
           horizontal: 16,

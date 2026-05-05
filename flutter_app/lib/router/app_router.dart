@@ -15,6 +15,7 @@ import '../features/home/presentation/screens/home_screen.dart';
 import '../features/journal/presentation/screens/journal_entry_screen.dart';
 import '../features/journal/presentation/screens/journal_screen.dart';
 import '../features/onboarding/presentation/screens/onboarding_flow.dart';
+import '../features/onboarding/presentation/screens/welcome_screen.dart';
 import '../features/paywall/presentation/screens/paywall_screen.dart';
 import '../features/profile/presentation/screens/profile_screen.dart';
 import '../features/rituals/presentation/screens/rituals_screen.dart';
@@ -59,6 +60,11 @@ final appRouterProvider = Provider<GoRouter>((ref) {
           FirebaseAuth.instance.currentUser != null;
       final isOnAuthRoute = state.matchedLocation == '/auth';
       final isOnOnboarding = state.matchedLocation == '/onboarding';
+      // /welcome is the post-onboarding celebratory screen — treat it as
+      // part of onboarding so users freshly arriving there aren't bounced
+      // back to /onboarding while their hasCompletedOnboarding flag
+      // hasn't refreshed yet.
+      final isOnWelcome = state.matchedLocation == '/welcome';
 
       if (!isAuthenticated && !isOnAuthRoute) return '/auth';
       if (isAuthenticated && isOnAuthRoute) {
@@ -67,6 +73,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       if (isAuthenticated &&
           !userState.hasCompletedOnboarding &&
           !isOnOnboarding &&
+          !isOnWelcome &&
           state.matchedLocation != '/auth') {
         return '/onboarding';
       }
@@ -103,6 +110,13 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         pageBuilder: (context, state) => _fadeTransition(
           state,
           const HomeScreen(),
+        ),
+      ),
+      GoRoute(
+        path: '/welcome',
+        pageBuilder: (context, state) => _fadeTransition(
+          state,
+          const WelcomeScreen(),
         ),
       ),
       GoRoute(

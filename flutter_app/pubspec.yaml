@@ -33,7 +33,7 @@ dependencies:
   sign_in_with_apple: ^6.1.0
 
   # Subscriptions
-  purchases_flutter: ^6.30.0
+  purchases_flutter: ^8.4.0
 
   # Local Storage
   shared_preferences: ^2.2.3

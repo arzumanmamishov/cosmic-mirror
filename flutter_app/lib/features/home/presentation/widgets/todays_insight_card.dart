@@ -1,14 +1,25 @@
+import 'package:cosmic_mirror/config/theme/app_palette.dart';
+import 'package:cosmic_mirror/features/daily_reading/domain/entities/daily_reading.dart';
+import 'package:cosmic_mirror/features/daily_reading/presentation/providers/daily_reading_provider.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import 'package:cosmic_mirror/config/theme/app_palette.dart';
-
-class TodaysInsightCard extends StatelessWidget {
+/// Today's Insight card — pulls live data from the daily-reading endpoint
+/// and falls back to a generic line while loading or on error so the
+/// surface never shows raw error chrome on the home feed.
+class TodaysInsightCard extends ConsumerWidget {
   const TodaysInsightCard({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final p = context.palette;
+    final readingAsync = ref.watch(dailyReadingProvider);
+
+    final body = readingAsync.maybeWhen(
+      data: _summaryFor,
+      orElse: () => "Tune in to today's celestial currents.",
+    );
 
     return Container(
       padding: const EdgeInsets.all(18),
@@ -16,6 +27,13 @@ class TodaysInsightCard extends StatelessWidget {
         color: p.surface,
         borderRadius: BorderRadius.circular(24),
         border: Border.all(color: p.glassBorder),
+        boxShadow: [
+          BoxShadow(
+            color: p.primary.withValues(alpha: 0.08),
+            blurRadius: 24,
+            offset: const Offset(0, 8),
+          ),
+        ],
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -34,7 +52,9 @@ class TodaysInsightCard extends StatelessWidget {
                 ),
                 const SizedBox(height: 6),
                 Text(
-                  'Venus guides you toward love\nand creative flow.',
+                  body,
+                  maxLines: 3,
+                  overflow: TextOverflow.ellipsis,
                   style: TextStyle(
                     color: p.textSecondary,
                     fontSize: 12.5,
@@ -51,7 +71,14 @@ class TodaysInsightCard extends StatelessWidget {
                     ),
                     decoration: BoxDecoration(
                       gradient: p.premiumGradient,
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(14),
+                      boxShadow: [
+                        BoxShadow(
+                          color: p.accent.withValues(alpha: 0.32),
+                          blurRadius: 12,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
                     ),
                     child: const Text(
                       'Read More',
@@ -66,7 +93,6 @@ class TodaysInsightCard extends StatelessWidget {
               ],
             ),
           ),
-          // Cosmic illustration with subtle radial glow
           SizedBox(
             width: 96,
             height: 96,
@@ -95,5 +121,13 @@ class TodaysInsightCard extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  String _summaryFor(DailyReading r) {
+    final action = r.action.trim();
+    if (action.isNotEmpty) return action;
+    final affirmation = r.affirmation.trim();
+    if (affirmation.isNotEmpty) return affirmation;
+    return r.emotional;
   }
 }

@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import '../../../../config/theme/colors.dart';
 
@@ -30,7 +31,10 @@ class BirthDatePicker extends StatelessWidget {
         initialDateTime: selectedDate ?? DateTime(1995, 6, 15),
         minimumDate: DateTime(1900),
         maximumDate: DateTime.now(),
-        onDateTimeChanged: onDateChanged,
+        onDateTimeChanged: (date) {
+          HapticFeedback.selectionClick();
+          onDateChanged(date);
+        },
         backgroundColor: Colors.transparent,
       ),
     );

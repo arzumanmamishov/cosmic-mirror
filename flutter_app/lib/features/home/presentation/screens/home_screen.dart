@@ -5,18 +5,19 @@ import 'package:go_router/go_router.dart';
 import 'package:cosmic_mirror/config/theme/app_palette.dart';
 import 'package:cosmic_mirror/features/ai_chat/presentation/screens/chat_threads_screen.dart';
 import 'package:cosmic_mirror/features/community/presentation/screens/spaces_list_screen.dart';
-import 'package:cosmic_mirror/features/home/presentation/widgets/astrologers_section.dart';
 import 'package:cosmic_mirror/features/home/presentation/widgets/discussions_section.dart';
+import 'package:cosmic_mirror/features/home/presentation/widgets/today_in_the_sky_card.dart';
 import 'package:cosmic_mirror/features/home/presentation/widgets/header_bar.dart';
 import 'package:cosmic_mirror/features/home/presentation/widgets/premium_upgrade_card.dart';
 import 'package:cosmic_mirror/features/home/presentation/widgets/todays_insight_card.dart';
-import 'package:cosmic_mirror/features/profile/presentation/screens/profile_screen.dart';
+import 'package:cosmic_mirror/shared/widgets/category_chip_bar.dart';
 import 'package:cosmic_mirror/shared/widgets/cosmic_starfield.dart';
+import 'package:cosmic_mirror/shared/widgets/pill_search_bar.dart';
 import 'package:cosmic_mirror/shared/widgets/staggered_fade_in.dart';
 
-/// Redesigned home screen matching the premium reference design:
-/// header avatar + name, premium upgrade card, today's insight,
-/// popular astrologers, featured discussions, and a custom 4-tab nav.
+/// Astrolite-aligned home: cosmic backdrop, greeting + pill search at the
+/// top, horizontal category chips beneath, glass content cards, and a
+/// polished 5-tab bottom nav with a purple-gradient active pill.
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
 
@@ -44,7 +45,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 _ChartsTab(),
                 ChatThreadsScreen(),
                 _CommunityTab(),
-                ProfileScreen(),
               ],
             ),
           ),
@@ -58,9 +58,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   }
 }
 
-/// Subtle radial backdrop with twinkling starfield, suggesting the zodiac
-/// wheel watermark in the reference design. Stays out of the way of the
-/// foreground content (set as IgnorePointer inside the starfield).
+/// Subtle radial backdrop with twinkling starfield.
 class _ZodiacBackdrop extends StatelessWidget {
   const _ZodiacBackdrop({required this.palette});
   final AppPalette palette;
@@ -70,7 +68,6 @@ class _ZodiacBackdrop extends StatelessWidget {
     return Positioned.fill(
       child: Stack(
         children: [
-          // Radial primary glow at the top
           Positioned.fill(
             child: DecoratedBox(
               decoration: BoxDecoration(
@@ -85,7 +82,6 @@ class _ZodiacBackdrop extends StatelessWidget {
               ),
             ),
           ),
-          // Twinkling stars
           CosmicStarfield(
             color: palette.textPrimary,
             starCount: 80,
@@ -97,8 +93,34 @@ class _ZodiacBackdrop extends StatelessWidget {
   }
 }
 
-class _DiscoverTab extends StatelessWidget {
+// ============================================================================
+// Discover tab — greeting, search, category chips, premium card, insight,
+// astrologers, discussions. Chips filter what's shown below the search.
+// ============================================================================
+
+const _discoverCategories = ['All', 'Daily', 'Sky', 'Community'];
+
+class _DiscoverTab extends StatefulWidget {
   const _DiscoverTab();
+
+  @override
+  State<_DiscoverTab> createState() => _DiscoverTabState();
+}
+
+class _DiscoverTabState extends State<_DiscoverTab> {
+  String _category = 'All';
+  final _searchCtrl = TextEditingController();
+
+  @override
+  void dispose() {
+    _searchCtrl.dispose();
+    super.dispose();
+  }
+
+  bool _showFor(String section) {
+    if (_category == 'All') return true;
+    return section == _category;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -106,165 +128,272 @@ class _DiscoverTab extends StatelessWidget {
       bottom: false,
       child: ListView(
         padding: const EdgeInsets.only(bottom: 32),
-        children: const [
-          FadeSlideIn(child: HomeHeaderBar()),
-          SizedBox(height: 20),
+        children: [
+          const FadeSlideIn(child: HomeHeaderBar()),
+          const SizedBox(height: 14),
           FadeSlideIn(
-            delay: Duration(milliseconds: 80),
+            delay: const Duration(milliseconds: 60),
             child: Padding(
-              padding: EdgeInsets.symmetric(horizontal: 20),
-              child: PremiumUpgradeCard(),
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: PillSearchBar(
+                controller: _searchCtrl,
+                hint: 'Search readings, astrologers, spaces…',
+                onSubmitted: (_) {},
+              ),
             ),
           ),
-          SizedBox(height: 18),
+          const SizedBox(height: 14),
           FadeSlideIn(
-            delay: Duration(milliseconds: 160),
-            child: Padding(
-              padding: EdgeInsets.symmetric(horizontal: 20),
-              child: TodaysInsightCard(),
+            delay: const Duration(milliseconds: 120),
+            child: CategoryChipBar(
+              categories: _discoverCategories,
+              selected: _category,
+              onSelected: (c) => setState(() => _category = c),
             ),
           ),
-          SizedBox(height: 24),
-          FadeSlideIn(
-            delay: Duration(milliseconds: 240),
-            child: AstrologersSection(),
-          ),
-          SizedBox(height: 24),
-          FadeSlideIn(
-            delay: Duration(milliseconds: 320),
-            child: DiscussionsSection(),
-          ),
+          const SizedBox(height: 18),
+          if (_showFor('All')) ...[
+            const FadeSlideIn(
+              delay: Duration(milliseconds: 180),
+              child: Padding(
+                padding: EdgeInsets.symmetric(horizontal: 20),
+                child: PremiumUpgradeCard(),
+              ),
+            ),
+            const SizedBox(height: 18),
+          ],
+          if (_showFor('Daily')) ...[
+            const FadeSlideIn(
+              delay: Duration(milliseconds: 220),
+              child: Padding(
+                padding: EdgeInsets.symmetric(horizontal: 20),
+                child: TodaysInsightCard(),
+              ),
+            ),
+            const SizedBox(height: 24),
+          ],
+          if (_showFor('Sky')) ...[
+            const FadeSlideIn(
+              delay: Duration(milliseconds: 260),
+              child: Padding(
+                padding: EdgeInsets.symmetric(horizontal: 20),
+                child: TodayInTheSkyCard(),
+              ),
+            ),
+            const SizedBox(height: 24),
+          ],
+          if (_showFor('Community')) ...[
+            const FadeSlideIn(
+              delay: Duration(milliseconds: 320),
+              child: DiscussionsSection(),
+            ),
+          ],
         ],
       ),
     );
   }
 }
 
-class _ChartsTab extends StatelessWidget {
+// ============================================================================
+// Charts tab — search + category chips that filter feature cards.
+// ============================================================================
+
+class _ChartFeature {
+  const _ChartFeature({
+    required this.icon,
+    required this.title,
+    required this.subtitle,
+    required this.route,
+    required this.gradientBuilder,
+    required this.category,
+    this.badge,
+  });
+  final IconData icon;
+  final String title;
+  final String subtitle;
+  final String route;
+  final Gradient Function(AppPalette p) gradientBuilder;
+  final String category; // 'Western' | 'Vedic' | 'Esoteric' | 'Forecast'
+  final String? badge;
+}
+
+const _chartCategories = [
+  'All',
+  'Western',
+  'Vedic',
+  'Esoteric',
+  'Forecast',
+];
+
+List<_ChartFeature> _allChartFeatures() => [
+      _ChartFeature(
+        icon: Icons.auto_awesome_rounded,
+        title: 'Birth Chart',
+        subtitle: 'Planets, houses, aspects.\nThe map of who you are.',
+        route: '/chart',
+        gradientBuilder: (p) => p.primaryGradient,
+        category: 'Western',
+      ),
+      _ChartFeature(
+        icon: Icons.brightness_5_rounded,
+        title: 'Vedic Chart',
+        subtitle:
+            'Sidereal kundli, nakshatras, dashas,\n16 vargas, yogas — full Jyotish.',
+        route: '/vedic-chart',
+        gradientBuilder: (p) => LinearGradient(colors: [p.gold, p.accent]),
+        category: 'Vedic',
+        badge: 'New',
+      ),
+      _ChartFeature(
+        icon: Icons.numbers_rounded,
+        title: 'Numerology',
+        subtitle:
+            'Life path, soul urge, cycles\n+ karmic patterns + compatibility.',
+        route: '/numerology',
+        gradientBuilder: (p) => LinearGradient(colors: [p.accent, p.gold]),
+        category: 'Esoteric',
+        badge: 'New',
+      ),
+      _ChartFeature(
+        icon: Icons.account_tree_rounded,
+        title: 'Human Design',
+        subtitle: 'Type, strategy, authority,\nyour body graph blueprint.',
+        route: '/human-design',
+        gradientBuilder: (p) => LinearGradient(colors: [p.primary, p.accent]),
+        category: 'Esoteric',
+        badge: 'New',
+      ),
+      _ChartFeature(
+        icon: Icons.timeline_rounded,
+        title: 'Cosmic Timeline',
+        subtitle:
+            'Your life mapped against the sky.\nMoments + active transits.',
+        route: '/life-timeline',
+        gradientBuilder: (p) => p.premiumGradient,
+        category: 'Forecast',
+        badge: 'New',
+      ),
+      _ChartFeature(
+        icon: Icons.calendar_month_rounded,
+        title: 'Yearly Forecast',
+        subtitle: 'What 2026 holds across\nlove, work, and growth.',
+        route: '/yearly-forecast',
+        gradientBuilder: (p) => LinearGradient(colors: [p.gold, p.warning]),
+        category: 'Forecast',
+      ),
+      _ChartFeature(
+        icon: Icons.timer_rounded,
+        title: 'Transit Forecast',
+        subtitle: 'The next 30 days, 3 months,\nand year ahead.',
+        route: '/timeline',
+        gradientBuilder: (p) => LinearGradient(colors: [p.accent, p.primary]),
+        category: 'Forecast',
+      ),
+    ];
+
+class _ChartsTab extends StatefulWidget {
   const _ChartsTab();
+
+  @override
+  State<_ChartsTab> createState() => _ChartsTabState();
+}
+
+class _ChartsTabState extends State<_ChartsTab> {
+  String _category = 'All';
+  final _searchCtrl = TextEditingController();
+  String _query = '';
+
+  @override
+  void dispose() {
+    _searchCtrl.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     final p = context.palette;
+    final all = _allChartFeatures();
+    final q = _query.trim().toLowerCase();
+    final filtered = all.where((f) {
+      final matchesCat = _category == 'All' || f.category == _category;
+      final matchesQuery = q.isEmpty ||
+          f.title.toLowerCase().contains(q) ||
+          f.subtitle.toLowerCase().contains(q);
+      return matchesCat && matchesQuery;
+    }).toList();
+
     return SafeArea(
       bottom: false,
       child: ListView(
-        padding: const EdgeInsets.fromLTRB(20, 20, 20, 32),
+        padding: const EdgeInsets.only(bottom: 32),
         children: [
-          FadeSlideIn(
-            child: Text(
-              'Your Cosmos',
-              style: TextStyle(
-                color: p.textPrimary,
-                fontSize: 26,
-                fontWeight: FontWeight.w700,
-                height: 1.1,
+          Padding(
+            padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
+            child: FadeSlideIn(
+              child: Text(
+                'Your Cosmos',
+                style: TextStyle(
+                  color: p.textPrimary,
+                  fontSize: 26,
+                  fontWeight: FontWeight.w700,
+                  height: 1.1,
+                ),
               ),
             ),
           ),
           const SizedBox(height: 4),
-          FadeSlideIn(
-            delay: const Duration(milliseconds: 60),
-            child: Text(
-              'Your blueprint and your story.',
-              style: TextStyle(color: p.textSecondary, fontSize: 13),
-            ),
-          ),
-          const SizedBox(height: 22),
-          FadeSlideIn(
-            delay: const Duration(milliseconds: 120),
-            child: _ChartFeatureCard(
-              icon: Icons.auto_awesome_rounded,
-              title: 'Birth Chart',
-              subtitle: 'Planets, houses, aspects.\nThe map of who you are.',
-              onTap: () => context.push('/chart'),
-              gradient: p.primaryGradient,
-            ),
-          ),
-          const SizedBox(height: 14),
-          FadeSlideIn(
-            delay: const Duration(milliseconds: 150),
-            child: _ChartFeatureCard(
-              icon: Icons.brightness_5_rounded,
-              title: 'Vedic Chart',
-              subtitle:
-                  'Sidereal kundli, nakshatras, dashas,\n16 vargas, yogas — full Jyotish.',
-              onTap: () => context.push('/vedic-chart'),
-              gradient: LinearGradient(
-                colors: [p.gold, p.accent],
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            child: FadeSlideIn(
+              delay: const Duration(milliseconds: 60),
+              child: Text(
+                'Your blueprint and your story.',
+                style: TextStyle(color: p.textSecondary, fontSize: 13),
               ),
-              badge: 'New',
             ),
           ),
-          const SizedBox(height: 14),
+          const SizedBox(height: 16),
           FadeSlideIn(
-            delay: const Duration(milliseconds: 165),
-            child: _ChartFeatureCard(
-              icon: Icons.numbers_rounded,
-              title: 'Numerology',
-              subtitle:
-                  'Life path, soul urge, cycles\n+ karmic patterns + compatibility.',
-              onTap: () => context.push('/numerology'),
-              gradient: LinearGradient(
-                colors: [p.accent, p.gold],
-              ),
-              badge: 'New',
-            ),
-          ),
-          const SizedBox(height: 14),
-          FadeSlideIn(
-            delay: const Duration(milliseconds: 175),
-            child: _ChartFeatureCard(
-              icon: Icons.account_tree_rounded,
-              title: 'Human Design',
-              subtitle:
-                  'Type, strategy, authority,\nyour body graph blueprint.',
-              onTap: () => context.push('/human-design'),
-              gradient: LinearGradient(
-                colors: [p.primary, p.accent],
-              ),
-              badge: 'New',
-            ),
-          ),
-          const SizedBox(height: 14),
-          FadeSlideIn(
-            delay: const Duration(milliseconds: 180),
-            child: _ChartFeatureCard(
-              icon: Icons.timeline_rounded,
-              title: 'Cosmic Timeline',
-              subtitle:
-                  'Your life mapped against the sky.\nMoments + active transits.',
-              onTap: () => context.push('/life-timeline'),
-              gradient: p.premiumGradient,
-              badge: 'New',
-            ),
-          ),
-          const SizedBox(height: 14),
-          FadeSlideIn(
-            delay: const Duration(milliseconds: 240),
-            child: _ChartFeatureCard(
-              icon: Icons.calendar_month_rounded,
-              title: 'Yearly Forecast',
-              subtitle: 'What 2026 holds across\nlove, work, and growth.',
-              onTap: () => context.push('/yearly-forecast'),
-              gradient: LinearGradient(
-                colors: [p.gold, p.warning],
+            delay: const Duration(milliseconds: 100),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: PillSearchBar(
+                controller: _searchCtrl,
+                hint: 'Search your charts…',
+                onChanged: (v) => setState(() => _query = v),
               ),
             ),
           ),
           const SizedBox(height: 14),
           FadeSlideIn(
-            delay: const Duration(milliseconds: 300),
-            child: _ChartFeatureCard(
-              icon: Icons.timer_rounded,
-              title: 'Transit Forecast',
-              subtitle: 'The next 30 days, 3 months,\nand year ahead.',
-              onTap: () => context.push('/timeline'),
-              gradient: LinearGradient(
-                colors: [p.accent, p.primary],
-              ),
+            delay: const Duration(milliseconds: 140),
+            child: CategoryChipBar(
+              categories: _chartCategories,
+              selected: _category,
+              onSelected: (c) => setState(() => _category = c),
             ),
           ),
+          const SizedBox(height: 18),
+          if (filtered.isEmpty)
+            Padding(
+              padding: const EdgeInsets.all(40),
+              child: Text(
+                'Nothing matches that yet.',
+                textAlign: TextAlign.center,
+                style: TextStyle(color: p.textSecondary, fontSize: 13),
+              ),
+            )
+          else
+            for (var i = 0; i < filtered.length; i++) ...[
+              FadeSlideIn(
+                delay: Duration(milliseconds: 140 + i * 30),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  child: _ChartFeatureCard(feature: filtered[i]),
+                ),
+              ),
+              const SizedBox(height: 14),
+            ],
         ],
       ),
     );
@@ -272,27 +401,14 @@ class _ChartsTab extends StatelessWidget {
 }
 
 class _ChartFeatureCard extends StatelessWidget {
-  const _ChartFeatureCard({
-    required this.icon,
-    required this.title,
-    required this.subtitle,
-    required this.onTap,
-    required this.gradient,
-    this.badge,
-  });
-
-  final IconData icon;
-  final String title;
-  final String subtitle;
-  final VoidCallback onTap;
-  final Gradient gradient;
-  final String? badge;
+  const _ChartFeatureCard({required this.feature});
+  final _ChartFeature feature;
 
   @override
   Widget build(BuildContext context) {
     final p = context.palette;
     return InkWell(
-      onTap: onTap,
+      onTap: () => context.push(feature.route),
       borderRadius: BorderRadius.circular(22),
       child: Container(
         padding: const EdgeInsets.all(18),
@@ -307,7 +423,7 @@ class _ChartFeatureCard extends StatelessWidget {
               width: 56,
               height: 56,
               decoration: BoxDecoration(
-                gradient: gradient,
+                gradient: feature.gradientBuilder(p),
                 borderRadius: BorderRadius.circular(16),
                 boxShadow: [
                   BoxShadow(
@@ -318,7 +434,7 @@ class _ChartFeatureCard extends StatelessWidget {
                 ],
               ),
               alignment: Alignment.center,
-              child: Icon(icon, color: Colors.white, size: 26),
+              child: Icon(feature.icon, color: Colors.white, size: 26),
             ),
             const SizedBox(width: 14),
             Expanded(
@@ -328,14 +444,14 @@ class _ChartFeatureCard extends StatelessWidget {
                   Row(
                     children: [
                       Text(
-                        title,
+                        feature.title,
                         style: TextStyle(
                           color: p.textPrimary,
                           fontSize: 15,
                           fontWeight: FontWeight.w700,
                         ),
                       ),
-                      if (badge != null) ...[
+                      if (feature.badge != null) ...[
                         const SizedBox(width: 8),
                         Container(
                           padding: const EdgeInsets.symmetric(
@@ -347,7 +463,7 @@ class _ChartFeatureCard extends StatelessWidget {
                             borderRadius: BorderRadius.circular(8),
                           ),
                           child: Text(
-                            badge!,
+                            feature.badge!,
                             style: TextStyle(
                               color: p.primary,
                               fontSize: 9,
@@ -361,7 +477,7 @@ class _ChartFeatureCard extends StatelessWidget {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    subtitle,
+                    feature.subtitle,
                     style: TextStyle(
                       color: p.textSecondary,
                       fontSize: 12.5,
@@ -383,7 +499,6 @@ class _ChartFeatureCard extends StatelessWidget {
   }
 }
 
-
 class _CommunityTab extends StatelessWidget {
   const _CommunityTab();
 
@@ -393,8 +508,13 @@ class _CommunityTab extends StatelessWidget {
   }
 }
 
-/// Bottom navigation with three primary destinations:
-/// Discover, Charts, and Community.
+// ============================================================================
+// Bottom nav — minimal 4-item bar matching the Astrolite reference. Active
+// item shows a brighter icon + label and a small accent dot indicator
+// underneath; inactive items stay quiet. Profile lives behind the avatar
+// in the home header instead of taking a slot here.
+// ============================================================================
+
 class _CustomBottomNav extends StatelessWidget {
   const _CustomBottomNav({required this.currentIndex, required this.onTap});
 
@@ -407,19 +527,19 @@ class _CustomBottomNav extends StatelessWidget {
 
     return Container(
       decoration: BoxDecoration(
-        color: p.surface,
+        color: p.surface.withValues(alpha: 0.92),
         border: Border(top: BorderSide(color: p.glassBorder)),
       ),
       child: SafeArea(
         top: false,
         child: SizedBox(
-          height: 72,
+          height: 64,
           child: Row(
             children: [
               _NavItem(
-                icon: Icons.travel_explore_rounded,
-                activeIcon: Icons.travel_explore_rounded,
-                label: 'Discover',
+                icon: Icons.home_outlined,
+                activeIcon: Icons.home_rounded,
+                label: 'Home',
                 active: currentIndex == 0,
                 onTap: () => onTap(0),
                 palette: p,
@@ -433,27 +553,19 @@ class _CustomBottomNav extends StatelessWidget {
                 palette: p,
               ),
               _NavItem(
-                icon: Icons.auto_awesome_rounded,
-                activeIcon: Icons.auto_awesome_rounded,
-                label: 'Astrologer',
+                icon: Icons.chat_bubble_outline_rounded,
+                activeIcon: Icons.chat_bubble_rounded,
+                label: 'Chat',
                 active: currentIndex == 2,
                 onTap: () => onTap(2),
                 palette: p,
               ),
               _NavItem(
-                icon: Icons.forum_rounded,
+                icon: Icons.forum_outlined,
                 activeIcon: Icons.forum_rounded,
                 label: 'Community',
                 active: currentIndex == 3,
                 onTap: () => onTap(3),
-                palette: p,
-              ),
-              _NavItem(
-                icon: Icons.person_outline_rounded,
-                activeIcon: Icons.person_rounded,
-                label: 'Profile',
-                active: currentIndex == 4,
-                onTap: () => onTap(4),
                 palette: p,
               ),
             ],
@@ -483,7 +595,8 @@ class _NavItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = active ? palette.accent : palette.textSecondary;
+    final activeColor = palette.textPrimary;
+    final inactiveColor = palette.textSecondary;
     return Expanded(
       child: GestureDetector(
         onTap: onTap,
@@ -492,18 +605,36 @@ class _NavItem extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           mainAxisSize: MainAxisSize.min,
           children: [
-            SizedBox(
-              width: 24,
-              height: 24,
-              child: Icon(active ? activeIcon : icon, color: color, size: 24),
+            Icon(
+              active ? activeIcon : icon,
+              color: active ? activeColor : inactiveColor,
+              size: 24,
             ),
             const SizedBox(height: 4),
             Text(
               label,
               style: TextStyle(
-                color: color,
+                color: active ? activeColor : inactiveColor,
                 fontSize: 11,
-                fontWeight: active ? FontWeight.w600 : FontWeight.w500,
+                fontWeight: active ? FontWeight.w700 : FontWeight.w500,
+              ),
+            ),
+            const SizedBox(height: 4),
+            AnimatedContainer(
+              duration: const Duration(milliseconds: 200),
+              width: active ? 5 : 0,
+              height: active ? 5 : 0,
+              decoration: BoxDecoration(
+                gradient: active ? palette.primaryGradient : null,
+                shape: BoxShape.circle,
+                boxShadow: active
+                    ? [
+                        BoxShadow(
+                          color: palette.primary.withValues(alpha: 0.6),
+                          blurRadius: 6,
+                        ),
+                      ]
+                    : null,
               ),
             ),
           ],

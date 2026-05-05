@@ -1,5 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+// ignore: unnecessary_import
+import 'package:flutter/services.dart';
 
 import '../../../../config/theme/colors.dart';
 import '../../../../config/theme/typography.dart';
@@ -24,7 +26,10 @@ class BirthTimePicker extends StatelessWidget {
       children: [
         // Unknown time toggle
         GestureDetector(
-          onTap: () => onKnownChanged(!birthTimeKnown),
+          onTap: () {
+            HapticFeedback.selectionClick();
+            onKnownChanged(!birthTimeKnown);
+          },
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
             decoration: BoxDecoration(
@@ -89,7 +94,10 @@ class BirthTimePicker extends StatelessWidget {
                 mode: CupertinoDatePickerMode.time,
                 initialDateTime: selectedTime ?? DateTime(2000, 1, 1, 12),
                 use24hFormat: true,
-                onDateTimeChanged: onTimeChanged,
+                onDateTimeChanged: (time) {
+                  HapticFeedback.selectionClick();
+                  onTimeChanged(time);
+                },
                 backgroundColor: Colors.transparent,
               ),
             ),

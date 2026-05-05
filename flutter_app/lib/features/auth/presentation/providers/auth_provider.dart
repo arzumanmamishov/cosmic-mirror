@@ -109,6 +109,24 @@ class AuthActionNotifier extends StateNotifier<AuthActionState> {
     );
   }
 
+  Future<bool> signUpWithEmail(String email, String password) async {
+    state = const AuthActionState(
+      isLoading: true,
+      activeMethod: AuthMethod.email,
+    );
+    final result = await _repository.signUpWithEmail(email, password);
+    return result.when(
+      success: (_) {
+        state = const AuthActionState();
+        return true;
+      },
+      failure: (failure) {
+        state = AuthActionState(error: failure.message);
+        return false;
+      },
+    );
+  }
+
   void clearError() {
     state = const AuthActionState();
   }

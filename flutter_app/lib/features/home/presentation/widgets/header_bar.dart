@@ -17,22 +17,25 @@ class HomeHeaderBar extends ConsumerWidget {
       padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
       child: Row(
         children: [
-          // Avatar with gradient ring
-          Container(
-            width: 48,
-            height: 48,
-            padding: const EdgeInsets.all(2),
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              gradient: p.primaryGradient,
-            ),
-            child: CircleAvatar(
-              backgroundColor: p.surfaceElevated,
-              child: Text(
-                _initial(user.name),
-                style: TextStyle(
-                  color: p.textPrimary,
-                  fontWeight: FontWeight.w600,
+          // Avatar with gradient ring — taps to open Profile.
+          GestureDetector(
+            onTap: () => context.push('/profile'),
+            child: Container(
+              width: 48,
+              height: 48,
+              padding: const EdgeInsets.all(2),
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                gradient: p.primaryGradient,
+              ),
+              child: CircleAvatar(
+                backgroundColor: p.surfaceElevated,
+                child: Text(
+                  _initial(user.name),
+                  style: TextStyle(
+                    color: p.textPrimary,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
               ),
             ),

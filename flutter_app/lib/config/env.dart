@@ -32,9 +32,13 @@ class Env {
           defaultValue: 'https://staging-api.livelyapp.co',
         );
       case Environment.dev:
+        // For real Android/iOS devices, "localhost" points at the device
+        // itself, not the dev machine, so we use the LAN IP. Override at
+        // build time with --dart-define=API_BASE_URL=... when needed
+        // (e.g. http://10.0.2.2:8080 for the Android emulator).
         return const String.fromEnvironment(
           'API_BASE_URL',
-          defaultValue: 'http://localhost:8080',
+          defaultValue: 'http://192.168.1.44:8080',
         );
     }
   }

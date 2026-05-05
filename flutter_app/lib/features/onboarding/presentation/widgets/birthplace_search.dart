@@ -1,10 +1,17 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 
-import '../../../../config/theme/colors.dart';
-import '../../../../config/theme/typography.dart';
 import '../../../../core/network/api_client.dart';
+
+const _kGold = Color(0xFFD4B16A);
+const _kSurface = Color(0xFF1A1F2E);
+const _kSurfaceElevated = Color(0xFF1F2436);
+const _kBorder = Color(0xFF2A2F3E);
+const _kTextPrimary = Colors.white;
+const _kTextSecondary = Color(0xFFB6BAC4);
+const _kTextTertiary = Color(0xFF7E8290);
 
 class BirthplaceSearch extends StatefulWidget {
   const BirthplaceSearch({
@@ -64,8 +71,6 @@ class _BirthplaceSearchState extends State<BirthplaceSearch> {
   Future<void> _searchPlaces(String query) async {
     setState(() => _isLoading = true);
     try {
-      // In production, this calls a geocoding API (Google Places, Mapbox, etc.)
-      // For now, we use the backend's place search endpoint
       final client = ApiClient();
       final results = await client.get<Map<String, dynamic>>(
         '/api/v1/places/search',
@@ -119,94 +124,173 @@ class _BirthplaceSearchState extends State<BirthplaceSearch> {
   @override
   Widget build(BuildContext context) {
     return Column(
+      mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        TextField(
-          controller: _controller,
-          focusNode: _focusNode,
-          onChanged: (value) {
-            _showSuggestions = true;
-            _onSearchChanged(value);
-          },
-          decoration: InputDecoration(
-            hintText: 'Search for a city...',
-            prefixIcon: const Icon(Icons.location_on_outlined),
-            suffixIcon: _isLoading
-                ? const Padding(
-                    padding: EdgeInsets.all(14),
-                    child: SizedBox(
-                      width: 20,
-                      height: 20,
-                      child: CircularProgressIndicator(strokeWidth: 2),
+        // Search input — same style as the auth email/password fields.
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          decoration: BoxDecoration(
+            color: _kSurface,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: _kBorder),
+          ),
+          child: Row(
+            children: [
+              const Icon(
+                Icons.location_on_outlined,
+                color: _kTextTertiary,
+                size: 18,
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: TextField(
+                  controller: _controller,
+                  focusNode: _focusNode,
+                  cursorColor: _kGold,
+                  onChanged: (value) {
+                    _showSuggestions = true;
+                    _onSearchChanged(value);
+                  },
+                  style: GoogleFonts.poppins(
+                    color: _kTextPrimary,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                  ),
+                  decoration: InputDecoration(
+                    isCollapsed: true,
+                    contentPadding: const EdgeInsets.symmetric(vertical: 18),
+                    border: InputBorder.none,
+                    enabledBorder: InputBorder.none,
+                    focusedBorder: InputBorder.none,
+                    hintText: 'Search for a city…',
+                    hintStyle: GoogleFonts.poppins(
+                      color: _kTextTertiary,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w400,
                     ),
-                  )
-                : _controller.text.isNotEmpty
-                    ? IconButton(
-                        icon: const Icon(Icons.clear),
-                        onPressed: () {
-                          _controller.clear();
-                          setState(() {
-                            _suggestions = [];
-                            _showSuggestions = false;
-                          });
-                        },
-                      )
-                    : null,
+                  ),
+                ),
+              ),
+              if (_isLoading)
+                const SizedBox(
+                  width: 18,
+                  height: 18,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    valueColor: AlwaysStoppedAnimation(_kGold),
+                  ),
+                )
+              else if (_controller.text.isNotEmpty)
+                GestureDetector(
+                  onTap: () {
+                    _controller.clear();
+                    setState(() {
+                      _suggestions = [];
+                      _showSuggestions = false;
+                    });
+                  },
+                  behavior: HitTestBehavior.opaque,
+                  child: const Icon(
+                    Icons.close_rounded,
+                    color: _kTextTertiary,
+                    size: 18,
+                  ),
+                ),
+            ],
           ),
         ),
+
+        // Suggestions panel — flexible so it never overflows. ListView
+        // already scrolls internally; the outer Flexible bounds the
+        // height to whatever vertical space is available.
         if (_showSuggestions && _suggestions.isNotEmpty) ...[
-          const SizedBox(height: 8),
-          Container(
-            constraints: const BoxConstraints(maxHeight: 240),
-            decoration: BoxDecoration(
-              color: CosmicColors.surfaceLight,
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: CosmicColors.glassBorder),
-            ),
-            child: ListView.separated(
-              shrinkWrap: true,
-              padding: EdgeInsets.zero,
-              itemCount: _suggestions.length,
-              separatorBuilder: (_, __) => Divider(
-                height: 1,
-                color: CosmicColors.glassBorder,
+          const SizedBox(height: 10),
+          Flexible(
+            child: Container(
+              decoration: BoxDecoration(
+                color: _kSurfaceElevated,
+                borderRadius: BorderRadius.circular(14),
+                border: Border.all(color: _kBorder),
               ),
-              itemBuilder: (context, index) {
-                final place = _suggestions[index];
-                return ListTile(
-                  leading: const Icon(
-                    Icons.location_on,
-                    color: CosmicColors.primary,
-                    size: 20,
-                  ),
-                  title: Text(place.name, style: CosmicTypography.bodyMedium),
-                  dense: true,
-                  onTap: () => _selectPlace(place),
-                );
-              },
+              clipBehavior: Clip.antiAlias,
+              child: ListView.separated(
+                shrinkWrap: true,
+                padding: EdgeInsets.zero,
+                itemCount: _suggestions.length,
+                separatorBuilder: (_, __) => const Divider(
+                  height: 1,
+                  thickness: 1,
+                  color: _kBorder,
+                ),
+                itemBuilder: (context, index) {
+                  final place = _suggestions[index];
+                  return InkWell(
+                    onTap: () => _selectPlace(place),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 14,
+                        vertical: 12,
+                      ),
+                      child: Row(
+                        children: [
+                          const Icon(
+                            Icons.location_on_rounded,
+                            color: _kGold,
+                            size: 18,
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Text(
+                              place.name,
+                              style: GoogleFonts.poppins(
+                                color: _kTextPrimary,
+                                fontSize: 13,
+                                fontWeight: FontWeight.w500,
+                                height: 1.3,
+                              ),
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                },
+              ),
             ),
           ),
         ],
+
+        // Confirmation chip — shown after a place was selected.
         if (widget.selectedPlace != null && !_showSuggestions) ...[
-          const SizedBox(height: 16),
+          const SizedBox(height: 14),
           Container(
-            padding: const EdgeInsets.all(12),
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
             decoration: BoxDecoration(
-              color: CosmicColors.success.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: CosmicColors.success.withOpacity(0.3)),
+              color: _kGold.withValues(alpha: 0.10),
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(color: _kGold.withValues(alpha: 0.4)),
             ),
             child: Row(
               children: [
-                const Icon(Icons.check_circle,
-                    color: CosmicColors.success, size: 20),
-                const SizedBox(width: 8),
+                const Icon(
+                  Icons.check_circle_rounded,
+                  color: _kGold,
+                  size: 18,
+                ),
+                const SizedBox(width: 10),
                 Expanded(
                   child: Text(
                     widget.selectedPlace!,
-                    style: CosmicTypography.bodySmall.copyWith(
-                      color: CosmicColors.success,
+                    style: GoogleFonts.poppins(
+                      color: _kTextSecondary,
+                      fontSize: 13,
+                      fontWeight: FontWeight.w500,
                     ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
                   ),
                 ),
               ],
