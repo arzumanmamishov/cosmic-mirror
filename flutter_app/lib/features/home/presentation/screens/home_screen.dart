@@ -241,66 +241,63 @@ const _chartCategoryKeys = [
   'Forecast',
 ];
 
-List<_ChartFeature> _allChartFeatures() => [
+List<_ChartFeature> _allChartFeatures(AppLocalizations l10n) => [
       _ChartFeature(
         icon: Icons.auto_awesome_rounded,
-        title: 'Birth Chart',
-        subtitle: 'Planets, houses, aspects.\nThe map of who you are.',
+        title: l10n.chartBirthChart,
+        subtitle: l10n.chartBirthChartSubtitle,
         route: '/chart',
         gradientBuilder: (p) => p.primaryGradient,
         category: 'Western',
       ),
       _ChartFeature(
         icon: Icons.brightness_5_rounded,
-        title: 'Vedic Chart',
-        subtitle:
-            'Sidereal kundli, nakshatras, dashas,\n16 vargas, yogas — full Jyotish.',
+        title: l10n.chartVedic,
+        subtitle: l10n.chartVedicSubtitle,
         route: '/vedic-chart',
         gradientBuilder: (p) => LinearGradient(colors: [p.gold, p.accent]),
         category: 'Vedic',
-        badge: 'New',
+        badge: l10n.chartBadgeNew,
       ),
       _ChartFeature(
         icon: Icons.numbers_rounded,
-        title: 'Numerology',
-        subtitle:
-            'Life path, soul urge, cycles\n+ karmic patterns + compatibility.',
+        title: l10n.chartNumerology,
+        subtitle: l10n.chartNumerologySubtitle,
         route: '/numerology',
         gradientBuilder: (p) => LinearGradient(colors: [p.accent, p.gold]),
         category: 'Esoteric',
-        badge: 'New',
+        badge: l10n.chartBadgeNew,
       ),
       _ChartFeature(
         icon: Icons.account_tree_rounded,
-        title: 'Human Design',
-        subtitle: 'Type, strategy, authority,\nyour body graph blueprint.',
+        title: l10n.chartHumanDesign,
+        subtitle: l10n.chartHumanDesignSubtitle,
         route: '/human-design',
         gradientBuilder: (p) => LinearGradient(colors: [p.primary, p.accent]),
         category: 'Esoteric',
-        badge: 'New',
+        badge: l10n.chartBadgeNew,
       ),
       _ChartFeature(
         icon: Icons.timeline_rounded,
-        title: 'Cosmic Timeline',
-        subtitle:
-            'Your life mapped against the sky.\nMoments + active transits.',
+        title: l10n.chartCosmicTimeline,
+        subtitle: l10n.chartCosmicTimelineSubtitle,
         route: '/life-timeline',
         gradientBuilder: (p) => p.premiumGradient,
         category: 'Forecast',
-        badge: 'New',
+        badge: l10n.chartBadgeNew,
       ),
       _ChartFeature(
         icon: Icons.calendar_month_rounded,
-        title: 'Yearly Forecast',
-        subtitle: 'What 2026 holds across\nlove, work, and growth.',
+        title: l10n.chartYearlyForecast,
+        subtitle: l10n.chartYearlyForecastSubtitle,
         route: '/yearly-forecast',
         gradientBuilder: (p) => LinearGradient(colors: [p.gold, p.warning]),
         category: 'Forecast',
       ),
       _ChartFeature(
         icon: Icons.timer_rounded,
-        title: 'Transit Forecast',
-        subtitle: 'The next 30 days, 3 months,\nand year ahead.',
+        title: l10n.chartTransitForecast,
+        subtitle: l10n.chartTransitForecastSubtitle,
         route: '/timeline',
         gradientBuilder: (p) => LinearGradient(colors: [p.accent, p.primary]),
         category: 'Forecast',
@@ -328,7 +325,7 @@ class _ChartsTabState extends State<_ChartsTab> {
   @override
   Widget build(BuildContext context) {
     final p = context.palette;
-    final all = _allChartFeatures();
+    final all = _allChartFeatures(AppLocalizations.of(context));
     final q = _query.trim().toLowerCase();
     final filtered = all.where((f) {
       final matchesCat = _category == 'All' || f.category == _category;
@@ -408,7 +405,7 @@ class _ChartsTabState extends State<_ChartsTab> {
             Padding(
               padding: const EdgeInsets.all(40),
               child: Text(
-                'Nothing matches that yet.',
+                AppLocalizations.of(context).chartsNothingMatches,
                 textAlign: TextAlign.center,
                 style: TextStyle(color: p.textSecondary, fontSize: 13),
               ),

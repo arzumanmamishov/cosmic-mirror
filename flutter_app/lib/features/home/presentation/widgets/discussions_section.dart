@@ -1,6 +1,7 @@
 import 'package:cosmic_mirror/config/theme/app_palette.dart';
 import 'package:cosmic_mirror/features/community/domain/entities/space.dart';
 import 'package:cosmic_mirror/features/community/presentation/providers/community_providers.dart';
+import 'package:cosmic_mirror/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -19,6 +20,7 @@ class DiscussionsSection extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final p = context.palette;
+    final l10n = AppLocalizations.of(context);
     final spacesAsync = ref.watch(spacesProvider);
 
     return Column(
@@ -30,7 +32,7 @@ class DiscussionsSection extends ConsumerWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                'Featured Discussions',
+                l10n.homeFeaturedDiscussions,
                 style: GoogleFonts.poppins(
                   color: p.textPrimary,
                   fontSize: 16,
@@ -41,7 +43,7 @@ class DiscussionsSection extends ConsumerWidget {
                 onTap: () => context.push('/community'),
                 behavior: HitTestBehavior.opaque,
                 child: Text(
-                  'See all',
+                  l10n.homeSeeAll,
                   style: GoogleFonts.poppins(
                     color: _kGold,
                     fontSize: 13,
@@ -56,13 +58,13 @@ class DiscussionsSection extends ConsumerWidget {
         spacesAsync.when(
           loading: () => const _SpacesSkeleton(),
           error: (e, _) => _Message(
-            text: "Couldn't load spaces just now.",
+            text: l10n.discussionsLoadError,
             palette: p,
           ),
           data: (spaces) {
             if (spaces.isEmpty) {
               return _Message(
-                text: 'No spaces yet — be the first to start one.',
+                text: l10n.discussionsEmpty,
                 palette: p,
               );
             }
@@ -138,7 +140,7 @@ class _SpaceCard extends StatelessWidget {
                   const Spacer(),
                   if (item.isJoined)
                     Text(
-                      'Joined',
+                      AppLocalizations.of(context).discussionsJoined,
                       style: GoogleFonts.poppins(
                         color: p.textTertiary,
                         fontSize: 11,
@@ -183,7 +185,8 @@ class _SpaceCard extends StatelessWidget {
                   ),
                   const SizedBox(width: 4),
                   Text(
-                    _memberCountLabel(s.memberCount),
+                    AppLocalizations.of(context)
+                        .discussionsMembersCount(_compactCount(s.memberCount)),
                     style: GoogleFonts.poppins(
                       color: p.textSecondary,
                       fontSize: 11,
@@ -217,9 +220,12 @@ class _SpaceCard extends StatelessWidget {
     );
   }
 
-  String _memberCountLabel(int n) {
-    if (n >= 1000) return '${(n / 1000).toStringAsFixed(1)}k members';
-    return '$n ${n == 1 ? 'member' : 'members'}';
+  /// Returns a locale-friendly numeric token for the member count
+  /// ("12", "1.2k"). The localized "members" suffix is added by the
+  /// `discussionsMembersCount` ARB string.
+  String _compactCount(int n) {
+    if (n >= 1000) return '${(n / 1000).toStringAsFixed(1)}k';
+    return '$n';
   }
 }
 

@@ -1,6 +1,7 @@
 import 'package:cosmic_mirror/config/theme/app_palette.dart';
 import 'package:cosmic_mirror/features/daily_reading/domain/entities/daily_reading.dart';
 import 'package:cosmic_mirror/features/daily_reading/presentation/providers/daily_reading_provider.dart';
+import 'package:cosmic_mirror/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -14,11 +15,12 @@ class TodaysInsightCard extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final p = context.palette;
+    final l10n = AppLocalizations.of(context);
     final readingAsync = ref.watch(dailyReadingProvider);
 
     final body = readingAsync.maybeWhen(
       data: _summaryFor,
-      orElse: () => "Tune in to today's celestial currents.",
+      orElse: () => l10n.homeTuneIn,
     );
 
     return Container(
@@ -43,7 +45,7 @@ class TodaysInsightCard extends ConsumerWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  "Today's Insight",
+                  l10n.homeTodaysInsight,
                   style: TextStyle(
                     color: p.textPrimary,
                     fontSize: 17,
@@ -80,9 +82,9 @@ class TodaysInsightCard extends ConsumerWidget {
                         ),
                       ],
                     ),
-                    child: const Text(
-                      'Read More',
-                      style: TextStyle(
+                    child: Text(
+                      l10n.homeReadMore,
+                      style: const TextStyle(
                         color: Colors.white,
                         fontSize: 12,
                         fontWeight: FontWeight.w600,

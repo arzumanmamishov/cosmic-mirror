@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../config/theme/colors.dart';
 import '../../../../config/theme/typography.dart';
+import '../../../../l10n/app_localizations.dart';
 import '../../../../shared/widgets/error_view.dart';
 import '../../../../shared/widgets/loading_shimmer.dart';
 import '../../domain/entities/chat_entities.dart';
@@ -84,7 +85,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Astrologer'),
+        title: Text(AppLocalizations.of(context).aiChatTitle),
         actions: [
           IconButton(
             icon: const Icon(Icons.more_vert),
@@ -222,8 +223,9 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                         enabled: !atLimit,
                         decoration: InputDecoration(
                           hintText: atLimit
-                              ? 'Daily limit reached — upgrade to continue'
-                              : 'Ask your astrologer...',
+                              ? AppLocalizations.of(context)
+                                  .aiChatLimitReachedHint
+                              : AppLocalizations.of(context).aiChatInputHint,
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(24),
                             borderSide: BorderSide.none,
@@ -337,8 +339,9 @@ class _CounterPill extends StatelessWidget {
                 const SizedBox(width: 6),
                 Text(
                   atLimit
-                      ? 'Daily limit reached'
-                      : '$used of $limit messages today',
+                      ? AppLocalizations.of(context).aiChatLimitReached
+                      : AppLocalizations.of(context)
+                          .aiChatMessagesToday(used, limit),
                   style: CosmicTypography.caption.copyWith(
                     color: atLimit ? _kGold : CosmicColors.textSecondary,
                     fontWeight: FontWeight.w600,
@@ -372,16 +375,16 @@ class _PremiumBadge extends StatelessWidget {
             ),
             child: Row(
               mainAxisSize: MainAxisSize.min,
-              children: const [
-                Icon(
+              children: [
+                const Icon(
                   Icons.workspace_premium_rounded,
                   size: 14,
                   color: _kGold,
                 ),
-                SizedBox(width: 6),
+                const SizedBox(width: 6),
                 Text(
-                  'Premium · Unlimited',
-                  style: TextStyle(
+                  AppLocalizations.of(context).aiChatPremiumUnlimited,
+                  style: const TextStyle(
                     color: _kGold,
                     fontSize: 12,
                     fontWeight: FontWeight.w700,
@@ -430,7 +433,7 @@ class _PaywallCard extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        "You've reached today's free limit.",
+                        AppLocalizations.of(context).aiChatPaywallTitle,
                         style: CosmicTypography.bodySmall.copyWith(
                           color: CosmicColors.textPrimary,
                           fontWeight: FontWeight.w700,
@@ -438,7 +441,7 @@ class _PaywallCard extends StatelessWidget {
                       ),
                       const SizedBox(height: 2),
                       Text(
-                        'Upgrade to Premium for unlimited chat with your astrologer.',
+                        AppLocalizations.of(context).aiChatPaywallSubtitle,
                         style: CosmicTypography.caption.copyWith(
                           color: CosmicColors.textSecondary,
                         ),

@@ -478,25 +478,55 @@ class _FocusAreasStep extends StatelessWidget {
   final OnboardingNotifier notifier;
   final OnboardingState state;
 
-  static const _areas = [
-    ('Love & Relationships', Icons.favorite_outline),
-    ('Career & Purpose', Icons.work_outline),
-    ('Personal Growth', Icons.psychology_outlined),
-    ('Health & Wellness', Icons.spa_outlined),
-    ('Creativity', Icons.palette_outlined),
-    ('Spirituality', Icons.self_improvement),
+  // Stable English keys — these are stored on the user's profile and
+  // shipped to the backend. The display label comes from AppLocalizations
+  // so users see "Aşk ve İlişkiler" but the saved key stays "Love &
+  // Relationships" regardless of locale.
+  static const _areaKeys = [
+    'Love & Relationships',
+    'Career & Purpose',
+    'Personal Growth',
+    'Health & Wellness',
+    'Creativity',
+    'Spirituality',
   ];
+  static const _areaIcons = [
+    Icons.favorite_outline,
+    Icons.work_outline,
+    Icons.psychology_outlined,
+    Icons.spa_outlined,
+    Icons.palette_outlined,
+    Icons.self_improvement,
+  ];
+
+  String _localizedLabel(int i, AppLocalizations l10n) {
+    switch (i) {
+      case 0:
+        return l10n.focusLove;
+      case 1:
+        return l10n.focusCareer;
+      case 2:
+        return l10n.focusGrowth;
+      case 3:
+        return l10n.focusHealth;
+      case 4:
+        return l10n.focusCreativity;
+      default:
+        return l10n.focusSpirituality;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 24),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           _StepHeader(
-            title: AppLocalizations.of(context).onboardingFocusTitle,
-            subtitle: AppLocalizations.of(context).onboardingFocusSubtitle,
+            title: l10n.onboardingFocusTitle,
+            subtitle: l10n.onboardingFocusSubtitle,
           ),
           const SizedBox(height: 28),
           Expanded(
@@ -507,12 +537,14 @@ class _FocusAreasStep extends StatelessWidget {
                 crossAxisSpacing: 12,
                 childAspectRatio: 2.5,
               ),
-              itemCount: _areas.length,
+              itemCount: _areaKeys.length,
               itemBuilder: (context, index) {
-                final (label, icon) = _areas[index];
-                final isSelected = state.focusAreas.contains(label);
+                final key = _areaKeys[index];
+                final icon = _areaIcons[index];
+                final label = _localizedLabel(index, l10n);
+                final isSelected = state.focusAreas.contains(key);
                 return GestureDetector(
-                  onTap: () => notifier.toggleFocusArea(label),
+                  onTap: () => notifier.toggleFocusArea(key),
                   child: AnimatedContainer(
                     duration: const Duration(milliseconds: 200),
                     decoration: BoxDecoration(

@@ -1,5 +1,6 @@
 import 'dart:math' as math;
 
+import 'package:cosmic_mirror/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
@@ -41,7 +42,7 @@ class TodayInTheSkyCard extends StatelessWidget {
           Row(
             children: [
               Text(
-                'Today in the Sky',
+                AppLocalizations.of(context).homeTodayInTheSky,
                 style: GoogleFonts.poppins(
                   color: Colors.white,
                   fontSize: 16,
