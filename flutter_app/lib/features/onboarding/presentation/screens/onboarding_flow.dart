@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+import '../../../../l10n/app_localizations.dart';
 import '../providers/onboarding_provider.dart';
 import '../widgets/birth_date_picker.dart';
 import '../widgets/birth_time_picker.dart';
@@ -111,8 +112,8 @@ class _OnboardingFlowState extends ConsumerState<OnboardingFlow> {
                     child: _GoldPrimaryButton(
                       label: state.currentStep ==
                               OnboardingState.totalSteps - 1
-                          ? 'Continue'
-                          : 'Next',
+                          ? AppLocalizations.of(context).onboardingContinue
+                          : AppLocalizations.of(context).onboardingNext,
                       loading: state.isLoading,
                       onPressed: state.canProceed && !state.isLoading
                           ? () => _handleNext(state, notifier)
@@ -325,10 +326,10 @@ class _BirthDateStep extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const _StepHeader(
-            title: 'When were you born?',
+          _StepHeader(
+            title: AppLocalizations.of(context).onboardingBirthDateTitle,
             subtitle:
-                'Your birth date is the foundation of your cosmic profile.',
+                AppLocalizations.of(context).onboardingBirthDateSubtitle,
           ),
           const SizedBox(height: 28),
           Expanded(
@@ -356,10 +357,10 @@ class _BirthTimeStep extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const _StepHeader(
-            title: 'What time were you born?',
+          _StepHeader(
+            title: AppLocalizations.of(context).onboardingBirthTimeTitle,
             subtitle:
-                'Your birth time determines your Rising sign and house placements.',
+                AppLocalizations.of(context).onboardingBirthTimeSubtitle,
           ),
           const SizedBox(height: 28),
           Expanded(
@@ -390,10 +391,10 @@ class _BirthPlaceStep extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const _StepHeader(
-            title: 'Where were you born?',
+          _StepHeader(
+            title: AppLocalizations.of(context).onboardingBirthPlaceTitle,
             subtitle:
-                'Your birthplace helps us calculate precise planetary positions.',
+                AppLocalizations.of(context).onboardingBirthPlaceSubtitle,
           ),
           const SizedBox(height: 28),
           Expanded(
@@ -428,9 +429,9 @@ class _NameStep extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const _StepHeader(
-            title: "What's your name?",
-            subtitle: "We'll use this to personalize your daily guidance.",
+          _StepHeader(
+            title: AppLocalizations.of(context).onboardingNameTitle,
+            subtitle: AppLocalizations.of(context).onboardingNameSubtitle,
           ),
           const SizedBox(height: 32),
           Container(
@@ -456,7 +457,7 @@ class _NameStep extends StatelessWidget {
                 border: InputBorder.none,
                 enabledBorder: InputBorder.none,
                 focusedBorder: InputBorder.none,
-                hintText: 'First name',
+                hintText: AppLocalizations.of(context).onboardingNameHint,
                 hintStyle: GoogleFonts.poppins(
                   color: _kTextTertiary,
                   fontSize: 22,
@@ -493,9 +494,9 @@ class _FocusAreasStep extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const _StepHeader(
-            title: 'What matters most to you?',
-            subtitle: 'Select areas you want cosmic guidance on. (Optional)',
+          _StepHeader(
+            title: AppLocalizations.of(context).onboardingFocusTitle,
+            subtitle: AppLocalizations.of(context).onboardingFocusSubtitle,
           ),
           const SizedBox(height: 28),
           Expanded(

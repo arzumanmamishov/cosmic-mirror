@@ -5,6 +5,8 @@ import 'package:url_launcher/url_launcher.dart';
 
 import '../../../../config/theme/colors.dart';
 import '../../../../config/theme/typography.dart';
+import '../../../../l10n/app_localizations.dart';
+import '../../../../shared/providers/locale_provider.dart';
 import '../../../../shared/providers/subscription_state_provider.dart';
 import '../../../../shared/providers/theme_provider.dart';
 import '../../../../shared/providers/user_provider.dart';
@@ -42,6 +44,10 @@ class SettingsScreen extends ConsumerWidget {
           const Divider(),
           _SectionHeader('Appearance'),
           const _ThemeModeSwitcher(),
+
+          const Divider(),
+          _SectionHeader(AppLocalizations.of(context).settingsLanguage),
+          const _LanguagePicker(),
 
           const Divider(),
           _SectionHeader('Preferences'),
@@ -193,6 +199,70 @@ class _SectionHeader extends StatelessWidget {
       child: Text(
         title.toUpperCase(),
         style: CosmicTypography.overline,
+      ),
+    );
+  }
+}
+
+/// English / Türkçe segmented language switcher backed by [localeProvider].
+/// Picking a language persists it via SharedPreferences and applies
+/// immediately. There is intentionally no "System" option — once the user
+/// makes a choice we honor it across devices.
+class _LanguagePicker extends ConsumerWidget {
+  const _LanguagePicker();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final locale = ref.watch(localeProvider);
+    final notifier = ref.read(localeProvider.notifier);
+    final scheme = Theme.of(context).colorScheme;
+    final l10n = AppLocalizations.of(context);
+
+    final activeCode =
+        locale?.languageCode ?? Localizations.localeOf(context).languageCode;
+
+    Widget option(String code, String label) {
+      final selected = activeCode == code;
+      return Expanded(
+        child: GestureDetector(
+          onTap: () => notifier.set(Locale(code)),
+          behavior: HitTestBehavior.opaque,
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 200),
+            margin: const EdgeInsets.all(4),
+            padding: const EdgeInsets.symmetric(vertical: 10),
+            decoration: BoxDecoration(
+              color: selected ? scheme.primary : Colors.transparent,
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Center(
+              child: Text(
+                label,
+                style: TextStyle(
+                  color: selected ? scheme.onPrimary : scheme.onSurface,
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+    }
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: Container(
+        decoration: BoxDecoration(
+          color: scheme.surfaceContainerHighest,
+          borderRadius: BorderRadius.circular(14),
+        ),
+        child: Row(
+          children: [
+            option('en', l10n.languageEnglish),
+            option('tr', l10n.languageTurkish),
+          ],
+        ),
       ),
     );
   }

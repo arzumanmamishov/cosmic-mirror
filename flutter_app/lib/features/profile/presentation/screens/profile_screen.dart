@@ -3,6 +3,7 @@ import 'package:cosmic_mirror/config/env.dart';
 import 'package:cosmic_mirror/config/theme/app_palette.dart';
 import 'package:cosmic_mirror/core/network/api_client.dart';
 import 'package:cosmic_mirror/core/network/api_endpoints.dart';
+import 'package:cosmic_mirror/l10n/app_localizations.dart';
 import 'package:cosmic_mirror/features/auth/presentation/providers/auth_provider.dart';
 import 'package:cosmic_mirror/features/profile/presentation/providers/profile_providers.dart';
 import 'package:cosmic_mirror/shared/providers/subscription_state_provider.dart';
@@ -39,7 +40,7 @@ class ProfileScreen extends ConsumerWidget {
         actions: [
           IconButton(
             icon: const Icon(Icons.edit_outlined),
-            tooltip: 'Edit profile',
+            tooltip: AppLocalizations.of(context).profileEditProfile,
             onPressed: () => _showEditProfileSheet(context, ref),
           ),
           IconButton(
@@ -84,7 +85,9 @@ class ProfileScreen extends ConsumerWidget {
               const SizedBox(height: 16),
               FadeSlideIn(
                 delay: const Duration(milliseconds: 280),
-                child: const _SectionTitle('Birth Data'),
+                child: _SectionTitle(
+                  AppLocalizations.of(context).profileBirthData,
+                ),
               ),
               FadeSlideIn(
                 delay: const Duration(milliseconds: 320),
@@ -93,7 +96,9 @@ class ProfileScreen extends ConsumerWidget {
               const SizedBox(height: 16),
               FadeSlideIn(
                 delay: const Duration(milliseconds: 360),
-                child: const _SectionTitle('Account'),
+                child: _SectionTitle(
+                  AppLocalizations.of(context).profileAccount,
+                ),
               ),
               FadeSlideIn(
                 delay: const Duration(milliseconds: 400),
@@ -106,26 +111,27 @@ class ProfileScreen extends ConsumerWidget {
                   onSignOut: () async {
                     final confirmed = await showDialog<bool>(
                       context: context,
-                      builder: (c) => AlertDialog(
-                        backgroundColor: p.surface,
-                        title: const Text('Sign Out'),
-                        content: const Text(
-                          'You will need to sign in again to access your data.',
-                        ),
-                        actions: [
-                          TextButton(
-                            onPressed: () => Navigator.pop(c, false),
-                            child: const Text('Cancel'),
-                          ),
-                          TextButton(
-                            onPressed: () => Navigator.pop(c, true),
-                            style: TextButton.styleFrom(
-                              foregroundColor: p.error,
+                      builder: (c) {
+                        final l10n = AppLocalizations.of(c);
+                        return AlertDialog(
+                          backgroundColor: p.surface,
+                          title: Text(l10n.profileSignOut),
+                          content: Text(l10n.profileSignOutConfirm),
+                          actions: [
+                            TextButton(
+                              onPressed: () => Navigator.pop(c, false),
+                              child: Text(l10n.cancel),
                             ),
-                            child: const Text('Sign Out'),
-                          ),
-                        ],
-                      ),
+                            TextButton(
+                              onPressed: () => Navigator.pop(c, true),
+                              style: TextButton.styleFrom(
+                                foregroundColor: p.error,
+                              ),
+                              child: Text(l10n.profileSignOut),
+                            ),
+                          ],
+                        );
+                      },
                     );
                     if (confirmed == true) {
                       await ref.read(authRepositoryProvider).signOut();
@@ -187,7 +193,12 @@ Future<void> _showEditProfileSheet(BuildContext context, WidgetRef ref) async {
             } catch (e) {
               if (sheetContext.mounted) {
                 ScaffoldMessenger.of(sheetContext).showSnackBar(
-                  SnackBar(content: Text("Couldn't save: $e")),
+                  SnackBar(
+                    content: Text(
+                      AppLocalizations.of(sheetContext)
+                          .profileSaveError(e.toString()),
+                    ),
+                  ),
                 );
               }
             }
@@ -226,6 +237,7 @@ class _EditProfileFormState extends State<_EditProfileForm> {
   @override
   Widget build(BuildContext context) {
     final p = context.palette;
+    final l10n = AppLocalizations.of(context);
     return Column(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -242,7 +254,7 @@ class _EditProfileFormState extends State<_EditProfileForm> {
         ),
         const SizedBox(height: 16),
         Text(
-          'Edit profile',
+          l10n.profileEditProfile,
           style: TextStyle(
             color: p.textPrimary,
             fontSize: 20,
@@ -251,7 +263,7 @@ class _EditProfileFormState extends State<_EditProfileForm> {
         ),
         const SizedBox(height: 16),
         Text(
-          'NAME',
+          l10n.profileNameLabel,
           style: TextStyle(
             color: p.textTertiary,
             fontSize: 11,
@@ -271,17 +283,17 @@ class _EditProfileFormState extends State<_EditProfileForm> {
             controller: widget.nameCtrl,
             textCapitalization: TextCapitalization.words,
             style: TextStyle(color: p.textPrimary, fontSize: 15),
-            decoration: const InputDecoration(
-              hintText: 'Your name',
+            decoration: InputDecoration(
+              hintText: l10n.yourName,
               border: InputBorder.none,
               isCollapsed: true,
-              contentPadding: EdgeInsets.symmetric(vertical: 14),
+              contentPadding: const EdgeInsets.symmetric(vertical: 14),
             ),
           ),
         ),
         const SizedBox(height: 16),
         Text(
-          'EMAIL',
+          l10n.profileEmailLabel,
           style: TextStyle(
             color: p.textTertiary,
             fontSize: 11,
@@ -311,7 +323,7 @@ class _EditProfileFormState extends State<_EditProfileForm> {
         ),
         const SizedBox(height: 6),
         Text(
-          'Email is managed by your sign-in provider.',
+          l10n.profileEmailNote,
           style: TextStyle(color: p.textTertiary, fontSize: 11),
         ),
         const SizedBox(height: 18),
@@ -331,7 +343,7 @@ class _EditProfileFormState extends State<_EditProfileForm> {
                 const SizedBox(width: 10),
                 Expanded(
                   child: Text(
-                    'Edit birth data',
+                    l10n.profileEditBirthData,
                     style: TextStyle(
                       color: p.textPrimary,
                       fontSize: 14,
@@ -358,7 +370,7 @@ class _EditProfileFormState extends State<_EditProfileForm> {
                     final newName = widget.nameCtrl.text.trim();
                     if (newName.isEmpty) {
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Name cannot be empty.')),
+                        SnackBar(content: Text(l10n.profileNameRequired)),
                       );
                       return;
                     }
@@ -383,9 +395,9 @@ class _EditProfileFormState extends State<_EditProfileForm> {
                       valueColor: AlwaysStoppedAnimation(Colors.white),
                     ),
                   )
-                : const Text(
-                    'Save',
-                    style: TextStyle(
+                : Text(
+                    l10n.profileSave,
+                    style: const TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w800,
                     ),
@@ -413,6 +425,7 @@ class _ProfileHero extends ConsumerWidget {
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
       builder: (sheetContext) {
+        final l10n = AppLocalizations.of(sheetContext);
         return SafeArea(
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -429,20 +442,20 @@ class _ProfileHero extends ConsumerWidget {
               const SizedBox(height: 12),
               ListTile(
                 leading: Icon(Icons.photo_library_rounded, color: p.primary),
-                title: const Text('Choose from gallery'),
+                title: Text(l10n.avatarChooseFromGallery),
                 onTap: () =>
                     Navigator.pop(sheetContext, _AvatarAction.gallery),
               ),
               ListTile(
                 leading: Icon(Icons.photo_camera_rounded, color: p.primary),
-                title: const Text('Take a photo'),
+                title: Text(l10n.avatarTakePhoto),
                 onTap: () => Navigator.pop(sheetContext, _AvatarAction.camera),
               ),
               if (hasAvatar)
                 ListTile(
                   leading: Icon(Icons.delete_outline_rounded, color: p.error),
                   title: Text(
-                    'Remove photo',
+                    l10n.avatarRemovePhoto,
                     style: TextStyle(color: p.error),
                   ),
                   onTap: () =>
@@ -478,13 +491,17 @@ class _ProfileHero extends ConsumerWidget {
       final saved = await notifier.setAvatar(file.path);
       if (saved == null && context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Couldn't save photo. Try again.")),
+          SnackBar(
+            content: Text(AppLocalizations.of(context).avatarSaveError),
+          ),
         );
       }
     } catch (_) {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Couldn't open the picker.")),
+          SnackBar(
+            content: Text(AppLocalizations.of(context).avatarPickerError),
+          ),
         );
       }
     }
@@ -564,7 +581,7 @@ class _ProfileHero extends ConsumerWidget {
         ),
         const SizedBox(height: 16),
         Text(
-          user.name ?? 'Stargazer',
+          user.name ?? AppLocalizations.of(context).stargazer,
           style: TextStyle(
             color: p.textPrimary,
             fontSize: 24,
@@ -745,7 +762,7 @@ class _StatsRow extends ConsumerWidget {
           child: _StatPill(
             icon: Icons.local_fire_department_rounded,
             value: stats == null ? '—' : '${stats.streak}',
-            label: 'Day streak',
+            label: AppLocalizations.of(context).profileDayStreak,
             color: const Color(0xFFF07C82),
           ),
         ),
@@ -754,7 +771,7 @@ class _StatsRow extends ConsumerWidget {
           child: _StatPill(
             icon: Icons.book_rounded,
             value: stats == null ? '—' : '${stats.journalEntries}',
-            label: 'Journal entries',
+            label: AppLocalizations.of(context).profileJournalEntries,
             color: const Color(0xFF5ED39A),
           ),
         ),
@@ -763,7 +780,7 @@ class _StatsRow extends ConsumerWidget {
           child: _StatPill(
             icon: Icons.chat_bubble_outline_rounded,
             value: stats == null ? '—' : '${stats.aiChats}',
-            label: 'AI chats',
+            label: AppLocalizations.of(context).profileAIChats,
             color: const Color(0xFF7B61FF),
           ),
         ),
@@ -875,7 +892,9 @@ class _SubscriptionCard extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    isPremium ? 'Premium · Active' : 'Free Plan',
+                    isPremium
+                        ? AppLocalizations.of(context).profileSubscriptionPremium
+                        : AppLocalizations.of(context).profileSubscriptionFree,
                     style: TextStyle(
                       color: isPremium ? Colors.white : p.textPrimary,
                       fontSize: 15,
@@ -885,8 +904,10 @@ class _SubscriptionCard extends StatelessWidget {
                   const SizedBox(height: 2),
                   Text(
                     isPremium
-                        ? 'Unlimited insights · priority booking'
-                        : 'Upgrade for full access to your chart',
+                        ? AppLocalizations.of(context)
+                            .profileSubscriptionPremiumDesc
+                        : AppLocalizations.of(context)
+                            .profileSubscriptionFreeDesc,
                     style: TextStyle(
                       color: isPremium
                           ? Colors.white.withValues(alpha: 0.8)
@@ -959,7 +980,7 @@ class _BirthDataCard extends ConsumerWidget {
         birthTime =
             '${t.hour.toString().padLeft(2, '0')}:${t.minute.toString().padLeft(2, '0')}';
       } else {
-        birthTime = 'Not known';
+        birthTime = AppLocalizations.of(context).profileBirthTimeUnknown;
       }
     }
 
@@ -973,28 +994,28 @@ class _BirthDataCard extends ConsumerWidget {
         children: [
           _BirthRow(
             icon: Icons.cake_rounded,
-            label: 'Birth date',
+            label: AppLocalizations.of(context).profileBirthDate,
             value: birthDate,
             color: p.accent,
           ),
           _RowDivider(p: p),
           _BirthRow(
             icon: Icons.access_time_rounded,
-            label: 'Birth time',
+            label: AppLocalizations.of(context).profileBirthTime,
             value: birthTime,
             color: p.gold,
           ),
           _RowDivider(p: p),
           _BirthRow(
             icon: Icons.place_rounded,
-            label: 'Birthplace',
+            label: AppLocalizations.of(context).profileBirthPlace,
             value: birthPlace,
             color: p.primary,
           ),
           _RowDivider(p: p),
           _ActionRow(
             icon: Icons.edit_rounded,
-            label: 'Edit Birth Data',
+            label: AppLocalizations.of(context).profileEditBirthData,
             onTap: () => context.push('/profile/edit-birth-data'),
             primary: true,
           ),
@@ -1151,25 +1172,25 @@ class _AccountLinks extends StatelessWidget {
         children: [
           _ActionRow(
             icon: Icons.notifications_rounded,
-            label: 'Notifications',
+            label: AppLocalizations.of(context).profileNotifications,
             onTap: () => context.push('/notifications'),
           ),
           _RowDivider(p: p),
           _ActionRow(
             icon: Icons.shield_rounded,
-            label: 'Privacy',
+            label: AppLocalizations.of(context).profilePrivacy,
             onTap: () => context.push('/legal/privacy'),
           ),
           _RowDivider(p: p),
           _ActionRow(
             icon: Icons.help_rounded,
-            label: 'Help & Support',
+            label: AppLocalizations.of(context).profileHelp,
             onTap: () => context.push('/support'),
           ),
           _RowDivider(p: p),
           _ActionRow(
             icon: Icons.tune_rounded,
-            label: 'Settings',
+            label: AppLocalizations.of(context).profileSettings,
             onTap: () => context.push('/settings'),
           ),
         ],
@@ -1203,7 +1224,7 @@ class _SignOutButton extends StatelessWidget {
             Icon(Icons.logout_rounded, color: p.error, size: 18),
             const SizedBox(width: 8),
             Text(
-              'Sign Out',
+              AppLocalizations.of(context).profileSignOut,
               style: TextStyle(
                 color: p.error,
                 fontSize: 14,

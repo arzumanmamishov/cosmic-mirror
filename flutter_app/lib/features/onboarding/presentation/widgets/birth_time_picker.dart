@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 
 import '../../../../config/theme/colors.dart';
 import '../../../../config/theme/typography.dart';
+import '../../../../l10n/app_localizations.dart';
 
 class BirthTimePicker extends StatelessWidget {
   const BirthTimePicker({
@@ -60,12 +61,13 @@ class BirthTimePicker extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        "I don't know my birth time",
+                        AppLocalizations.of(context).onboardingDontKnowTime,
                         style: CosmicTypography.titleMedium,
                       ),
                       const SizedBox(height: 2),
                       Text(
-                        "We'll use approximate calculations. Your Rising sign may differ.",
+                        AppLocalizations.of(context)
+                            .onboardingDontKnowTimeHelp,
                         style: CosmicTypography.caption,
                       ),
                     ],
@@ -115,7 +117,7 @@ class BirthTimePicker extends StatelessWidget {
                   ),
                   const SizedBox(height: 16),
                   Text(
-                    'No worries! We can still create a meaningful\nchart using your date and location.',
+                    AppLocalizations.of(context).onboardingNoTimeNote,
                     style: CosmicTypography.bodySmall,
                     textAlign: TextAlign.center,
                   ),

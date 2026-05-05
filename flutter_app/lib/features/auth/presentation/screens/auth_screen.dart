@@ -1,4 +1,5 @@
 import 'package:cosmic_mirror/features/auth/presentation/providers/auth_provider.dart';
+import 'package:cosmic_mirror/l10n/app_localizations.dart';
 import 'package:cosmic_mirror/shared/widgets/cosmic_starfield.dart';
 import 'package:cosmic_mirror/shared/widgets/ken_burns_image.dart';
 import 'package:cosmic_mirror/shared/widgets/lively_logo.dart';
@@ -53,18 +54,19 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
   Future<void> _submit() async {
     final email = _email.text.trim();
     final password = _password.text;
+    final l10n = AppLocalizations.of(context);
     setState(() => _localError = null);
 
     if (email.isEmpty || password.isEmpty) {
-      setState(() => _localError = 'Email and password are required.');
+      setState(() => _localError = l10n.authEmailRequired);
       return;
     }
     if (_isSignUp && password != _confirm.text) {
-      setState(() => _localError = 'Passwords do not match.');
+      setState(() => _localError = l10n.authPasswordsDontMatch);
       return;
     }
     if (_isSignUp && password.length < 8) {
-      setState(() => _localError = 'Password must be at least 8 characters.');
+      setState(() => _localError = l10n.authPasswordTooShort);
       return;
     }
 
@@ -81,6 +83,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
     final authState = ref.watch(authActionProvider);
     final notifier = ref.read(authActionProvider.notifier);
     final error = _localError ?? authState.error;
+    final l10n = AppLocalizations.of(context);
 
     final bottomInset = MediaQuery.of(context).viewInsets.bottom;
     return Scaffold(
@@ -130,7 +133,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                   const SizedBox(height: 16),
                   Center(
                     child: Text(
-                      _isSignUp ? 'Create account' : 'Welcome',
+                      _isSignUp ? l10n.authCreateAccount : l10n.authWelcome,
                       style: GoogleFonts.poppins(
                         color: Colors.white,
                         fontSize: 32,
@@ -143,8 +146,8 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                   Center(
                     child: Text(
                       _isSignUp
-                          ? "Hi there, let's get you started."
-                          : "Hi, it's time for you to sign in.",
+                          ? l10n.authSignUpSubtitle
+                          : l10n.authWelcomeSubtitle,
                       style: GoogleFonts.poppins(
                         color: const Color(0xFFB6BAC4),
                         fontSize: 13.5,
@@ -156,14 +159,14 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                   const SizedBox(height: 30),
                   _DarkField(
                     controller: _email,
-                    hint: 'Email',
+                    hint: l10n.authEmail,
                     icon: Icons.mail_outline_rounded,
                     keyboardType: TextInputType.emailAddress,
                   ),
                   const SizedBox(height: 14),
                   _DarkField(
                     controller: _password,
-                    hint: 'Password',
+                    hint: l10n.authPassword,
                     icon: Icons.lock_outline_rounded,
                     obscure: _obscure,
                     trailing: GestureDetector(
@@ -181,7 +184,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                     const SizedBox(height: 14),
                     _DarkField(
                       controller: _confirm,
-                      hint: 'Confirm password',
+                      hint: l10n.authConfirmPassword,
                       icon: Icons.lock_outline_rounded,
                       obscure: _obscureConfirm,
                       trailing: GestureDetector(
@@ -215,7 +218,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                             tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                           ),
                           child: Text(
-                            'Forgot Password',
+                            l10n.authForgotPassword,
                             style: GoogleFonts.poppins(
                               color: _kGold,
                               fontSize: 13,
@@ -232,7 +235,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                   ],
                   const SizedBox(height: 22),
                   _PrimaryButton(
-                    label: _isSignUp ? 'Create account' : 'Sign in',
+                    label: _isSignUp ? l10n.authCreateAccount : l10n.authSignIn,
                     loading: authState.isLoading &&
                         authState.activeMethod == AuthMethod.email,
                     onPressed: authState.isLoading ? null : _submit,
@@ -255,11 +258,11 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                           children: [
                             TextSpan(
                               text: _isSignUp
-                                  ? 'Already have an account? '
-                                  : "Don't have an account? ",
+                                  ? l10n.authHaveAccount
+                                  : l10n.authNoAccount,
                             ),
                             TextSpan(
-                              text: _isSignUp ? 'Sign in' : 'Register',
+                              text: _isSignUp ? l10n.authSignIn : l10n.authRegister,
                               style: GoogleFonts.poppins(
                                 color: _kGold,
                                 fontSize: 13,
@@ -278,7 +281,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                     children: [
                       Expanded(
                         child: _SocialButton(
-                          label: 'Google',
+                          label: l10n.authContinueGoogle,
                           iconWidget: const _GoogleGlyph(),
                           loading: authState.isLoading &&
                               authState.activeMethod == AuthMethod.google,
@@ -291,7 +294,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                         const SizedBox(width: 12),
                         Expanded(
                           child: _SocialButton(
-                            label: 'Apple',
+                            label: l10n.authContinueApple,
                             icon: Icons.apple_rounded,
                             loading: authState.isLoading &&
                                 authState.activeMethod == AuthMethod.apple,
@@ -427,7 +430,7 @@ class _RememberMe extends StatelessWidget {
           ),
           const SizedBox(width: 8),
           Text(
-            'Remember me',
+            AppLocalizations.of(context).authRememberMe,
             style: GoogleFonts.poppins(
               color: const Color(0xFFB6BAC4),
               fontSize: 13,
@@ -511,7 +514,7 @@ class _SocialDivider extends StatelessWidget {
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 12),
           child: Text(
-            'or continue with',
+            AppLocalizations.of(context).authOrContinueWith.toUpperCase(),
             style: GoogleFonts.poppins(
               color: const Color(0xFF7E8290),
               fontSize: 11,

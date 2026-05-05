@@ -1,3 +1,4 @@
+import 'package:cosmic_mirror/l10n/app_localizations.dart';
 import 'package:cosmic_mirror/shared/providers/user_provider.dart';
 import 'package:cosmic_mirror/shared/widgets/lively_logo.dart';
 import 'package:cosmic_mirror/shared/widgets/staggered_fade_in.dart';
@@ -50,9 +51,10 @@ class _WelcomeScreenState extends ConsumerState<WelcomeScreen> {
   @override
   Widget build(BuildContext context) {
     final user = ref.watch(currentUserProvider);
+    final l10n = AppLocalizations.of(context);
     final name = (user.name?.trim().isNotEmpty ?? false)
         ? user.name!.trim().split(' ').first
-        : 'Stargazer';
+        : l10n.stargazer;
 
     return Scaffold(
       backgroundColor: _kBackground,
@@ -73,7 +75,7 @@ class _WelcomeScreenState extends ConsumerState<WelcomeScreen> {
                 delay: const Duration(milliseconds: 700),
                 duration: const Duration(milliseconds: 700),
                 child: Text(
-                  'Welcome,',
+                  l10n.welcomeHello,
                   textAlign: TextAlign.center,
                   style: GoogleFonts.poppins(
                     color: Colors.white,
@@ -108,7 +110,7 @@ class _WelcomeScreenState extends ConsumerState<WelcomeScreen> {
                 delay: const Duration(milliseconds: 1900),
                 duration: const Duration(milliseconds: 700),
                 child: Text(
-                  'Your cosmic journey begins.',
+                  l10n.welcomeJourneyBegins,
                   textAlign: TextAlign.center,
                   style: GoogleFonts.poppins(
                     color: Colors.white,
@@ -124,7 +126,7 @@ class _WelcomeScreenState extends ConsumerState<WelcomeScreen> {
                 delay: const Duration(milliseconds: 2400),
                 duration: const Duration(milliseconds: 700),
                 child: Text(
-                  'The stars have aligned for this moment.',
+                  l10n.welcomeStarsAligned,
                   textAlign: TextAlign.center,
                   style: GoogleFonts.poppins(
                     color: _kTextSecondary,
@@ -142,8 +144,8 @@ class _WelcomeScreenState extends ConsumerState<WelcomeScreen> {
                   width: double.infinity,
                   child: _GoldCta(
                     label: _enteringCosmos
-                        ? 'Aligning the stars…'
-                        : 'Enter Your Cosmos',
+                        ? l10n.welcomeAligning
+                        : l10n.welcomeEnter,
                     onPressed: _enteringCosmos ? null : () => _enterCosmos(),
                   ),
                 ),

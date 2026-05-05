@@ -1,5 +1,6 @@
 import 'package:cosmic_mirror/config/theme/app_palette.dart';
 import 'package:cosmic_mirror/core/network/api_endpoints.dart';
+import 'package:cosmic_mirror/l10n/app_localizations.dart';
 import 'package:cosmic_mirror/features/onboarding/data/models/birth_profile_model.dart';
 import 'package:cosmic_mirror/features/onboarding/domain/entities/birth_profile.dart';
 import 'package:cosmic_mirror/features/onboarding/presentation/widgets/birth_date_picker.dart';
@@ -112,7 +113,7 @@ class _EditBirthDataScreenState extends ConsumerState<EditBirthDataScreen> {
       backgroundColor: p.background,
       appBar: AppBar(
         title: Text(
-          'Edit birth data',
+          AppLocalizations.of(context).editBirthDataTitle,
           style: GoogleFonts.poppins(fontWeight: FontWeight.w700),
         ),
         backgroundColor: Colors.transparent,
@@ -138,7 +139,10 @@ class _EditBirthDataScreenState extends ConsumerState<EditBirthDataScreen> {
           return ListView(
             padding: const EdgeInsets.fromLTRB(20, 8, 20, 32),
             children: [
-              _SectionLabel(label: 'BIRTH DATE', palette: p),
+              _SectionLabel(
+                label: AppLocalizations.of(context).editBirthDateLabel,
+                palette: p,
+              ),
               const SizedBox(height: 8),
               SizedBox(
                 height: 200,
@@ -148,7 +152,10 @@ class _EditBirthDataScreenState extends ConsumerState<EditBirthDataScreen> {
                 ),
               ),
               const SizedBox(height: 24),
-              _SectionLabel(label: 'BIRTH TIME', palette: p),
+              _SectionLabel(
+                label: AppLocalizations.of(context).editBirthTimeLabel,
+                palette: p,
+              ),
               const SizedBox(height: 8),
               SizedBox(
                 height: 250,
@@ -161,7 +168,10 @@ class _EditBirthDataScreenState extends ConsumerState<EditBirthDataScreen> {
                 ),
               ),
               const SizedBox(height: 24),
-              _SectionLabel(label: 'BIRTHPLACE', palette: p),
+              _SectionLabel(
+                label: AppLocalizations.of(context).editBirthPlaceLabel,
+                palette: p,
+              ),
               const SizedBox(height: 8),
               BirthplaceSearch(
                 selectedPlace: _birthPlace,
@@ -259,7 +269,7 @@ class _SaveButton extends StatelessWidget {
                     ),
                   )
                 : Text(
-                    'Save changes',
+                    AppLocalizations.of(context).editSaveChanges,
                     style: GoogleFonts.poppins(
                       color: Colors.white,
                       fontSize: 15,

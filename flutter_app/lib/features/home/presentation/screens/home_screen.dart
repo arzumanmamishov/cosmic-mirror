@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import 'package:cosmic_mirror/config/theme/app_palette.dart';
+import 'package:cosmic_mirror/l10n/app_localizations.dart';
 import 'package:cosmic_mirror/features/ai_chat/presentation/screens/chat_threads_screen.dart';
 import 'package:cosmic_mirror/features/community/presentation/screens/spaces_list_screen.dart';
 import 'package:cosmic_mirror/features/home/presentation/widgets/discussions_section.dart';
@@ -98,7 +99,8 @@ class _ZodiacBackdrop extends StatelessWidget {
 // astrologers, discussions. Chips filter what's shown below the search.
 // ============================================================================
 
-const _discoverCategories = ['All', 'Daily', 'Sky', 'Community'];
+// Stable keys — never user-facing. Display labels come from AppLocalizations.
+const _discoverCategoryKeys = ['All', 'Daily', 'Sky', 'Community'];
 
 class _DiscoverTab extends StatefulWidget {
   const _DiscoverTab();
@@ -124,6 +126,14 @@ class _DiscoverTabState extends State<_DiscoverTab> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final labels = [
+      l10n.categoryAll,
+      l10n.categoryDaily,
+      l10n.categorySky,
+      l10n.categoryCommunity,
+    ];
+    final selectedIndex = _discoverCategoryKeys.indexOf(_category);
     return SafeArea(
       bottom: false,
       child: ListView(
@@ -137,7 +147,7 @@ class _DiscoverTabState extends State<_DiscoverTab> {
               padding: const EdgeInsets.symmetric(horizontal: 20),
               child: PillSearchBar(
                 controller: _searchCtrl,
-                hint: 'Search readings, astrologers, spaces…',
+                hint: l10n.homeSearchHint,
                 onSubmitted: (_) {},
               ),
             ),
@@ -146,9 +156,14 @@ class _DiscoverTabState extends State<_DiscoverTab> {
           FadeSlideIn(
             delay: const Duration(milliseconds: 120),
             child: CategoryChipBar(
-              categories: _discoverCategories,
-              selected: _category,
-              onSelected: (c) => setState(() => _category = c),
+              categories: labels,
+              selected: labels[selectedIndex],
+              onSelected: (label) {
+                final i = labels.indexOf(label);
+                if (i >= 0) {
+                  setState(() => _category = _discoverCategoryKeys[i]);
+                }
+              },
             ),
           ),
           const SizedBox(height: 18),
@@ -217,7 +232,8 @@ class _ChartFeature {
   final String? badge;
 }
 
-const _chartCategories = [
+// Stable chart-category keys — display labels come from AppLocalizations.
+const _chartCategoryKeys = [
   'All',
   'Western',
   'Vedic',
@@ -322,6 +338,15 @@ class _ChartsTabState extends State<_ChartsTab> {
       return matchesCat && matchesQuery;
     }).toList();
 
+    final l10n = AppLocalizations.of(context);
+    final chartLabels = [
+      l10n.categoryAll,
+      l10n.chartCategoryWestern,
+      l10n.chartCategoryVedic,
+      l10n.chartCategoryEsoteric,
+      l10n.chartCategoryForecast,
+    ];
+    final selectedIdx = _chartCategoryKeys.indexOf(_category);
     return SafeArea(
       bottom: false,
       child: ListView(
@@ -331,7 +356,7 @@ class _ChartsTabState extends State<_ChartsTab> {
             padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
             child: FadeSlideIn(
               child: Text(
-                'Your Cosmos',
+                l10n.homeChartsTitle,
                 style: TextStyle(
                   color: p.textPrimary,
                   fontSize: 26,
@@ -347,7 +372,7 @@ class _ChartsTabState extends State<_ChartsTab> {
             child: FadeSlideIn(
               delay: const Duration(milliseconds: 60),
               child: Text(
-                'Your blueprint and your story.',
+                l10n.homeChartsSubtitle,
                 style: TextStyle(color: p.textSecondary, fontSize: 13),
               ),
             ),
@@ -359,7 +384,7 @@ class _ChartsTabState extends State<_ChartsTab> {
               padding: const EdgeInsets.symmetric(horizontal: 20),
               child: PillSearchBar(
                 controller: _searchCtrl,
-                hint: 'Search your charts…',
+                hint: l10n.homeChartsSearchHint,
                 onChanged: (v) => setState(() => _query = v),
               ),
             ),
@@ -368,9 +393,14 @@ class _ChartsTabState extends State<_ChartsTab> {
           FadeSlideIn(
             delay: const Duration(milliseconds: 140),
             child: CategoryChipBar(
-              categories: _chartCategories,
-              selected: _category,
-              onSelected: (c) => setState(() => _category = c),
+              categories: chartLabels,
+              selected: chartLabels[selectedIdx],
+              onSelected: (label) {
+                final i = chartLabels.indexOf(label);
+                if (i >= 0) {
+                  setState(() => _category = _chartCategoryKeys[i]);
+                }
+              },
             ),
           ),
           const SizedBox(height: 18),
@@ -524,6 +554,7 @@ class _CustomBottomNav extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final p = context.palette;
+    final l10n = AppLocalizations.of(context);
 
     return Container(
       decoration: BoxDecoration(
@@ -539,7 +570,7 @@ class _CustomBottomNav extends StatelessWidget {
               _NavItem(
                 icon: Icons.home_outlined,
                 activeIcon: Icons.home_rounded,
-                label: 'Home',
+                label: l10n.navHome,
                 active: currentIndex == 0,
                 onTap: () => onTap(0),
                 palette: p,
@@ -547,7 +578,7 @@ class _CustomBottomNav extends StatelessWidget {
               _NavItem(
                 icon: Icons.bar_chart_rounded,
                 activeIcon: Icons.bar_chart_rounded,
-                label: 'Charts',
+                label: l10n.navCharts,
                 active: currentIndex == 1,
                 onTap: () => onTap(1),
                 palette: p,
@@ -555,7 +586,7 @@ class _CustomBottomNav extends StatelessWidget {
               _NavItem(
                 icon: Icons.chat_bubble_outline_rounded,
                 activeIcon: Icons.chat_bubble_rounded,
-                label: 'Chat',
+                label: l10n.navChat,
                 active: currentIndex == 2,
                 onTap: () => onTap(2),
                 palette: p,
@@ -563,7 +594,7 @@ class _CustomBottomNav extends StatelessWidget {
               _NavItem(
                 icon: Icons.forum_outlined,
                 activeIcon: Icons.forum_rounded,
-                label: 'Community',
+                label: l10n.navCommunity,
                 active: currentIndex == 3,
                 onTap: () => onTap(3),
                 palette: p,

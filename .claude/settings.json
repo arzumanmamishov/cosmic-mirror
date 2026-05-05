@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(\"/c/Program Files/Docker/Docker/Docker Desktop.exe\")",
+      "Bash(docker context:*)",
+      "Bash(tasklist)",
+      "Bash(taskkill /f /im chrome.exe)",
+      "Bash(taskkill /f /im dart.exe)",
+      "Bash(go build:*)",
+      "Bash(flutter analyze:*)"
+    ]
+  }
+}

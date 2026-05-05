@@ -1,0 +1,38 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(netstat -ano)",
+      "Bash(powershell -NoProfile -Command 'Get-NetTCPConnection -LocalPort 8080 -State Listen -ErrorAction SilentlyContinue | Select-Object -First 3 | ForEach-Object { $p = Get-Process -Id $_.OwningProcess -ErrorAction SilentlyContinue; '\\\\''{0,-8} {1,-30} {2}'\\\\'' -f $_.OwningProcess, $p.ProcessName, $p.Path }')",
+      "Bash(docker stop *)",
+      "Bash(docker compose *)",
+      "Bash(curl -sf -o /dev/null --max-time 2 http://localhost:8080/health)",
+      "Bash(curl -is --max-time 5 http://localhost:8080/health)",
+      "Bash(curl -is --max-time 5 'http://localhost:8080/api/v1/places/search?q=london')",
+      "Bash(curl -is --max-time 5 http://localhost:8080/api/v1/chart)",
+      "Bash(curl -is --max-time 5 http://localhost:8080/api/v1/vedic/chart)",
+      "Bash(Get-ChildItem -Path \"C:\\\\Users\\\\webde\\\\cosmic-mirror\\\\go_backend\\\\internal\\\\service\" -Filter \"*journal*\")",
+      "Bash(Get-ChildItem -Path \"C:\\\\Users\\\\webde\\\\cosmic-mirror\\\\flutter_app\\\\lib\\\\features\" -Directory)",
+      "Bash(Select-Object Name)",
+      "Bash(git add *)",
+      "Bash(git commit -m ' *)",
+      "Bash(git push *)",
+      "Bash(curl -is --max-time 5 'http://localhost:8080/api/v1/community/users/me')",
+      "Bash(curl -is --max-time 5 'http://localhost:8080/api/v1/numerology')",
+      "Bash(curl -is --max-time 5 'http://localhost:8080/api/v1/human-design')",
+      "Bash(git checkout *)",
+      "Bash(flutter clean *)",
+      "Bash(flutter pub *)",
+      "Bash(ipconfig)",
+      "Bash(findstr -i \"server.exe go.exe\")",
+      "Bash(findstr \":8080\")",
+      "Bash(tasklist /FI \"PID eq 2784\")",
+      "PowerShell(Get-Process -Id 2784)",
+      "PowerShell(Get-Process | Where-Object { $_.Id -eq 2784 -or $_.Id -eq 14072 } | Select-Object Id, ProcessName, Path | Format-Table -AutoSize)",
+      "Bash(curl -s http://localhost:8080/health)",
+      "Bash(curl -s \"http://localhost:8080/api/v1/places/search?q=Tbilisi\")",
+      "Bash(docker exec *)",
+      "Bash(go vet *)",
+      "Bash(flutter gen-l10n *)"
+    ]
+  }
+}
