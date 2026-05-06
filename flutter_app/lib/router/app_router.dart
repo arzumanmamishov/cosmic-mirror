@@ -67,11 +67,20 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       // hasn't refreshed yet.
       final isOnWelcome = state.matchedLocation == '/welcome';
 
+      // Treat the user as "session bootstrapped" once an id has been
+      // populated by bootstrapSession(). On hot reload Firebase reports
+      // authenticated immediately, but the backend session call hasn't
+      // returned yet — without this guard we'd flash /onboarding for ~1s
+      // before the real `hasCompletedOnboarding` flag arrives.
+      final sessionReady = userState.id != null;
+
       if (!isAuthenticated && !isOnAuthRoute) return '/auth';
       if (isAuthenticated && isOnAuthRoute) {
+        if (!sessionReady) return null; // wait for bootstrap to know where to go
         return userState.hasCompletedOnboarding ? '/home' : '/onboarding';
       }
       if (isAuthenticated &&
+          sessionReady &&
           !userState.hasCompletedOnboarding &&
           !isOnOnboarding &&
           !isOnWelcome &&

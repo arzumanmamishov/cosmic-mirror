@@ -924,6 +924,93 @@ class AppLocalizationsEn extends AppLocalizations {
   String get compatibilitySave => 'Save';
 
   @override
+  String compatibilitySavedCount(int count) {
+    return '$count saved · explore your synastry';
+  }
+
+  @override
+  String get compatibilitySeeHow => 'See How You Connect';
+
+  @override
+  String get compatibilityEmptyBlurb =>
+      'Add a partner, friend, or family member\nand compare your charts.';
+
+  @override
+  String get addPersonTitle => 'Add Someone';
+
+  @override
+  String get addPersonSubtitle => 'We\'ll compare their chart with yours.';
+
+  @override
+  String get addPersonNameLabel => 'Their name';
+
+  @override
+  String get addPersonNameHint => 'e.g. Theo Marlow';
+
+  @override
+  String get addPersonRelationship => 'Relationship';
+
+  @override
+  String get addPersonBirthDate => 'Birth date';
+
+  @override
+  String get addPersonBirthTime => 'Birth time';
+
+  @override
+  String get addPersonBirthplace => 'Birthplace';
+
+  @override
+  String get addPersonGenerate => 'Add & Generate Report';
+
+  @override
+  String get addPersonOptional => '(optional)';
+
+  @override
+  String get addPersonSelectDate => 'Select a date';
+
+  @override
+  String get addPersonSelectTime => 'Select a time';
+
+  @override
+  String get addPersonTimeKnown => 'Known';
+
+  @override
+  String get addPersonTimeUnknown => 'Unknown';
+
+  @override
+  String get compatReportSummary => 'Summary';
+
+  @override
+  String get compatReportConflictPatterns => 'Conflict Patterns';
+
+  @override
+  String get compatReportAdvice => 'Advice';
+
+  @override
+  String get compatScoreMagnetic => 'A magnetic alignment';
+
+  @override
+  String get compatScoreEasy => 'Easy, generative energy';
+
+  @override
+  String get compatScoreWorthWork => 'Worth the work';
+
+  @override
+  String get compatScoreFriction => 'Friction with potential';
+
+  @override
+  String get compatScoreOpposites => 'A study in opposites';
+
+  @override
+  String get compatDimEmotional => 'Emotional';
+
+  @override
+  String get compatDimCommunication => 'Communication';
+
+  @override
+  String get compatDimChemistry => 'Chemistry';
+
+  @override
   String get chartScreenTitle => 'Natal Chart';
 
   @override
@@ -1213,6 +1300,89 @@ class AppLocalizationsEn extends AppLocalizations {
   String ritualsStreak(int days) {
     return '$days day streak';
   }
+
+  @override
+  String get ritualsTodayHeading => 'Your rituals for today';
+
+  @override
+  String get ritualsTodaySubtitle =>
+      'Complete these to strengthen your cosmic connection.';
+
+  @override
+  String get ritualMorningTitle => 'Morning Intention';
+
+  @override
+  String get ritualMorningDesc => 'Set your intention for the day ahead.';
+
+  @override
+  String get ritualAffirmationTitle => 'Affirmation';
+
+  @override
+  String get ritualAffirmationDesc =>
+      'Read and internalize today\'s affirmation.';
+
+  @override
+  String get ritualEveningTitle => 'Evening Reflection';
+
+  @override
+  String get ritualEveningDesc =>
+      'Reflect on your day and note what you\'re grateful for.';
+
+  @override
+  String get notifEmptyBlurb =>
+      'No notifications yet — when people interact with your spaces, posts, or comments you\'ll see them here.';
+
+  @override
+  String get notifGroupToday => 'TODAY';
+
+  @override
+  String get notifGroupYesterday => 'YESTERDAY';
+
+  @override
+  String get notifGroupThisWeek => 'THIS WEEK';
+
+  @override
+  String get notifGroupEarlier => 'EARLIER';
+
+  @override
+  String get spacePostsHeader => 'Posts';
+
+  @override
+  String get spaceNoPosts => 'No posts yet — be the first.';
+
+  @override
+  String get editSpaceLossWarning =>
+      'All posts and comments will be permanently lost.';
+
+  @override
+  String get editSpaceSaving => 'Saving…';
+
+  @override
+  String get editSpaceSave => 'Save';
+
+  @override
+  String get editSpaceHandleLabel => 'HANDLE';
+
+  @override
+  String get editSpaceNameLabel => 'NAME';
+
+  @override
+  String get editSpaceDescLabel => 'DESCRIPTION';
+
+  @override
+  String get homeWelcomeBack => 'Welcome Back';
+
+  @override
+  String get dailyReadingHeading => 'Your Daily Reading';
+
+  @override
+  String get dailyReadingResonant => 'Resonant';
+
+  @override
+  String get yfYearTheme => 'YOUR YEAR THEME';
+
+  @override
+  String get yfQuarterBreakdown => 'Quarter Breakdown';
 
   @override
   String get communityTitle => 'Community';

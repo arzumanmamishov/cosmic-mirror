@@ -6,6 +6,7 @@ import 'package:intl/intl.dart';
 import 'package:cosmic_mirror/config/theme/app_palette.dart';
 import 'package:cosmic_mirror/core/network/api_endpoints.dart';
 import 'package:cosmic_mirror/features/onboarding/presentation/widgets/birthplace_search.dart';
+import 'package:cosmic_mirror/l10n/app_localizations.dart';
 import 'package:cosmic_mirror/shared/providers/user_provider.dart';
 import 'package:cosmic_mirror/shared/widgets/cosmic_starfield.dart';
 import 'package:cosmic_mirror/shared/widgets/staggered_fade_in.dart';
@@ -105,6 +106,7 @@ class _AddPersonScreenState extends ConsumerState<AddPersonScreen> {
   @override
   Widget build(BuildContext context) {
     final p = context.palette;
+    final l = AppLocalizations.of(context);
     return Scaffold(
       backgroundColor: p.background,
       extendBodyBehindAppBar: true,
@@ -127,7 +129,7 @@ class _AddPersonScreenState extends ConsumerState<AddPersonScreen> {
             children: [
               FadeSlideIn(
                 child: Text(
-                  'Add Someone',
+                  l.addPersonTitle,
                   style: TextStyle(
                     color: p.textPrimary,
                     fontSize: 28,
@@ -140,14 +142,14 @@ class _AddPersonScreenState extends ConsumerState<AddPersonScreen> {
               FadeSlideIn(
                 delay: const Duration(milliseconds: 60),
                 child: Text(
-                  "We'll compare their chart with yours.",
+                  l.addPersonSubtitle,
                   style: TextStyle(color: p.textSecondary, fontSize: 13.5),
                 ),
               ),
               const SizedBox(height: 24),
               FadeSlideIn(
                 delay: const Duration(milliseconds: 120),
-                child: _SectionLabel(label: 'Their name'),
+                child: _SectionLabel(label: l.addPersonNameLabel),
               ),
               const SizedBox(height: 8),
               FadeSlideIn(
@@ -156,7 +158,7 @@ class _AddPersonScreenState extends ConsumerState<AddPersonScreen> {
                   controller: _nameController,
                   textCapitalization: TextCapitalization.words,
                   style: TextStyle(color: p.textPrimary, fontSize: 15),
-                  decoration: _decoration(p, 'e.g. Theo Marlow'),
+                  decoration: _decoration(p, l.addPersonNameHint),
                   onChanged: (_) => setState(() {}),
                 ),
               ),
@@ -164,7 +166,7 @@ class _AddPersonScreenState extends ConsumerState<AddPersonScreen> {
 
               FadeSlideIn(
                 delay: const Duration(milliseconds: 180),
-                child: _SectionLabel(label: 'Relationship'),
+                child: _SectionLabel(label: l.addPersonRelationship),
               ),
               const SizedBox(height: 8),
               FadeSlideIn(
@@ -208,7 +210,7 @@ class _AddPersonScreenState extends ConsumerState<AddPersonScreen> {
 
               FadeSlideIn(
                 delay: const Duration(milliseconds: 240),
-                child: _SectionLabel(label: 'Birth date'),
+                child: _SectionLabel(label: l.addPersonBirthDate),
               ),
               const SizedBox(height: 8),
               FadeSlideIn(
@@ -216,7 +218,7 @@ class _AddPersonScreenState extends ConsumerState<AddPersonScreen> {
                 child: _PickerRow(
                   icon: Icons.calendar_month_rounded,
                   value: _birthDate == null
-                      ? 'Select a date'
+                      ? l.addPersonSelectDate
                       : DateFormat('EEEE, MMM d, yyyy').format(_birthDate!),
                   placeholder: _birthDate == null,
                   onTap: _pickDate,
@@ -227,7 +229,7 @@ class _AddPersonScreenState extends ConsumerState<AddPersonScreen> {
               FadeSlideIn(
                 delay: const Duration(milliseconds: 300),
                 child: _SectionLabel(
-                  label: 'Birth time',
+                  label: l.addPersonBirthTime,
                   optional: true,
                 ),
               ),
@@ -240,7 +242,7 @@ class _AddPersonScreenState extends ConsumerState<AddPersonScreen> {
                       child: _PickerRow(
                         icon: Icons.access_time_rounded,
                         value: _birthTime == null
-                            ? 'Select a time'
+                            ? l.addPersonSelectTime
                             : _birthTime!.format(context),
                         placeholder: _birthTime == null,
                         onTap: _birthTimeKnown ? _pickTime : null,
@@ -281,7 +283,9 @@ class _AddPersonScreenState extends ConsumerState<AddPersonScreen> {
                             ),
                             const SizedBox(width: 6),
                             Text(
-                              _birthTimeKnown ? 'Known' : 'Unknown',
+                              _birthTimeKnown
+                                  ? l.addPersonTimeKnown
+                                  : l.addPersonTimeUnknown,
                               style: TextStyle(
                                 color: _birthTimeKnown
                                     ? p.primary
@@ -301,7 +305,7 @@ class _AddPersonScreenState extends ConsumerState<AddPersonScreen> {
 
               FadeSlideIn(
                 delay: const Duration(milliseconds: 360),
-                child: _SectionLabel(label: 'Birthplace'),
+                child: _SectionLabel(label: l.addPersonBirthplace),
               ),
               const SizedBox(height: 8),
               FadeSlideIn(
@@ -361,7 +365,7 @@ class _AddPersonScreenState extends ConsumerState<AddPersonScreen> {
                             ),
                           )
                         : const Icon(Icons.auto_awesome_rounded),
-                    label: const Text('Add & Generate Report'),
+                    label: Text(l.addPersonGenerate),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: p.primary,
                       foregroundColor: Colors.white,
@@ -432,7 +436,7 @@ class _SectionLabel extends StatelessWidget {
         if (optional) ...[
           const SizedBox(width: 6),
           Text(
-            '(optional)',
+            AppLocalizations.of(context).addPersonOptional,
             style: TextStyle(
               color: p.textTertiary,
               fontSize: 10,

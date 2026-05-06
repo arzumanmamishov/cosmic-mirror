@@ -20,15 +20,20 @@ const (
 )
 
 type Subscription struct {
-	ID           uuid.UUID          `db:"id" json:"id"`
-	UserID       uuid.UUID          `db:"user_id" json:"user_id"`
-	RevenueCatID string             `db:"revenuecat_id" json:"-"`
-	PlanType     PlanType           `db:"plan_type" json:"plan_type"`
-	Status       SubscriptionStatus `db:"status" json:"status"`
-	ExpiresAt    *time.Time         `db:"expires_at" json:"expires_at"`
-	TrialEndAt   *time.Time         `db:"trial_end_at" json:"trial_end_at"`
-	CreatedAt    time.Time          `db:"created_at" json:"created_at"`
-	UpdatedAt    time.Time          `db:"updated_at" json:"updated_at"`
+	ID                   uuid.UUID          `db:"id" json:"id"`
+	UserID               uuid.UUID          `db:"user_id" json:"user_id"`
+	RevenueCatID         string             `db:"revenuecat_id" json:"-"`
+	StripeCustomerID     *string            `db:"stripe_customer_id" json:"-"`
+	StripeSubscriptionID *string            `db:"stripe_subscription_id" json:"-"`
+	PriceID              *string            `db:"price_id" json:"price_id,omitempty"`
+	PlanType             PlanType           `db:"plan_type" json:"plan_type"`
+	Status               SubscriptionStatus `db:"status" json:"status"`
+	ExpiresAt            *time.Time         `db:"expires_at" json:"expires_at"`
+	CurrentPeriodEnd     *time.Time         `db:"current_period_end" json:"current_period_end,omitempty"`
+	CancelAtPeriodEnd    bool               `db:"cancel_at_period_end" json:"cancel_at_period_end"`
+	TrialEndAt           *time.Time         `db:"trial_end_at" json:"trial_end_at"`
+	CreatedAt            time.Time          `db:"created_at" json:"created_at"`
+	UpdatedAt            time.Time          `db:"updated_at" json:"updated_at"`
 }
 
 func (s *Subscription) IsPremium() bool {

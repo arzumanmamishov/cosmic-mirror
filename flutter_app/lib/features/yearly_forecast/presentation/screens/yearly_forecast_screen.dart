@@ -53,7 +53,7 @@ class YearlyForecastScreen extends ConsumerWidget {
                     child: Column(
                       children: [
                         Text(
-                          'YOUR YEAR THEME',
+                          AppLocalizations.of(context).yfYearTheme,
                           style: CosmicTypography.overline.copyWith(
                             color: CosmicColors.gold,
                           ),
@@ -74,8 +74,10 @@ class YearlyForecastScreen extends ConsumerWidget {
                     ),
                   ),
                   const SizedBox(height: 24),
-                  Text('Quarter Breakdown',
-                      style: CosmicTypography.headlineSmall),
+                  Text(
+                    AppLocalizations.of(context).yfQuarterBreakdown,
+                    style: CosmicTypography.headlineSmall,
+                  ),
                   const SizedBox(height: 16),
                   ...quarters.map((q) {
                     final quarter = q as Map<String, dynamic>;

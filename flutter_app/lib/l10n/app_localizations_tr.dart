@@ -921,6 +921,94 @@ class AppLocalizationsTr extends AppLocalizations {
   String get compatibilitySave => 'Kaydet';
 
   @override
+  String compatibilitySavedCount(int count) {
+    return '$count kayıtlı · uyumunuzu keşfedin';
+  }
+
+  @override
+  String get compatibilitySeeHow => 'Nasıl Bağlandığını Gör';
+
+  @override
+  String get compatibilityEmptyBlurb =>
+      'Bir partner, arkadaş veya aile üyesi ekle\nve haritalarınızı karşılaştır.';
+
+  @override
+  String get addPersonTitle => 'Birini Ekle';
+
+  @override
+  String get addPersonSubtitle =>
+      'Onun haritasını seninkiyle karşılaştıracağız.';
+
+  @override
+  String get addPersonNameLabel => 'Adı';
+
+  @override
+  String get addPersonNameHint => 'ör. Mehmet Yılmaz';
+
+  @override
+  String get addPersonRelationship => 'İlişki';
+
+  @override
+  String get addPersonBirthDate => 'Doğum tarihi';
+
+  @override
+  String get addPersonBirthTime => 'Doğum saati';
+
+  @override
+  String get addPersonBirthplace => 'Doğum yeri';
+
+  @override
+  String get addPersonGenerate => 'Ekle ve Rapor Oluştur';
+
+  @override
+  String get addPersonOptional => '(isteğe bağlı)';
+
+  @override
+  String get addPersonSelectDate => 'Tarih seç';
+
+  @override
+  String get addPersonSelectTime => 'Saat seç';
+
+  @override
+  String get addPersonTimeKnown => 'Biliniyor';
+
+  @override
+  String get addPersonTimeUnknown => 'Bilinmiyor';
+
+  @override
+  String get compatReportSummary => 'Özet';
+
+  @override
+  String get compatReportConflictPatterns => 'Çatışma Örüntüleri';
+
+  @override
+  String get compatReportAdvice => 'Öneriler';
+
+  @override
+  String get compatScoreMagnetic => 'Manyetik bir hizalanma';
+
+  @override
+  String get compatScoreEasy => 'Kolay, üretken bir enerji';
+
+  @override
+  String get compatScoreWorthWork => 'Üzerinde çalışmaya değer';
+
+  @override
+  String get compatScoreFriction => 'Potansiyelli bir sürtüşme';
+
+  @override
+  String get compatScoreOpposites => 'Zıtlıklar üzerine bir çalışma';
+
+  @override
+  String get compatDimEmotional => 'Duygusal';
+
+  @override
+  String get compatDimCommunication => 'İletişim';
+
+  @override
+  String get compatDimChemistry => 'Kimya';
+
+  @override
   String get chartScreenTitle => 'Doğum Haritası';
 
   @override
@@ -1210,6 +1298,89 @@ class AppLocalizationsTr extends AppLocalizations {
   String ritualsStreak(int days) {
     return '$days günlük seri';
   }
+
+  @override
+  String get ritualsTodayHeading => 'Bugünün ritüelleri';
+
+  @override
+  String get ritualsTodaySubtitle =>
+      'Kozmik bağlantını güçlendirmek için bunları tamamla.';
+
+  @override
+  String get ritualMorningTitle => 'Sabah Niyeti';
+
+  @override
+  String get ritualMorningDesc => 'Önündeki gün için niyetini belirle.';
+
+  @override
+  String get ritualAffirmationTitle => 'Olumlama';
+
+  @override
+  String get ritualAffirmationDesc =>
+      'Bugünün olumlamasını oku ve içselleştir.';
+
+  @override
+  String get ritualEveningTitle => 'Akşam Yansıması';
+
+  @override
+  String get ritualEveningDesc =>
+      'Gününü değerlendir ve şükran duyduklarını not et.';
+
+  @override
+  String get notifEmptyBlurb =>
+      'Henüz bildirim yok — insanlar alanlarınla, gönderilerinle veya yorumlarınla etkileşime geçtiğinde burada göreceksin.';
+
+  @override
+  String get notifGroupToday => 'BUGÜN';
+
+  @override
+  String get notifGroupYesterday => 'DÜN';
+
+  @override
+  String get notifGroupThisWeek => 'BU HAFTA';
+
+  @override
+  String get notifGroupEarlier => 'DAHA ÖNCE';
+
+  @override
+  String get spacePostsHeader => 'Gönderiler';
+
+  @override
+  String get spaceNoPosts => 'Henüz gönderi yok — ilk olan sen ol.';
+
+  @override
+  String get editSpaceLossWarning =>
+      'Tüm gönderiler ve yorumlar kalıcı olarak silinecek.';
+
+  @override
+  String get editSpaceSaving => 'Kaydediliyor…';
+
+  @override
+  String get editSpaceSave => 'Kaydet';
+
+  @override
+  String get editSpaceHandleLabel => 'KULLANICI ADI';
+
+  @override
+  String get editSpaceNameLabel => 'AD';
+
+  @override
+  String get editSpaceDescLabel => 'AÇIKLAMA';
+
+  @override
+  String get homeWelcomeBack => 'Tekrar Hoş Geldin';
+
+  @override
+  String get dailyReadingHeading => 'Günlük Okuman';
+
+  @override
+  String get dailyReadingResonant => 'Rezonans';
+
+  @override
+  String get yfYearTheme => 'YIL TEMAN';
+
+  @override
+  String get yfQuarterBreakdown => 'Çeyrek Dökümü';
 
   @override
   String get communityTitle => 'Topluluk';

@@ -1802,6 +1802,174 @@ abstract class AppLocalizations {
   /// **'Save'**
   String get compatibilitySave;
 
+  /// No description provided for @compatibilitySavedCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} saved · explore your synastry'**
+  String compatibilitySavedCount(int count);
+
+  /// No description provided for @compatibilitySeeHow.
+  ///
+  /// In en, this message translates to:
+  /// **'See How You Connect'**
+  String get compatibilitySeeHow;
+
+  /// No description provided for @compatibilityEmptyBlurb.
+  ///
+  /// In en, this message translates to:
+  /// **'Add a partner, friend, or family member\nand compare your charts.'**
+  String get compatibilityEmptyBlurb;
+
+  /// No description provided for @addPersonTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Add Someone'**
+  String get addPersonTitle;
+
+  /// No description provided for @addPersonSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'We\'ll compare their chart with yours.'**
+  String get addPersonSubtitle;
+
+  /// No description provided for @addPersonNameLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Their name'**
+  String get addPersonNameLabel;
+
+  /// No description provided for @addPersonNameHint.
+  ///
+  /// In en, this message translates to:
+  /// **'e.g. Theo Marlow'**
+  String get addPersonNameHint;
+
+  /// No description provided for @addPersonRelationship.
+  ///
+  /// In en, this message translates to:
+  /// **'Relationship'**
+  String get addPersonRelationship;
+
+  /// No description provided for @addPersonBirthDate.
+  ///
+  /// In en, this message translates to:
+  /// **'Birth date'**
+  String get addPersonBirthDate;
+
+  /// No description provided for @addPersonBirthTime.
+  ///
+  /// In en, this message translates to:
+  /// **'Birth time'**
+  String get addPersonBirthTime;
+
+  /// No description provided for @addPersonBirthplace.
+  ///
+  /// In en, this message translates to:
+  /// **'Birthplace'**
+  String get addPersonBirthplace;
+
+  /// No description provided for @addPersonGenerate.
+  ///
+  /// In en, this message translates to:
+  /// **'Add & Generate Report'**
+  String get addPersonGenerate;
+
+  /// No description provided for @addPersonOptional.
+  ///
+  /// In en, this message translates to:
+  /// **'(optional)'**
+  String get addPersonOptional;
+
+  /// No description provided for @addPersonSelectDate.
+  ///
+  /// In en, this message translates to:
+  /// **'Select a date'**
+  String get addPersonSelectDate;
+
+  /// No description provided for @addPersonSelectTime.
+  ///
+  /// In en, this message translates to:
+  /// **'Select a time'**
+  String get addPersonSelectTime;
+
+  /// No description provided for @addPersonTimeKnown.
+  ///
+  /// In en, this message translates to:
+  /// **'Known'**
+  String get addPersonTimeKnown;
+
+  /// No description provided for @addPersonTimeUnknown.
+  ///
+  /// In en, this message translates to:
+  /// **'Unknown'**
+  String get addPersonTimeUnknown;
+
+  /// No description provided for @compatReportSummary.
+  ///
+  /// In en, this message translates to:
+  /// **'Summary'**
+  String get compatReportSummary;
+
+  /// No description provided for @compatReportConflictPatterns.
+  ///
+  /// In en, this message translates to:
+  /// **'Conflict Patterns'**
+  String get compatReportConflictPatterns;
+
+  /// No description provided for @compatReportAdvice.
+  ///
+  /// In en, this message translates to:
+  /// **'Advice'**
+  String get compatReportAdvice;
+
+  /// No description provided for @compatScoreMagnetic.
+  ///
+  /// In en, this message translates to:
+  /// **'A magnetic alignment'**
+  String get compatScoreMagnetic;
+
+  /// No description provided for @compatScoreEasy.
+  ///
+  /// In en, this message translates to:
+  /// **'Easy, generative energy'**
+  String get compatScoreEasy;
+
+  /// No description provided for @compatScoreWorthWork.
+  ///
+  /// In en, this message translates to:
+  /// **'Worth the work'**
+  String get compatScoreWorthWork;
+
+  /// No description provided for @compatScoreFriction.
+  ///
+  /// In en, this message translates to:
+  /// **'Friction with potential'**
+  String get compatScoreFriction;
+
+  /// No description provided for @compatScoreOpposites.
+  ///
+  /// In en, this message translates to:
+  /// **'A study in opposites'**
+  String get compatScoreOpposites;
+
+  /// No description provided for @compatDimEmotional.
+  ///
+  /// In en, this message translates to:
+  /// **'Emotional'**
+  String get compatDimEmotional;
+
+  /// No description provided for @compatDimCommunication.
+  ///
+  /// In en, this message translates to:
+  /// **'Communication'**
+  String get compatDimCommunication;
+
+  /// No description provided for @compatDimChemistry.
+  ///
+  /// In en, this message translates to:
+  /// **'Chemistry'**
+  String get compatDimChemistry;
+
   /// No description provided for @chartScreenTitle.
   ///
   /// In en, this message translates to:
@@ -2335,6 +2503,162 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'{days} day streak'**
   String ritualsStreak(int days);
+
+  /// No description provided for @ritualsTodayHeading.
+  ///
+  /// In en, this message translates to:
+  /// **'Your rituals for today'**
+  String get ritualsTodayHeading;
+
+  /// No description provided for @ritualsTodaySubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Complete these to strengthen your cosmic connection.'**
+  String get ritualsTodaySubtitle;
+
+  /// No description provided for @ritualMorningTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Morning Intention'**
+  String get ritualMorningTitle;
+
+  /// No description provided for @ritualMorningDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Set your intention for the day ahead.'**
+  String get ritualMorningDesc;
+
+  /// No description provided for @ritualAffirmationTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Affirmation'**
+  String get ritualAffirmationTitle;
+
+  /// No description provided for @ritualAffirmationDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Read and internalize today\'s affirmation.'**
+  String get ritualAffirmationDesc;
+
+  /// No description provided for @ritualEveningTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Evening Reflection'**
+  String get ritualEveningTitle;
+
+  /// No description provided for @ritualEveningDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Reflect on your day and note what you\'re grateful for.'**
+  String get ritualEveningDesc;
+
+  /// No description provided for @notifEmptyBlurb.
+  ///
+  /// In en, this message translates to:
+  /// **'No notifications yet — when people interact with your spaces, posts, or comments you\'ll see them here.'**
+  String get notifEmptyBlurb;
+
+  /// No description provided for @notifGroupToday.
+  ///
+  /// In en, this message translates to:
+  /// **'TODAY'**
+  String get notifGroupToday;
+
+  /// No description provided for @notifGroupYesterday.
+  ///
+  /// In en, this message translates to:
+  /// **'YESTERDAY'**
+  String get notifGroupYesterday;
+
+  /// No description provided for @notifGroupThisWeek.
+  ///
+  /// In en, this message translates to:
+  /// **'THIS WEEK'**
+  String get notifGroupThisWeek;
+
+  /// No description provided for @notifGroupEarlier.
+  ///
+  /// In en, this message translates to:
+  /// **'EARLIER'**
+  String get notifGroupEarlier;
+
+  /// No description provided for @spacePostsHeader.
+  ///
+  /// In en, this message translates to:
+  /// **'Posts'**
+  String get spacePostsHeader;
+
+  /// No description provided for @spaceNoPosts.
+  ///
+  /// In en, this message translates to:
+  /// **'No posts yet — be the first.'**
+  String get spaceNoPosts;
+
+  /// No description provided for @editSpaceLossWarning.
+  ///
+  /// In en, this message translates to:
+  /// **'All posts and comments will be permanently lost.'**
+  String get editSpaceLossWarning;
+
+  /// No description provided for @editSpaceSaving.
+  ///
+  /// In en, this message translates to:
+  /// **'Saving…'**
+  String get editSpaceSaving;
+
+  /// No description provided for @editSpaceSave.
+  ///
+  /// In en, this message translates to:
+  /// **'Save'**
+  String get editSpaceSave;
+
+  /// No description provided for @editSpaceHandleLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'HANDLE'**
+  String get editSpaceHandleLabel;
+
+  /// No description provided for @editSpaceNameLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'NAME'**
+  String get editSpaceNameLabel;
+
+  /// No description provided for @editSpaceDescLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'DESCRIPTION'**
+  String get editSpaceDescLabel;
+
+  /// No description provided for @homeWelcomeBack.
+  ///
+  /// In en, this message translates to:
+  /// **'Welcome Back'**
+  String get homeWelcomeBack;
+
+  /// No description provided for @dailyReadingHeading.
+  ///
+  /// In en, this message translates to:
+  /// **'Your Daily Reading'**
+  String get dailyReadingHeading;
+
+  /// No description provided for @dailyReadingResonant.
+  ///
+  /// In en, this message translates to:
+  /// **'Resonant'**
+  String get dailyReadingResonant;
+
+  /// No description provided for @yfYearTheme.
+  ///
+  /// In en, this message translates to:
+  /// **'YOUR YEAR THEME'**
+  String get yfYearTheme;
+
+  /// No description provided for @yfQuarterBreakdown.
+  ///
+  /// In en, this message translates to:
+  /// **'Quarter Breakdown'**
+  String get yfQuarterBreakdown;
 
   /// No description provided for @communityTitle.
   ///

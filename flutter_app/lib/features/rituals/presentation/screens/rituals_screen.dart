@@ -12,9 +12,10 @@ class RitualsScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l = AppLocalizations.of(context);
     return Scaffold(
       appBar: AppBar(
-        title: Text(AppLocalizations.of(context).ritualsTitle),
+        title: Text(l.ritualsTitle),
       ),
       body: PremiumGate(
         featureName: 'Daily Rituals',
@@ -24,18 +25,18 @@ class RitualsScreen extends ConsumerWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'Your rituals for today',
+                l.ritualsTodayHeading,
                 style: CosmicTypography.headlineSmall,
               ),
               const SizedBox(height: 8),
               Text(
-                'Complete these to strengthen your cosmic connection.',
+                l.ritualsTodaySubtitle,
                 style: CosmicTypography.bodySmall,
               ),
               const SizedBox(height: 24),
               _RitualCard(
-                title: 'Morning Intention',
-                description: 'Set your intention for the day ahead.',
+                title: l.ritualMorningTitle,
+                description: l.ritualMorningDesc,
                 icon: Icons.wb_sunny_outlined,
                 color: CosmicColors.gold,
                 isCompleted: false,
@@ -43,8 +44,8 @@ class RitualsScreen extends ConsumerWidget {
               ),
               const SizedBox(height: 12),
               _RitualCard(
-                title: 'Affirmation',
-                description: 'Read and internalize today\'s affirmation.',
+                title: l.ritualAffirmationTitle,
+                description: l.ritualAffirmationDesc,
                 icon: Icons.auto_awesome,
                 color: CosmicColors.primary,
                 isCompleted: false,
@@ -52,9 +53,8 @@ class RitualsScreen extends ConsumerWidget {
               ),
               const SizedBox(height: 12),
               _RitualCard(
-                title: 'Evening Reflection',
-                description:
-                    'Reflect on your day and note what you\'re grateful for.',
+                title: l.ritualEveningTitle,
+                description: l.ritualEveningDesc,
                 icon: Icons.nightlight_round,
                 color: CosmicColors.accent,
                 isCompleted: false,

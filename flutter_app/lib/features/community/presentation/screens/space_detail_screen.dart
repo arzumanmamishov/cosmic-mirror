@@ -45,7 +45,7 @@ class SpaceDetailScreen extends ConsumerWidget {
         data: (s) => FloatingActionButton.extended(
           backgroundColor: p.primary,
           icon: const Icon(Icons.edit_rounded),
-          label: const Text('Post'),
+          label: Text(AppLocalizations.of(context).communityPostSubmit),
           onPressed: () async {
             await showModalBottomSheet<void>(
               context: context,
@@ -83,7 +83,7 @@ class SpaceDetailScreen extends ConsumerWidget {
                   _Hero(space: s, palette: p),
                   const SizedBox(height: 16),
                   Text(
-                    'Posts',
+                    AppLocalizations.of(context).spacePostsHeader,
                     style: TextStyle(
                       color: p.textSecondary,
                       fontSize: 11,
@@ -103,7 +103,7 @@ class SpaceDetailScreen extends ConsumerWidget {
                             padding: const EdgeInsets.symmetric(vertical: 32),
                             child: Center(
                               child: Text(
-                                'No posts yet — be the first.',
+                                AppLocalizations.of(context).spaceNoPosts,
                                 style: TextStyle(color: p.textSecondary),
                               ),
                             ),

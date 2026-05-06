@@ -114,6 +114,15 @@ func main() {
 	aiSvc := service.NewAIService(chatRepo, birthProfileRepo, openaiClient, cfg.FreeTierChatLimit)
 	compatibilitySvc := service.NewCompatibilityService(compatibilityRepo, birthProfileRepo, openaiClient)
 	subscriptionSvc := service.NewSubscriptionService(subscriptionRepo, cfg.RevenueCatWebhookSecret)
+	stripeSvc := service.NewStripeService(
+		subscriptionRepo,
+		userSvc,
+		cfg.StripeSecretKey,
+		cfg.StripePublishableKey,
+		cfg.StripeWebhookSecret,
+		cfg.StripePriceMonthly,
+		cfg.StripePriceYearly,
+	)
 	// Community
 	communityNotifSvc := service.NewCommunityNotificationService(communityNotifRepo)
 	communitySvc := service.NewCommunityService(db, spaceRepo, spaceMemberRepo, spaceCategoryRepo, postRepo, userRepo, communityNotifSvc)
@@ -138,6 +147,7 @@ func main() {
 		AIChat:        handler.NewAIChatHandler(aiSvc, subscriptionSvc),
 		Compatibility: handler.NewCompatibilityHandler(compatibilitySvc),
 		Subscription:  handler.NewSubscriptionHandler(subscriptionSvc),
+		Stripe:        handler.NewStripeHandler(stripeSvc),
 		Journal:       handler.NewJournalHandler(journalRepo),
 		Places:        handler.NewPlacesHandler(),
 		// Community / Spaces forum

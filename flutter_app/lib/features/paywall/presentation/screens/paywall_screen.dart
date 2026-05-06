@@ -131,9 +131,10 @@ class PaywallScreen extends ConsumerWidget {
                           children: [
                             _PlanTab(
                               label: l10n.paywallMonthly,
-                              price: state.selectedPackage?.storeProduct
-                                      .priceString ??
-                                  '\$6.99/mo',
+                              // Real price comes from the Stripe Price ID
+                              // shown in the Payment Sheet — this string
+                              // is just a hint above the toggle.
+                              price: r'$6.99/mo',
                               isSelected: !state.isYearly,
                               onTap: () {
                                 if (state.isYearly) notifier.togglePlan();
@@ -141,9 +142,7 @@ class PaywallScreen extends ConsumerWidget {
                             ),
                             _PlanTab(
                               label: l10n.paywallYearly,
-                              price: state.selectedPackage?.storeProduct
-                                      .priceString ??
-                                  '\$39.99/yr',
+                              price: r'$39.99/yr',
                               badge: l10n.paywallSaveBadge,
                               isSelected: state.isYearly,
                               onTap: () {

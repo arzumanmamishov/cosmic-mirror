@@ -33,7 +33,11 @@ dependencies:
   sign_in_with_apple: ^6.1.0
 
   # Subscriptions
+  # purchases_flutter (RevenueCat) is kept for backward compatibility
+  # while Stripe is rolled out. Both can coexist; the paywall now uses
+  # flutter_stripe by default.
   purchases_flutter: ^8.4.0
+  flutter_stripe: ^11.1.0
 
   # Local Storage
   shared_preferences: ^2.2.3

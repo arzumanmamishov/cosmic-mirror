@@ -36,7 +36,7 @@ class NotificationsScreen extends ConsumerWidget {
                 ..invalidate(unreadCountProvider);
             },
             child: Text(
-              'Mark all read',
+              AppLocalizations.of(context).communityMarkAllRead,
               style: TextStyle(
                 color: p.primary,
                 fontSize: 12,
@@ -67,8 +67,7 @@ class NotificationsScreen extends ConsumerWidget {
                   child: Padding(
                     padding: const EdgeInsets.all(32),
                     child: Text(
-                      'No notifications yet — when people interact with your '
-                      'spaces, posts, or comments you\'ll see them here.',
+                      AppLocalizations.of(context).notifEmptyBlurb,
                       textAlign: TextAlign.center,
                       style:
                           TextStyle(color: p.textSecondary, fontSize: 13),
@@ -76,7 +75,7 @@ class NotificationsScreen extends ConsumerWidget {
                   ),
                 );
               }
-              final groups = _groupByDay(entries);
+              final groups = _groupByDay(AppLocalizations.of(context), entries);
               return RefreshIndicator(
                 onRefresh: () async {
                   ref
@@ -148,6 +147,7 @@ class NotificationsScreen extends ConsumerWidget {
   }
 
   Map<String, List<NotificationWithMeta>> _groupByDay(
+    AppLocalizations l,
     List<NotificationWithMeta> entries,
   ) {
     final now = DateTime.now();
@@ -159,13 +159,13 @@ class NotificationsScreen extends ConsumerWidget {
       final dayStart = DateTime(d.year, d.month, d.day);
       String label;
       if (dayStart == today) {
-        label = 'TODAY';
+        label = l.notifGroupToday;
       } else if (dayStart == yesterday) {
-        label = 'YESTERDAY';
+        label = l.notifGroupYesterday;
       } else if (today.difference(dayStart).inDays < 7) {
-        label = 'THIS WEEK';
+        label = l.notifGroupThisWeek;
       } else {
-        label = 'EARLIER';
+        label = l.notifGroupEarlier;
       }
       out.putIfAbsent(label, () => []).add(e);
     }

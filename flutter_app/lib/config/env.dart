@@ -48,6 +48,22 @@ class Env {
     defaultValue: 'your_revenuecat_api_key',
   );
 
+  /// Stripe **publishable** key (safe to ship in the binary). The mobile
+  /// Payment Sheet uses this together with the per-customer ephemeral
+  /// key + payment-intent client_secret minted by our backend. Override
+  /// at build time with `--dart-define=STRIPE_PUBLISHABLE_KEY=pk_test_…`.
+  static const stripePublishableKey = String.fromEnvironment(
+    'STRIPE_PUBLISHABLE_KEY',
+    defaultValue: '',
+  );
+
+  /// `merchant.com.lively.app` for Apple Pay — wire to a real merchant
+  /// id in Stripe + your provisioning profile before enabling Apple Pay.
+  static const stripeMerchantIdentifier = String.fromEnvironment(
+    'STRIPE_MERCHANT_IDENTIFIER',
+    defaultValue: 'merchant.com.lively.app',
+  );
+
   static bool get isDev => current == Environment.dev;
   static bool get isProd => current == Environment.prod;
 }

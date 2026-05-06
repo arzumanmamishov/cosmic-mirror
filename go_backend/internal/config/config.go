@@ -21,6 +21,11 @@ type Config struct {
 	EphemerisPath           string
 	UploadsDir              string
 	RevenueCatWebhookSecret string
+	StripeSecretKey         string
+	StripePublishableKey    string
+	StripeWebhookSecret     string
+	StripePriceMonthly      string
+	StripePriceYearly       string
 	FreeTierChatLimit       int
 	FreeTierRateLimit       int
 	PremiumRateLimit        int
@@ -41,6 +46,11 @@ func Load() (*Config, error) {
 		EphemerisPath:           getEnv("EPHEMERIS_PATH", "./ephemeris"),
 		UploadsDir:              getEnv("UPLOADS_DIR", "/app/uploads"),
 		RevenueCatWebhookSecret: getEnv("REVENUECAT_WEBHOOK_SECRET", ""),
+		StripeSecretKey:         getEnv("STRIPE_SECRET_KEY", ""),
+		StripePublishableKey:    getEnv("STRIPE_PUBLISHABLE_KEY", ""),
+		StripeWebhookSecret:     getEnv("STRIPE_WEBHOOK_SECRET", ""),
+		StripePriceMonthly:      getEnv("STRIPE_PRICE_MONTHLY", ""),
+		StripePriceYearly:       getEnv("STRIPE_PRICE_YEARLY", ""),
 		FreeTierChatLimit:       getEnvInt("FREE_TIER_CHAT_LIMIT", 5),
 		FreeTierRateLimit:       getEnvInt("FREE_TIER_RATE_LIMIT", 60),
 		PremiumRateLimit:        getEnvInt("PREMIUM_RATE_LIMIT", 120),

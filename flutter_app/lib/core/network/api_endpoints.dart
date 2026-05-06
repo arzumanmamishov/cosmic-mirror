@@ -64,6 +64,10 @@ class ApiEndpoints {
   // Subscription
   static const String subscriptionStatus = '$basePath/subscription/status';
 
+  // Stripe — premium subscriptions via the mobile Payment Sheet.
+  static const String stripePaymentSheet = '$basePath/stripe/payment-sheet';
+  static const String stripeCancel = '$basePath/stripe/cancel';
+
   // Legal
   static const String privacyPolicy = '$basePath/legal/privacy';
   static const String termsOfService = '$basePath/legal/terms';

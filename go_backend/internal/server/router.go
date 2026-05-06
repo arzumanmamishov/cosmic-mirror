@@ -49,8 +49,11 @@ func NewRouter(h *handler.Handlers, auth *middleware.Auth, rl *middleware.RateLi
 		// Public: auth
 		r.Post("/auth/session", h.Auth.CreateSession)
 
-		// Public: subscription webhook
+		// Public: subscription webhooks (RevenueCat legacy + Stripe).
+		// Both must stay outside the auth-protected group because the
+		// webhook senders authenticate via signature, not a user token.
 		r.Post("/subscription/webhook", h.Subscription.HandleWebhook)
+		r.Post("/stripe/webhook", h.Stripe.HandleWebhook)
 
 		// Public: legal
 		r.Get("/legal/privacy", h.Auth.PrivacyPolicy)
@@ -126,6 +129,12 @@ func NewRouter(h *handler.Handlers, auth *middleware.Auth, rl *middleware.RateLi
 
 			// Subscription
 			r.Get("/subscription/status", h.Subscription.GetStatus)
+
+			// Stripe — premium subscriptions purchased via the mobile
+			// Payment Sheet. POST creates a Customer + incomplete Sub,
+			// returning the params the client needs to complete payment.
+			r.Post("/stripe/payment-sheet", h.Stripe.PaymentSheet)
+			r.Post("/stripe/cancel", h.Stripe.Cancel)
 
 			// Community: spaces
 			r.Get("/spaces", h.Spaces.List)

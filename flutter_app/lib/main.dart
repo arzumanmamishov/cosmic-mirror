@@ -10,6 +10,7 @@ import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_stripe/flutter_stripe.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:purchases_flutter/purchases_flutter.dart';
 
@@ -48,6 +49,16 @@ Future<void> main() async {
         await Purchases.configure(
           PurchasesConfiguration(Env.revenueCatApiKey),
         );
+      }
+
+      // Stripe — the publishable key MUST be set before any
+      // Stripe.instance.* call (Payment Sheet, Apple Pay, etc.). Skip
+      // on web (flutter_stripe mobile-only) and when no key is wired
+      // (silent dev mode).
+      if (!kIsWeb && Env.stripePublishableKey.isNotEmpty) {
+        Stripe.publishableKey = Env.stripePublishableKey;
+        Stripe.merchantIdentifier = Env.stripeMerchantIdentifier;
+        await Stripe.instance.applySettings();
       }
 
       FlutterError.onError = (details) {

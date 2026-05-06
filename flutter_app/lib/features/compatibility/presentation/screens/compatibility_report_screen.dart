@@ -4,6 +4,7 @@ import 'package:share_plus/share_plus.dart';
 
 import 'package:cosmic_mirror/config/theme/app_palette.dart';
 import 'package:cosmic_mirror/core/network/api_endpoints.dart';
+import 'package:cosmic_mirror/l10n/app_localizations.dart';
 import 'package:cosmic_mirror/shared/providers/user_provider.dart';
 import 'package:cosmic_mirror/shared/widgets/cosmic_pulse.dart';
 import 'package:cosmic_mirror/shared/widgets/cosmic_starfield.dart';
@@ -110,7 +111,7 @@ class _ReportBody extends StatelessWidget {
           FadeSlideIn(
             delay: const Duration(milliseconds: 180),
             child: _ReportSection(
-              title: 'Summary',
+              title: AppLocalizations.of(context).compatReportSummary,
               icon: Icons.auto_awesome_rounded,
               iconColor: const Color(0xFF7B61FF),
               content: report['summary'] as String,
@@ -122,7 +123,7 @@ class _ReportBody extends StatelessWidget {
           FadeSlideIn(
             delay: const Duration(milliseconds: 240),
             child: _ReportSection(
-              title: 'Conflict Patterns',
+              title: AppLocalizations.of(context).compatReportConflictPatterns,
               icon: Icons.bolt_rounded,
               iconColor: const Color(0xFFF07C82),
               content: report['conflict_patterns'] as String,
@@ -134,7 +135,7 @@ class _ReportBody extends StatelessWidget {
           FadeSlideIn(
             delay: const Duration(milliseconds: 300),
             child: _ReportSection(
-              title: 'Advice',
+              title: AppLocalizations.of(context).compatReportAdvice,
               icon: Icons.lightbulb_rounded,
               iconColor: const Color(0xFFB8860B),
               content: report['advice'] as String,
@@ -239,7 +240,7 @@ class _Hero extends StatelessWidget {
         ),
         const SizedBox(height: 4),
         Text(
-          _qualitativeLabel(overallScore),
+          _qualitativeLabel(AppLocalizations.of(context), overallScore),
           style: TextStyle(
             color: p.textSecondary,
             fontSize: 13,
@@ -250,12 +251,12 @@ class _Hero extends StatelessWidget {
     );
   }
 
-  static String _qualitativeLabel(int score) {
-    if (score >= 85) return 'A magnetic alignment';
-    if (score >= 70) return 'Easy, generative energy';
-    if (score >= 55) return 'Worth the work';
-    if (score >= 40) return 'Friction with potential';
-    return 'A study in opposites';
+  static String _qualitativeLabel(AppLocalizations l, int score) {
+    if (score >= 85) return l.compatScoreMagnetic;
+    if (score >= 70) return l.compatScoreEasy;
+    if (score >= 55) return l.compatScoreWorthWork;
+    if (score >= 40) return l.compatScoreFriction;
+    return l.compatScoreOpposites;
   }
 }
 
@@ -324,11 +325,12 @@ class _ScoreRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context);
     return Row(
       children: [
         Expanded(
           child: _ScoreCard(
-            label: 'Emotional',
+            label: l.compatDimEmotional,
             score: emotional,
             color: const Color(0xFFE14B8A),
             icon: Icons.favorite_rounded,
@@ -337,7 +339,7 @@ class _ScoreRow extends StatelessWidget {
         const SizedBox(width: 10),
         Expanded(
           child: _ScoreCard(
-            label: 'Communication',
+            label: l.compatDimCommunication,
             score: communication,
             color: const Color(0xFF7B61FF),
             icon: Icons.forum_rounded,
@@ -346,7 +348,7 @@ class _ScoreRow extends StatelessWidget {
         const SizedBox(width: 10),
         Expanded(
           child: _ScoreCard(
-            label: 'Chemistry',
+            label: l.compatDimChemistry,
             score: chemistry,
             color: const Color(0xFFB8860B),
             icon: Icons.auto_fix_high_rounded,

@@ -76,6 +76,8 @@ type RitualRepository interface {
 
 type SubscriptionRepository interface {
 	GetByUserID(ctx context.Context, userID uuid.UUID) (*domain.Subscription, error)
+	GetByStripeCustomer(ctx context.Context, stripeCustomerID string) (*domain.Subscription, error)
 	Upsert(ctx context.Context, sub *domain.Subscription) error
 	UpdateStatus(ctx context.Context, revenueCatID string, status domain.SubscriptionStatus, expiresAt *time.Time) error
+	UpdateFromStripe(ctx context.Context, stripeSubscriptionID string, status domain.SubscriptionStatus, priceID string, planType domain.PlanType, currentPeriodEnd *time.Time, cancelAtPeriodEnd bool) error
 }

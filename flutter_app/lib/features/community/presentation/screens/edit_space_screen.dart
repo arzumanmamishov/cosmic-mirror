@@ -55,20 +55,23 @@ class _EditSpaceScreenState extends ConsumerState<EditSpaceScreen> {
   Future<void> _delete() async {
     final confirm = await showDialog<bool>(
       context: context,
-      builder: (_) => AlertDialog(
-        title: Text(AppLocalizations.of(context).communityDeleteSpaceConfirm),
-        content: const Text('All posts and comments will be permanently lost.'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancel'),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(context, true),
-            child: const Text('Delete'),
-          ),
-        ],
-      ),
+      builder: (dialogCtx) {
+        final dl = AppLocalizations.of(dialogCtx);
+        return AlertDialog(
+          title: Text(dl.communityDeleteSpaceConfirm),
+          content: Text(dl.editSpaceLossWarning),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(dialogCtx, false),
+              child: Text(dl.cancel),
+            ),
+            TextButton(
+              onPressed: () => Navigator.pop(dialogCtx, true),
+              child: Text(dl.settingsDelete),
+            ),
+          ],
+        );
+      },
     );
     if (confirm != true) return;
     setState(() => _busy = true);
@@ -104,7 +107,9 @@ class _EditSpaceScreenState extends ConsumerState<EditSpaceScreen> {
           TextButton(
             onPressed: _busy ? null : _save,
             child: Text(
-              _busy ? 'Saving…' : 'Save',
+              _busy
+                  ? AppLocalizations.of(context).editSpaceSaving
+                  : AppLocalizations.of(context).editSpaceSave,
               style: TextStyle(
                 color: p.primary,
                 fontSize: 14,
@@ -139,17 +144,30 @@ class _EditSpaceScreenState extends ConsumerState<EditSpaceScreen> {
               return ListView(
                 padding: const EdgeInsets.fromLTRB(20, 100, 20, 32),
                 children: [
-                  _readOnly(p, 'HANDLE', '@${s.space.handle}'),
+                  _readOnly(
+                    p,
+                    AppLocalizations.of(context).editSpaceHandleLabel,
+                    '@${s.space.handle}',
+                  ),
                   const SizedBox(height: 14),
-                  _editable(p, 'NAME', _name),
+                  _editable(
+                    p,
+                    AppLocalizations.of(context).editSpaceNameLabel,
+                    _name,
+                  ),
                   const SizedBox(height: 14),
-                  _editable(p, 'DESCRIPTION', _description, maxLines: 4),
+                  _editable(
+                    p,
+                    AppLocalizations.of(context).editSpaceDescLabel,
+                    _description,
+                    maxLines: 4,
+                  ),
                   const SizedBox(height: 32),
                   TextButton.icon(
                     onPressed: _busy ? null : _delete,
                     style: TextButton.styleFrom(foregroundColor: p.error),
                     icon: const Icon(Icons.delete_outline_rounded),
-                    label: const Text('Delete space'),
+                    label: Text(AppLocalizations.of(context).settingsDelete),
                   ),
                   if (_error != null) ...[
                     const SizedBox(height: 12),

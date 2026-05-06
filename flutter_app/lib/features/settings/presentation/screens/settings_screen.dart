@@ -332,9 +332,21 @@ class _ThemeModeSwitcher extends ConsumerWidget {
         ),
         child: Row(
           children: [
-            option(ThemeMode.system, Icons.brightness_auto, 'System'),
-            option(ThemeMode.light, Icons.light_mode_outlined, 'Light'),
-            option(ThemeMode.dark, Icons.dark_mode_outlined, 'Dark'),
+            option(
+              ThemeMode.system,
+              Icons.brightness_auto,
+              AppLocalizations.of(context).settingsThemeSystem,
+            ),
+            option(
+              ThemeMode.light,
+              Icons.light_mode_outlined,
+              AppLocalizations.of(context).settingsThemeLight,
+            ),
+            option(
+              ThemeMode.dark,
+              Icons.dark_mode_outlined,
+              AppLocalizations.of(context).settingsThemeDark,
+            ),
           ],
         ),
       ),

@@ -42,6 +42,7 @@ require (
 	github.com/paulmach/orb v0.13.0 // indirect
 	github.com/ringsaturn/tzf v1.2.0 // indirect
 	github.com/ringsaturn/tzf-dist v0.0.2026-b-fix1 // indirect
+	github.com/stripe/stripe-go/v76 v76.25.0 // indirect
 	github.com/tidwall/geoindex v1.7.0 // indirect
 	github.com/tidwall/rtree v1.10.0 // indirect
 	go.opencensus.io v0.24.0 // indirect

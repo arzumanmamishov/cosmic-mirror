@@ -14,6 +14,7 @@ type Handlers struct {
 	AIChat        *AIChatHandler
 	Compatibility *CompatibilityHandler
 	Subscription  *SubscriptionHandler
+	Stripe        *StripeHandler
 	Journal       *JournalHandler
 	Places        *PlacesHandler
 	// Community / Spaces forum

@@ -195,7 +195,7 @@ class _Hero extends StatelessWidget {
                 FadeSlideIn(
                   delay: const Duration(milliseconds: 80),
                   child: Text(
-                    'Your Daily Reading',
+                    AppLocalizations.of(context).dailyReadingHeading,
                     style: TextStyle(
                       color: p.textPrimary,
                       fontSize: 28,
@@ -571,7 +571,7 @@ class _LuckyRow extends StatelessWidget {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  'Resonant',
+                  AppLocalizations.of(context).dailyReadingResonant,
                   style: TextStyle(
                     color: p.textSecondary,
                     fontSize: 13,

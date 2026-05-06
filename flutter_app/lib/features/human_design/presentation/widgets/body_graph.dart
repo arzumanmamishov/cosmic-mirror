@@ -30,29 +30,135 @@ class BodyGraph extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final p = context.palette;
+    final h = size * 1.65;
     // Aspect 1:1.65 — slightly taller than 1:1.5 so the bigger shapes
     // (now sized to comfortably fit interior gate numbers + center labels)
     // don't crowd into each other.
     return SizedBox(
       width: size,
-      height: size * 1.65,
-      child: CustomPaint(
-        size: Size(size, size * 1.65),
-        painter: _BodyGraphPainter(
-          chart: chart,
-          background: p.background,
-          surface: p.surface,
-          surfaceElevated: p.surfaceElevated,
-          glassBorder: p.glassBorder,
-          textPrimary: p.textPrimary,
-          textSecondary: p.textSecondary,
-          textTertiary: p.textTertiary,
-          personalityColor: const Color(0xFFE53935), // red
-          designColor: const Color(0xFFF5F0E1), // warm cream
-        ),
+      height: h,
+      child: Stack(
+        children: [
+          // Cosmic chrome — orbital rings, gold meditator silhouette,
+          // apex light beam, horizon glow. Drawn behind the chart.
+          const Positioned.fill(
+            child: CustomPaint(painter: _CosmicBackdropPainter()),
+          ),
+          CustomPaint(
+            size: Size(size, h),
+            painter: _BodyGraphPainter(
+              chart: chart,
+              background: p.background,
+              surface: p.surface,
+              surfaceElevated: p.surfaceElevated,
+              glassBorder: p.glassBorder,
+              textPrimary: p.textPrimary,
+              textSecondary: p.textSecondary,
+              textTertiary: p.textTertiary,
+              personalityColor: const Color(0xFFE53935), // red
+              designColor: const Color(0xFFF5F0E1), // warm cream
+            ),
+          ),
+        ],
       ),
     );
   }
+}
+
+// =============================================================================
+// Cosmic backdrop — quiet chrome behind the body graph: faint concentric
+// orbital rings + a gold meditator silhouette outline. No glow, no apex
+// beam, no horizon pool — those felt too sparkly for the rest of the app.
+// =============================================================================
+class _CosmicBackdropPainter extends CustomPainter {
+  const _CosmicBackdropPainter();
+
+  static const Color _gold = Color(0xFFE6BC6A);
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final w = size.width;
+    final h = size.height;
+    _paintOrbitalRings(canvas, w, h);
+    _paintSilhouette(canvas, w, h);
+  }
+
+  // Faint gold rings centered on the chart's vertical midpoint — the
+  // "geometric web" feel, kept low-alpha so the centers and gate numbers
+  // stay legible on top.
+  void _paintOrbitalRings(Canvas c, double w, double h) {
+    final center = Offset(w * 0.5, h * 0.50);
+    const rings = <(double, double)>[
+      (0.42, 0.18),
+      (0.52, 0.14),
+      (0.62, 0.10),
+      (0.72, 0.07),
+    ];
+    for (final (r, alpha) in rings) {
+      final paint = Paint()
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = w * 0.0009
+        ..color = _gold.withValues(alpha: alpha);
+      c.drawCircle(center, w * r, paint);
+    }
+  }
+
+  // Stylized meditator outline — head + symmetric shoulder/torso curves.
+  // Just the gold stroke; no soft outer halo, no blur — clean line work.
+  void _paintSilhouette(Canvas c, double w, double h) {
+    final stroke = Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = w * 0.004
+      ..strokeCap = StrokeCap.round
+      ..strokeJoin = StrokeJoin.round
+      ..color = _gold.withValues(alpha: 0.45);
+
+    // Head — slight oval, sits behind the Head triangle of the chart.
+    final headCenter = Offset(w * 0.50, h * 0.075);
+    c.drawOval(
+      Rect.fromCenter(
+        center: headCenter,
+        width: w * 0.26,
+        height: h * 0.085,
+      ),
+      stroke,
+    );
+
+    // Left shoulder → arm → torso.
+    final leftSide = Path()
+      ..moveTo(w * 0.40, h * 0.115)
+      ..cubicTo(
+        w * 0.18, h * 0.180, // shoulder peak
+        w * 0.06, h * 0.330, // upper arm
+        w * 0.10, h * 0.520, // mid torso edge
+      )
+      ..cubicTo(
+        w * 0.16, h * 0.700, // waist
+        w * 0.28, h * 0.880, // hip
+        w * 0.40, h * 0.965, // base
+      );
+
+    // Right side — mirrored.
+    final rightSide = Path()
+      ..moveTo(w * 0.60, h * 0.115)
+      ..cubicTo(
+        w * 0.82, h * 0.180,
+        w * 0.94, h * 0.330,
+        w * 0.90, h * 0.520,
+      )
+      ..cubicTo(
+        w * 0.84, h * 0.700,
+        w * 0.72, h * 0.880,
+        w * 0.60, h * 0.965,
+      );
+
+    c
+      ..drawPath(leftSide, stroke)
+      ..drawPath(rightSide, stroke);
+  }
+
+  @override
+  bool shouldRepaint(covariant _CosmicBackdropPainter oldDelegate) => false;
 }
 
 class _BodyGraphPainter extends CustomPainter {
@@ -224,32 +330,47 @@ class _BodyGraphPainter extends CustomPainter {
     },
   };
 
-  // ===== Channel → circuit color map (canonical HD circuit assignment) =====
+  // ===== Channel → circuit color map =====
+  // Cosmic-gold palette: each circuit family gets its own variant of the
+  // gold/cream spectrum so the chart reads as one cohesive piece (matches
+  // the Astrolite-style backdrop) while still letting circuits be told
+  // apart at a glance.
+  //   Integration       → palest cream
+  //   Individual        → bright gold
+  //   Tribal            → warm copper
+  //   Collective Logic  → light amber
+  //   Collective Sensing→ deep gold
+  static const Color _circIntegration = Color(0xFFF4E5C7); // pale cream
+  static const Color _circIndividual = Color(0xFFF4D165); // bright gold
+  static const Color _circTribal = Color(0xFFE0B584); // warm copper
+  static const Color _circLogic = Color(0xFFF0CC85); // light amber
+  static const Color _circSensing = Color(0xFFE8B564); // deep gold
+
   static const Map<(int, int), Color> _channelCircuitColor = {
-    // Integration — light teal
-    (10, 20): Color(0xFFA8D5BA), (10, 34): Color(0xFFA8D5BA),
-    (10, 57): Color(0xFFA8D5BA), (20, 34): Color(0xFFA8D5BA),
-    (20, 57): Color(0xFFA8D5BA), (34, 57): Color(0xFFA8D5BA),
-    // Individual — olive
-    (1, 8): Color(0xFFA8AA60), (2, 14): Color(0xFFA8AA60),
-    (3, 60): Color(0xFFA8AA60), (12, 22): Color(0xFFA8AA60),
-    (23, 43): Color(0xFFA8AA60), (24, 61): Color(0xFFA8AA60),
-    (25, 51): Color(0xFFA8AA60), (28, 38): Color(0xFFA8AA60),
-    (39, 55): Color(0xFFA8AA60), (47, 64): Color(0xFFA8AA60),
-    // Tribal — peach/clay
-    (6, 59): Color(0xFFD9A57A), (19, 49): Color(0xFFD9A57A),
-    (21, 45): Color(0xFFD9A57A), (26, 44): Color(0xFFD9A57A),
-    (27, 50): Color(0xFFD9A57A), (32, 54): Color(0xFFD9A57A),
-    (37, 40): Color(0xFFD9A57A),
-    // Collective Logic — slate blue
-    (4, 63): Color(0xFF5C7AAF), (5, 15): Color(0xFF5C7AAF),
-    (7, 31): Color(0xFF5C7AAF), (9, 52): Color(0xFF5C7AAF),
-    (16, 48): Color(0xFF5C7AAF), (17, 62): Color(0xFF5C7AAF),
-    (18, 58): Color(0xFF5C7AAF), (42, 53): Color(0xFF5C7AAF),
-    // Collective Sensing — terracotta
-    (11, 56): Color(0xFFC25450), (13, 33): Color(0xFFC25450),
-    (29, 46): Color(0xFFC25450), (30, 41): Color(0xFFC25450),
-    (35, 36): Color(0xFFC25450),
+    // Integration
+    (10, 20): _circIntegration, (10, 34): _circIntegration,
+    (10, 57): _circIntegration, (20, 34): _circIntegration,
+    (20, 57): _circIntegration, (34, 57): _circIntegration,
+    // Individual
+    (1, 8): _circIndividual, (2, 14): _circIndividual,
+    (3, 60): _circIndividual, (12, 22): _circIndividual,
+    (23, 43): _circIndividual, (24, 61): _circIndividual,
+    (25, 51): _circIndividual, (28, 38): _circIndividual,
+    (39, 55): _circIndividual, (47, 64): _circIndividual,
+    // Tribal
+    (6, 59): _circTribal, (19, 49): _circTribal,
+    (21, 45): _circTribal, (26, 44): _circTribal,
+    (27, 50): _circTribal, (32, 54): _circTribal,
+    (37, 40): _circTribal,
+    // Collective Logic
+    (4, 63): _circLogic, (5, 15): _circLogic,
+    (7, 31): _circLogic, (9, 52): _circLogic,
+    (16, 48): _circLogic, (17, 62): _circLogic,
+    (18, 58): _circLogic, (42, 53): _circLogic,
+    // Collective Sensing
+    (11, 56): _circSensing, (13, 33): _circSensing,
+    (29, 46): _circSensing, (30, 41): _circSensing,
+    (35, 36): _circSensing,
   };
 
   Color _channelColor(int g1, int g2, Color fallback) {
@@ -373,8 +494,11 @@ class _BodyGraphPainter extends CustomPainter {
       final end = _gatePixelPos(ch.gate2, w, h);
       if (start == null || end == null) continue;
 
-      paint.color = _channelColor(ch.gate1, ch.gate2,
-          _centerColors[ch.centers.first] ?? glassBorder);
+      paint.color = _channelColor(
+        ch.gate1,
+        ch.gate2,
+        _centerColors[ch.centers.first] ?? glassBorder,
+      );
 
       // Bow the curve outward from the chart's center axis.
       final mid = Offset((start.dx + end.dx) / 2, (start.dy + end.dy) / 2);
@@ -482,42 +606,60 @@ class _BodyGraphPainter extends CustomPainter {
     Path path;
     switch (name) {
       case 'Head': // triangle pointing UP
-        path = _roundedPolygon([
-          Offset(cx, cy - radius),
-          Offset(cx + radius, cy + radius * 0.7),
-          Offset(cx - radius, cy + radius * 0.7),
-        ], cornerR);
+        path = _roundedPolygon(
+          [
+            Offset(cx, cy - radius),
+            Offset(cx + radius, cy + radius * 0.7),
+            Offset(cx - radius, cy + radius * 0.7),
+          ],
+          cornerR,
+        );
       case 'Ajna': // triangle pointing DOWN
-        path = _roundedPolygon([
-          Offset(cx - radius, cy - radius * 0.7),
-          Offset(cx + radius, cy - radius * 0.7),
-          Offset(cx, cy + radius),
-        ], cornerR);
+        path = _roundedPolygon(
+          [
+            Offset(cx - radius, cy - radius * 0.7),
+            Offset(cx + radius, cy - radius * 0.7),
+            Offset(cx, cy + radius),
+          ],
+          cornerR,
+        );
       case 'G': // diamond
-        path = _roundedPolygon([
-          Offset(cx, cy - radius),
-          Offset(cx + radius, cy),
-          Offset(cx, cy + radius),
-          Offset(cx - radius, cy),
-        ], cornerR);
+        path = _roundedPolygon(
+          [
+            Offset(cx, cy - radius),
+            Offset(cx + radius, cy),
+            Offset(cx, cy + radius),
+            Offset(cx - radius, cy),
+          ],
+          cornerR,
+        );
       case 'Heart': // small triangle pointing UP
-        path = _roundedPolygon([
-          Offset(cx, cy - radius),
-          Offset(cx + radius * 0.85, cy + radius * 0.6),
-          Offset(cx - radius * 0.85, cy + radius * 0.6),
-        ], cornerR);
+        path = _roundedPolygon(
+          [
+            Offset(cx, cy - radius),
+            Offset(cx + radius * 0.85, cy + radius * 0.6),
+            Offset(cx - radius * 0.85, cy + radius * 0.6),
+          ],
+          cornerR,
+        );
       case 'Spleen': // triangle pointing RIGHT
-        path = _roundedPolygon([
-          Offset(cx - radius * 0.55, cy - radius),
-          Offset(cx + radius, cy),
-          Offset(cx - radius * 0.55, cy + radius),
-        ], cornerR);
+        path = _roundedPolygon(
+          [
+            Offset(cx - radius * 0.55, cy - radius),
+            Offset(cx + radius, cy),
+            Offset(cx - radius * 0.55, cy + radius),
+          ],
+          cornerR,
+        );
       case 'SolarPlexus': // triangle pointing LEFT
-        path = _roundedPolygon([
-          Offset(cx + radius * 0.55, cy - radius),
-          Offset(cx - radius, cy),
-          Offset(cx + radius * 0.55, cy + radius),
-        ], cornerR);
+        path = _roundedPolygon(
+          [
+            Offset(cx + radius * 0.55, cy - radius),
+            Offset(cx - radius, cy),
+            Offset(cx + radius * 0.55, cy + radius),
+          ],
+          cornerR,
+        );
       default: // square (Throat, Sacral, Root) — use RRect directly
         final rrect = RRect.fromRectAndRadius(
           Rect.fromCenter(

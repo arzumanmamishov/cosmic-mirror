@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import 'package:cosmic_mirror/config/theme/app_palette.dart';
+import 'package:cosmic_mirror/l10n/app_localizations.dart';
 import 'package:cosmic_mirror/shared/providers/user_provider.dart';
 
 class HomeHeaderBar extends ConsumerWidget {
@@ -46,7 +47,7 @@ class HomeHeaderBar extends ConsumerWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  user.name ?? 'Stargazer',
+                  user.name ?? AppLocalizations.of(context).stargazer,
                   style: TextStyle(
                     color: p.textPrimary,
                     fontSize: 16,
@@ -56,7 +57,7 @@ class HomeHeaderBar extends ConsumerWidget {
                 Row(
                   children: [
                     Text(
-                      'Welcome Back',
+                      AppLocalizations.of(context).homeWelcomeBack,
                       style: TextStyle(
                         color: p.textSecondary,
                         fontSize: 13,
