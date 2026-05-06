@@ -97,9 +97,9 @@ class _Hero extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              'LIFE PATH',
-              style: TextStyle(
+            Text(
+              AppLocalizations.of(context).numerologyLifePathBadge,
+              style: const TextStyle(
                 color: Colors.white70,
                 fontSize: 11,
                 letterSpacing: 1.6,
@@ -130,9 +130,9 @@ class _Hero extends StatelessWidget {
                       color: Colors.white.withValues(alpha: 0.25),
                       borderRadius: BorderRadius.circular(8),
                     ),
-                    child: const Text(
-                      'MASTER',
-                      style: TextStyle(
+                    child: Text(
+                      AppLocalizations.of(context).numerologyMasterBadge,
+                      style: const TextStyle(
                         color: Colors.white,
                         fontSize: 11,
                         letterSpacing: 1.4,
@@ -162,6 +162,7 @@ class _TabBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final p = context.palette;
+    final l = AppLocalizations.of(context);
     return Container(
       margin: const EdgeInsets.fromLTRB(20, 0, 20, 12),
       decoration: BoxDecoration(
@@ -181,12 +182,12 @@ class _TabBar extends StatelessWidget {
         labelColor: Colors.white,
         unselectedLabelColor: p.textSecondary,
         labelStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
-        tabs: const [
-          Tab(text: 'Core'),
-          Tab(text: 'Today'),
-          Tab(text: 'Cycles'),
-          Tab(text: 'Karmic'),
-          Tab(text: 'Compat'),
+        tabs: [
+          Tab(text: l.numerologyTabCore),
+          Tab(text: l.numerologyTabToday),
+          Tab(text: l.numerologyTabCycles),
+          Tab(text: l.numerologyTabKarmic),
+          Tab(text: l.numerologyTabCompat),
         ],
       ),
     );
@@ -199,36 +200,37 @@ class _CoreTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context);
     return ListView(
       padding: const EdgeInsets.fromLTRB(20, 12, 20, 40),
       children: [
         NumberCard(
-          title: 'Life Path',
+          title: l.numerologyCoreLifePath,
           number: profile.lifePath,
           icon: Icons.route_rounded,
         ),
         NumberCard(
-          title: 'Expression',
+          title: l.numerologyCoreExpression,
           number: profile.expression,
           icon: Icons.campaign_rounded,
         ),
         NumberCard(
-          title: 'Soul Urge',
+          title: l.numerologyCoreSoulUrge,
           number: profile.soulUrge,
           icon: Icons.favorite_rounded,
         ),
         NumberCard(
-          title: 'Personality',
+          title: l.numerologyCorePersonality,
           number: profile.personality,
           icon: Icons.face_rounded,
         ),
         NumberCard(
-          title: 'Maturity',
+          title: l.numerologyCoreMaturity,
           number: profile.maturity,
           icon: Icons.workspace_premium_rounded,
         ),
         NumberCard(
-          title: 'Birthday',
+          title: l.numerologyCoreBirthday,
           number: profile.birthday,
           icon: Icons.cake_rounded,
         ),
@@ -295,6 +297,7 @@ class _CompatTab extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final p = context.palette;
+    final l = AppLocalizations.of(context);
     return Padding(
       padding: const EdgeInsets.fromLTRB(20, 32, 20, 40),
       child: Column(
@@ -302,7 +305,7 @@ class _CompatTab extends StatelessWidget {
           Icon(Icons.favorite_rounded, color: p.accent, size: 48),
           const SizedBox(height: 14),
           Text(
-            'Compare with someone',
+            l.numerologyCompareWith,
             style: TextStyle(
               color: p.textPrimary,
               fontSize: 18,
@@ -311,9 +314,7 @@ class _CompatTab extends StatelessWidget {
           ),
           const SizedBox(height: 6),
           Text(
-            'Enter their full birth name + birth date and we\'ll calculate '
-            'numerology compatibility for the three relationship-relevant '
-            'numbers.',
+            l.numerologyCompatBlurb,
             textAlign: TextAlign.center,
             style: TextStyle(color: p.textSecondary, fontSize: 13, height: 1.5),
           ),
@@ -329,7 +330,7 @@ class _CompatTab extends StatelessWidget {
                 borderRadius: BorderRadius.circular(20),
               ),
             ),
-            child: const Text('Open compatibility'),
+            child: Text(l.numerologyOpenCompat),
           ),
         ],
       ),

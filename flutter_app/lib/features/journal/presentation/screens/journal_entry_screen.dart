@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 
 import 'package:cosmic_mirror/config/theme/app_palette.dart';
 import 'package:cosmic_mirror/core/network/api_endpoints.dart';
+import 'package:cosmic_mirror/l10n/app_localizations.dart';
 import 'package:cosmic_mirror/shared/providers/user_provider.dart';
 import 'package:cosmic_mirror/shared/widgets/cosmic_starfield.dart';
 import 'package:cosmic_mirror/shared/widgets/staggered_fade_in.dart';
@@ -23,24 +24,25 @@ class _JournalEntryScreenState extends ConsumerState<JournalEntryScreen> {
   String? _selectedMood;
   bool _isSaving = false;
 
-  // Emoji + label pairs feel more intentional than raw emojis.
-  static const _moods = [
-    _Mood('😊', 'Glad'),
-    _Mood('😌', 'Calm'),
-    _Mood('🥰', 'Loved'),
-    _Mood('✨', 'Sparkly'),
-    _Mood('🤔', 'Curious'),
-    _Mood('😴', 'Tired'),
-    _Mood('😔', 'Heavy'),
-    _Mood('😤', 'Restless'),
-  ];
+  // Emoji + label pairs feel more intentional than raw emojis. Labels are
+  // localized at build time via [_moods] / [_prompts].
+  List<_Mood> _moods(AppLocalizations l) => [
+        _Mood('😊', l.journalMoodGlad),
+        _Mood('😌', l.journalMoodCalm),
+        _Mood('🥰', l.journalMoodLoved),
+        _Mood('✨', l.journalMoodSparkly),
+        _Mood('🤔', l.journalMoodCurious),
+        _Mood('😴', l.journalMoodTired),
+        _Mood('😔', l.journalMoodHeavy),
+        _Mood('😤', l.journalMoodRestless),
+      ];
 
-  static const _prompts = [
-    'What surprised you today?',
-    'Where did you feel most yourself?',
-    'What are you releasing?',
-    'What did the sky feel like today?',
-  ];
+  List<String> _prompts(AppLocalizations l) => [
+        l.journalPrompt1,
+        l.journalPrompt2,
+        l.journalPrompt3,
+        l.journalPrompt4,
+      ];
 
   bool get _isEditing => widget.entryId != null;
 
@@ -76,7 +78,11 @@ class _JournalEntryScreenState extends ConsumerState<JournalEntryScreen> {
       setState(() => _isSaving = false);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to save: $e')),
+          SnackBar(
+            content: Text(
+              AppLocalizations.of(context).journalSaveFailed(e.toString()),
+            ),
+          ),
         );
       }
     }
@@ -85,6 +91,9 @@ class _JournalEntryScreenState extends ConsumerState<JournalEntryScreen> {
   @override
   Widget build(BuildContext context) {
     final p = context.palette;
+    final l = AppLocalizations.of(context);
+    final moods = _moods(l);
+    final prompts = _prompts(l);
     final dateLabel = DateFormat('EEEE, MMMM d').format(DateTime.now());
     final canSave = _contentController.text.trim().isNotEmpty;
 
@@ -125,7 +134,7 @@ class _JournalEntryScreenState extends ConsumerState<JournalEntryScreen> {
                         color: Colors.white,
                       ),
                     )
-                  : const Text('Save'),
+                  : Text(l.journalSave),
             ),
           ),
         ],
@@ -157,7 +166,7 @@ class _JournalEntryScreenState extends ConsumerState<JournalEntryScreen> {
               FadeSlideIn(
                 delay: const Duration(milliseconds: 60),
                 child: Text(
-                  _isEditing ? 'Edit your moment' : 'A new moment',
+                  _isEditing ? l.journalEditMoment : l.journalNewMoment,
                   style: TextStyle(
                     color: p.textPrimary,
                     fontSize: 26,
@@ -172,7 +181,7 @@ class _JournalEntryScreenState extends ConsumerState<JournalEntryScreen> {
               FadeSlideIn(
                 delay: const Duration(milliseconds: 120),
                 child: Text(
-                  'HOW DOES TODAY FEEL?',
+                  l.journalMoodHeader,
                   style: TextStyle(
                     color: p.textSecondary,
                     fontSize: 10,
@@ -187,7 +196,7 @@ class _JournalEntryScreenState extends ConsumerState<JournalEntryScreen> {
                 child: Wrap(
                   spacing: 8,
                   runSpacing: 8,
-                  children: _moods.map((m) {
+                  children: moods.map((m) {
                     final selected = _selectedMood == m.emoji;
                     return GestureDetector(
                       onTap: () => setState(
@@ -238,7 +247,7 @@ class _JournalEntryScreenState extends ConsumerState<JournalEntryScreen> {
                 FadeSlideIn(
                   delay: const Duration(milliseconds: 220),
                   child: Text(
-                    'OR START FROM A PROMPT',
+                    l.journalPromptHeader,
                     style: TextStyle(
                       color: p.textSecondary,
                       fontSize: 10,
@@ -253,7 +262,7 @@ class _JournalEntryScreenState extends ConsumerState<JournalEntryScreen> {
                   child: Wrap(
                     spacing: 8,
                     runSpacing: 8,
-                    children: _prompts.map((prompt) {
+                    children: prompts.map((prompt) {
                       return GestureDetector(
                         onTap: () => setState(() {
                           _contentController.text = '$prompt\n\n';
@@ -322,8 +331,7 @@ class _JournalEntryScreenState extends ConsumerState<JournalEntryScreen> {
                       height: 1.55,
                     ),
                     decoration: InputDecoration(
-                      hintText:
-                          'Write what you noticed, felt, or wondered about today...',
+                      hintText: l.journalEditorHint,
                       hintStyle: TextStyle(
                         color: p.textTertiary,
                         fontSize: 15,

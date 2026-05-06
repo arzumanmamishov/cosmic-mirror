@@ -225,6 +225,22 @@
   "paywallFeatureCompatibility": "Unlimited compatibility reports",
   "paywallFeatureNoAds": "Ad-free experience",
   "paywallFeatureExport": "Export your charts",
+  "paywallBenefit1Title": "Full Daily Guidance",
+  "paywallBenefit1Subtitle": "Detailed love, career, and health insights",
+  "paywallBenefit2Title": "Unlimited AI Chat",
+  "paywallBenefit2Subtitle": "Ask your personal astrologer anything",
+  "paywallBenefit3Title": "Full Compatibility",
+  "paywallBenefit3Subtitle": "Deep reports for all your relationships",
+  "paywallBenefit4Title": "Life Timeline",
+  "paywallBenefit4Subtitle": "30-day, 3-month, and 12-month forecasts",
+  "paywallBenefit5Title": "Yearly Forecast",
+  "paywallBenefit5Subtitle": "Your cosmic roadmap for the year ahead",
+  "paywallBenefit6Title": "Rituals & Journal",
+  "paywallBenefit6Subtitle": "Daily practices for growth and reflection",
+  "paywallSaveBadge": "SAVE 52%",
+  "paywallTrialIncluded": "3-day free trial included",
+  "paywallRestoreLong": "Restore Purchases",
+  "paywallCancelNote": "Cancel anytime. Subscription renews automatically.",
 
   "dailyReadingTitle": "Today's Reading",
   "dailyReadingEnergy": "Energy",
@@ -249,6 +265,34 @@
   "journalSave": "Save",
   "journalDelete": "Delete",
   "journalDeleteConfirm": "Delete this entry?",
+  "journalEntriesCount": "{count, plural, =1{1 entry} other{{count} entries}} · capture what the sky meant to you",
+  "@journalEntriesCount": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "journalCosmicTitle": "Your Cosmic Journal",
+  "journalEmptyBlurb": "A private space to write what you noticed,\nfelt, or wondered about today.",
+  "journalNewMoment": "A new moment",
+  "journalEditMoment": "Edit your moment",
+  "journalMoodHeader": "HOW DOES TODAY FEEL?",
+  "journalPromptHeader": "OR START FROM A PROMPT",
+  "journalMoodSuffix": "mood",
+  "journalMoodGlad": "Glad",
+  "journalMoodCalm": "Calm",
+  "journalMoodLoved": "Loved",
+  "journalMoodSparkly": "Sparkly",
+  "journalMoodCurious": "Curious",
+  "journalMoodTired": "Tired",
+  "journalMoodHeavy": "Heavy",
+  "journalMoodRestless": "Restless",
+  "journalPrompt1": "What surprised you today?",
+  "journalPrompt2": "Where did you feel most yourself?",
+  "journalPrompt3": "What are you releasing?",
+  "journalPrompt4": "What did the sky feel like today?",
+  "journalEditorHint": "Write what you noticed, felt, or wondered about today...",
+  "journalSaveFailed": "Failed to save: {error}",
+  "@journalSaveFailed": {
+    "placeholders": { "error": { "type": "String" } }
+  },
 
   "todaySkyEnergyHighTitle": "Energy: high",
   "todaySkyEnergyHighBody": "A good day to start something — momentum favors action.",
@@ -292,27 +336,115 @@
   "chartTabPlanets": "Planets",
   "chartTabHouses": "Houses",
   "chartTabAspects": "Aspects",
+  "chartTabElements": "Elements",
   "chartTabSummary": "Summary",
+  "chartViewVedic": "View Vedic Chart",
+  "chartLegendConjunction": "Conjunction",
+  "chartLegendSextile": "Sextile",
+  "chartLegendSquare": "Square",
+  "chartLegendTrine": "Trine",
+  "chartLegendOpposition": "Opposition",
+  "chartHouseNumber": "House {n}",
+  "@chartHouseNumber": {
+    "placeholders": { "n": { "type": "int" } }
+  },
+  "chartHouse1": "Self & Identity",
+  "chartHouse2": "Values & Resources",
+  "chartHouse3": "Communication",
+  "chartHouse4": "Home & Roots",
+  "chartHouse5": "Creativity & Joy",
+  "chartHouse6": "Work & Wellness",
+  "chartHouse7": "Partnerships",
+  "chartHouse8": "Transformation",
+  "chartHouse9": "Philosophy & Travel",
+  "chartHouse10": "Career & Legacy",
+  "chartHouse11": "Community & Vision",
+  "chartHouse12": "Spirit & Surrender",
+  "chartNoPlanets": "No planet data",
+  "chartNoHouses": "No house data",
+  "chartNoAspects": "No aspect data",
+  "chartNoElements": "No element data",
+  "chartHouseLine": "{sign} · {degree}°",
+  "@chartHouseLine": {
+    "placeholders": {
+      "sign": { "type": "String" },
+      "degree": { "type": "String" }
+    }
+  },
+  "chartAspectOrb": "Orb {value}°",
+  "@chartAspectOrb": {
+    "placeholders": { "value": { "type": "String" } }
+  },
 
   "vedicScreenTitle": "Vedic Chart",
   "vedicAyanamsa": "Ayanamsa",
   "vedicTabOverview": "Overview",
   "vedicTabPlanets": "Planets",
   "vedicTabHouses": "Houses",
+  "vedicTabBhavas": "Bhavas",
+  "vedicTabAspects": "Aspects",
   "vedicTabNakshatras": "Nakshatras",
   "vedicTabVargas": "Vargas",
   "vedicTabDasha": "Dasha",
   "vedicTabYogas": "Yogas",
   "vedicTabShadbala": "Shadbala",
   "vedicTabAshtakavarga": "Ashtakavarga",
+  "vedicAtmakarakaLabel": "Atmakaraka: {name}",
+  "@vedicAtmakarakaLabel": {
+    "placeholders": { "name": { "type": "String" } }
+  },
+  "vedicChartCaption": "{varga} (D{divisor}) · {ayanamsa} ayanamsa",
+  "@vedicChartCaption": {
+    "placeholders": {
+      "varga": { "type": "String" },
+      "divisor": { "type": "int" },
+      "ayanamsa": { "type": "String" }
+    }
+  },
+  "vedicNoAspects": "No graha-to-graha drishti",
+  "vedicNoYogas": "No active classical yogas detected for this chart.",
+  "vedicNoShadbala": "No Shadbala data",
+  "vedicVargasNote": "The hero chart above re-renders for the selected Varga. Each divisional chart reveals a different facet of life: D9 marriage and dharma, D10 career, D12 parents, D60 past karma.",
+  "vedicBhavaOccupants": "Occupants: {planets}",
+  "@vedicBhavaOccupants": {
+    "placeholders": { "planets": { "type": "String" } }
+  },
+  "vedicBhavaLord": "{sign} ({sanskrit}) · Lord {lord}",
+  "@vedicBhavaLord": {
+    "placeholders": {
+      "sign": { "type": "String" },
+      "sanskrit": { "type": "String" },
+      "lord": { "type": "String" }
+    }
+  },
+  "vedicAspectsLine": "{from} aspects {to}",
+  "@vedicAspectsLine": {
+    "placeholders": {
+      "from": { "type": "String" },
+      "to": { "type": "String" }
+    }
+  },
+  "vedicRetro": "Rx",
+  "vedicCombust": "Combust",
 
   "numerologyTitle": "Numerology",
   "numerologyTabCore": "Core",
   "numerologyTabToday": "Today",
   "numerologyTabCycles": "Cycles",
   "numerologyTabKarmic": "Karmic",
+  "numerologyTabCompat": "Compat",
   "numerologyTabCompatibility": "Compatibility",
   "numerologyCompareWith": "Compare with someone",
+  "numerologyLifePathBadge": "LIFE PATH",
+  "numerologyMasterBadge": "MASTER",
+  "numerologyCoreLifePath": "Life Path",
+  "numerologyCoreExpression": "Expression",
+  "numerologyCoreSoulUrge": "Soul Urge",
+  "numerologyCorePersonality": "Personality",
+  "numerologyCoreMaturity": "Maturity",
+  "numerologyCoreBirthday": "Birthday",
+  "numerologyCompatBlurb": "Enter their full birth name + birth date and we'll calculate numerology compatibility for the three relationship-relevant numbers.",
+  "numerologyOpenCompat": "Open compatibility",
 
   "humanDesignTitle": "Human Design",
   "humanDesignTabBodyGraph": "Body Graph",
@@ -320,6 +452,10 @@
   "humanDesignTabChannels": "Channels",
   "humanDesignTabGates": "Gates",
   "humanDesignTabProfile": "Profile",
+  "humanDesignBodyGraphLegend": "Filled centers are defined; outlined centers are open. Lines are defined channels. Red dots are Personality gates (conscious), cream dots are Design gates (unconscious).",
+  "humanDesignNoChannels": "No defined channels — you may be a Reflector or have only individual active gates.",
+  "humanDesignProfileLabel": "PROFILE",
+  "humanDesignProfileDesc": "Personality conscious line × Design unconscious line.",
 
   "yearlyForecastTitle": "Yearly Forecast",
   "transitForecastTitle": "Transit Forecast",
@@ -353,5 +489,25 @@
   "communityNewSpace": "New Space",
   "communityEditSpace": "Edit Space",
   "communityDeleteSpaceConfirm": "Delete this space?",
-  "communityProfile": "Profile"
+  "communityProfile": "Profile",
+  "communityCategoriesLabel": "CATEGORIES",
+  "communitySearchSpaces": "Search spaces",
+  "communityNewPostTitle": "New post",
+  "communitySpacesEmptyTap": "No spaces yet — tap + to create the first one.",
+  "communityComposeHint": "What's on your mind?",
+  "communityLinkHint": "Optional link URL",
+  "communityNotificationsTooltip": "Notifications",
+  "communityNewSpaceTooltip": "New space",
+  "lifeTimelineAddMoment": "Add Moment",
+  "lifeTimelineMomentsMapped": "{count} moments mapped",
+  "@lifeTimelineMomentsMapped": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "lifeTimelineHeaderTitle": "Your Cosmic Timeline",
+  "lifeTimelineHeaderSubtitle": "Your life mapped against the sky.\nAdd moments. See what was happening above.",
+  "lifeTimelineFelt": "felt {mood}",
+  "@lifeTimelineFelt": {
+    "placeholders": { "mood": { "type": "String" } }
+  },
+  "lifeTimelineWhatSky": "WHAT THE SKY WAS DOING"
 }

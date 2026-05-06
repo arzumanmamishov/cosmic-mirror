@@ -623,6 +623,60 @@ class AppLocalizationsEn extends AppLocalizations {
   String get paywallFeatureExport => 'Export your charts';
 
   @override
+  String get paywallBenefit1Title => 'Full Daily Guidance';
+
+  @override
+  String get paywallBenefit1Subtitle =>
+      'Detailed love, career, and health insights';
+
+  @override
+  String get paywallBenefit2Title => 'Unlimited AI Chat';
+
+  @override
+  String get paywallBenefit2Subtitle => 'Ask your personal astrologer anything';
+
+  @override
+  String get paywallBenefit3Title => 'Full Compatibility';
+
+  @override
+  String get paywallBenefit3Subtitle =>
+      'Deep reports for all your relationships';
+
+  @override
+  String get paywallBenefit4Title => 'Life Timeline';
+
+  @override
+  String get paywallBenefit4Subtitle =>
+      '30-day, 3-month, and 12-month forecasts';
+
+  @override
+  String get paywallBenefit5Title => 'Yearly Forecast';
+
+  @override
+  String get paywallBenefit5Subtitle =>
+      'Your cosmic roadmap for the year ahead';
+
+  @override
+  String get paywallBenefit6Title => 'Rituals & Journal';
+
+  @override
+  String get paywallBenefit6Subtitle =>
+      'Daily practices for growth and reflection';
+
+  @override
+  String get paywallSaveBadge => 'SAVE 52%';
+
+  @override
+  String get paywallTrialIncluded => '3-day free trial included';
+
+  @override
+  String get paywallRestoreLong => 'Restore Purchases';
+
+  @override
+  String get paywallCancelNote =>
+      'Cancel anytime. Subscription renews automatically.';
+
+  @override
   String get dailyReadingTitle => 'Today\'s Reading';
 
   @override
@@ -687,6 +741,84 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get journalDeleteConfirm => 'Delete this entry?';
+
+  @override
+  String journalEntriesCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count entries',
+      one: '1 entry',
+    );
+    return '$_temp0 · capture what the sky meant to you';
+  }
+
+  @override
+  String get journalCosmicTitle => 'Your Cosmic Journal';
+
+  @override
+  String get journalEmptyBlurb =>
+      'A private space to write what you noticed,\nfelt, or wondered about today.';
+
+  @override
+  String get journalNewMoment => 'A new moment';
+
+  @override
+  String get journalEditMoment => 'Edit your moment';
+
+  @override
+  String get journalMoodHeader => 'HOW DOES TODAY FEEL?';
+
+  @override
+  String get journalPromptHeader => 'OR START FROM A PROMPT';
+
+  @override
+  String get journalMoodSuffix => 'mood';
+
+  @override
+  String get journalMoodGlad => 'Glad';
+
+  @override
+  String get journalMoodCalm => 'Calm';
+
+  @override
+  String get journalMoodLoved => 'Loved';
+
+  @override
+  String get journalMoodSparkly => 'Sparkly';
+
+  @override
+  String get journalMoodCurious => 'Curious';
+
+  @override
+  String get journalMoodTired => 'Tired';
+
+  @override
+  String get journalMoodHeavy => 'Heavy';
+
+  @override
+  String get journalMoodRestless => 'Restless';
+
+  @override
+  String get journalPrompt1 => 'What surprised you today?';
+
+  @override
+  String get journalPrompt2 => 'Where did you feel most yourself?';
+
+  @override
+  String get journalPrompt3 => 'What are you releasing?';
+
+  @override
+  String get journalPrompt4 => 'What did the sky feel like today?';
+
+  @override
+  String get journalEditorHint =>
+      'Write what you noticed, felt, or wondered about today...';
+
+  @override
+  String journalSaveFailed(String error) {
+    return 'Failed to save: $error';
+  }
 
   @override
   String get todaySkyEnergyHighTitle => 'Energy: high';
@@ -804,7 +936,91 @@ class AppLocalizationsEn extends AppLocalizations {
   String get chartTabAspects => 'Aspects';
 
   @override
+  String get chartTabElements => 'Elements';
+
+  @override
   String get chartTabSummary => 'Summary';
+
+  @override
+  String get chartViewVedic => 'View Vedic Chart';
+
+  @override
+  String get chartLegendConjunction => 'Conjunction';
+
+  @override
+  String get chartLegendSextile => 'Sextile';
+
+  @override
+  String get chartLegendSquare => 'Square';
+
+  @override
+  String get chartLegendTrine => 'Trine';
+
+  @override
+  String get chartLegendOpposition => 'Opposition';
+
+  @override
+  String chartHouseNumber(int n) {
+    return 'House $n';
+  }
+
+  @override
+  String get chartHouse1 => 'Self & Identity';
+
+  @override
+  String get chartHouse2 => 'Values & Resources';
+
+  @override
+  String get chartHouse3 => 'Communication';
+
+  @override
+  String get chartHouse4 => 'Home & Roots';
+
+  @override
+  String get chartHouse5 => 'Creativity & Joy';
+
+  @override
+  String get chartHouse6 => 'Work & Wellness';
+
+  @override
+  String get chartHouse7 => 'Partnerships';
+
+  @override
+  String get chartHouse8 => 'Transformation';
+
+  @override
+  String get chartHouse9 => 'Philosophy & Travel';
+
+  @override
+  String get chartHouse10 => 'Career & Legacy';
+
+  @override
+  String get chartHouse11 => 'Community & Vision';
+
+  @override
+  String get chartHouse12 => 'Spirit & Surrender';
+
+  @override
+  String get chartNoPlanets => 'No planet data';
+
+  @override
+  String get chartNoHouses => 'No house data';
+
+  @override
+  String get chartNoAspects => 'No aspect data';
+
+  @override
+  String get chartNoElements => 'No element data';
+
+  @override
+  String chartHouseLine(String sign, String degree) {
+    return '$sign · $degree°';
+  }
+
+  @override
+  String chartAspectOrb(String value) {
+    return 'Orb $value°';
+  }
 
   @override
   String get vedicScreenTitle => 'Vedic Chart';
@@ -820,6 +1036,12 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get vedicTabHouses => 'Houses';
+
+  @override
+  String get vedicTabBhavas => 'Bhavas';
+
+  @override
+  String get vedicTabAspects => 'Aspects';
 
   @override
   String get vedicTabNakshatras => 'Nakshatras';
@@ -840,6 +1062,51 @@ class AppLocalizationsEn extends AppLocalizations {
   String get vedicTabAshtakavarga => 'Ashtakavarga';
 
   @override
+  String vedicAtmakarakaLabel(String name) {
+    return 'Atmakaraka: $name';
+  }
+
+  @override
+  String vedicChartCaption(String varga, int divisor, String ayanamsa) {
+    return '$varga (D$divisor) · $ayanamsa ayanamsa';
+  }
+
+  @override
+  String get vedicNoAspects => 'No graha-to-graha drishti';
+
+  @override
+  String get vedicNoYogas =>
+      'No active classical yogas detected for this chart.';
+
+  @override
+  String get vedicNoShadbala => 'No Shadbala data';
+
+  @override
+  String get vedicVargasNote =>
+      'The hero chart above re-renders for the selected Varga. Each divisional chart reveals a different facet of life: D9 marriage and dharma, D10 career, D12 parents, D60 past karma.';
+
+  @override
+  String vedicBhavaOccupants(String planets) {
+    return 'Occupants: $planets';
+  }
+
+  @override
+  String vedicBhavaLord(String sign, String sanskrit, String lord) {
+    return '$sign ($sanskrit) · Lord $lord';
+  }
+
+  @override
+  String vedicAspectsLine(String from, String to) {
+    return '$from aspects $to';
+  }
+
+  @override
+  String get vedicRetro => 'Rx';
+
+  @override
+  String get vedicCombust => 'Combust';
+
+  @override
   String get numerologyTitle => 'Numerology';
 
   @override
@@ -855,10 +1122,44 @@ class AppLocalizationsEn extends AppLocalizations {
   String get numerologyTabKarmic => 'Karmic';
 
   @override
+  String get numerologyTabCompat => 'Compat';
+
+  @override
   String get numerologyTabCompatibility => 'Compatibility';
 
   @override
   String get numerologyCompareWith => 'Compare with someone';
+
+  @override
+  String get numerologyLifePathBadge => 'LIFE PATH';
+
+  @override
+  String get numerologyMasterBadge => 'MASTER';
+
+  @override
+  String get numerologyCoreLifePath => 'Life Path';
+
+  @override
+  String get numerologyCoreExpression => 'Expression';
+
+  @override
+  String get numerologyCoreSoulUrge => 'Soul Urge';
+
+  @override
+  String get numerologyCorePersonality => 'Personality';
+
+  @override
+  String get numerologyCoreMaturity => 'Maturity';
+
+  @override
+  String get numerologyCoreBirthday => 'Birthday';
+
+  @override
+  String get numerologyCompatBlurb =>
+      'Enter their full birth name + birth date and we\'ll calculate numerology compatibility for the three relationship-relevant numbers.';
+
+  @override
+  String get numerologyOpenCompat => 'Open compatibility';
 
   @override
   String get humanDesignTitle => 'Human Design';
@@ -877,6 +1178,21 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get humanDesignTabProfile => 'Profile';
+
+  @override
+  String get humanDesignBodyGraphLegend =>
+      'Filled centers are defined; outlined centers are open. Lines are defined channels. Red dots are Personality gates (conscious), cream dots are Design gates (unconscious).';
+
+  @override
+  String get humanDesignNoChannels =>
+      'No defined channels — you may be a Reflector or have only individual active gates.';
+
+  @override
+  String get humanDesignProfileLabel => 'PROFILE';
+
+  @override
+  String get humanDesignProfileDesc =>
+      'Personality conscious line × Design unconscious line.';
 
   @override
   String get yearlyForecastTitle => 'Yearly Forecast';
@@ -966,4 +1282,52 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get communityProfile => 'Profile';
+
+  @override
+  String get communityCategoriesLabel => 'CATEGORIES';
+
+  @override
+  String get communitySearchSpaces => 'Search spaces';
+
+  @override
+  String get communityNewPostTitle => 'New post';
+
+  @override
+  String get communitySpacesEmptyTap =>
+      'No spaces yet — tap + to create the first one.';
+
+  @override
+  String get communityComposeHint => 'What\'s on your mind?';
+
+  @override
+  String get communityLinkHint => 'Optional link URL';
+
+  @override
+  String get communityNotificationsTooltip => 'Notifications';
+
+  @override
+  String get communityNewSpaceTooltip => 'New space';
+
+  @override
+  String get lifeTimelineAddMoment => 'Add Moment';
+
+  @override
+  String lifeTimelineMomentsMapped(int count) {
+    return '$count moments mapped';
+  }
+
+  @override
+  String get lifeTimelineHeaderTitle => 'Your Cosmic Timeline';
+
+  @override
+  String get lifeTimelineHeaderSubtitle =>
+      'Your life mapped against the sky.\nAdd moments. See what was happening above.';
+
+  @override
+  String lifeTimelineFelt(String mood) {
+    return 'felt $mood';
+  }
+
+  @override
+  String get lifeTimelineWhatSky => 'WHAT THE SKY WAS DOING';
 }

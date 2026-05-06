@@ -191,7 +191,8 @@ class _Hero extends ConsumerWidget {
               borderRadius: BorderRadius.circular(20),
             ),
             child: Text(
-              'Atmakaraka: ${chart.atmaKaraka}',
+              AppLocalizations.of(context)
+                  .vedicAtmakarakaLabel(chart.atmaKaraka),
               style: TextStyle(
                 color: p.gold,
                 fontSize: 11,
@@ -204,7 +205,11 @@ class _Hero extends ConsumerWidget {
           NorthIndianChart(chart: chart),
           const SizedBox(height: 12),
           Text(
-            '${chart.vargaName} (D${chart.varga}) · ${chart.ayanamsa} ayanamsa',
+            AppLocalizations.of(context).vedicChartCaption(
+              chart.vargaName,
+              chart.varga,
+              chart.ayanamsa,
+            ),
             style: TextStyle(color: p.textSecondary, fontSize: 11),
           ),
         ],
@@ -279,6 +284,7 @@ class _TabBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final p = context.palette;
+    final l = AppLocalizations.of(context);
     return Container(
       margin: const EdgeInsets.fromLTRB(20, 0, 20, 12),
       decoration: BoxDecoration(
@@ -301,16 +307,16 @@ class _TabBar extends StatelessWidget {
           fontSize: 12,
           fontWeight: FontWeight.w600,
         ),
-        tabs: const [
-          Tab(text: 'Planets'),
-          Tab(text: 'Bhavas'),
-          Tab(text: 'Aspects'),
-          Tab(text: 'Nakshatras'),
-          Tab(text: 'Vargas'),
-          Tab(text: 'Dasha'),
-          Tab(text: 'Yogas'),
-          Tab(text: 'Shadbala'),
-          Tab(text: 'Ashtakavarga'),
+        tabs: [
+          Tab(text: l.vedicTabPlanets),
+          Tab(text: l.vedicTabBhavas),
+          Tab(text: l.vedicTabAspects),
+          Tab(text: l.vedicTabNakshatras),
+          Tab(text: l.vedicTabVargas),
+          Tab(text: l.vedicTabDasha),
+          Tab(text: l.vedicTabYogas),
+          Tab(text: l.vedicTabShadbala),
+          Tab(text: l.vedicTabAshtakavarga),
         ],
       ),
     );
@@ -376,12 +382,20 @@ class _PlanetsTab extends StatelessWidget {
                         if (pl.retrograde)
                           Padding(
                             padding: const EdgeInsets.only(left: 6),
-                            child: _badge('Rx', p.warning, p),
+                            child: _badge(
+                              AppLocalizations.of(context).vedicRetro,
+                              p.warning,
+                              p,
+                            ),
                           ),
                         if (pl.combust)
                           Padding(
                             padding: const EdgeInsets.only(left: 4),
-                            child: _badge('Combust', p.error, p),
+                            child: _badge(
+                              AppLocalizations.of(context).vedicCombust,
+                              p.error,
+                              p,
+                            ),
                           ),
                       ],
                     ),
@@ -502,13 +516,18 @@ class _BhavasTab extends StatelessWidget {
                     ),
                     const SizedBox(height: 2),
                     Text(
-                      '${b.sign} (${b.signSanskrit}) · Lord ${b.lord}',
+                      AppLocalizations.of(context).vedicBhavaLord(
+                        b.sign,
+                        b.signSanskrit,
+                        b.lord,
+                      ),
                       style: TextStyle(color: p.textSecondary, fontSize: 12),
                     ),
                     if (b.planets.isNotEmpty) ...[
                       const SizedBox(height: 4),
                       Text(
-                        'Occupants: ${b.planets.join(", ")}',
+                        AppLocalizations.of(context)
+                            .vedicBhavaOccupants(b.planets.join(', ')),
                         style: TextStyle(color: p.textTertiary, fontSize: 11),
                       ),
                     ],
@@ -535,7 +554,7 @@ class _AspectsTab extends StatelessWidget {
     if (grahaAspects.isEmpty) {
       return Center(
         child: Text(
-          'No graha-to-graha drishti',
+          AppLocalizations.of(context).vedicNoAspects,
           style: TextStyle(color: p.textSecondary),
         ),
       );
@@ -576,7 +595,7 @@ class _AspectsTab extends StatelessWidget {
               const SizedBox(width: 10),
               Expanded(
                 child: Text(
-                  '${a.from} aspects ${a.to}',
+                  AppLocalizations.of(context).vedicAspectsLine(a.from, a.to),
                   style: TextStyle(color: p.textPrimary, fontSize: 13),
                 ),
               ),
@@ -679,9 +698,7 @@ class _VargasTab extends ConsumerWidget {
         ),
         const SizedBox(height: 24),
         Text(
-          'The hero chart above re-renders for the selected Varga. '
-          'Each divisional chart reveals a different facet of life: '
-          'D9 marriage and dharma, D10 career, D12 parents, D60 past karma.',
+          AppLocalizations.of(context).vedicVargasNote,
           style: TextStyle(color: p.textSecondary, fontSize: 12, height: 1.5),
         ),
       ],
@@ -726,7 +743,7 @@ class _YogasTab extends ConsumerWidget {
             child: Padding(
               padding: const EdgeInsets.all(32),
               child: Text(
-                'No active classical yogas detected for this chart.',
+                AppLocalizations.of(context).vedicNoYogas,
                 textAlign: TextAlign.center,
                 style: TextStyle(color: p.textSecondary, fontSize: 13),
               ),
@@ -757,7 +774,9 @@ class _ShadbalaTab extends ConsumerWidget {
       data: (map) {
         final entries = map.entries.toList();
         if (entries.isEmpty) {
-          return const Center(child: Text('No Shadbala data'));
+          return Center(
+            child: Text(AppLocalizations.of(context).vedicNoShadbala),
+          );
         }
         return PageView.builder(
           itemCount: entries.length,

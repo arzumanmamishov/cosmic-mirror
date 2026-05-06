@@ -90,6 +90,7 @@ class _TabBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final p = context.palette;
+    final l = AppLocalizations.of(context);
     return Container(
       margin: const EdgeInsets.fromLTRB(20, 0, 20, 12),
       decoration: BoxDecoration(
@@ -109,12 +110,12 @@ class _TabBar extends StatelessWidget {
         labelColor: Colors.white,
         unselectedLabelColor: p.textSecondary,
         labelStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
-        tabs: const [
-          Tab(text: 'Body Graph'),
-          Tab(text: 'Centers'),
-          Tab(text: 'Channels'),
-          Tab(text: 'Gates'),
-          Tab(text: 'Profile'),
+        tabs: [
+          Tab(text: l.humanDesignTabBodyGraph),
+          Tab(text: l.humanDesignTabCenters),
+          Tab(text: l.humanDesignTabChannels),
+          Tab(text: l.humanDesignTabGates),
+          Tab(text: l.humanDesignTabProfile),
         ],
       ),
     );
@@ -141,9 +142,7 @@ class _BodyGraphTab extends StatelessWidget {
             Center(child: BodyGraph(chart: chart, size: size)),
             const SizedBox(height: 16),
             Text(
-              'Filled centers are defined; outlined centers are open. Lines '
-              'are defined channels. Red dots are Personality gates '
-              '(conscious), cream dots are Design gates (unconscious).',
+              AppLocalizations.of(context).humanDesignBodyGraphLegend,
               textAlign: TextAlign.center,
               style: TextStyle(
                 color: p.textSecondary,
@@ -183,8 +182,7 @@ class _ChannelsTab extends StatelessWidget {
         child: Padding(
           padding: const EdgeInsets.all(32),
           child: Text(
-            'No defined channels — you may be a Reflector or have only '
-            'individual active gates.',
+            AppLocalizations.of(context).humanDesignNoChannels,
             textAlign: TextAlign.center,
             style: TextStyle(color: p.textSecondary),
           ),
@@ -232,7 +230,7 @@ class _ProfileCrossTab extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'PROFILE',
+                AppLocalizations.of(context).humanDesignProfileLabel,
                 style: TextStyle(
                   color: p.textSecondary,
                   fontSize: 11,
@@ -251,7 +249,7 @@ class _ProfileCrossTab extends StatelessWidget {
               ),
               const SizedBox(height: 6),
               Text(
-                'Personality conscious line × Design unconscious line.',
+                AppLocalizations.of(context).humanDesignProfileDesc,
                 style: TextStyle(color: p.textSecondary, fontSize: 12),
               ),
             ],

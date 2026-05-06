@@ -622,6 +622,59 @@ class AppLocalizationsTr extends AppLocalizations {
   String get paywallFeatureExport => 'Haritalarını dışa aktar';
 
   @override
+  String get paywallBenefit1Title => 'Tam Günlük Rehberlik';
+
+  @override
+  String get paywallBenefit1Subtitle =>
+      'Aşk, kariyer ve sağlık için detaylı öngörüler';
+
+  @override
+  String get paywallBenefit2Title => 'Sınırsız AI Sohbeti';
+
+  @override
+  String get paywallBenefit2Subtitle => 'Kişisel astroloğuna her şeyi sor';
+
+  @override
+  String get paywallBenefit3Title => 'Tam Uyum';
+
+  @override
+  String get paywallBenefit3Subtitle => 'Tüm ilişkilerin için derin raporlar';
+
+  @override
+  String get paywallBenefit4Title => 'Yaşam Çizgisi';
+
+  @override
+  String get paywallBenefit4Subtitle =>
+      '30 günlük, 3 aylık ve 12 aylık öngörüler';
+
+  @override
+  String get paywallBenefit5Title => 'Yıllık Öngörü';
+
+  @override
+  String get paywallBenefit5Subtitle =>
+      'Önümüzdeki yıl için kozmik yol haritan';
+
+  @override
+  String get paywallBenefit6Title => 'Ritüeller ve Günlük';
+
+  @override
+  String get paywallBenefit6Subtitle =>
+      'Gelişim ve içe bakış için günlük pratikler';
+
+  @override
+  String get paywallSaveBadge => '%52 İNDİRİM';
+
+  @override
+  String get paywallTrialIncluded => '3 günlük ücretsiz deneme dahil';
+
+  @override
+  String get paywallRestoreLong => 'Satın Alımları Geri Yükle';
+
+  @override
+  String get paywallCancelNote =>
+      'İstediğin zaman iptal et. Abonelik otomatik yenilenir.';
+
+  @override
   String get dailyReadingTitle => 'Bugünün Okuması';
 
   @override
@@ -686,6 +739,84 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get journalDeleteConfirm => 'Bu giriş silinsin mi?';
+
+  @override
+  String journalEntriesCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count giriş',
+      one: '1 giriş',
+    );
+    return '$_temp0 · gökyüzünün sana ne anlattığını yakala';
+  }
+
+  @override
+  String get journalCosmicTitle => 'Kozmik Günlüğün';
+
+  @override
+  String get journalEmptyBlurb =>
+      'Bugün fark ettiklerini, hissettiklerini\nveya merak ettiklerini yazabileceğin özel bir alan.';
+
+  @override
+  String get journalNewMoment => 'Yeni bir an';
+
+  @override
+  String get journalEditMoment => 'Anını düzenle';
+
+  @override
+  String get journalMoodHeader => 'BUGÜN NASIL HİSSETTİRİYOR?';
+
+  @override
+  String get journalPromptHeader => 'VEYA BİR İPUCUYLA BAŞLA';
+
+  @override
+  String get journalMoodSuffix => 'ruh hali';
+
+  @override
+  String get journalMoodGlad => 'Mutlu';
+
+  @override
+  String get journalMoodCalm => 'Sakin';
+
+  @override
+  String get journalMoodLoved => 'Sevilen';
+
+  @override
+  String get journalMoodSparkly => 'Parıltılı';
+
+  @override
+  String get journalMoodCurious => 'Meraklı';
+
+  @override
+  String get journalMoodTired => 'Yorgun';
+
+  @override
+  String get journalMoodHeavy => 'Ağır';
+
+  @override
+  String get journalMoodRestless => 'Huzursuz';
+
+  @override
+  String get journalPrompt1 => 'Bugün seni şaşırtan ne oldu?';
+
+  @override
+  String get journalPrompt2 => 'Kendini en çok nerede sen hissettin?';
+
+  @override
+  String get journalPrompt3 => 'Neyi bırakıyorsun?';
+
+  @override
+  String get journalPrompt4 => 'Bugün gökyüzü nasıl hissettiriyordu?';
+
+  @override
+  String get journalEditorHint =>
+      'Bugün fark ettiklerini, hissettiklerini veya merak ettiklerini yaz...';
+
+  @override
+  String journalSaveFailed(String error) {
+    return 'Kaydedilemedi: $error';
+  }
 
   @override
   String get todaySkyEnergyHighTitle => 'Enerji: yüksek';
@@ -802,7 +933,91 @@ class AppLocalizationsTr extends AppLocalizations {
   String get chartTabAspects => 'Açılar';
 
   @override
+  String get chartTabElements => 'Elementler';
+
+  @override
   String get chartTabSummary => 'Özet';
+
+  @override
+  String get chartViewVedic => 'Vedik Haritayı Gör';
+
+  @override
+  String get chartLegendConjunction => 'Kavuşum';
+
+  @override
+  String get chartLegendSextile => 'Altmışlık';
+
+  @override
+  String get chartLegendSquare => 'Kare';
+
+  @override
+  String get chartLegendTrine => 'Üçgen';
+
+  @override
+  String get chartLegendOpposition => 'Karşıt';
+
+  @override
+  String chartHouseNumber(int n) {
+    return '$n. Ev';
+  }
+
+  @override
+  String get chartHouse1 => 'Benlik ve Kimlik';
+
+  @override
+  String get chartHouse2 => 'Değerler ve Kaynaklar';
+
+  @override
+  String get chartHouse3 => 'İletişim';
+
+  @override
+  String get chartHouse4 => 'Ev ve Kökler';
+
+  @override
+  String get chartHouse5 => 'Yaratıcılık ve Neşe';
+
+  @override
+  String get chartHouse6 => 'İş ve Sağlık';
+
+  @override
+  String get chartHouse7 => 'Ortaklıklar';
+
+  @override
+  String get chartHouse8 => 'Dönüşüm';
+
+  @override
+  String get chartHouse9 => 'Felsefe ve Yolculuk';
+
+  @override
+  String get chartHouse10 => 'Kariyer ve Miras';
+
+  @override
+  String get chartHouse11 => 'Topluluk ve Vizyon';
+
+  @override
+  String get chartHouse12 => 'Ruh ve Teslimiyet';
+
+  @override
+  String get chartNoPlanets => 'Gezegen verisi yok';
+
+  @override
+  String get chartNoHouses => 'Ev verisi yok';
+
+  @override
+  String get chartNoAspects => 'Açı verisi yok';
+
+  @override
+  String get chartNoElements => 'Element verisi yok';
+
+  @override
+  String chartHouseLine(String sign, String degree) {
+    return '$sign · $degree°';
+  }
+
+  @override
+  String chartAspectOrb(String value) {
+    return 'Orb $value°';
+  }
 
   @override
   String get vedicScreenTitle => 'Vedik Harita';
@@ -818,6 +1033,12 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get vedicTabHouses => 'Evler';
+
+  @override
+  String get vedicTabBhavas => 'Bhavalar';
+
+  @override
+  String get vedicTabAspects => 'Açılar';
 
   @override
   String get vedicTabNakshatras => 'Nakşatralar';
@@ -838,6 +1059,51 @@ class AppLocalizationsTr extends AppLocalizations {
   String get vedicTabAshtakavarga => 'Aştakavarga';
 
   @override
+  String vedicAtmakarakaLabel(String name) {
+    return 'Atmakaraka: $name';
+  }
+
+  @override
+  String vedicChartCaption(String varga, int divisor, String ayanamsa) {
+    return '$varga (D$divisor) · $ayanamsa ayanamşa';
+  }
+
+  @override
+  String get vedicNoAspects => 'Graha-graha drişti yok';
+
+  @override
+  String get vedicNoYogas =>
+      'Bu harita için aktif klasik yoga tespit edilmedi.';
+
+  @override
+  String get vedicNoShadbala => 'Şadbala verisi yok';
+
+  @override
+  String get vedicVargasNote =>
+      'Yukarıdaki ana harita seçilen Varga için yeniden çizilir. Her bölünmeli harita hayatın farklı bir yönünü gösterir: D9 evlilik ve dharma, D10 kariyer, D12 ebeveynler, D60 geçmiş karma.';
+
+  @override
+  String vedicBhavaOccupants(String planets) {
+    return 'Bulunanlar: $planets';
+  }
+
+  @override
+  String vedicBhavaLord(String sign, String sanskrit, String lord) {
+    return '$sign ($sanskrit) · Yöneticisi $lord';
+  }
+
+  @override
+  String vedicAspectsLine(String from, String to) {
+    return '$from → $to';
+  }
+
+  @override
+  String get vedicRetro => 'Rx';
+
+  @override
+  String get vedicCombust => 'Yanık';
+
+  @override
   String get numerologyTitle => 'Numeroloji';
 
   @override
@@ -853,10 +1119,44 @@ class AppLocalizationsTr extends AppLocalizations {
   String get numerologyTabKarmic => 'Karmik';
 
   @override
+  String get numerologyTabCompat => 'Uyum';
+
+  @override
   String get numerologyTabCompatibility => 'Uyum';
 
   @override
   String get numerologyCompareWith => 'Biriyle karşılaştır';
+
+  @override
+  String get numerologyLifePathBadge => 'YAŞAM YOLU';
+
+  @override
+  String get numerologyMasterBadge => 'USTA';
+
+  @override
+  String get numerologyCoreLifePath => 'Yaşam Yolu';
+
+  @override
+  String get numerologyCoreExpression => 'İfade';
+
+  @override
+  String get numerologyCoreSoulUrge => 'Ruh Dürtüsü';
+
+  @override
+  String get numerologyCorePersonality => 'Kişilik';
+
+  @override
+  String get numerologyCoreMaturity => 'Olgunluk';
+
+  @override
+  String get numerologyCoreBirthday => 'Doğum Günü';
+
+  @override
+  String get numerologyCompatBlurb =>
+      'Karşı tarafın tam doğum adını ve doğum tarihini gir; ilişki açısından önemli üç sayı için numeroloji uyumunu hesaplayalım.';
+
+  @override
+  String get numerologyOpenCompat => 'Uyumu aç';
 
   @override
   String get humanDesignTitle => 'İnsan Tasarımı';
@@ -875,6 +1175,21 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get humanDesignTabProfile => 'Profil';
+
+  @override
+  String get humanDesignBodyGraphLegend =>
+      'Dolu merkezler tanımlı, boş merkezler açıktır. Çizgiler tanımlı kanallardır. Kırmızı noktalar Kişilik kapıları (bilinçli), krem noktalar Tasarım kapılarıdır (bilinçdışı).';
+
+  @override
+  String get humanDesignNoChannels =>
+      'Tanımlı kanal yok — bir Yansıtıcı olabilirsin ya da yalnızca bireysel aktif kapıların olabilir.';
+
+  @override
+  String get humanDesignProfileLabel => 'PROFİL';
+
+  @override
+  String get humanDesignProfileDesc =>
+      'Kişiliğin bilinçli çizgisi × Tasarımın bilinçdışı çizgisi.';
 
   @override
   String get yearlyForecastTitle => 'Yıllık Öngörü';
@@ -964,4 +1279,52 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get communityProfile => 'Profil';
+
+  @override
+  String get communityCategoriesLabel => 'KATEGORİLER';
+
+  @override
+  String get communitySearchSpaces => 'Alan ara';
+
+  @override
+  String get communityNewPostTitle => 'Yeni gönderi';
+
+  @override
+  String get communitySpacesEmptyTap =>
+      'Henüz alan yok — ilkini oluşturmak için + simgesine dokun.';
+
+  @override
+  String get communityComposeHint => 'Aklında ne var?';
+
+  @override
+  String get communityLinkHint => 'İsteğe bağlı bağlantı URL\'si';
+
+  @override
+  String get communityNotificationsTooltip => 'Bildirimler';
+
+  @override
+  String get communityNewSpaceTooltip => 'Yeni alan';
+
+  @override
+  String get lifeTimelineAddMoment => 'An ekle';
+
+  @override
+  String lifeTimelineMomentsMapped(int count) {
+    return '$count an haritalandı';
+  }
+
+  @override
+  String get lifeTimelineHeaderTitle => 'Kozmik Zaman Çizelgen';
+
+  @override
+  String get lifeTimelineHeaderSubtitle =>
+      'Hayatın gökyüzüyle birlikte.\nAnlar ekle. Yukarıda neler olduğunu gör.';
+
+  @override
+  String lifeTimelineFelt(String mood) {
+    return '$mood hissettim';
+  }
+
+  @override
+  String get lifeTimelineWhatSky => 'GÖKYÜZÜ NE YAPIYORDU';
 }

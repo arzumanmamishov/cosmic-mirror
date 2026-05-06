@@ -11,20 +11,21 @@ import '../providers/subscription_provider.dart';
 class PaywallScreen extends ConsumerWidget {
   const PaywallScreen({super.key});
 
-  static const _benefits = [
-    ('Full Daily Guidance', 'Detailed love, career, and health insights', Icons.auto_awesome),
-    ('Unlimited AI Chat', 'Ask your personal astrologer anything', Icons.chat_bubble_outline),
-    ('Full Compatibility', 'Deep reports for all your relationships', Icons.favorite_outline),
-    ('Life Timeline', '30-day, 3-month, and 12-month forecasts', Icons.timeline),
-    ('Yearly Forecast', 'Your cosmic roadmap for the year ahead', Icons.calendar_month_outlined),
-    ('Rituals & Journal', 'Daily practices for growth and reflection', Icons.self_improvement),
-  ];
+  static List<(String, String, IconData)> _benefits(AppLocalizations l) => [
+        (l.paywallBenefit1Title, l.paywallBenefit1Subtitle, Icons.auto_awesome),
+        (l.paywallBenefit2Title, l.paywallBenefit2Subtitle, Icons.chat_bubble_outline),
+        (l.paywallBenefit3Title, l.paywallBenefit3Subtitle, Icons.favorite_outline),
+        (l.paywallBenefit4Title, l.paywallBenefit4Subtitle, Icons.timeline),
+        (l.paywallBenefit5Title, l.paywallBenefit5Subtitle, Icons.calendar_month_outlined),
+        (l.paywallBenefit6Title, l.paywallBenefit6Subtitle, Icons.self_improvement),
+      ];
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final state = ref.watch(paywallProvider);
     final notifier = ref.read(paywallProvider.notifier);
     final l10n = AppLocalizations.of(context);
+    final benefits = _benefits(l10n);
 
     return Scaffold(
       body: Container(
@@ -87,8 +88,8 @@ class PaywallScreen extends ConsumerWidget {
                       const SizedBox(height: 28),
 
                       // Benefits
-                      ...List.generate(_benefits.length, (i) {
-                        final (title, subtitle, icon) = _benefits[i];
+                      ...List.generate(benefits.length, (i) {
+                        final (title, subtitle, icon) = benefits[i];
                         return Padding(
                           padding: const EdgeInsets.only(bottom: 14),
                           child: Row(
@@ -143,7 +144,7 @@ class PaywallScreen extends ConsumerWidget {
                               price: state.selectedPackage?.storeProduct
                                       .priceString ??
                                   '\$39.99/yr',
-                              badge: 'SAVE 52%',
+                              badge: l10n.paywallSaveBadge,
                               isSelected: state.isYearly,
                               onTap: () {
                                 if (!state.isYearly) notifier.togglePlan();
@@ -165,7 +166,7 @@ class PaywallScreen extends ConsumerWidget {
                             borderRadius: BorderRadius.circular(8),
                           ),
                           child: Text(
-                            '3-day free trial included',
+                            l10n.paywallTrialIncluded,
                             style: CosmicTypography.caption.copyWith(
                               color: CosmicColors.success,
                               fontWeight: FontWeight.w600,
@@ -208,7 +209,7 @@ class PaywallScreen extends ConsumerWidget {
                           }
                         },
                         child: Text(
-                          'Restore Purchases',
+                          l10n.paywallRestoreLong,
                           style: CosmicTypography.bodySmall.copyWith(
                             color: CosmicColors.textSecondary,
                           ),
@@ -216,7 +217,7 @@ class PaywallScreen extends ConsumerWidget {
                       ),
                       const SizedBox(height: 8),
                       Text(
-                        'Cancel anytime. Subscription renews automatically.',
+                        l10n.paywallCancelNote,
                         style: CosmicTypography.caption,
                         textAlign: TextAlign.center,
                       ),

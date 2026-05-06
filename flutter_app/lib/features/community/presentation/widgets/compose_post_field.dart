@@ -1,4 +1,5 @@
 import 'package:cosmic_mirror/config/theme/app_palette.dart';
+import 'package:cosmic_mirror/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 
 /// Multi-line text composer with a small toolbar (link toggle). Used in the
@@ -8,7 +9,7 @@ class ComposePostField extends StatelessWidget {
   const ComposePostField({
     required this.controller,
     required this.linkController,
-    this.hintText = "What's on your mind?",
+    this.hintText,
     this.showLinkAction = true,
     this.minLines = 4,
     this.maxLines = 8,
@@ -17,7 +18,7 @@ class ComposePostField extends StatelessWidget {
 
   final TextEditingController controller;
   final TextEditingController linkController;
-  final String hintText;
+  final String? hintText;
   final bool showLinkAction;
   final int minLines;
   final int maxLines;
@@ -25,6 +26,8 @@ class ComposePostField extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final p = context.palette;
+    final l = AppLocalizations.of(context);
+    final hint = hintText ?? l.communityComposeHint;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -41,7 +44,7 @@ class ComposePostField extends StatelessWidget {
             maxLines: maxLines,
             style: TextStyle(color: p.textPrimary, fontSize: 14, height: 1.45),
             decoration: InputDecoration(
-              hintText: hintText,
+              hintText: hint,
               hintStyle: TextStyle(color: p.textTertiary, fontSize: 14),
               border: InputBorder.none,
             ),
@@ -65,7 +68,7 @@ class ComposePostField extends StatelessWidget {
                     controller: linkController,
                     style: TextStyle(color: p.textPrimary, fontSize: 12),
                     decoration: InputDecoration(
-                      hintText: 'Optional link URL',
+                      hintText: l.communityLinkHint,
                       hintStyle: TextStyle(color: p.textTertiary, fontSize: 12),
                       border: InputBorder.none,
                       isDense: true,

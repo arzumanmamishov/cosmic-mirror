@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 import 'package:cosmic_mirror/config/theme/app_palette.dart';
 import 'package:cosmic_mirror/features/life_timeline/data/life_timeline_data.dart';
 import 'package:cosmic_mirror/features/life_timeline/presentation/widgets/add_event_sheet.dart';
+import 'package:cosmic_mirror/l10n/app_localizations.dart';
 import 'package:cosmic_mirror/shared/widgets/cosmic_starfield.dart';
 import 'package:cosmic_mirror/shared/widgets/staggered_fade_in.dart';
 
@@ -59,9 +60,9 @@ class _LifeTimelineScreenState extends State<LifeTimelineScreen> {
         backgroundColor: p.primary,
         foregroundColor: Colors.white,
         icon: const Icon(Icons.add_rounded),
-        label: const Text(
-          'Add Moment',
-          style: TextStyle(fontWeight: FontWeight.w600),
+        label: Text(
+          AppLocalizations.of(context).lifeTimelineAddMoment,
+          style: const TextStyle(fontWeight: FontWeight.w600),
         ),
       ),
       body: Stack(
@@ -108,6 +109,7 @@ class _Header extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final p = context.palette;
+    final l = AppLocalizations.of(context);
     return Padding(
       padding: const EdgeInsets.only(bottom: 24),
       child: Column(
@@ -120,7 +122,7 @@ class _Header extends StatelessWidget {
               borderRadius: BorderRadius.circular(100),
             ),
             child: Text(
-              '$count moments mapped',
+              l.lifeTimelineMomentsMapped(count),
               style: TextStyle(
                 color: p.primary,
                 fontSize: 11,
@@ -131,7 +133,7 @@ class _Header extends StatelessWidget {
           ),
           const SizedBox(height: 12),
           Text(
-            'Your Cosmic Timeline',
+            l.lifeTimelineHeaderTitle,
             style: TextStyle(
               color: p.textPrimary,
               fontSize: 28,
@@ -141,8 +143,7 @@ class _Header extends StatelessWidget {
           ),
           const SizedBox(height: 6),
           Text(
-            'Your life mapped against the sky.\n'
-            'Add moments. See what was happening above.',
+            l.lifeTimelineHeaderSubtitle,
             style: TextStyle(
               color: p.textSecondary,
               fontSize: 13.5,
@@ -294,7 +295,8 @@ class _TimelineItem extends StatelessWidget {
                           ),
                           const SizedBox(width: 4),
                           Text(
-                            'felt ${event.mood!.toLowerCase()}',
+                            AppLocalizations.of(context)
+                                .lifeTimelineFelt(event.mood!.toLowerCase()),
                             style: TextStyle(
                               color: p.textTertiary,
                               fontSize: 11,
@@ -359,7 +361,7 @@ class _TransitStrip extends StatelessWidget {
               ),
               const SizedBox(width: 6),
               Text(
-                'WHAT THE SKY WAS DOING',
+                AppLocalizations.of(context).lifeTimelineWhatSky,
                 style: TextStyle(
                   color: p.primary,
                   fontSize: 9,

@@ -225,6 +225,22 @@
   "paywallFeatureCompatibility": "Sınırsız uyum raporları",
   "paywallFeatureNoAds": "Reklamsız deneyim",
   "paywallFeatureExport": "Haritalarını dışa aktar",
+  "paywallBenefit1Title": "Tam Günlük Rehberlik",
+  "paywallBenefit1Subtitle": "Aşk, kariyer ve sağlık için detaylı öngörüler",
+  "paywallBenefit2Title": "Sınırsız AI Sohbeti",
+  "paywallBenefit2Subtitle": "Kişisel astroloğuna her şeyi sor",
+  "paywallBenefit3Title": "Tam Uyum",
+  "paywallBenefit3Subtitle": "Tüm ilişkilerin için derin raporlar",
+  "paywallBenefit4Title": "Yaşam Çizgisi",
+  "paywallBenefit4Subtitle": "30 günlük, 3 aylık ve 12 aylık öngörüler",
+  "paywallBenefit5Title": "Yıllık Öngörü",
+  "paywallBenefit5Subtitle": "Önümüzdeki yıl için kozmik yol haritan",
+  "paywallBenefit6Title": "Ritüeller ve Günlük",
+  "paywallBenefit6Subtitle": "Gelişim ve içe bakış için günlük pratikler",
+  "paywallSaveBadge": "%52 İNDİRİM",
+  "paywallTrialIncluded": "3 günlük ücretsiz deneme dahil",
+  "paywallRestoreLong": "Satın Alımları Geri Yükle",
+  "paywallCancelNote": "İstediğin zaman iptal et. Abonelik otomatik yenilenir.",
 
   "dailyReadingTitle": "Bugünün Okuması",
   "dailyReadingEnergy": "Enerji",
@@ -249,6 +265,34 @@
   "journalSave": "Kaydet",
   "journalDelete": "Sil",
   "journalDeleteConfirm": "Bu giriş silinsin mi?",
+  "journalEntriesCount": "{count, plural, =1{1 giriş} other{{count} giriş}} · gökyüzünün sana ne anlattığını yakala",
+  "@journalEntriesCount": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "journalCosmicTitle": "Kozmik Günlüğün",
+  "journalEmptyBlurb": "Bugün fark ettiklerini, hissettiklerini\nveya merak ettiklerini yazabileceğin özel bir alan.",
+  "journalNewMoment": "Yeni bir an",
+  "journalEditMoment": "Anını düzenle",
+  "journalMoodHeader": "BUGÜN NASIL HİSSETTİRİYOR?",
+  "journalPromptHeader": "VEYA BİR İPUCUYLA BAŞLA",
+  "journalMoodSuffix": "ruh hali",
+  "journalMoodGlad": "Mutlu",
+  "journalMoodCalm": "Sakin",
+  "journalMoodLoved": "Sevilen",
+  "journalMoodSparkly": "Parıltılı",
+  "journalMoodCurious": "Meraklı",
+  "journalMoodTired": "Yorgun",
+  "journalMoodHeavy": "Ağır",
+  "journalMoodRestless": "Huzursuz",
+  "journalPrompt1": "Bugün seni şaşırtan ne oldu?",
+  "journalPrompt2": "Kendini en çok nerede sen hissettin?",
+  "journalPrompt3": "Neyi bırakıyorsun?",
+  "journalPrompt4": "Bugün gökyüzü nasıl hissettiriyordu?",
+  "journalEditorHint": "Bugün fark ettiklerini, hissettiklerini veya merak ettiklerini yaz...",
+  "journalSaveFailed": "Kaydedilemedi: {error}",
+  "@journalSaveFailed": {
+    "placeholders": { "error": { "type": "String" } }
+  },
 
   "todaySkyEnergyHighTitle": "Enerji: yüksek",
   "todaySkyEnergyHighBody": "Bir şeye başlamak için iyi bir gün — momentum eylemden yana.",
@@ -292,27 +336,115 @@
   "chartTabPlanets": "Gezegenler",
   "chartTabHouses": "Evler",
   "chartTabAspects": "Açılar",
+  "chartTabElements": "Elementler",
   "chartTabSummary": "Özet",
+  "chartViewVedic": "Vedik Haritayı Gör",
+  "chartLegendConjunction": "Kavuşum",
+  "chartLegendSextile": "Altmışlık",
+  "chartLegendSquare": "Kare",
+  "chartLegendTrine": "Üçgen",
+  "chartLegendOpposition": "Karşıt",
+  "chartHouseNumber": "{n}. Ev",
+  "@chartHouseNumber": {
+    "placeholders": { "n": { "type": "int" } }
+  },
+  "chartHouse1": "Benlik ve Kimlik",
+  "chartHouse2": "Değerler ve Kaynaklar",
+  "chartHouse3": "İletişim",
+  "chartHouse4": "Ev ve Kökler",
+  "chartHouse5": "Yaratıcılık ve Neşe",
+  "chartHouse6": "İş ve Sağlık",
+  "chartHouse7": "Ortaklıklar",
+  "chartHouse8": "Dönüşüm",
+  "chartHouse9": "Felsefe ve Yolculuk",
+  "chartHouse10": "Kariyer ve Miras",
+  "chartHouse11": "Topluluk ve Vizyon",
+  "chartHouse12": "Ruh ve Teslimiyet",
+  "chartNoPlanets": "Gezegen verisi yok",
+  "chartNoHouses": "Ev verisi yok",
+  "chartNoAspects": "Açı verisi yok",
+  "chartNoElements": "Element verisi yok",
+  "chartHouseLine": "{sign} · {degree}°",
+  "@chartHouseLine": {
+    "placeholders": {
+      "sign": { "type": "String" },
+      "degree": { "type": "String" }
+    }
+  },
+  "chartAspectOrb": "Orb {value}°",
+  "@chartAspectOrb": {
+    "placeholders": { "value": { "type": "String" } }
+  },
 
   "vedicScreenTitle": "Vedik Harita",
   "vedicAyanamsa": "Ayanamşa",
   "vedicTabOverview": "Genel",
   "vedicTabPlanets": "Gezegenler",
   "vedicTabHouses": "Evler",
+  "vedicTabBhavas": "Bhavalar",
+  "vedicTabAspects": "Açılar",
   "vedicTabNakshatras": "Nakşatralar",
   "vedicTabVargas": "Vargalar",
   "vedicTabDasha": "Daşa",
   "vedicTabYogas": "Yogalar",
   "vedicTabShadbala": "Şadbala",
   "vedicTabAshtakavarga": "Aştakavarga",
+  "vedicAtmakarakaLabel": "Atmakaraka: {name}",
+  "@vedicAtmakarakaLabel": {
+    "placeholders": { "name": { "type": "String" } }
+  },
+  "vedicChartCaption": "{varga} (D{divisor}) · {ayanamsa} ayanamşa",
+  "@vedicChartCaption": {
+    "placeholders": {
+      "varga": { "type": "String" },
+      "divisor": { "type": "int" },
+      "ayanamsa": { "type": "String" }
+    }
+  },
+  "vedicNoAspects": "Graha-graha drişti yok",
+  "vedicNoYogas": "Bu harita için aktif klasik yoga tespit edilmedi.",
+  "vedicNoShadbala": "Şadbala verisi yok",
+  "vedicVargasNote": "Yukarıdaki ana harita seçilen Varga için yeniden çizilir. Her bölünmeli harita hayatın farklı bir yönünü gösterir: D9 evlilik ve dharma, D10 kariyer, D12 ebeveynler, D60 geçmiş karma.",
+  "vedicBhavaOccupants": "Bulunanlar: {planets}",
+  "@vedicBhavaOccupants": {
+    "placeholders": { "planets": { "type": "String" } }
+  },
+  "vedicBhavaLord": "{sign} ({sanskrit}) · Yöneticisi {lord}",
+  "@vedicBhavaLord": {
+    "placeholders": {
+      "sign": { "type": "String" },
+      "sanskrit": { "type": "String" },
+      "lord": { "type": "String" }
+    }
+  },
+  "vedicAspectsLine": "{from} → {to}",
+  "@vedicAspectsLine": {
+    "placeholders": {
+      "from": { "type": "String" },
+      "to": { "type": "String" }
+    }
+  },
+  "vedicRetro": "Rx",
+  "vedicCombust": "Yanık",
 
   "numerologyTitle": "Numeroloji",
   "numerologyTabCore": "Temel",
   "numerologyTabToday": "Bugün",
   "numerologyTabCycles": "Döngüler",
   "numerologyTabKarmic": "Karmik",
+  "numerologyTabCompat": "Uyum",
   "numerologyTabCompatibility": "Uyum",
   "numerologyCompareWith": "Biriyle karşılaştır",
+  "numerologyLifePathBadge": "YAŞAM YOLU",
+  "numerologyMasterBadge": "USTA",
+  "numerologyCoreLifePath": "Yaşam Yolu",
+  "numerologyCoreExpression": "İfade",
+  "numerologyCoreSoulUrge": "Ruh Dürtüsü",
+  "numerologyCorePersonality": "Kişilik",
+  "numerologyCoreMaturity": "Olgunluk",
+  "numerologyCoreBirthday": "Doğum Günü",
+  "numerologyCompatBlurb": "Karşı tarafın tam doğum adını ve doğum tarihini gir; ilişki açısından önemli üç sayı için numeroloji uyumunu hesaplayalım.",
+  "numerologyOpenCompat": "Uyumu aç",
 
   "humanDesignTitle": "İnsan Tasarımı",
   "humanDesignTabBodyGraph": "Beden Grafiği",
@@ -320,6 +452,10 @@
   "humanDesignTabChannels": "Kanallar",
   "humanDesignTabGates": "Kapılar",
   "humanDesignTabProfile": "Profil",
+  "humanDesignBodyGraphLegend": "Dolu merkezler tanımlı, boş merkezler açıktır. Çizgiler tanımlı kanallardır. Kırmızı noktalar Kişilik kapıları (bilinçli), krem noktalar Tasarım kapılarıdır (bilinçdışı).",
+  "humanDesignNoChannels": "Tanımlı kanal yok — bir Yansıtıcı olabilirsin ya da yalnızca bireysel aktif kapıların olabilir.",
+  "humanDesignProfileLabel": "PROFİL",
+  "humanDesignProfileDesc": "Kişiliğin bilinçli çizgisi × Tasarımın bilinçdışı çizgisi.",
 
   "yearlyForecastTitle": "Yıllık Öngörü",
   "transitForecastTitle": "Transit Öngörü",
@@ -353,5 +489,25 @@
   "communityNewSpace": "Yeni Alan",
   "communityEditSpace": "Alanı Düzenle",
   "communityDeleteSpaceConfirm": "Bu alan silinsin mi?",
-  "communityProfile": "Profil"
+  "communityProfile": "Profil",
+  "communityCategoriesLabel": "KATEGORİLER",
+  "communitySearchSpaces": "Alan ara",
+  "communityNewPostTitle": "Yeni gönderi",
+  "communitySpacesEmptyTap": "Henüz alan yok — ilkini oluşturmak için + simgesine dokun.",
+  "communityComposeHint": "Aklında ne var?",
+  "communityLinkHint": "İsteğe bağlı bağlantı URL'si",
+  "communityNotificationsTooltip": "Bildirimler",
+  "communityNewSpaceTooltip": "Yeni alan",
+  "lifeTimelineAddMoment": "An ekle",
+  "lifeTimelineMomentsMapped": "{count} an haritalandı",
+  "@lifeTimelineMomentsMapped": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "lifeTimelineHeaderTitle": "Kozmik Zaman Çizelgen",
+  "lifeTimelineHeaderSubtitle": "Hayatın gökyüzüyle birlikte.\nAnlar ekle. Yukarıda neler olduğunu gör.",
+  "lifeTimelineFelt": "{mood} hissettim",
+  "@lifeTimelineFelt": {
+    "placeholders": { "mood": { "type": "String" } }
+  },
+  "lifeTimelineWhatSky": "GÖKYÜZÜ NE YAPIYORDU"
 }

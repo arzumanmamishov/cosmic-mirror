@@ -4,6 +4,7 @@ import 'package:cosmic_mirror/features/community/presentation/widgets/category_c
 import 'package:cosmic_mirror/features/community/presentation/widgets/hashtag_chip.dart';
 import 'package:cosmic_mirror/features/community/presentation/widgets/space_card.dart';
 import 'package:cosmic_mirror/features/community/presentation/widgets/space_filter_tabs.dart';
+import 'package:cosmic_mirror/l10n/app_localizations.dart';
 import 'package:cosmic_mirror/shared/providers/user_provider.dart';
 import 'package:cosmic_mirror/shared/widgets/error_view.dart';
 import 'package:cosmic_mirror/shared/widgets/loading_shimmer.dart';
@@ -20,6 +21,7 @@ class SpacesListScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final p = context.palette;
+    final l = AppLocalizations.of(context);
     final spacesAsync = ref.watch(spacesProvider);
     final categoriesAsync = ref.watch(categoriesProvider);
     final hashtagsAsync = ref.watch(popularHashtagsProvider);
@@ -30,7 +32,7 @@ class SpacesListScreen extends ConsumerWidget {
           backgroundColor: Colors.transparent,
           floating: true,
           title: Text(
-            'Community',
+            l.communityTitle,
             style: TextStyle(
               color: p.textPrimary,
               fontSize: 22,
@@ -40,7 +42,7 @@ class SpacesListScreen extends ConsumerWidget {
           actions: [
             const _NotificationsBell(),
             IconButton(
-              tooltip: 'New space',
+              tooltip: l.communityNewSpaceTooltip,
               icon: Icon(Icons.add_circle_outline_rounded, color: p.textPrimary),
               onPressed: () => context.push('/community/create'),
             ),
@@ -66,7 +68,7 @@ class SpacesListScreen extends ConsumerWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Categories',
+                    l.communityCategoriesLabel,
                     style: TextStyle(
                       color: p.textSecondary,
                       fontSize: 11,
@@ -134,7 +136,7 @@ class SpacesListScreen extends ConsumerWidget {
                   padding: const EdgeInsets.fromLTRB(20, 32, 20, 32),
                   child: Center(
                     child: Text(
-                      'No spaces yet — tap + to create the first one.',
+                      l.communitySpacesEmptyTap,
                       style: TextStyle(
                         color: p.textSecondary,
                         fontSize: 13,
@@ -199,7 +201,7 @@ class _SearchBarState extends State<_SearchBar> {
                   controller: _controller,
                   style: TextStyle(color: p.textPrimary, fontSize: 13),
                   decoration: InputDecoration(
-                    hintText: 'Search spaces',
+                    hintText: AppLocalizations.of(context).communitySearchSpaces,
                     hintStyle:
                         TextStyle(color: p.textTertiary, fontSize: 13),
                     border: InputBorder.none,
@@ -229,7 +231,7 @@ class _NotificationsBell extends ConsumerWidget {
       clipBehavior: Clip.none,
       children: [
         IconButton(
-          tooltip: 'Notifications',
+          tooltip: AppLocalizations.of(context).communityNotificationsTooltip,
           icon: Icon(Icons.notifications_outlined, color: p.textPrimary),
           onPressed: () => context.push('/community/notifications'),
         ),

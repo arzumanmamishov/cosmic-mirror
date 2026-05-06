@@ -1,6 +1,7 @@
 import 'package:cosmic_mirror/config/theme/app_palette.dart';
 import 'package:cosmic_mirror/features/community/data/repositories/community_repository.dart';
 import 'package:cosmic_mirror/features/community/presentation/providers/community_providers.dart';
+import 'package:cosmic_mirror/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -11,6 +12,7 @@ class SpaceFilterTabs extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final p = context.palette;
+    final l = AppLocalizations.of(context);
     final selected = ref.watch(spaceFilterProvider);
     return Container(
       padding: const EdgeInsets.all(4),
@@ -21,13 +23,13 @@ class SpaceFilterTabs extends ConsumerWidget {
       child: Row(
         children: [
           _Tab(
-            label: 'All',
+            label: l.communityFilterAll,
             active: selected == SpaceFilter.all,
             onTap: () => ref.read(spaceFilterProvider.notifier).state =
                 SpaceFilter.all,
           ),
           _Tab(
-            label: 'Joined',
+            label: l.communityFilterJoined,
             active: selected == SpaceFilter.joined,
             onTap: () => ref.read(spaceFilterProvider.notifier).state =
                 SpaceFilter.joined,

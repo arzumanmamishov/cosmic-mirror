@@ -1,6 +1,7 @@
 import 'package:cosmic_mirror/config/theme/app_palette.dart';
 import 'package:cosmic_mirror/features/community/presentation/providers/community_providers.dart';
 import 'package:cosmic_mirror/features/community/presentation/widgets/compose_post_field.dart';
+import 'package:cosmic_mirror/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -65,6 +66,7 @@ class _ComposePostSheetState extends ConsumerState<ComposePostSheet> {
   @override
   Widget build(BuildContext context) {
     final p = context.palette;
+    final l = AppLocalizations.of(context);
     final bottomInset = MediaQuery.of(context).viewInsets.bottom;
     return Container(
       padding: EdgeInsets.fromLTRB(20, 18, 20, 18 + bottomInset),
@@ -80,7 +82,7 @@ class _ComposePostSheetState extends ConsumerState<ComposePostSheet> {
           Row(
             children: [
               Text(
-                'New post',
+                l.communityNewPostTitle,
                 style: TextStyle(
                   color: p.textPrimary,
                   fontSize: 16,
@@ -114,7 +116,7 @@ class _ComposePostSheetState extends ConsumerState<ComposePostSheet> {
                           ),
                         )
                       : Text(
-                          'Post',
+                          l.communityPostSubmit,
                           style: TextStyle(
                             color: _content.text.trim().isEmpty
                                 ? p.textSecondary

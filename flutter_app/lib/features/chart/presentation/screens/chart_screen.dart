@@ -223,7 +223,7 @@ class _VedicChartLink extends StatelessWidget {
             Icon(Icons.brightness_5_rounded, color: p.gold, size: 18),
             const SizedBox(width: 10),
             Text(
-              'View Vedic Chart',
+              AppLocalizations.of(context).chartViewVedic,
               style: TextStyle(
                 color: p.textPrimary,
                 fontSize: 13,
@@ -327,16 +327,17 @@ class _LegendRow extends StatelessWidget {
             ),
           ),
         );
+    final l = AppLocalizations.of(context);
     return Wrap(
       alignment: WrapAlignment.center,
       spacing: 6,
       runSpacing: 6,
       children: [
-        chip('Conjunction', p.textPrimary),
-        chip('Sextile', p.success),
-        chip('Square', p.error),
-        chip('Trine', p.accent),
-        chip('Opposition', const Color(0xFFE14B8A)),
+        chip(l.chartLegendConjunction, p.textPrimary),
+        chip(l.chartLegendSextile, p.success),
+        chip(l.chartLegendSquare, p.error),
+        chip(l.chartLegendTrine, p.accent),
+        chip(l.chartLegendOpposition, const Color(0xFFE14B8A)),
       ],
     );
   }
@@ -368,11 +369,11 @@ class _DetailTabs extends StatelessWidget {
           fontSize: 12,
           fontWeight: FontWeight.w600,
         ),
-        tabs: const [
-          Tab(text: 'Planets'),
-          Tab(text: 'Houses'),
-          Tab(text: 'Aspects'),
-          Tab(text: 'Elements'),
+        tabs: [
+          Tab(text: AppLocalizations.of(context).chartTabPlanets),
+          Tab(text: AppLocalizations.of(context).chartTabHouses),
+          Tab(text: AppLocalizations.of(context).chartTabAspects),
+          Tab(text: AppLocalizations.of(context).chartTabElements),
         ],
       ),
     );
@@ -396,7 +397,10 @@ class _PlanetsTab extends StatelessWidget {
     final p = context.palette;
     if (planets.isEmpty) {
       return Center(
-        child: Text('No planet data', style: TextStyle(color: p.textSecondary)),
+        child: Text(
+          AppLocalizations.of(context).chartNoPlanets,
+          style: TextStyle(color: p.textSecondary),
+        ),
       );
     }
     return ListView.separated(
@@ -496,27 +500,46 @@ class _HousesTab extends StatelessWidget {
   const _HousesTab({required this.houses});
   final List<Map<String, dynamic>> houses;
 
-  static const _meanings = {
-    1: 'Self & Identity',
-    2: 'Values & Resources',
-    3: 'Communication',
-    4: 'Home & Roots',
-    5: 'Creativity & Joy',
-    6: 'Work & Wellness',
-    7: 'Partnerships',
-    8: 'Transformation',
-    9: 'Philosophy & Travel',
-    10: 'Career & Legacy',
-    11: 'Community & Vision',
-    12: 'Spirit & Surrender',
-  };
+  static String _meaning(AppLocalizations l, int n) {
+    switch (n) {
+      case 1:
+        return l.chartHouse1;
+      case 2:
+        return l.chartHouse2;
+      case 3:
+        return l.chartHouse3;
+      case 4:
+        return l.chartHouse4;
+      case 5:
+        return l.chartHouse5;
+      case 6:
+        return l.chartHouse6;
+      case 7:
+        return l.chartHouse7;
+      case 8:
+        return l.chartHouse8;
+      case 9:
+        return l.chartHouse9;
+      case 10:
+        return l.chartHouse10;
+      case 11:
+        return l.chartHouse11;
+      case 12:
+        return l.chartHouse12;
+      default:
+        return l.chartHouseNumber(n);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     final p = context.palette;
     if (houses.isEmpty) {
       return Center(
-        child: Text('No house data', style: TextStyle(color: p.textSecondary)),
+        child: Text(
+          AppLocalizations.of(context).chartNoHouses,
+          style: TextStyle(color: p.textSecondary),
+        ),
       );
     }
     return ListView.separated(
@@ -558,7 +581,7 @@ class _HousesTab extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      _meanings[houseNum] ?? 'House $houseNum',
+                      _meaning(AppLocalizations.of(context), houseNum),
                       style: TextStyle(
                         color: p.textPrimary,
                         fontSize: 14,
@@ -567,7 +590,10 @@ class _HousesTab extends StatelessWidget {
                     ),
                     const SizedBox(height: 2),
                     Text(
-                      '${h['sign']} · ${(h['degree'] as num? ?? 0).toStringAsFixed(1)}°',
+                      AppLocalizations.of(context).chartHouseLine(
+                        '${h['sign']}',
+                        (h['degree'] as num? ?? 0).toStringAsFixed(1),
+                      ),
                       style: TextStyle(color: p.textSecondary, fontSize: 12),
                     ),
                   ],
@@ -608,7 +634,10 @@ class _AspectsTab extends StatelessWidget {
     final p = context.palette;
     if (aspects.isEmpty) {
       return Center(
-        child: Text('No aspect data', style: TextStyle(color: p.textSecondary)),
+        child: Text(
+          AppLocalizations.of(context).chartNoAspects,
+          style: TextStyle(color: p.textSecondary),
+        ),
       );
     }
     return ListView.separated(
@@ -656,7 +685,9 @@ class _AspectsTab extends StatelessWidget {
                     ),
                     const SizedBox(height: 2),
                     Text(
-                      'Orb ${(a['orb'] as num? ?? 0).toStringAsFixed(2)}°',
+                      AppLocalizations.of(context).chartAspectOrb(
+                        (a['orb'] as num? ?? 0).toStringAsFixed(2),
+                      ),
                       style: TextStyle(color: p.textSecondary, fontSize: 11),
                     ),
                   ],
@@ -696,8 +727,10 @@ class _ElementsTab extends StatelessWidget {
         .toList();
     if (entries.isEmpty) {
       return Center(
-        child: Text('No element data',
-            style: TextStyle(color: p.textSecondary)),
+        child: Text(
+          AppLocalizations.of(context).chartNoElements,
+          style: TextStyle(color: p.textSecondary),
+        ),
       );
     }
     return ListView.separated(

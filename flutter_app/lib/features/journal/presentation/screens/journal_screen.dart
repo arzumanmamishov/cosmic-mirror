@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 
 import 'package:cosmic_mirror/config/theme/app_palette.dart';
 import 'package:cosmic_mirror/core/network/api_endpoints.dart';
+import 'package:cosmic_mirror/l10n/app_localizations.dart';
 import 'package:cosmic_mirror/shared/providers/user_provider.dart';
 import 'package:cosmic_mirror/shared/widgets/cosmic_starfield.dart';
 import 'package:cosmic_mirror/shared/widgets/error_view.dart';
@@ -40,9 +41,9 @@ class JournalScreen extends ConsumerWidget {
         backgroundColor: p.primary,
         foregroundColor: Colors.white,
         icon: const Icon(Icons.edit_rounded),
-        label: const Text(
-          'New Entry',
-          style: TextStyle(fontWeight: FontWeight.w600),
+        label: Text(
+          AppLocalizations.of(context).journalNewEntry,
+          style: const TextStyle(fontWeight: FontWeight.w600),
         ),
       ),
       body: Stack(
@@ -94,13 +95,14 @@ class _Header extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final p = context.palette;
+    final l = AppLocalizations.of(context);
     return Padding(
       padding: const EdgeInsets.only(bottom: 4),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Journal',
+            l.journalTitle,
             style: TextStyle(
               color: p.textPrimary,
               fontSize: 28,
@@ -110,8 +112,7 @@ class _Header extends StatelessWidget {
           ),
           const SizedBox(height: 4),
           Text(
-            '$count ${count == 1 ? 'entry' : 'entries'} · '
-            'capture what the sky meant to you',
+            l.journalEntriesCount(count),
             style: TextStyle(color: p.textSecondary, fontSize: 13),
           ),
           const SizedBox(height: 12),
@@ -213,7 +214,7 @@ class _EntryCard extends StatelessWidget {
                           ),
                           const SizedBox(width: 4),
                           Text(
-                            'mood',
+                            AppLocalizations.of(context).journalMoodSuffix,
                             style: TextStyle(
                               color: p.textTertiary,
                               fontSize: 9,
@@ -278,7 +279,7 @@ class _EmptyState extends StatelessWidget {
             ),
             const SizedBox(height: 24),
             Text(
-              'Your Cosmic Journal',
+              AppLocalizations.of(context).journalCosmicTitle,
               style: TextStyle(
                 color: p.textPrimary,
                 fontSize: 22,
@@ -287,7 +288,7 @@ class _EmptyState extends StatelessWidget {
             ),
             const SizedBox(height: 8),
             Text(
-              'A private space to write what you noticed,\nfelt, or wondered about today.',
+              AppLocalizations.of(context).journalEmptyBlurb,
               style: TextStyle(
                 color: p.textSecondary,
                 fontSize: 14,
