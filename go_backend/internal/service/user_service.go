@@ -11,6 +11,7 @@ import (
 	"cosmic-mirror/internal/storage"
 
 	"github.com/google/uuid"
+	"github.com/redis/go-redis/v9"
 )
 
 type UserService struct {
@@ -18,6 +19,7 @@ type UserService struct {
 	profileRepo repository.BirthProfileRepository
 	statsRepo   repository.StatsRepository
 	avatars     *storage.AvatarStore
+	rdb         *redis.Client
 }
 
 func NewUserService(
@@ -25,12 +27,14 @@ func NewUserService(
 	profileRepo repository.BirthProfileRepository,
 	statsRepo repository.StatsRepository,
 	avatars *storage.AvatarStore,
+	rdb *redis.Client,
 ) *UserService {
 	return &UserService{
 		userRepo:    userRepo,
 		profileRepo: profileRepo,
 		statsRepo:   statsRepo,
 		avatars:     avatars,
+		rdb:         rdb,
 	}
 }
 
@@ -90,7 +94,62 @@ func (s *UserService) CreateBirthProfile(ctx context.Context, userID uuid.UUID, 
 }
 
 func (s *UserService) UpdateBirthProfile(ctx context.Context, userID uuid.UUID, input domain.CreateBirthProfileInput) error {
-	return s.profileRepo.Update(ctx, userID, input)
+	if err := s.profileRepo.Update(ctx, userID, input); err != nil {
+		return err
+	}
+	// Birth-data change invalidates every chart we've cached for this
+	// user — Western, Vedic (each ayanamsa, each varga, dasha), Human
+	// Design. Without this they keep showing yesterday's chart for up
+	// to 30 days.
+	s.invalidateBirthScopedCaches(ctx, userID)
+	return nil
+}
+
+// invalidateBirthScopedCaches deletes every Redis key scoped to a single
+// user that depends on birth data. Best-effort: any miss is silently
+// ignored so a Redis hiccup doesn't break the user's save.
+func (s *UserService) invalidateBirthScopedCaches(ctx context.Context, userID uuid.UUID) {
+	if s.rdb == nil {
+		return
+	}
+	patterns := []string{
+		fmt.Sprintf("chart:%s", userID),
+		fmt.Sprintf("hd:%s", userID),
+		fmt.Sprintf("vedic:chart:%s:*", userID),
+		fmt.Sprintf("vedic:varga:%s:*", userID),
+		fmt.Sprintf("vedic:dasha:%s:*", userID),
+	}
+	for _, pat := range patterns {
+		// Plain DEL for fully-qualified keys.
+		if !containsGlob(pat) {
+			s.rdb.Del(ctx, pat)
+			continue
+		}
+		// SCAN-and-DEL for the wildcard patterns. Iter() handles the
+		// cursor for us; we batch deletes in chunks to avoid one big
+		// pipeline per user.
+		iter := s.rdb.Scan(ctx, 0, pat, 100).Iterator()
+		var batch []string
+		for iter.Next(ctx) {
+			batch = append(batch, iter.Val())
+			if len(batch) >= 100 {
+				s.rdb.Del(ctx, batch...)
+				batch = batch[:0]
+			}
+		}
+		if len(batch) > 0 {
+			s.rdb.Del(ctx, batch...)
+		}
+	}
+}
+
+func containsGlob(s string) bool {
+	for i := 0; i < len(s); i++ {
+		if s[i] == '*' || s[i] == '?' || s[i] == '[' {
+			return true
+		}
+	}
+	return false
 }
 
 func (s *UserService) GetBirthProfile(ctx context.Context, userID uuid.UUID) (*domain.BirthProfile, error) {

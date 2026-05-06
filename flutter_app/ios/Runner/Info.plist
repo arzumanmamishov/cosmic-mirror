@@ -45,5 +45,16 @@
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+	<!-- image_picker on iOS requires usage descriptions in Info.plist;
+	     without these the OS silently denies access (or terminates the
+	     app on iOS 14+) when the picker is invoked. -->
+	<key>NSCameraUsageDescription</key>
+	<string>Lively needs your camera to take a profile photo.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Lively needs access to your photo library to set a profile picture.</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>Lively needs permission to save photos.</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>Lively does not record audio.</string>
 </dict>
 </plist>

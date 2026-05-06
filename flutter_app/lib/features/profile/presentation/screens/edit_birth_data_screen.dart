@@ -6,7 +6,19 @@ import 'package:cosmic_mirror/features/onboarding/domain/entities/birth_profile.
 import 'package:cosmic_mirror/features/onboarding/presentation/widgets/birth_date_picker.dart';
 import 'package:cosmic_mirror/features/onboarding/presentation/widgets/birth_time_picker.dart';
 import 'package:cosmic_mirror/features/onboarding/presentation/widgets/birthplace_search.dart';
+import 'package:cosmic_mirror/features/chart/presentation/screens/chart_screen.dart'
+    show chartProvider;
+import 'package:cosmic_mirror/features/human_design/presentation/providers/human_design_providers.dart'
+    show humanDesignProvider;
 import 'package:cosmic_mirror/features/profile/presentation/providers/profile_providers.dart';
+import 'package:cosmic_mirror/features/vedic_chart/presentation/providers/vedic_providers.dart'
+    show
+        activeChartProvider,
+        vedicAshtakavargaProvider,
+        vedicDashaProvider,
+        vedicRasiProvider,
+        vedicShadbalaProvider,
+        vedicYogasProvider;
 import 'package:cosmic_mirror/shared/providers/user_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -84,7 +96,19 @@ class _EditBirthDataScreenState extends ConsumerState<EditBirthDataScreen> {
         ApiEndpoints.birthProfile,
         data: model.toJson(),
       );
-      ref.invalidate(birthProfileProvider);
+      ref
+        ..invalidate(birthProfileProvider)
+        // Every chart depends on the same backend birth profile — drop
+        // their cached values so the next view re-fetches against the
+        // new data instead of showing yesterday's chart.
+        ..invalidate(chartProvider)
+        ..invalidate(humanDesignProvider)
+        ..invalidate(activeChartProvider)
+        ..invalidate(vedicRasiProvider)
+        ..invalidate(vedicDashaProvider)
+        ..invalidate(vedicYogasProvider)
+        ..invalidate(vedicShadbalaProvider)
+        ..invalidate(vedicAshtakavargaProvider);
       // Sun/moon/rising are derived from birth data and arrive via the
       // session response, so refresh the user state too.
       try {

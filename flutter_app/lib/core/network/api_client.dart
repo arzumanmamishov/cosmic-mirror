@@ -74,6 +74,12 @@ class ApiClient {
 
   /// Upload a file as a multipart form POST. The file is sent under the
   /// field name `file` so the backend can read `r.FormFile("file")`.
+  ///
+  /// We explicitly clear the base `Content-Type: application/json`
+  /// header on this request — Dio's FormData transformer normally
+  /// rewrites it to `multipart/form-data; boundary=...`, but if the
+  /// JSON header has been pinned via `BaseOptions.headers` it can leak
+  /// through and the backend then fails to parse the multipart body.
   Future<T> uploadFile<T>(
     String path, {
     required String filePath,
@@ -83,7 +89,17 @@ class ApiClient {
     final formData = FormData.fromMap({
       fieldName: await MultipartFile.fromFile(filePath),
     });
-    final response = await _dio.post<dynamic>(path, data: formData);
+    final response = await _dio.post<dynamic>(
+      path,
+      data: formData,
+      options: Options(
+        headers: {
+          // Explicitly null this so Dio's transformer sets the proper
+          // multipart Content-Type with its boundary.
+          Headers.contentTypeHeader: null,
+        },
+      ),
+    );
     if (fromJson != null) return fromJson(response.data);
     return response.data as T;
   }
