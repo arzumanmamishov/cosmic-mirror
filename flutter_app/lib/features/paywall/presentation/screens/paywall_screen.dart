@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../config/theme/colors.dart';
 import '../../../../config/theme/typography.dart';
+import '../../../../l10n/app_localizations.dart';
 import '../../../../shared/widgets/cosmic_button.dart';
 import '../providers/subscription_provider.dart';
 
@@ -23,6 +24,7 @@ class PaywallScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final state = ref.watch(paywallProvider);
     final notifier = ref.read(paywallProvider.notifier);
+    final l10n = AppLocalizations.of(context);
 
     return Scaffold(
       body: Container(
@@ -73,12 +75,12 @@ class PaywallScreen extends ConsumerWidget {
                         child: const Icon(Icons.auto_awesome, size: 40, color: Colors.white),
                       ),
                       const SizedBox(height: 20),
-                      Text('Unlock Your Full\nCosmic Potential',
+                      Text(l10n.paywallHeadline,
                           style: CosmicTypography.displayMedium,
                           textAlign: TextAlign.center),
                       const SizedBox(height: 8),
                       Text(
-                        'Get personalized insights that guide your every day.',
+                        l10n.paywallSubheadline,
                         style: CosmicTypography.bodySmall,
                         textAlign: TextAlign.center,
                       ),
@@ -127,7 +129,7 @@ class PaywallScreen extends ConsumerWidget {
                         child: Row(
                           children: [
                             _PlanTab(
-                              label: 'Monthly',
+                              label: l10n.paywallMonthly,
                               price: state.selectedPackage?.storeProduct
                                       .priceString ??
                                   '\$6.99/mo',
@@ -137,7 +139,7 @@ class PaywallScreen extends ConsumerWidget {
                               },
                             ),
                             _PlanTab(
-                              label: 'Yearly',
+                              label: l10n.paywallYearly,
                               price: state.selectedPackage?.storeProduct
                                       .priceString ??
                                   '\$39.99/yr',
@@ -187,8 +189,8 @@ class PaywallScreen extends ConsumerWidget {
 
                       CosmicButton(
                         label: state.isYearly
-                            ? 'Start Free Trial'
-                            : 'Subscribe Now',
+                            ? l10n.paywallStartFreeTrial
+                            : l10n.paywallSubscribe,
                         isLoading: state.isPurchasing,
                         onPressed: () async {
                           final success = await notifier.purchase();

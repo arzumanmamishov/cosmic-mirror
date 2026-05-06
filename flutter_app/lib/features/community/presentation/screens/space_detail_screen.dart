@@ -4,6 +4,7 @@ import 'package:cosmic_mirror/features/community/presentation/providers/communit
 import 'package:cosmic_mirror/features/community/presentation/screens/compose_post_sheet.dart';
 import 'package:cosmic_mirror/features/community/presentation/widgets/join_button.dart';
 import 'package:cosmic_mirror/features/community/presentation/widgets/post_card.dart';
+import 'package:cosmic_mirror/l10n/app_localizations.dart';
 import 'package:cosmic_mirror/shared/widgets/cosmic_starfield.dart';
 import 'package:cosmic_mirror/shared/widgets/error_view.dart';
 import 'package:cosmic_mirror/shared/widgets/loading_shimmer.dart';
@@ -141,7 +142,7 @@ class SpaceDetailScreen extends ConsumerWidget {
           children: [
             ListTile(
               leading: Icon(Icons.group_rounded, color: p.textPrimary),
-              title: const Text('Members'),
+              title: Text(AppLocalizations.of(context).communityMembers),
               onTap: () {
                 Navigator.pop(context);
                 context.push('/community/$spaceId/members');
@@ -149,7 +150,7 @@ class SpaceDetailScreen extends ConsumerWidget {
             ),
             ListTile(
               leading: Icon(Icons.edit_rounded, color: p.textPrimary),
-              title: const Text('Edit space'),
+              title: Text(AppLocalizations.of(context).communityEditSpace),
               onTap: () {
                 Navigator.pop(context);
                 context.push('/community/$spaceId/edit');

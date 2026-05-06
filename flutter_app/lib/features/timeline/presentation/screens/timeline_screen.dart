@@ -5,6 +5,7 @@ import '../../../../config/theme/colors.dart';
 import '../../../../config/theme/typography.dart';
 import '../../../../core/network/api_client.dart';
 import '../../../../core/network/api_endpoints.dart';
+import '../../../../l10n/app_localizations.dart';
 import '../../../../shared/providers/user_provider.dart';
 import '../../../../shared/widgets/cosmic_card.dart';
 import '../../../../shared/widgets/error_view.dart';
@@ -50,7 +51,7 @@ class _TimelineScreenState extends ConsumerState<TimelineScreen>
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Life Timeline'),
+        title: Text(AppLocalizations.of(context).transitForecastTitle),
         bottom: TabBar(
           controller: _tabController,
           tabs: _labels.map((l) => Tab(text: l)).toList(),

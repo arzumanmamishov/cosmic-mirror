@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../config/theme/colors.dart';
 import '../../../../config/theme/typography.dart';
+import '../../../../l10n/app_localizations.dart';
 import '../../../../shared/widgets/cosmic_card.dart';
 import '../../../../shared/widgets/premium_gate.dart';
 
@@ -12,7 +13,9 @@ class RitualsScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Daily Rituals')),
+      appBar: AppBar(
+        title: Text(AppLocalizations.of(context).ritualsTitle),
+      ),
       body: PremiumGate(
         featureName: 'Daily Rituals',
         child: SingleChildScrollView(

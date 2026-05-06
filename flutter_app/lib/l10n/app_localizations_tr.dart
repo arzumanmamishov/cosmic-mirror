@@ -483,4 +483,485 @@ class AppLocalizationsTr extends AppLocalizations {
   String discussionsMembersCount(String count) {
     return '$count üye';
   }
+
+  @override
+  String get settingsTitle => 'Ayarlar';
+
+  @override
+  String get settingsSubscription => 'Abonelik';
+
+  @override
+  String get settingsAppearance => 'Görünüm';
+
+  @override
+  String get settingsPreferences => 'Tercihler';
+
+  @override
+  String get settingsSupport => 'Destek';
+
+  @override
+  String get settingsLegal => 'Yasal';
+
+  @override
+  String get settingsAccount => 'Hesap';
+
+  @override
+  String get settingsPremiumActive => 'Premium Aktif';
+
+  @override
+  String get settingsFreePlan => 'Ücretsiz Plan';
+
+  @override
+  String get settingsManageSubscription => 'Aboneliğini yönet';
+
+  @override
+  String get settingsUpgrade => 'Tam erişim için yükselt';
+
+  @override
+  String get settingsThemeSystem => 'Sistem';
+
+  @override
+  String get settingsThemeLight => 'Açık';
+
+  @override
+  String get settingsThemeDark => 'Koyu';
+
+  @override
+  String get settingsRateApp => 'Uygulamayı puanla';
+
+  @override
+  String get settingsTermsOfService => 'Hizmet Şartları';
+
+  @override
+  String get settingsSignOut => 'Çıkış yap';
+
+  @override
+  String get settingsSignOutConfirm => 'Çıkış yapmak istediğinden emin misin?';
+
+  @override
+  String get settingsDeleteAccount => 'Hesabı sil';
+
+  @override
+  String get settingsDeleteAccountConfirm =>
+      'Bu, hesabını ve tüm verilerini kalıcı olarak siler. Bu işlem geri alınamaz.';
+
+  @override
+  String get settingsDelete => 'Sil';
+
+  @override
+  String get settingsAppVersion => 'Lively v1.0.0';
+
+  @override
+  String get chatThreadsTitle => 'Astrolog';
+
+  @override
+  String get chatThreadsStart => 'Sohbet başlat';
+
+  @override
+  String get chatThreadsEmpty => 'Astroloğunla yeni\nbir sohbet başlat.';
+
+  @override
+  String get chatThreadsNew => 'Yeni sohbet';
+
+  @override
+  String get chatThreadsDelete => 'Sil';
+
+  @override
+  String get chatThreadsDeleteConfirm => 'Bu sohbet silinsin mi?';
+
+  @override
+  String get chatThreadsUntitled => 'Yeni sohbet';
+
+  @override
+  String get paywallHeadline => 'Tüm Kozmik\nPotansiyelini Aç';
+
+  @override
+  String get paywallSubheadline =>
+      'Premium her özelliğe sınırsız erişim sağlar.';
+
+  @override
+  String get paywallMonthly => 'Aylık';
+
+  @override
+  String get paywallYearly => 'Yıllık';
+
+  @override
+  String paywallSavePercent(String percent) {
+    return '$percent indirim';
+  }
+
+  @override
+  String get paywallStartFreeTrial => 'Ücretsiz dene';
+
+  @override
+  String get paywallSubscribe => 'Abone ol';
+
+  @override
+  String get paywallRestorePurchases => 'Satın alımları geri yükle';
+
+  @override
+  String get paywallTermsNote =>
+      'İstediğin zaman iptal et. İptal edilmediği sürece otomatik yenilenir.';
+
+  @override
+  String get paywallFeatureUnlimitedChat => 'Sınırsız AI astrolog sohbeti';
+
+  @override
+  String get paywallFeatureFullChart => 'Evler ve açılarla tam doğum haritası';
+
+  @override
+  String get paywallFeatureDailyReading => 'Sana özel günlük okumalar';
+
+  @override
+  String get paywallFeatureCompatibility => 'Sınırsız uyum raporları';
+
+  @override
+  String get paywallFeatureNoAds => 'Reklamsız deneyim';
+
+  @override
+  String get paywallFeatureExport => 'Haritalarını dışa aktar';
+
+  @override
+  String get dailyReadingTitle => 'Bugünün Okuması';
+
+  @override
+  String get dailyReadingEnergy => 'Enerji';
+
+  @override
+  String get dailyReadingEmotional => 'Duygusal';
+
+  @override
+  String get dailyReadingLove => 'Aşk ve Bağlantı';
+
+  @override
+  String get dailyReadingCareer => 'Kariyer ve Amaç';
+
+  @override
+  String get dailyReadingHealth => 'Sağlık ve Esenlik';
+
+  @override
+  String get dailyReadingCaution => 'Dikkat';
+
+  @override
+  String get dailyReadingAction => 'Aksiyon adımları';
+
+  @override
+  String get dailyReadingAffirmation => 'Olumlama';
+
+  @override
+  String get dailyReadingLuckyColor => 'Şans rengi';
+
+  @override
+  String get dailyReadingLuckyNumber => 'Şans sayısı';
+
+  @override
+  String get dailyReadingSun => 'Güneş';
+
+  @override
+  String get dailyReadingMoon => 'Ay';
+
+  @override
+  String get dailyReadingRising => 'Yükselen';
+
+  @override
+  String get journalTitle => 'Günlük';
+
+  @override
+  String get journalNewEntry => 'Yeni giriş';
+
+  @override
+  String get journalEmpty => 'Henüz giriş yok.\nİlk yansımanı yaz.';
+
+  @override
+  String get journalPromptHint => 'Bugün fark ettim ki...';
+
+  @override
+  String get journalSaved => 'Kaydedildi';
+
+  @override
+  String get journalSave => 'Kaydet';
+
+  @override
+  String get journalDelete => 'Sil';
+
+  @override
+  String get journalDeleteConfirm => 'Bu giriş silinsin mi?';
+
+  @override
+  String get todaySkyEnergyHighTitle => 'Enerji: yüksek';
+
+  @override
+  String get todaySkyEnergyHighBody =>
+      'Bir şeye başlamak için iyi bir gün — momentum eylemden yana.';
+
+  @override
+  String get todaySkyHeartTitle => 'Kalp ön planda';
+
+  @override
+  String get todaySkyHeartBody =>
+      'Venüs konuşmaya sıcaklık katıyor. Birine ulaş.';
+
+  @override
+  String get todaySkyMindTitle => 'Zihin keskin';
+
+  @override
+  String get todaySkyMindBody =>
+      'Merkür berrak düşünmeyi destekliyor. Zor maile el at.';
+
+  @override
+  String get todaySkyPauseTitle => 'Tepki vermeden önce dur';
+
+  @override
+  String get todaySkyPauseBody => 'Gergin açı — büyük kararları yarına bırak.';
+
+  @override
+  String get todaySkyRestTitle => 'Dinlenme penceresi';
+
+  @override
+  String get todaySkyRestBody =>
+      'Yumuşak transitler — bu akşam dinginliğe zaman ayır.';
+
+  @override
+  String get todaySkyCreativeTitle => 'Yaratıcı kıvılcım';
+
+  @override
+  String get todaySkyCreativeBody =>
+      'Hayal gücü yüksek — fikri kaybetmeden yakala.';
+
+  @override
+  String get todaySkyRecognitionTitle => 'Tanınma mümkün';
+
+  @override
+  String get todaySkyRecognitionBody =>
+      'Güneş-Jüpiter üçgeni görünürlüğü artırıyor. İşinin arkasında dur.';
+
+  @override
+  String get todaySkyNewGroundTitle => 'Yeni topraklar';
+
+  @override
+  String get todaySkyNewGroundBody =>
+      'Bir bakış açısı değişimi mümkün. Eve farklı bir yoldan dön.';
+
+  @override
+  String get todaySkyBridgesTitle => 'Köprüler, duvarlar değil';
+
+  @override
+  String get todaySkyBridgesBody =>
+      'Diplomatik enerji — zor bir konuşma beklenenden iyi gidebilir.';
+
+  @override
+  String todaySkyIlluminated(String percent) {
+    return '%$percent aydınlanmış';
+  }
+
+  @override
+  String todaySkySunIn(String sign) {
+    return 'Güneş $sign burcunda';
+  }
+
+  @override
+  String get compatibilityTitle => 'Uyum';
+
+  @override
+  String get compatibilityAddPerson => 'Kişi ekle';
+
+  @override
+  String get compatibilityEmpty => 'Uyumunu görmek için birini ekle.';
+
+  @override
+  String get compatibilityViewReport => 'Raporu görüntüle';
+
+  @override
+  String get compatibilityName => 'Ad';
+
+  @override
+  String get compatibilityRelationship => 'İlişki';
+
+  @override
+  String get compatibilityBirthDate => 'Doğum tarihi';
+
+  @override
+  String get compatibilityBirthTime => 'Doğum saati';
+
+  @override
+  String get compatibilityBirthPlace => 'Doğum yeri';
+
+  @override
+  String get compatibilitySave => 'Kaydet';
+
+  @override
+  String get chartScreenTitle => 'Doğum Haritası';
+
+  @override
+  String get chartTabPlanets => 'Gezegenler';
+
+  @override
+  String get chartTabHouses => 'Evler';
+
+  @override
+  String get chartTabAspects => 'Açılar';
+
+  @override
+  String get chartTabSummary => 'Özet';
+
+  @override
+  String get vedicScreenTitle => 'Vedik Harita';
+
+  @override
+  String get vedicAyanamsa => 'Ayanamşa';
+
+  @override
+  String get vedicTabOverview => 'Genel';
+
+  @override
+  String get vedicTabPlanets => 'Gezegenler';
+
+  @override
+  String get vedicTabHouses => 'Evler';
+
+  @override
+  String get vedicTabNakshatras => 'Nakşatralar';
+
+  @override
+  String get vedicTabVargas => 'Vargalar';
+
+  @override
+  String get vedicTabDasha => 'Daşa';
+
+  @override
+  String get vedicTabYogas => 'Yogalar';
+
+  @override
+  String get vedicTabShadbala => 'Şadbala';
+
+  @override
+  String get vedicTabAshtakavarga => 'Aştakavarga';
+
+  @override
+  String get numerologyTitle => 'Numeroloji';
+
+  @override
+  String get numerologyTabCore => 'Temel';
+
+  @override
+  String get numerologyTabToday => 'Bugün';
+
+  @override
+  String get numerologyTabCycles => 'Döngüler';
+
+  @override
+  String get numerologyTabKarmic => 'Karmik';
+
+  @override
+  String get numerologyTabCompatibility => 'Uyum';
+
+  @override
+  String get numerologyCompareWith => 'Biriyle karşılaştır';
+
+  @override
+  String get humanDesignTitle => 'İnsan Tasarımı';
+
+  @override
+  String get humanDesignTabBodyGraph => 'Beden Grafiği';
+
+  @override
+  String get humanDesignTabCenters => 'Merkezler';
+
+  @override
+  String get humanDesignTabChannels => 'Kanallar';
+
+  @override
+  String get humanDesignTabGates => 'Kapılar';
+
+  @override
+  String get humanDesignTabProfile => 'Profil';
+
+  @override
+  String get yearlyForecastTitle => 'Yıllık Öngörü';
+
+  @override
+  String get transitForecastTitle => 'Transit Öngörü';
+
+  @override
+  String get lifeTimelineTitle => 'Kozmik Zaman Çizelgesi';
+
+  @override
+  String get ritualsTitle => 'Ritüeller';
+
+  @override
+  String get ritualsTodayTitle => 'Bugünün Ritüelleri';
+
+  @override
+  String ritualsStreak(int days) {
+    return '$days günlük seri';
+  }
+
+  @override
+  String get communityTitle => 'Topluluk';
+
+  @override
+  String get communityCreateSpace => 'Alan oluştur';
+
+  @override
+  String get communityFilterAll => 'Tümü';
+
+  @override
+  String get communityFilterJoined => 'Katıldıklarım';
+
+  @override
+  String get communitySpacesEmpty => 'Henüz alan yok.';
+
+  @override
+  String get communityNewPost => 'Yeni gönderi';
+
+  @override
+  String get communityWriteSomething => 'Bir şeyler yaz...';
+
+  @override
+  String get communityPostSubmit => 'Gönder';
+
+  @override
+  String get communityComment => 'Yorum';
+
+  @override
+  String get communityReply => 'Cevapla';
+
+  @override
+  String get communityLike => 'Beğen';
+
+  @override
+  String get communityShare => 'Paylaş';
+
+  @override
+  String get communityJoinSpace => 'Katıl';
+
+  @override
+  String get communityLeaveSpace => 'Ayrıl';
+
+  @override
+  String get communityMembers => 'Üyeler';
+
+  @override
+  String get communityNotifications => 'Bildirimler';
+
+  @override
+  String get communityNotificationsEmpty => 'Yeni bir şey yok.';
+
+  @override
+  String get communityMarkAllRead => 'Tümünü okundu işaretle';
+
+  @override
+  String get communityPostTitle => 'Gönderi';
+
+  @override
+  String get communityNewSpace => 'Yeni Alan';
+
+  @override
+  String get communityEditSpace => 'Alanı Düzenle';
+
+  @override
+  String get communityDeleteSpaceConfirm => 'Bu alan silinsin mi?';
+
+  @override
+  String get communityProfile => 'Profil';
 }

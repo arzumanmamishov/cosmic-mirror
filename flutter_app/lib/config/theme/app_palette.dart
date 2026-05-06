@@ -44,11 +44,13 @@ class AppPalette extends ThemeExtension<AppPalette> {
   final LinearGradient cardGradient;
   final LinearGradient cosmicGlow;
 
-  // Dark cosmic palette (default)
+  // Dark cosmic palette (default). Background matches the onboarding +
+  // auth screens so every surface that reads `p.background` is the same
+  // calm dark slate.
   static const dark = AppPalette(
-    background: Color(0xFF0A0E27),
-    surface: Color(0xFF141833),
-    surfaceElevated: Color(0xFF1E2347),
+    background: Color(0xFF1A1F2E),
+    surface: Color(0xFF1F2436),
+    surfaceElevated: Color(0xFF252A3A),
     primary: Color(0xFF6C3CE1),
     accent: Color(0xFFE14B8A),
     gold: Color(0xFFF4C542),

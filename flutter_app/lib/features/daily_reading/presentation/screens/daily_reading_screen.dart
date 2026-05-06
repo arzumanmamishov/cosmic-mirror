@@ -6,6 +6,7 @@ import 'package:share_plus/share_plus.dart';
 import 'package:cosmic_mirror/config/theme/app_palette.dart';
 import 'package:cosmic_mirror/features/daily_reading/domain/entities/daily_reading.dart';
 import 'package:cosmic_mirror/features/daily_reading/presentation/providers/daily_reading_provider.dart';
+import 'package:cosmic_mirror/l10n/app_localizations.dart';
 import 'package:cosmic_mirror/shared/widgets/cosmic_pulse.dart';
 import 'package:cosmic_mirror/shared/widgets/cosmic_starfield.dart';
 import 'package:cosmic_mirror/shared/widgets/error_view.dart';
@@ -70,6 +71,7 @@ class _ReadingBody extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return CustomScrollView(
       slivers: [
         SliverToBoxAdapter(child: _Hero(reading: reading)),
@@ -78,42 +80,42 @@ class _ReadingBody extends StatelessWidget {
           sliver: SliverList.list(
             children: [
               _staggered(0, _SectionCard(
-                title: 'Emotional',
+                title: l10n.dailyReadingEmotional,
                 icon: Icons.favorite_rounded,
                 iconColor: const Color(0xFFE14B8A),
                 content: reading.emotional,
               )),
               const SizedBox(height: 12),
               _staggered(1, _SectionCard(
-                title: 'Love & Connection',
+                title: l10n.dailyReadingLove,
                 icon: Icons.auto_awesome_rounded,
                 iconColor: const Color(0xFFC76E5E),
                 content: reading.love,
               )),
               const SizedBox(height: 12),
               _staggered(2, _SectionCard(
-                title: 'Career & Purpose',
+                title: l10n.dailyReadingCareer,
                 icon: Icons.work_rounded,
                 iconColor: const Color(0xFFB8860B),
                 content: reading.career,
               )),
               const SizedBox(height: 12),
               _staggered(3, _SectionCard(
-                title: 'Health & Wellness',
+                title: l10n.dailyReadingHealth,
                 icon: Icons.spa_rounded,
                 iconColor: const Color(0xFF5ED39A),
                 content: reading.health,
               )),
               const SizedBox(height: 12),
               _staggered(4, _SectionCard(
-                title: 'Caution',
+                title: l10n.dailyReadingCaution,
                 icon: Icons.shield_moon_rounded,
                 iconColor: const Color(0xFFF2B66D),
                 content: reading.caution,
               )),
               const SizedBox(height: 12),
               _staggered(5, _SectionCard(
-                title: 'Action Steps',
+                title: l10n.dailyReadingAction,
                 icon: Icons.bolt_rounded,
                 iconColor: const Color(0xFF7B61FF),
                 content: reading.action,
@@ -218,15 +220,24 @@ class _Hero extends StatelessWidget {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             if (reading.sunSign != null)
-                              _SignChip(label: 'Sun', sign: reading.sunSign!),
+                              _SignChip(
+                                label: AppLocalizations.of(context)
+                                    .dailyReadingSun,
+                                sign: reading.sunSign!,
+                              ),
                             if (reading.moonSign != null) ...[
                               const SizedBox(height: 6),
-                              _SignChip(label: 'Moon', sign: reading.moonSign!),
+                              _SignChip(
+                                label: AppLocalizations.of(context)
+                                    .dailyReadingMoon,
+                                sign: reading.moonSign!,
+                              ),
                             ],
                             if (reading.risingSign != null) ...[
                               const SizedBox(height: 6),
                               _SignChip(
-                                label: 'Rising',
+                                label: AppLocalizations.of(context)
+                                    .dailyReadingRising,
                                 sign: reading.risingSign!,
                               ),
                             ],
@@ -456,7 +467,7 @@ class _AffirmationCard extends StatelessWidget {
           ),
           const SizedBox(height: 12),
           Text(
-            'TODAY\'S AFFIRMATION',
+            AppLocalizations.of(context).dailyReadingAffirmation.toUpperCase(),
             style: TextStyle(
               color: Colors.white.withValues(alpha: 0.7),
               fontSize: 10,
@@ -507,7 +518,7 @@ class _LuckyRow extends StatelessWidget {
                 ),
                 const SizedBox(height: 10),
                 Text(
-                  'LUCKY COLOR',
+                  AppLocalizations.of(context).dailyReadingLuckyColor.toUpperCase(),
                   style: TextStyle(
                     color: p.textTertiary,
                     fontSize: 10,
@@ -550,7 +561,7 @@ class _LuckyRow extends StatelessWidget {
                 ),
                 const SizedBox(height: 10),
                 Text(
-                  'LUCKY NUMBER',
+                  AppLocalizations.of(context).dailyReadingLuckyNumber.toUpperCase(),
                   style: TextStyle(
                     color: p.textTertiary,
                     fontSize: 10,

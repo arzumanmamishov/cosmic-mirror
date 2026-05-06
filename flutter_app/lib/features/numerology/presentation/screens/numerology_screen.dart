@@ -5,6 +5,7 @@ import 'package:cosmic_mirror/features/numerology/presentation/widgets/cycles_ti
 import 'package:cosmic_mirror/features/numerology/presentation/widgets/karmic_grid.dart';
 import 'package:cosmic_mirror/features/numerology/presentation/widgets/number_card.dart';
 import 'package:cosmic_mirror/features/numerology/presentation/widgets/personal_today_card.dart';
+import 'package:cosmic_mirror/l10n/app_localizations.dart';
 import 'package:cosmic_mirror/shared/widgets/cosmic_starfield.dart';
 import 'package:cosmic_mirror/shared/widgets/error_view.dart';
 import 'package:cosmic_mirror/shared/widgets/loading_shimmer.dart';
@@ -26,7 +27,7 @@ class NumerologyScreen extends ConsumerWidget {
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: const BackButton(),
-        title: const Text('Numerology'),
+        title: Text(AppLocalizations.of(context).numerologyTitle),
       ),
       body: Stack(
         children: [

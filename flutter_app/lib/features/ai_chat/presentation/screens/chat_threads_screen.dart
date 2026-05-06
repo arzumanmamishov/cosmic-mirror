@@ -6,6 +6,7 @@ import 'package:cosmic_mirror/config/theme/app_palette.dart';
 import 'package:cosmic_mirror/core/utils/date_utils.dart';
 import 'package:cosmic_mirror/features/ai_chat/domain/entities/chat_entities.dart';
 import 'package:cosmic_mirror/features/ai_chat/presentation/providers/chat_provider.dart';
+import 'package:cosmic_mirror/l10n/app_localizations.dart';
 import 'package:cosmic_mirror/features/ai_chat/presentation/widgets/cosmic_memory_panel.dart';
 import 'package:cosmic_mirror/shared/widgets/cosmic_pulse.dart';
 import 'package:cosmic_mirror/shared/widgets/cosmic_starfield.dart';
@@ -36,7 +37,7 @@ class ChatThreadsScreen extends ConsumerWidget {
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: const BackButton(),
-        title: const Text('Astrologer'),
+        title: Text(AppLocalizations.of(context).chatThreadsTitle),
       ),
       floatingActionButton: CosmicPulse(
         color: p.primary,
@@ -152,7 +153,7 @@ class ChatThreadsScreen extends ConsumerWidget {
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(true),
             style: TextButton.styleFrom(foregroundColor: p.error),
-            child: const Text('Delete'),
+            child: Text(AppLocalizations.of(context).chatThreadsDelete),
           ),
         ],
       ),
@@ -316,7 +317,7 @@ class _ThreadCard extends StatelessWidget {
                     size: 20,
                   ),
                   onPressed: onDelete,
-                  tooltip: 'Delete',
+                  tooltip: AppLocalizations.of(context).chatThreadsDelete,
                 ),
               ],
             ),
@@ -387,7 +388,7 @@ class _EmptyState extends StatelessWidget {
             ElevatedButton.icon(
               onPressed: onStart,
               icon: const Icon(Icons.add_rounded),
-              label: const Text('Start a Conversation'),
+              label: Text(AppLocalizations.of(context).chatThreadsStart),
               style: ElevatedButton.styleFrom(
                 backgroundColor: p.primary,
                 foregroundColor: Colors.white,

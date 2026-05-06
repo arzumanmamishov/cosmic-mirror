@@ -8,6 +8,7 @@ import 'package:cosmic_mirror/features/vedic_chart/presentation/widgets/nakshatr
 import 'package:cosmic_mirror/features/vedic_chart/presentation/widgets/north_indian_chart.dart';
 import 'package:cosmic_mirror/features/vedic_chart/presentation/widgets/shadbala_radar.dart';
 import 'package:cosmic_mirror/features/vedic_chart/presentation/widgets/yoga_card.dart';
+import 'package:cosmic_mirror/l10n/app_localizations.dart';
 import 'package:cosmic_mirror/shared/widgets/cosmic_starfield.dart';
 import 'package:cosmic_mirror/shared/widgets/error_view.dart';
 import 'package:cosmic_mirror/shared/widgets/loading_shimmer.dart';
@@ -32,7 +33,7 @@ class VedicChartScreen extends ConsumerWidget {
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: const BackButton(),
-        title: const Text('Vedic Chart'),
+        title: Text(AppLocalizations.of(context).vedicScreenTitle),
         actions: const [
           _AyanamsaMenu(),
           SizedBox(width: 8),

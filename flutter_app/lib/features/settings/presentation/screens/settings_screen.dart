@@ -18,43 +18,46 @@ class SettingsScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final isPremium = ref.watch(isPremiumProvider);
+    final l10n = AppLocalizations.of(context);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Settings')),
+      appBar: AppBar(title: Text(l10n.settingsTitle)),
       body: ListView(
         padding: const EdgeInsets.symmetric(vertical: 8),
         children: [
           // Subscription
-          _SectionHeader('Subscription'),
+          _SectionHeader(l10n.settingsSubscription),
           ListTile(
             leading: Icon(
               Icons.auto_awesome,
               color: isPremium ? CosmicColors.gold : CosmicColors.textSecondary,
             ),
-            title: Text(isPremium ? 'Premium Active' : 'Free Plan'),
+            title: Text(
+              isPremium ? l10n.settingsPremiumActive : l10n.settingsFreePlan,
+            ),
             subtitle: Text(
               isPremium
-                  ? 'Manage your subscription'
-                  : 'Upgrade for full access',
+                  ? l10n.settingsManageSubscription
+                  : l10n.settingsUpgrade,
             ),
             trailing: const Icon(Icons.chevron_right),
             onTap: () => context.push('/paywall'),
           ),
 
           const Divider(),
-          _SectionHeader('Appearance'),
+          _SectionHeader(l10n.settingsAppearance),
           const _ThemeModeSwitcher(),
 
           const Divider(),
-          _SectionHeader(AppLocalizations.of(context).settingsLanguage),
+          _SectionHeader(l10n.settingsLanguage),
           const _LanguagePicker(),
 
           const Divider(),
-          _SectionHeader('Preferences'),
+          _SectionHeader(l10n.settingsPreferences),
 
           ListTile(
             leading: const Icon(Icons.notifications_outlined),
-            title: const Text('Notifications'),
+            title: Text(l10n.profileNotifications),
             trailing: const Icon(Icons.chevron_right),
             onTap: () {
               // Navigate to notification preferences
@@ -62,11 +65,11 @@ class SettingsScreen extends ConsumerWidget {
           ),
 
           const Divider(),
-          _SectionHeader('Support'),
+          _SectionHeader(l10n.settingsSupport),
 
           ListTile(
             leading: const Icon(Icons.help_outline),
-            title: const Text('Help & Support'),
+            title: Text(l10n.profileHelp),
             onTap: () {
               launchUrl(
                 Uri.parse('mailto:support@livelyapp.co'),
@@ -75,18 +78,18 @@ class SettingsScreen extends ConsumerWidget {
           ),
           ListTile(
             leading: const Icon(Icons.star_outline),
-            title: const Text('Rate the App'),
+            title: Text(l10n.settingsRateApp),
             onTap: () {
               // Open app store rating
             },
           ),
 
           const Divider(),
-          _SectionHeader('Legal'),
+          _SectionHeader(l10n.settingsLegal),
 
           ListTile(
             leading: const Icon(Icons.privacy_tip_outlined),
-            title: const Text('Privacy Policy'),
+            title: Text(l10n.authPrivacy),
             onTap: () {
               launchUrl(
                 Uri.parse('https://livelyapp.co/privacy'),
@@ -95,7 +98,7 @@ class SettingsScreen extends ConsumerWidget {
           ),
           ListTile(
             leading: const Icon(Icons.description_outlined),
-            title: const Text('Terms of Service'),
+            title: Text(l10n.settingsTermsOfService),
             onTap: () {
               launchUrl(
                 Uri.parse('https://livelyapp.co/terms'),
@@ -104,28 +107,31 @@ class SettingsScreen extends ConsumerWidget {
           ),
 
           const Divider(),
-          _SectionHeader('Account'),
+          _SectionHeader(l10n.settingsAccount),
 
           ListTile(
             leading: const Icon(Icons.logout),
-            title: const Text('Sign Out'),
+            title: Text(l10n.settingsSignOut),
             onTap: () async {
               final confirmed = await showDialog<bool>(
                 context: context,
-                builder: (context) => AlertDialog(
-                  title: const Text('Sign Out'),
-                  content: const Text('Are you sure you want to sign out?'),
-                  actions: [
-                    TextButton(
-                      onPressed: () => Navigator.pop(context, false),
-                      child: const Text('Cancel'),
-                    ),
-                    TextButton(
-                      onPressed: () => Navigator.pop(context, true),
-                      child: const Text('Sign Out'),
-                    ),
-                  ],
-                ),
+                builder: (dialogCtx) {
+                  final dl10n = AppLocalizations.of(dialogCtx);
+                  return AlertDialog(
+                    title: Text(dl10n.settingsSignOut),
+                    content: Text(dl10n.settingsSignOutConfirm),
+                    actions: [
+                      TextButton(
+                        onPressed: () => Navigator.pop(dialogCtx, false),
+                        child: Text(dl10n.cancel),
+                      ),
+                      TextButton(
+                        onPressed: () => Navigator.pop(dialogCtx, true),
+                        child: Text(dl10n.settingsSignOut),
+                      ),
+                    ],
+                  );
+                },
               );
 
               if (confirmed == true) {
@@ -138,32 +144,32 @@ class SettingsScreen extends ConsumerWidget {
           ListTile(
             leading: const Icon(Icons.delete_outline, color: CosmicColors.error),
             title: Text(
-              'Delete Account',
-              style: TextStyle(color: CosmicColors.error),
+              l10n.settingsDeleteAccount,
+              style: const TextStyle(color: CosmicColors.error),
             ),
             onTap: () async {
               final confirmed = await showDialog<bool>(
                 context: context,
-                builder: (context) => AlertDialog(
-                  title: const Text('Delete Account'),
-                  content: const Text(
-                    'This will permanently delete your account and all data. '
-                    'This action cannot be undone.',
-                  ),
-                  actions: [
-                    TextButton(
-                      onPressed: () => Navigator.pop(context, false),
-                      child: const Text('Cancel'),
-                    ),
-                    TextButton(
-                      onPressed: () => Navigator.pop(context, true),
-                      style: TextButton.styleFrom(
-                        foregroundColor: CosmicColors.error,
+                builder: (dialogCtx) {
+                  final dl10n = AppLocalizations.of(dialogCtx);
+                  return AlertDialog(
+                    title: Text(dl10n.settingsDeleteAccount),
+                    content: Text(dl10n.settingsDeleteAccountConfirm),
+                    actions: [
+                      TextButton(
+                        onPressed: () => Navigator.pop(dialogCtx, false),
+                        child: Text(dl10n.cancel),
                       ),
-                      child: const Text('Delete'),
-                    ),
-                  ],
-                ),
+                      TextButton(
+                        onPressed: () => Navigator.pop(dialogCtx, true),
+                        style: TextButton.styleFrom(
+                          foregroundColor: CosmicColors.error,
+                        ),
+                        child: Text(dl10n.settingsDelete),
+                      ),
+                    ],
+                  );
+                },
               );
 
               if (confirmed == true) {
@@ -177,7 +183,7 @@ class SettingsScreen extends ConsumerWidget {
           const SizedBox(height: 32),
           Center(
             child: Text(
-              'Lively v1.0.0',
+              l10n.settingsAppVersion,
               style: CosmicTypography.caption,
             ),
           ),

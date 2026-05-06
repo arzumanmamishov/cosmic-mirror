@@ -1,5 +1,6 @@
 import 'package:cosmic_mirror/config/theme/app_palette.dart';
 import 'package:cosmic_mirror/features/community/presentation/providers/community_providers.dart';
+import 'package:cosmic_mirror/l10n/app_localizations.dart';
 import 'package:cosmic_mirror/shared/widgets/cosmic_starfield.dart';
 import 'package:cosmic_mirror/shared/widgets/error_view.dart';
 import 'package:cosmic_mirror/shared/widgets/loading_shimmer.dart';
@@ -55,7 +56,7 @@ class _EditSpaceScreenState extends ConsumerState<EditSpaceScreen> {
     final confirm = await showDialog<bool>(
       context: context,
       builder: (_) => AlertDialog(
-        title: const Text('Delete this space?'),
+        title: Text(AppLocalizations.of(context).communityDeleteSpaceConfirm),
         content: const Text('All posts and comments will be permanently lost.'),
         actions: [
           TextButton(
@@ -98,7 +99,7 @@ class _EditSpaceScreenState extends ConsumerState<EditSpaceScreen> {
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        title: const Text('Edit Space'),
+        title: Text(AppLocalizations.of(context).communityEditSpace),
         actions: [
           TextButton(
             onPressed: _busy ? null : _save,

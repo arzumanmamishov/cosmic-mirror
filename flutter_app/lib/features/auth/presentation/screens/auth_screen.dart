@@ -1,9 +1,6 @@
 import 'package:cosmic_mirror/features/auth/presentation/providers/auth_provider.dart';
 import 'package:cosmic_mirror/l10n/app_localizations.dart';
-import 'package:cosmic_mirror/shared/widgets/cosmic_starfield.dart';
-import 'package:cosmic_mirror/shared/widgets/ken_burns_image.dart';
 import 'package:cosmic_mirror/shared/widgets/lively_logo.dart';
-import 'package:cosmic_mirror/shared/widgets/star_fall.dart';
 import 'package:flutter/foundation.dart'
     show TargetPlatform, defaultTargetPlatform;
 import 'package:flutter/material.dart';
@@ -88,40 +85,10 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
     final bottomInset = MediaQuery.of(context).viewInsets.bottom;
     return Scaffold(
       backgroundColor: const Color(0xFF1A1F2E),
-      // Don't resize the body when the keyboard opens — that would force
-      // the background image to recalculate BoxFit.cover and visibly jump.
-      // Instead we manually pad the form area below by the keyboard height
-      // so input fields stay above it.
+      // Don't resize the body when the keyboard opens — keeps the form
+      // surface stable; we pad the bottom by the keyboard height instead.
       resizeToAvoidBottomInset: false,
-      body: Stack(
-        children: [
-          // Cosmic background — gently pans + zooms (Ken Burns) so the
-          // scene never sits perfectly still.
-          const Positioned.fill(
-            child: KenBurnsImage(
-              image: AssetImage('assets/images/background.png'),
-            ),
-          ),
-          // Twinkling stars layered on the image — additive cosmic vibe.
-          const Positioned.fill(
-            child: CosmicStarfield(
-              starCount: 70,
-              intensity: 0.7,
-              color: Color(0xFFFFE9B0),
-            ),
-          ),
-          // Dark scrim over the background so the form, logo, and buttons
-          // stay legible regardless of what's in the image.
-          Positioned.fill(
-            child: Container(color: Colors.black.withValues(alpha: 0.55)),
-          ),
-          // Soft champagne shooting stars layered on top of the scrim so
-          // they streak across the cosmic image. Tinted to match the
-          // warm gold tones in the background rather than pure white.
-          const Positioned.fill(
-            child: StarFall(starCount: 3, color: Color(0xFFF1DDA8)),
-          ),
-          SafeArea(
+      body: SafeArea(
         child: SingleChildScrollView(
           physics: const ClampingScrollPhysics(),
           padding: EdgeInsets.fromLTRB(24, 12, 24, 24 + bottomInset),
@@ -311,8 +278,6 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
               ),
             ),
         ),
-        ],
-      ),
     );
   }
 }

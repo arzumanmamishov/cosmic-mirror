@@ -5,6 +5,7 @@ import '../../../../config/theme/colors.dart';
 import '../../../../config/theme/typography.dart';
 import '../../../../core/network/api_client.dart';
 import '../../../../core/network/api_endpoints.dart';
+import '../../../../l10n/app_localizations.dart';
 import '../../../../shared/providers/user_provider.dart';
 import '../../../../shared/widgets/cosmic_card.dart';
 import '../../../../shared/widgets/error_view.dart';
@@ -25,7 +26,9 @@ class YearlyForecastScreen extends ConsumerWidget {
     final forecastAsync = ref.watch(yearlyForecastProvider);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Yearly Forecast')),
+      appBar: AppBar(
+        title: Text(AppLocalizations.of(context).yearlyForecastTitle),
+      ),
       body: PremiumGate(
         featureName: 'Yearly Forecast',
         child: forecastAsync.when(

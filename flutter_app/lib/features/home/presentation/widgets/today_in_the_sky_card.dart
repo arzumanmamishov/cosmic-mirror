@@ -27,7 +27,8 @@ class TodayInTheSkyCard extends StatelessWidget {
     final now = DateTime.now();
     final phase = _moonPhase(now);
     final sun = _sunSign(now);
-    final highlights = _highlightsFor(now);
+    final l10n = AppLocalizations.of(context);
+    final highlights = _highlightsFor(now, l10n);
 
     return Container(
       padding: const EdgeInsets.all(18),
@@ -81,7 +82,9 @@ class TodayInTheSkyCard extends StatelessWidget {
                     ),
                     const SizedBox(height: 2),
                     Text(
-                      '${(phase.illumination * 100).round()}% illuminated',
+                      l10n.todaySkyIlluminated(
+                        '${(phase.illumination * 100).round()}',
+                      ),
                       style: GoogleFonts.poppins(
                         color: _kTextSecondary,
                         fontSize: 12,
@@ -90,7 +93,7 @@ class TodayInTheSkyCard extends StatelessWidget {
                     ),
                     const SizedBox(height: 6),
                     Text(
-                      'Sun in ${sun.glyph}  ${sun.name}',
+                      l10n.todaySkySunIn('${sun.glyph}  ${sun.name}'),
                       style: GoogleFonts.poppins(
                         color: Colors.white,
                         fontSize: 13,
@@ -382,52 +385,52 @@ class _Highlight {
 /// Three rotating cosmic-vibe lines keyed off day-of-year so the same day
 /// always shows the same set, but the set changes day to day. Replace with
 /// a real /transits/today payload when the backend exposes one.
-List<_Highlight> _highlightsFor(DateTime now) {
-  const pool = <_Highlight>[
+List<_Highlight> _highlightsFor(DateTime now, AppLocalizations l10n) {
+  final pool = <_Highlight>[
     _Highlight(
       icon: Icons.bolt_rounded,
-      title: 'Energy: high',
-      body: 'A good day to start something — momentum favors action.',
+      title: l10n.todaySkyEnergyHighTitle,
+      body: l10n.todaySkyEnergyHighBody,
     ),
     _Highlight(
       icon: Icons.favorite_rounded,
-      title: 'Heart-forward',
-      body: 'Venus angles invite warmth in conversation. Reach out.',
+      title: l10n.todaySkyHeartTitle,
+      body: l10n.todaySkyHeartBody,
     ),
     _Highlight(
       icon: Icons.psychology_rounded,
-      title: 'Mind sharp',
-      body: 'Mercury favors clear thinking. Tackle the hard email.',
+      title: l10n.todaySkyMindTitle,
+      body: l10n.todaySkyMindBody,
     ),
     _Highlight(
       icon: Icons.shield_moon_rounded,
-      title: 'Pause before reacting',
-      body: 'Tense aspect — sleep on big decisions today.',
+      title: l10n.todaySkyPauseTitle,
+      body: l10n.todaySkyPauseBody,
     ),
     _Highlight(
       icon: Icons.spa_rounded,
-      title: 'Restorative window',
-      body: 'Soft transits — make time for stillness this evening.',
+      title: l10n.todaySkyRestTitle,
+      body: l10n.todaySkyRestBody,
     ),
     _Highlight(
       icon: Icons.palette_rounded,
-      title: 'Creative spark',
-      body: 'Imagination runs high — capture the idea before it fades.',
+      title: l10n.todaySkyCreativeTitle,
+      body: l10n.todaySkyCreativeBody,
     ),
     _Highlight(
       icon: Icons.workspace_premium_rounded,
-      title: 'Recognition possible',
-      body: 'Sun-Jupiter trine boosts visibility. Stand in your work.',
+      title: l10n.todaySkyRecognitionTitle,
+      body: l10n.todaySkyRecognitionBody,
     ),
     _Highlight(
       icon: Icons.travel_explore_rounded,
-      title: 'New ground',
-      body: 'A perspective shift is available. Try a different route home.',
+      title: l10n.todaySkyNewGroundTitle,
+      body: l10n.todaySkyNewGroundBody,
     ),
     _Highlight(
       icon: Icons.handshake_rounded,
-      title: 'Bridges, not walls',
-      body: 'Diplomatic energy — a hard talk could go better than expected.',
+      title: l10n.todaySkyBridgesTitle,
+      body: l10n.todaySkyBridgesBody,
     ),
   ];
   final dayOfYear =

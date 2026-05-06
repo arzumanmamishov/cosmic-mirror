@@ -2,6 +2,7 @@ import 'package:cosmic_mirror/config/theme/app_palette.dart';
 import 'package:cosmic_mirror/features/numerology/domain/entities/numerology.dart';
 import 'package:cosmic_mirror/features/numerology/presentation/providers/numerology_providers.dart';
 import 'package:cosmic_mirror/features/numerology/presentation/widgets/compat_score_panel.dart';
+import 'package:cosmic_mirror/l10n/app_localizations.dart';
 import 'package:cosmic_mirror/shared/widgets/cosmic_starfield.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -71,7 +72,7 @@ class _NumerologyCompatScreenState
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        title: const Text('Compatibility'),
+        title: Text(AppLocalizations.of(context).compatibilityTitle),
       ),
       body: Stack(
         children: [

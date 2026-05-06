@@ -38,7 +38,13 @@ Future<void> main() async {
       );
       await Hive.initFlutter();
 
-      if (!kIsWeb) {
+      // Skip RevenueCat init when no real API key is wired in. The default
+      // placeholder ('your_revenuecat_api_key') triggers a noisy
+      // InvalidCredentialsError on every cold start in dev. Pass a real
+      // key via --dart-define=REVENUECAT_API_KEY=... to enable.
+      final hasRcKey = Env.revenueCatApiKey.isNotEmpty &&
+          Env.revenueCatApiKey != 'your_revenuecat_api_key';
+      if (!kIsWeb && hasRcKey) {
         await Purchases.configure(
           PurchasesConfiguration(Env.revenueCatApiKey),
         );

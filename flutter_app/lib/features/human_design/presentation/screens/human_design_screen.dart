@@ -8,6 +8,7 @@ import 'package:cosmic_mirror/features/human_design/presentation/widgets/gate_li
 import 'package:cosmic_mirror/features/human_design/presentation/widgets/incarnation_cross_card.dart';
 import 'package:cosmic_mirror/features/human_design/presentation/widgets/type_card.dart';
 import 'package:cosmic_mirror/features/human_design/presentation/widgets/variables_strip.dart';
+import 'package:cosmic_mirror/l10n/app_localizations.dart';
 import 'package:cosmic_mirror/shared/widgets/cosmic_starfield.dart';
 import 'package:cosmic_mirror/shared/widgets/error_view.dart';
 import 'package:cosmic_mirror/shared/widgets/loading_shimmer.dart';
@@ -28,7 +29,7 @@ class HumanDesignScreen extends ConsumerWidget {
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: const BackButton(),
-        title: const Text('Human Design'),
+        title: Text(AppLocalizations.of(context).humanDesignTitle),
       ),
       body: Stack(
         children: [

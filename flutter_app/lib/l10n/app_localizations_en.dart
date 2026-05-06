@@ -482,4 +482,488 @@ class AppLocalizationsEn extends AppLocalizations {
   String discussionsMembersCount(String count) {
     return '$count members';
   }
+
+  @override
+  String get settingsTitle => 'Settings';
+
+  @override
+  String get settingsSubscription => 'Subscription';
+
+  @override
+  String get settingsAppearance => 'Appearance';
+
+  @override
+  String get settingsPreferences => 'Preferences';
+
+  @override
+  String get settingsSupport => 'Support';
+
+  @override
+  String get settingsLegal => 'Legal';
+
+  @override
+  String get settingsAccount => 'Account';
+
+  @override
+  String get settingsPremiumActive => 'Premium Active';
+
+  @override
+  String get settingsFreePlan => 'Free Plan';
+
+  @override
+  String get settingsManageSubscription => 'Manage your subscription';
+
+  @override
+  String get settingsUpgrade => 'Upgrade for full access';
+
+  @override
+  String get settingsThemeSystem => 'System';
+
+  @override
+  String get settingsThemeLight => 'Light';
+
+  @override
+  String get settingsThemeDark => 'Dark';
+
+  @override
+  String get settingsRateApp => 'Rate the App';
+
+  @override
+  String get settingsTermsOfService => 'Terms of Service';
+
+  @override
+  String get settingsSignOut => 'Sign Out';
+
+  @override
+  String get settingsSignOutConfirm => 'Are you sure you want to sign out?';
+
+  @override
+  String get settingsDeleteAccount => 'Delete Account';
+
+  @override
+  String get settingsDeleteAccountConfirm =>
+      'This will permanently delete your account and all data. This action cannot be undone.';
+
+  @override
+  String get settingsDelete => 'Delete';
+
+  @override
+  String get settingsAppVersion => 'Lively v1.0.0';
+
+  @override
+  String get chatThreadsTitle => 'Astrologer';
+
+  @override
+  String get chatThreadsStart => 'Start a Conversation';
+
+  @override
+  String get chatThreadsEmpty =>
+      'Start a new conversation\nwith your astrologer.';
+
+  @override
+  String get chatThreadsNew => 'New chat';
+
+  @override
+  String get chatThreadsDelete => 'Delete';
+
+  @override
+  String get chatThreadsDeleteConfirm => 'Delete this conversation?';
+
+  @override
+  String get chatThreadsUntitled => 'New conversation';
+
+  @override
+  String get paywallHeadline => 'Unlock Your Full\nCosmic Potential';
+
+  @override
+  String get paywallSubheadline =>
+      'Premium gives you unlimited access to every feature.';
+
+  @override
+  String get paywallMonthly => 'Monthly';
+
+  @override
+  String get paywallYearly => 'Yearly';
+
+  @override
+  String paywallSavePercent(String percent) {
+    return 'Save $percent';
+  }
+
+  @override
+  String get paywallStartFreeTrial => 'Start Free Trial';
+
+  @override
+  String get paywallSubscribe => 'Subscribe';
+
+  @override
+  String get paywallRestorePurchases => 'Restore purchases';
+
+  @override
+  String get paywallTermsNote =>
+      'Cancel anytime. Auto-renews unless cancelled.';
+
+  @override
+  String get paywallFeatureUnlimitedChat => 'Unlimited AI astrologer chat';
+
+  @override
+  String get paywallFeatureFullChart =>
+      'Full natal chart with houses + aspects';
+
+  @override
+  String get paywallFeatureDailyReading => 'Personalized daily readings';
+
+  @override
+  String get paywallFeatureCompatibility => 'Unlimited compatibility reports';
+
+  @override
+  String get paywallFeatureNoAds => 'Ad-free experience';
+
+  @override
+  String get paywallFeatureExport => 'Export your charts';
+
+  @override
+  String get dailyReadingTitle => 'Today\'s Reading';
+
+  @override
+  String get dailyReadingEnergy => 'Energy';
+
+  @override
+  String get dailyReadingEmotional => 'Emotional';
+
+  @override
+  String get dailyReadingLove => 'Love & Connection';
+
+  @override
+  String get dailyReadingCareer => 'Career & Purpose';
+
+  @override
+  String get dailyReadingHealth => 'Health & Wellness';
+
+  @override
+  String get dailyReadingCaution => 'Caution';
+
+  @override
+  String get dailyReadingAction => 'Action Steps';
+
+  @override
+  String get dailyReadingAffirmation => 'Affirmation';
+
+  @override
+  String get dailyReadingLuckyColor => 'Lucky Color';
+
+  @override
+  String get dailyReadingLuckyNumber => 'Lucky Number';
+
+  @override
+  String get dailyReadingSun => 'Sun';
+
+  @override
+  String get dailyReadingMoon => 'Moon';
+
+  @override
+  String get dailyReadingRising => 'Rising';
+
+  @override
+  String get journalTitle => 'Journal';
+
+  @override
+  String get journalNewEntry => 'New Entry';
+
+  @override
+  String get journalEmpty => 'No entries yet.\nWrite your first reflection.';
+
+  @override
+  String get journalPromptHint => 'Today I noticed...';
+
+  @override
+  String get journalSaved => 'Saved';
+
+  @override
+  String get journalSave => 'Save';
+
+  @override
+  String get journalDelete => 'Delete';
+
+  @override
+  String get journalDeleteConfirm => 'Delete this entry?';
+
+  @override
+  String get todaySkyEnergyHighTitle => 'Energy: high';
+
+  @override
+  String get todaySkyEnergyHighBody =>
+      'A good day to start something — momentum favors action.';
+
+  @override
+  String get todaySkyHeartTitle => 'Heart-forward';
+
+  @override
+  String get todaySkyHeartBody =>
+      'Venus angles invite warmth in conversation. Reach out.';
+
+  @override
+  String get todaySkyMindTitle => 'Mind sharp';
+
+  @override
+  String get todaySkyMindBody =>
+      'Mercury favors clear thinking. Tackle the hard email.';
+
+  @override
+  String get todaySkyPauseTitle => 'Pause before reacting';
+
+  @override
+  String get todaySkyPauseBody =>
+      'Tense aspect — sleep on big decisions today.';
+
+  @override
+  String get todaySkyRestTitle => 'Restorative window';
+
+  @override
+  String get todaySkyRestBody =>
+      'Soft transits — make time for stillness this evening.';
+
+  @override
+  String get todaySkyCreativeTitle => 'Creative spark';
+
+  @override
+  String get todaySkyCreativeBody =>
+      'Imagination runs high — capture the idea before it fades.';
+
+  @override
+  String get todaySkyRecognitionTitle => 'Recognition possible';
+
+  @override
+  String get todaySkyRecognitionBody =>
+      'Sun-Jupiter trine boosts visibility. Stand in your work.';
+
+  @override
+  String get todaySkyNewGroundTitle => 'New ground';
+
+  @override
+  String get todaySkyNewGroundBody =>
+      'A perspective shift is available. Try a different route home.';
+
+  @override
+  String get todaySkyBridgesTitle => 'Bridges, not walls';
+
+  @override
+  String get todaySkyBridgesBody =>
+      'Diplomatic energy — a hard talk could go better than expected.';
+
+  @override
+  String todaySkyIlluminated(String percent) {
+    return '$percent% illuminated';
+  }
+
+  @override
+  String todaySkySunIn(String sign) {
+    return 'Sun in $sign';
+  }
+
+  @override
+  String get compatibilityTitle => 'Compatibility';
+
+  @override
+  String get compatibilityAddPerson => 'Add Person';
+
+  @override
+  String get compatibilityEmpty => 'Add someone to see how you click.';
+
+  @override
+  String get compatibilityViewReport => 'View report';
+
+  @override
+  String get compatibilityName => 'Name';
+
+  @override
+  String get compatibilityRelationship => 'Relationship';
+
+  @override
+  String get compatibilityBirthDate => 'Birth date';
+
+  @override
+  String get compatibilityBirthTime => 'Birth time';
+
+  @override
+  String get compatibilityBirthPlace => 'Birth place';
+
+  @override
+  String get compatibilitySave => 'Save';
+
+  @override
+  String get chartScreenTitle => 'Natal Chart';
+
+  @override
+  String get chartTabPlanets => 'Planets';
+
+  @override
+  String get chartTabHouses => 'Houses';
+
+  @override
+  String get chartTabAspects => 'Aspects';
+
+  @override
+  String get chartTabSummary => 'Summary';
+
+  @override
+  String get vedicScreenTitle => 'Vedic Chart';
+
+  @override
+  String get vedicAyanamsa => 'Ayanamsa';
+
+  @override
+  String get vedicTabOverview => 'Overview';
+
+  @override
+  String get vedicTabPlanets => 'Planets';
+
+  @override
+  String get vedicTabHouses => 'Houses';
+
+  @override
+  String get vedicTabNakshatras => 'Nakshatras';
+
+  @override
+  String get vedicTabVargas => 'Vargas';
+
+  @override
+  String get vedicTabDasha => 'Dasha';
+
+  @override
+  String get vedicTabYogas => 'Yogas';
+
+  @override
+  String get vedicTabShadbala => 'Shadbala';
+
+  @override
+  String get vedicTabAshtakavarga => 'Ashtakavarga';
+
+  @override
+  String get numerologyTitle => 'Numerology';
+
+  @override
+  String get numerologyTabCore => 'Core';
+
+  @override
+  String get numerologyTabToday => 'Today';
+
+  @override
+  String get numerologyTabCycles => 'Cycles';
+
+  @override
+  String get numerologyTabKarmic => 'Karmic';
+
+  @override
+  String get numerologyTabCompatibility => 'Compatibility';
+
+  @override
+  String get numerologyCompareWith => 'Compare with someone';
+
+  @override
+  String get humanDesignTitle => 'Human Design';
+
+  @override
+  String get humanDesignTabBodyGraph => 'Body Graph';
+
+  @override
+  String get humanDesignTabCenters => 'Centers';
+
+  @override
+  String get humanDesignTabChannels => 'Channels';
+
+  @override
+  String get humanDesignTabGates => 'Gates';
+
+  @override
+  String get humanDesignTabProfile => 'Profile';
+
+  @override
+  String get yearlyForecastTitle => 'Yearly Forecast';
+
+  @override
+  String get transitForecastTitle => 'Transit Forecast';
+
+  @override
+  String get lifeTimelineTitle => 'Cosmic Timeline';
+
+  @override
+  String get ritualsTitle => 'Rituals';
+
+  @override
+  String get ritualsTodayTitle => 'Today\'s Rituals';
+
+  @override
+  String ritualsStreak(int days) {
+    return '$days day streak';
+  }
+
+  @override
+  String get communityTitle => 'Community';
+
+  @override
+  String get communityCreateSpace => 'Create space';
+
+  @override
+  String get communityFilterAll => 'All';
+
+  @override
+  String get communityFilterJoined => 'Joined';
+
+  @override
+  String get communitySpacesEmpty => 'No spaces yet.';
+
+  @override
+  String get communityNewPost => 'New post';
+
+  @override
+  String get communityWriteSomething => 'Write something...';
+
+  @override
+  String get communityPostSubmit => 'Post';
+
+  @override
+  String get communityComment => 'Comment';
+
+  @override
+  String get communityReply => 'Reply';
+
+  @override
+  String get communityLike => 'Like';
+
+  @override
+  String get communityShare => 'Share';
+
+  @override
+  String get communityJoinSpace => 'Join';
+
+  @override
+  String get communityLeaveSpace => 'Leave';
+
+  @override
+  String get communityMembers => 'Members';
+
+  @override
+  String get communityNotifications => 'Notifications';
+
+  @override
+  String get communityNotificationsEmpty => 'Nothing new.';
+
+  @override
+  String get communityMarkAllRead => 'Mark all read';
+
+  @override
+  String get communityPostTitle => 'Post';
+
+  @override
+  String get communityNewSpace => 'New Space';
+
+  @override
+  String get communityEditSpace => 'Edit Space';
+
+  @override
+  String get communityDeleteSpaceConfirm => 'Delete this space?';
+
+  @override
+  String get communityProfile => 'Profile';
 }
