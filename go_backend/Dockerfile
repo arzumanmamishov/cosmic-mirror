@@ -2,7 +2,7 @@
 # Build stage: compile libswe.so and the Go binary
 # swephgo links against /usr/local/lib/libswe.so which we build from source.
 # =============================================================================
-FROM golang:1.22-bookworm AS builder
+FROM golang:1.25-bookworm AS builder
 
 # Build dependencies for both the C library and the Go binary
 RUN apt-get update && apt-get install -y --no-install-recommends \

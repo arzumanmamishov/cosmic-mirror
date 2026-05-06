@@ -10,6 +10,7 @@ import (
 
 	"cosmic-mirror/internal/domain"
 	"cosmic-mirror/internal/repository"
+	"cosmic-mirror/internal/tz"
 
 	"github.com/google/uuid"
 	"github.com/redis/go-redis/v9"
@@ -59,8 +60,10 @@ func (s *ChartService) GetNatalChart(ctx context.Context, userID uuid.UUID) (*do
 		hour, min = parseBirthTime(*profile.BirthTime)
 	}
 
-	// Calculate timezone offset from timezone name
-	tzone := timezoneOffset(profile.Timezone)
+	// Calculate timezone offset AT the birth instant — this picks up the
+	// historical rules (Soviet decree time, DST changes, wartime offsets)
+	// that "now" lookups would miss.
+	tzone := tz.OffsetForBirth(profile.Timezone, profile.BirthDate, hour, min)
 
 	// Fetch chart from the configured calculation provider
 	chart, err := s.provider.GetNatalChart(
@@ -130,15 +133,6 @@ func parseBirthTime(t string) (int, int) {
 	return h, m
 }
 
-// timezoneOffset converts a timezone name (e.g. "America/New_York") to a UTC offset in hours.
-func timezoneOffset(tzName string) float64 {
-	loc, err := time.LoadLocation(tzName)
-	if err != nil {
-		return 0
-	}
-	_, offset := time.Now().In(loc).Zone()
-	return float64(offset) / 3600
-}
 
 func sunDescription(sign string) string {
 	descriptions := map[string]string{

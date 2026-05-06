@@ -9,6 +9,8 @@ import (
 	"strings"
 	"time"
 	"unicode"
+
+	"cosmic-mirror/internal/tz"
 )
 
 type PlacesHandler struct {
@@ -129,12 +131,11 @@ func (h *PlacesHandler) Search(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 
-		tz := timezoneFromCoords(lat, lon)
 		places = append(places, placeSuggestion{
 			Name:      name,
 			Latitude:  lat,
 			Longitude: lon,
-			Timezone:  tz,
+			Timezone:  tz.FromCoords(lat, lon),
 		})
 	}
 
@@ -173,16 +174,3 @@ func firstLatin(values ...string) string {
 	return ""
 }
 
-// timezoneFromCoords estimates timezone from longitude.
-// For precise results, integrate a timezone API or use a library.
-func timezoneFromCoords(lat, lon float64) string {
-	_ = lat
-	offset := int(lon / 15)
-	if offset == 0 {
-		return "Etc/UTC"
-	}
-	if offset > 0 {
-		return fmt.Sprintf("Etc/GMT-%d", offset)
-	}
-	return fmt.Sprintf("Etc/GMT+%d", -offset)
-}

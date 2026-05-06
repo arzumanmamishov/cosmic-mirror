@@ -8,6 +8,7 @@ import (
 
 	"cosmic-mirror/internal/domain"
 	"cosmic-mirror/internal/repository"
+	"cosmic-mirror/internal/tz"
 
 	"github.com/google/uuid"
 	"github.com/redis/go-redis/v9"
@@ -83,7 +84,9 @@ func (s *VedicService) loadBirthData(ctx context.Context, userID uuid.UUID) (tim
 	if profile.BirthTimeKnown && profile.BirthTime != nil {
 		hour, min = parseBirthTime(*profile.BirthTime)
 	}
-	tzone := timezoneOffset(profile.Timezone)
+	// Use the historical offset at the birth instant, not "now". Encodes
+	// Soviet decree time, DST history, wartime rules — anything in tzdata.
+	tzone := tz.OffsetForBirth(profile.Timezone, profile.BirthDate, hour, min)
 	return profile.BirthDate, hour, min, profile.Latitude, profile.Longitude, tzone, nil
 }
 

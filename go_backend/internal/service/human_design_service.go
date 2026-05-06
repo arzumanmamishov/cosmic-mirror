@@ -9,6 +9,7 @@ import (
 
 	"cosmic-mirror/internal/domain"
 	"cosmic-mirror/internal/repository"
+	"cosmic-mirror/internal/tz"
 
 	"github.com/google/uuid"
 	"github.com/redis/go-redis/v9"
@@ -60,7 +61,7 @@ func (s *HumanDesignService) GetChart(ctx context.Context, userID uuid.UUID) (*d
 	}
 
 	hour, min := parseBirthTime(*profile.BirthTime)
-	tzone := timezoneOffset(profile.Timezone)
+	tzone := tz.OffsetForBirth(profile.Timezone, profile.BirthDate, hour, min)
 
 	chart, err := s.provider.GetHumanDesign(
 		ctx,
