@@ -1,4 +1,5 @@
 import 'package:firebase_auth/firebase_auth.dart' as fb;
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/network/api_client.dart';
@@ -114,7 +115,9 @@ class UserNotifier extends StateNotifier<UserState> {
   }
 
   /// Uploads [filePath] to the backend and stores the returned URL.
-  /// Returns the new URL or `null` on failure.
+  /// Returns the new URL or `null` on failure. Errors are logged so
+  /// the dev console shows the actual cause (multipart parse error,
+  /// 401, 413 too-large, etc) instead of being silently swallowed.
   Future<String?> setAvatar(String filePath) async {
     try {
       final data = await _apiClient.uploadFile<Map<String, dynamic>>(
@@ -129,7 +132,12 @@ class UserNotifier extends StateNotifier<UserState> {
       final cacheBusted = '$url?v=${DateTime.now().millisecondsSinceEpoch}';
       state = state.copyWith(avatarUrl: cacheBusted);
       return cacheBusted;
-    } catch (_) {
+    } catch (e, stack) {
+      // Log instead of silently dropping — the previous catch made
+      // every avatar failure look identical in the UI even when the
+      // backend was returning a real, fixable error.
+      debugPrint('[Avatar] upload failed: $e');
+      debugPrintStack(stackTrace: stack);
       return null;
     }
   }
