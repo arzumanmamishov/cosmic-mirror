@@ -74,8 +74,11 @@ final unreadCountProvider = FutureProvider.autoDispose<int>((ref) async {
   return ref.read(communityRepositoryProvider).unreadCount();
 });
 
-/// Categories (seeded — rarely changes, cache for the lifetime of the app).
-final categoriesProvider = FutureProvider<List<SpaceCategory>>((ref) async {
+/// Categories (seeded — rarely changes). AutoDispose so a one-off
+/// auth/network glitch on first cold start doesn't leave the provider
+/// stuck in an error state for the rest of the app's lifetime.
+final categoriesProvider =
+    FutureProvider.autoDispose<List<SpaceCategory>>((ref) async {
   return ref.read(communityRepositoryProvider).listCategories();
 });
 

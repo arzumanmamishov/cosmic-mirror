@@ -113,11 +113,26 @@ class _AuthInterceptor extends Interceptor {
   ) async {
     final user = fb.FirebaseAuth.instance.currentUser;
     if (user != null) {
+      // First try the cached token (fast path). If that fails or comes
+      // back empty, fall back to a forced refresh — this avoids the
+      // race where Firebase returns null mid-token-refresh and we end
+      // up firing unauthenticated requests in parallel (notably on the
+      // Community tab which fans out to four simultaneous calls).
+      String? token;
       try {
-        final token = await user.getIdToken();
+        token = await user.getIdToken();
+      } catch (e) {
+        debugPrint('[Auth] getIdToken failed (cached): $e');
+      }
+      if (token == null || token.isEmpty) {
+        try {
+          token = await user.getIdToken(true);
+        } catch (e) {
+          debugPrint('[Auth] getIdToken failed (forceRefresh): $e');
+        }
+      }
+      if (token != null && token.isNotEmpty) {
         options.headers['Authorization'] = 'Bearer $token';
-      } catch (_) {
-        // Continue without token; server will return 401 if needed.
       }
     }
     handler.next(options);
