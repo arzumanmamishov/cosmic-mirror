@@ -48,14 +48,16 @@ class ChatThreadsScreen extends ConsumerWidget {
           elevation: 0,
           highlightElevation: 0,
           icon: const Icon(Icons.auto_awesome_rounded, color: Colors.white),
-          label: const Text(
-            'New Chat',
-            style: TextStyle(
+          label: Text(
+            AppLocalizations.of(context).chatThreadsNew,
+            style: const TextStyle(
               color: Colors.white,
               fontWeight: FontWeight.w600,
             ),
           ),
-          extendedPadding: EdgeInsets.zero,
+          // Use Material's default extended padding (16/20) so longer
+          // translations like "Yeni sohbet" actually fit inside the
+          // stadium shape — EdgeInsets.zero was crushing the label.
           shape: const StadiumBorder(),
         ).withGradient(p.primaryGradient),
       ),
