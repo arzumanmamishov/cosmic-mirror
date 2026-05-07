@@ -41,23 +41,33 @@ import '../features/vedic_chart/presentation/screens/vedic_chart_screen.dart';
 import '../features/yearly_forecast/presentation/screens/yearly_forecast_screen.dart';
 import '../shared/providers/user_provider.dart';
 
-/// Notifies GoRouter when Firebase auth state changes.
-class _AuthChangeNotifier extends ChangeNotifier {
-  _AuthChangeNotifier() {
+/// Pulses GoRouter's refreshListenable on Firebase auth changes AND
+/// any time our own currentUserProvider state changes — without
+/// rebuilding the GoRouter itself. (Watching state directly inside the
+/// `appRouterProvider` would recreate the router on every avatar/name
+/// update and wipe the navigation stack back to /home.)
+class _RouterRefreshNotifier extends ChangeNotifier {
+  _RouterRefreshNotifier() {
     FirebaseAuth.instance.authStateChanges().listen((_) => notifyListeners());
   }
+
+  void pulse() => notifyListeners();
 }
 
-final _authChangeNotifier = _AuthChangeNotifier();
+final _routerRefresh = _RouterRefreshNotifier();
 
 final appRouterProvider = Provider<GoRouter>((ref) {
-  final userState = ref.watch(currentUserProvider);
+  // Listen (don't watch) so user-state mutations re-fire the redirect
+  // without recreating the router. The redirect callback below reads
+  // the latest state via ref.read at each evaluation.
+  ref.listen<UserState>(currentUserProvider, (_, __) => _routerRefresh.pulse());
 
   return GoRouter(
     initialLocation: '/',
     debugLogDiagnostics: true,
-    refreshListenable: _authChangeNotifier,
+    refreshListenable: _routerRefresh,
     redirect: (context, state) {
+      final userState = ref.read(currentUserProvider);
       final isAuthenticated =
           FirebaseAuth.instance.currentUser != null;
       final isOnAuthRoute = state.matchedLocation == '/auth';
