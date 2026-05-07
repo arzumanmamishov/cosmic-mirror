@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:cosmic_mirror/app.dart';
+import 'package:cosmic_mirror/config/api_url_override.dart';
 import 'package:cosmic_mirror/config/env.dart';
 import 'package:cosmic_mirror/firebase_options.dart';
 import 'package:cosmic_mirror/shared/providers/user_provider.dart';
@@ -33,6 +34,11 @@ Future<void> main() async {
           ),
         );
       }
+
+      // Hydrate the runtime API base URL override BEFORE anything that
+      // might construct an ApiClient — otherwise the first session call
+      // would still go to the compile-time default.
+      await ApiUrlOverride.load();
 
       await Firebase.initializeApp(
         options: DefaultFirebaseOptions.currentPlatform,

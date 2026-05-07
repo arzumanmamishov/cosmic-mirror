@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../../../../config/api_url_override.dart';
+import '../../../../config/env.dart';
 import '../../../../config/theme/colors.dart';
 import '../../../../config/theme/typography.dart';
 import '../../../../l10n/app_localizations.dart';
@@ -105,6 +107,12 @@ class SettingsScreen extends ConsumerWidget {
               );
             },
           ),
+
+          if (Env.isDev) ...[
+            const Divider(),
+            const _SectionHeader('Developer'),
+            const _ApiUrlOverrideTile(),
+          ],
 
           const Divider(),
           _SectionHeader(l10n.settingsAccount),
@@ -351,5 +359,96 @@ class _ThemeModeSwitcher extends ConsumerWidget {
         ),
       ),
     );
+  }
+}
+
+/// Developer-only ListTile that shows the active API base URL and lets
+/// the user override it at runtime when the dev machine's LAN IP
+/// changes (so a stale binary can be redirected without a rebuild).
+class _ApiUrlOverrideTile extends ConsumerWidget {
+  const _ApiUrlOverrideTile();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final current = Env.apiBaseUrl;
+    return ListTile(
+      leading: const Icon(Icons.cloud_outlined),
+      title: const Text('API base URL'),
+      subtitle: Text(
+        current,
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+        style: CosmicTypography.caption,
+      ),
+      trailing: const Icon(Icons.edit_outlined, size: 18),
+      onTap: () => _showEditDialog(context, ref, current),
+    );
+  }
+
+  Future<void> _showEditDialog(
+    BuildContext context,
+    WidgetRef ref,
+    String current,
+  ) async {
+    final controller = TextEditingController(
+      text: ApiUrlOverride.current ?? '',
+    );
+
+    await showDialog<void>(
+      context: context,
+      builder: (dialogCtx) {
+        return AlertDialog(
+          title: const Text('Override API base URL'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('Currently: $current', style: CosmicTypography.caption),
+              const SizedBox(height: 12),
+              TextField(
+                controller: controller,
+                autofocus: true,
+                keyboardType: TextInputType.url,
+                decoration: const InputDecoration(
+                  hintText: 'http://192.168.0.75:8080',
+                  border: OutlineInputBorder(),
+                ),
+              ),
+              const SizedBox(height: 8),
+              const Text(
+                'Leave empty to fall back to the compile-time default. '
+                'Changes take effect on the next API call.',
+                style: TextStyle(fontSize: 11),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () async {
+                await ApiUrlOverride.set(null);
+                ref.invalidate(apiClientProvider);
+                if (dialogCtx.mounted) Navigator.pop(dialogCtx);
+              },
+              child: const Text('Reset'),
+            ),
+            TextButton(
+              onPressed: () => Navigator.pop(dialogCtx),
+              child: const Text('Cancel'),
+            ),
+            ElevatedButton(
+              onPressed: () async {
+                await ApiUrlOverride.set(controller.text);
+                // Drop the cached Dio so the next request uses the
+                // new base URL immediately.
+                ref.invalidate(apiClientProvider);
+                if (dialogCtx.mounted) Navigator.pop(dialogCtx);
+              },
+              child: const Text('Save'),
+            ),
+          ],
+        );
+      },
+    );
+    controller.dispose();
   }
 }

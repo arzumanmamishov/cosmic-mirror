@@ -1,3 +1,5 @@
+import 'package:cosmic_mirror/config/api_url_override.dart';
+
 enum Environment { dev, staging, prod }
 
 class Env {
@@ -20,6 +22,11 @@ class Env {
   }
 
   static String get apiBaseUrl {
+    // A runtime override (set via Settings → Developer) beats the
+    // compile-time default. This keeps a stale binary usable when the
+    // dev machine's LAN IP changes — no rebuild required.
+    final override = ApiUrlOverride.current;
+    if (override != null && override.isNotEmpty) return override;
     switch (current) {
       case Environment.prod:
         return const String.fromEnvironment(
