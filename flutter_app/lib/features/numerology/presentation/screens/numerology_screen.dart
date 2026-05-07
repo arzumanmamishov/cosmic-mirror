@@ -204,6 +204,8 @@ class _CoreTab extends StatelessWidget {
     return ListView(
       padding: const EdgeInsets.fromLTRB(20, 12, 20, 40),
       children: [
+        _CalculatorEntry(),
+        const SizedBox(height: 12),
         NumberCard(
           title: l.numerologyCoreLifePath,
           number: profile.lifePath,
@@ -234,8 +236,6 @@ class _CoreTab extends StatelessWidget {
           number: profile.birthday,
           icon: Icons.cake_rounded,
         ),
-        const SizedBox(height: 12),
-        _CalculatorEntry(),
       ],
     );
   }
