@@ -13,3 +13,13 @@ final numerologyReadingProvider =
     FutureProvider.autoDispose<NumerologyReading>((ref) async {
   return ref.read(numerologyRepositoryProvider).getReading();
 });
+
+/// Standalone Name Numerology Calculator — keyed by the input name so
+/// each unique name is fetched + memoized once. Empty / whitespace-only
+/// names short-circuit to null so we don't spam the backend.
+final numerologyNameAnalysisProvider = FutureProvider.autoDispose
+    .family<NumerologyNameAnalysis?, String>((ref, name) async {
+  final trimmed = name.trim();
+  if (trimmed.isEmpty) return null;
+  return ref.read(numerologyRepositoryProvider).analyzeName(trimmed);
+});

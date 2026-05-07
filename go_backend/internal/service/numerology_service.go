@@ -84,6 +84,40 @@ func (s *NumerologyService) Compare(ctx context.Context, userID uuid.UUID, req d
 	}, nil
 }
 
+// AnalyzeName runs the standalone Name Numerology Calculator on any
+// arbitrary name (no auth scope, no birth profile). Returns the three
+// classical name-derived numbers plus the per-letter breakdown so the
+// UI can show how each total was built.
+func (s *NumerologyService) AnalyzeName(name string) (*domain.NumerologyNameAnalysis, error) {
+	trimmed := strings.TrimSpace(name)
+	if trimmed == "" {
+		return nil, errors.New("name is required")
+	}
+	expr := numerology.Expression(trimmed)
+	soul := numerology.SoulUrge(trimmed)
+	pers := numerology.Personality(trimmed)
+
+	letters := numerology.LettersOf(trimmed)
+	wire := make([]domain.NumerologyLetter, len(letters))
+	for i, l := range letters {
+		wire[i] = domain.NumerologyLetter{
+			Letter:  string(l.Letter),
+			Value:   l.Value,
+			IsVowel: l.IsVowel,
+		}
+	}
+
+	return &domain.NumerologyNameAnalysis{
+		Name:          trimmed,
+		Expression:    decorate(expr, "expression"),
+		SoulUrge:      decorate(soul, "soul_urge"),
+		Personality:   decorate(pers, "personality"),
+		HiddenPassion: numerology.HiddenPassion(trimmed),
+		KarmicLessons: numerology.KarmicLessons(trimmed),
+		Letters:       wire,
+	}, nil
+}
+
 // computeProfile is the pure-function bridge between the numerology package
 // and the domain types — converts internal Numbers to wire-shape with
 // canned descriptions baked in.

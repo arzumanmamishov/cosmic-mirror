@@ -115,3 +115,34 @@ func onlyVowels(r rune) bool { return vowels[r] }
 
 // onlyConsonants predicate — letters that are NOT vowels.
 func onlyConsonants(r rune) bool { return !vowels[r] }
+
+// LetterBreakdown is one entry in a name's letter-by-letter decomposition.
+// Used by the standalone Name Calculator UI to show users HOW the totals
+// were assembled (Expression / SoulUrge / Personality).
+type LetterBreakdown struct {
+	Letter  rune
+	Value   int
+	IsVowel bool
+}
+
+// LettersOf returns the per-letter decomposition of fullName, skipping
+// non-letters. Order is preserved so the UI can render the original
+// spacing/word breaks by re-walking the input string.
+func LettersOf(fullName string) []LetterBreakdown {
+	out := make([]LetterBreakdown, 0, len(fullName))
+	for _, r := range strings.ToUpper(fullName) {
+		if !unicode.IsLetter(r) {
+			continue
+		}
+		v, ok := letterValue[r]
+		if !ok {
+			continue
+		}
+		out = append(out, LetterBreakdown{
+			Letter:  r,
+			Value:   v,
+			IsVowel: vowels[r],
+		})
+	}
+	return out
+}

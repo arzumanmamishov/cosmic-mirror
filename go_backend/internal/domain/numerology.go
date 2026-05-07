@@ -76,3 +76,31 @@ type NumerologyCompatibility struct {
 	Summary         string `json:"summary"`
 	OtherProfile    NumerologyProfile `json:"other_profile"` // for display
 }
+
+// NumerologyNameRequest is the body of POST /numerology/name — a
+// standalone calculator that returns the three name-based numbers + a
+// per-letter breakdown for any name. Doesn't touch birth profile, so
+// users can analyze friends, fictional characters, business names, etc.
+type NumerologyNameRequest struct {
+	Name string `json:"name"`
+}
+
+// NumerologyLetter is one entry in the letter-by-letter breakdown the
+// calculator UI renders (so users can see HOW the totals were built).
+type NumerologyLetter struct {
+	Letter  string `json:"letter"`   // upper-case, single rune
+	Value   int    `json:"value"`    // 1..9
+	IsVowel bool   `json:"is_vowel"`
+}
+
+// NumerologyNameAnalysis is the response shape for the calculator —
+// the three classical name-derived numbers plus the per-letter trace.
+type NumerologyNameAnalysis struct {
+	Name          string             `json:"name"`
+	Expression    NumerologyNumber   `json:"expression"`
+	SoulUrge      NumerologyNumber   `json:"soul_urge"`
+	Personality   NumerologyNumber   `json:"personality"`
+	HiddenPassion int                `json:"hidden_passion"`
+	KarmicLessons []int              `json:"karmic_lessons"`
+	Letters       []NumerologyLetter `json:"letters"`
+}

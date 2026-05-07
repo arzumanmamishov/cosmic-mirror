@@ -1218,6 +1218,41 @@ class AppLocalizationsEn extends AppLocalizations {
   String get numerologyCompareWith => 'Compare with someone';
 
   @override
+  String get numerologyNameCalculatorTitle => 'Name Calculator';
+
+  @override
+  String get numerologyNameCalculatorBlurb =>
+      'Enter any full name to see its Expression, Soul Urge, and Personality numbers — plus the letter-by-letter breakdown.';
+
+  @override
+  String get numerologyNameInputHint => 'e.g. Norma Jeane Baker';
+
+  @override
+  String get numerologyNameCalculate => 'Calculate';
+
+  @override
+  String get numerologyNameOpenCalculator => 'Calculate any name';
+
+  @override
+  String get numerologyNameLetterBreakdown => 'Letter breakdown';
+
+  @override
+  String get numerologyNameVowels => 'vowels';
+
+  @override
+  String get numerologyNameConsonants => 'consonants';
+
+  @override
+  String get numerologyNameHiddenPassion => 'Hidden passion';
+
+  @override
+  String get numerologyNameKarmicLessons => 'Karmic lessons';
+
+  @override
+  String get numerologyNameKarmicLessonsNone =>
+      'None — every digit appears in this name.';
+
+  @override
   String get numerologyLifePathBadge => 'LIFE PATH';
 
   @override

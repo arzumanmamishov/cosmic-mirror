@@ -26,6 +26,7 @@ import '../features/community/presentation/screens/category_detail_screen.dart';
 import '../features/community/presentation/screens/community_profile_screen.dart';
 import '../features/human_design/presentation/screens/human_design_screen.dart';
 import '../features/numerology/presentation/screens/numerology_compat_screen.dart';
+import '../features/numerology/presentation/screens/numerology_name_calculator_screen.dart';
 import '../features/numerology/presentation/screens/numerology_screen.dart';
 import '../features/community/presentation/screens/create_space_screen.dart';
 import '../features/community/presentation/screens/edit_space_screen.dart';
@@ -181,6 +182,13 @@ final appRouterProvider = Provider<GoRouter>((ref) {
             pageBuilder: (context, state) => _slideTransition(
               state,
               const NumerologyCompatScreen(),
+            ),
+          ),
+          GoRoute(
+            path: 'name-calculator',
+            pageBuilder: (context, state) => _slideTransition(
+              state,
+              const NumerologyNameCalculatorScreen(),
             ),
           ),
         ],

@@ -180,6 +180,7 @@ func NewRouter(h *handler.Handlers, auth *middleware.Auth, rl *middleware.RateLi
 			// Numerology
 			r.Get("/numerology", h.Numerology.GetReading)
 			r.Post("/numerology/compatibility", h.Numerology.Compare)
+			r.Post("/numerology/name", h.Numerology.AnalyzeName)
 
 			// Human Design
 			r.Get("/human-design", h.HumanDesign.GetChart)

@@ -259,3 +259,76 @@ class NumerologyCompatibility extends Equatable {
   @override
   List<Object?> get props => [score];
 }
+
+/// One letter in a name analysis with its Pythagorean digit + vowel flag.
+/// Used by the Name Calculator UI to show how each total was built.
+class NumerologyLetter extends Equatable {
+  const NumerologyLetter({
+    required this.letter,
+    required this.value,
+    required this.isVowel,
+  });
+
+  factory NumerologyLetter.fromJson(Map<String, dynamic> json) {
+    return NumerologyLetter(
+      letter: json['letter'] as String? ?? '',
+      value: (json['value'] as num?)?.toInt() ?? 0,
+      isVowel: json['is_vowel'] as bool? ?? false,
+    );
+  }
+
+  final String letter;
+  final int value;
+  final bool isVowel;
+
+  @override
+  List<Object?> get props => [letter, value, isVowel];
+}
+
+/// The standalone Name Numerology Calculator response — the three
+/// classical name-derived numbers + the per-letter trace.
+class NumerologyNameAnalysis extends Equatable {
+  const NumerologyNameAnalysis({
+    required this.name,
+    required this.expression,
+    required this.soulUrge,
+    required this.personality,
+    required this.hiddenPassion,
+    required this.karmicLessons,
+    required this.letters,
+  });
+
+  factory NumerologyNameAnalysis.fromJson(Map<String, dynamic> json) {
+    final letterList = (json['letters'] as List<dynamic>?) ?? const [];
+    return NumerologyNameAnalysis(
+      name: json['name'] as String? ?? '',
+      expression: NumerologyNumber.fromJson(
+        (json['expression'] as Map<String, dynamic>?) ?? const {},
+      ),
+      soulUrge: NumerologyNumber.fromJson(
+        (json['soul_urge'] as Map<String, dynamic>?) ?? const {},
+      ),
+      personality: NumerologyNumber.fromJson(
+        (json['personality'] as Map<String, dynamic>?) ?? const {},
+      ),
+      hiddenPassion: (json['hidden_passion'] as num?)?.toInt() ?? 0,
+      karmicLessons: ((json['karmic_lessons'] as List<dynamic>?) ?? const [])
+          .map((e) => (e as num).toInt())
+          .toList(),
+      letters: letterList
+          .map((e) => NumerologyLetter.fromJson(e as Map<String, dynamic>))
+          .toList(),
+    );
+  }
+
+  final String name;
+  final NumerologyNumber expression;
+  final NumerologyNumber soulUrge;
+  final NumerologyNumber personality;
+  final int hiddenPassion;
+  final List<int> karmicLessons;
+  final List<NumerologyLetter> letters;
+
+  @override
+  List<Object?> get props => [name, expression, soulUrge, personality];
+}

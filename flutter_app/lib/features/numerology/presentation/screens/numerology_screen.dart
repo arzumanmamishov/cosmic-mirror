@@ -234,7 +234,58 @@ class _CoreTab extends StatelessWidget {
           number: profile.birthday,
           icon: Icons.cake_rounded,
         ),
+        const SizedBox(height: 12),
+        _CalculatorEntry(),
       ],
+    );
+  }
+}
+
+/// CTA card on the Core tab that opens the standalone Name Calculator —
+/// users can analyze any name (partner, friend, business, character)
+/// without touching their own profile.
+class _CalculatorEntry extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    final p = context.palette;
+    final l = AppLocalizations.of(context);
+    return InkWell(
+      onTap: () => context.push('/numerology/name-calculator'),
+      borderRadius: BorderRadius.circular(16),
+      child: Container(
+        padding: const EdgeInsets.all(14),
+        decoration: BoxDecoration(
+          color: p.surface,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: p.gold.withValues(alpha: 0.4)),
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 38,
+              height: 38,
+              alignment: Alignment.center,
+              decoration: BoxDecoration(
+                color: p.gold.withValues(alpha: 0.18),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Icon(Icons.calculate_rounded, color: p.gold, size: 18),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                l.numerologyNameOpenCalculator,
+                style: TextStyle(
+                  color: p.textPrimary,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ),
+            Icon(Icons.chevron_right_rounded, color: p.textTertiary, size: 20),
+          ],
+        ),
+      ),
     );
   }
 }

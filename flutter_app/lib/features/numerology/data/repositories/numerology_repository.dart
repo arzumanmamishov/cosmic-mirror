@@ -14,6 +14,17 @@ class NumerologyRepository {
     );
   }
 
+  /// Standalone Name Numerology Calculator — analyze any name without
+  /// touching the user's stored birth profile.
+  Future<NumerologyNameAnalysis> analyzeName(String name) async {
+    return _client.post<NumerologyNameAnalysis>(
+      ApiEndpoints.numerologyName,
+      data: {'name': name},
+      fromJson: (raw) =>
+          NumerologyNameAnalysis.fromJson(raw as Map<String, dynamic>),
+    );
+  }
+
   Future<NumerologyCompatibility> compareWith({
     required String fullName,
     required DateTime birthDate,

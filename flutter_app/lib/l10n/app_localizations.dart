@@ -2348,6 +2348,72 @@ abstract class AppLocalizations {
   /// **'Compare with someone'**
   String get numerologyCompareWith;
 
+  /// No description provided for @numerologyNameCalculatorTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Name Calculator'**
+  String get numerologyNameCalculatorTitle;
+
+  /// No description provided for @numerologyNameCalculatorBlurb.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter any full name to see its Expression, Soul Urge, and Personality numbers — plus the letter-by-letter breakdown.'**
+  String get numerologyNameCalculatorBlurb;
+
+  /// No description provided for @numerologyNameInputHint.
+  ///
+  /// In en, this message translates to:
+  /// **'e.g. Norma Jeane Baker'**
+  String get numerologyNameInputHint;
+
+  /// No description provided for @numerologyNameCalculate.
+  ///
+  /// In en, this message translates to:
+  /// **'Calculate'**
+  String get numerologyNameCalculate;
+
+  /// No description provided for @numerologyNameOpenCalculator.
+  ///
+  /// In en, this message translates to:
+  /// **'Calculate any name'**
+  String get numerologyNameOpenCalculator;
+
+  /// No description provided for @numerologyNameLetterBreakdown.
+  ///
+  /// In en, this message translates to:
+  /// **'Letter breakdown'**
+  String get numerologyNameLetterBreakdown;
+
+  /// No description provided for @numerologyNameVowels.
+  ///
+  /// In en, this message translates to:
+  /// **'vowels'**
+  String get numerologyNameVowels;
+
+  /// No description provided for @numerologyNameConsonants.
+  ///
+  /// In en, this message translates to:
+  /// **'consonants'**
+  String get numerologyNameConsonants;
+
+  /// No description provided for @numerologyNameHiddenPassion.
+  ///
+  /// In en, this message translates to:
+  /// **'Hidden passion'**
+  String get numerologyNameHiddenPassion;
+
+  /// No description provided for @numerologyNameKarmicLessons.
+  ///
+  /// In en, this message translates to:
+  /// **'Karmic lessons'**
+  String get numerologyNameKarmicLessons;
+
+  /// No description provided for @numerologyNameKarmicLessonsNone.
+  ///
+  /// In en, this message translates to:
+  /// **'None — every digit appears in this name.'**
+  String get numerologyNameKarmicLessonsNone;
+
   /// No description provided for @numerologyLifePathBadge.
   ///
   /// In en, this message translates to:

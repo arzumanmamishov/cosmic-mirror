@@ -1216,6 +1216,41 @@ class AppLocalizationsTr extends AppLocalizations {
   String get numerologyCompareWith => 'Biriyle karşılaştır';
 
   @override
+  String get numerologyNameCalculatorTitle => 'İsim Hesaplayıcı';
+
+  @override
+  String get numerologyNameCalculatorBlurb =>
+      'Herhangi bir tam ismi gir; İfade, Ruh Dürtüsü ve Kişilik sayıları ile harf harf dökümünü gör.';
+
+  @override
+  String get numerologyNameInputHint => 'ör. Mustafa Kemal Atatürk';
+
+  @override
+  String get numerologyNameCalculate => 'Hesapla';
+
+  @override
+  String get numerologyNameOpenCalculator => 'Herhangi bir ismi hesapla';
+
+  @override
+  String get numerologyNameLetterBreakdown => 'Harf dökümü';
+
+  @override
+  String get numerologyNameVowels => 'sesli harfler';
+
+  @override
+  String get numerologyNameConsonants => 'sessiz harfler';
+
+  @override
+  String get numerologyNameHiddenPassion => 'Gizli tutku';
+
+  @override
+  String get numerologyNameKarmicLessons => 'Karmik dersler';
+
+  @override
+  String get numerologyNameKarmicLessonsNone =>
+      'Yok — bu isimde her rakam bulunuyor.';
+
+  @override
   String get numerologyLifePathBadge => 'YAŞAM YOLU';
 
   @override

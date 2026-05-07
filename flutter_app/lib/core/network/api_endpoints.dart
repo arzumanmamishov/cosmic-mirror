@@ -106,6 +106,7 @@ class ApiEndpoints {
   static const String numerology = '$basePath/numerology';
   static const String numerologyCompatibility =
       '$basePath/numerology/compatibility';
+  static const String numerologyName = '$basePath/numerology/name';
 
   // Human Design
   static const String humanDesign = '$basePath/human-design';
