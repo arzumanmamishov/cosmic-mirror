@@ -68,6 +68,17 @@ COPY --from=builder /server                /app/server
 COPY --from=builder /app/migrations        /app/migrations
 COPY --from=builder /app/ephemeris         /app/ephemeris
 
+# Pre-create the uploads tree owned by appuser so the runtime mkdir
+# of /app/uploads/avatars succeeds. Docker copies these permissions
+# into a *fresh* named volume on first mount; existing volumes keep
+# whatever ownership they were created with (you may need to run
+#   docker compose down -v   OR
+#   docker run --rm --user root -v go_backend_uploads_data:/u alpine chown -R 1000:0 /u
+# once to fix a pre-existing root-owned volume.)
+RUN mkdir -p /app/uploads/avatars \
+    && chown -R appuser:root /app/uploads \
+    && chmod -R 775 /app/uploads
+
 ENV EPHEMERIS_PATH=/app/ephemeris
 
 USER appuser
