@@ -1,0 +1,61 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    color-scheme: dark;
+  }
+  html,
+  body {
+    background-color: #1a1f2e;
+    color: #e6eaf2;
+    -webkit-font-smoothing: antialiased;
+  }
+  ::selection {
+    background-color: rgba(212, 177, 106, 0.35);
+    color: #ffffff;
+  }
+  /* Subtle scrollbar that matches the cosmic theme */
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  ::-webkit-scrollbar-track {
+    background: #1a1f2e;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: #2a2f3e;
+    border-radius: 8px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: #3a4055;
+  }
+}
+
+@layer components {
+  /* Reusable gold-text gradient for headings + brand marks */
+  .text-gold-gradient {
+    background: linear-gradient(135deg, #ffe9b8 0%, #d4b16a 45%, #9f7637 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  /* Glassy card surface — used by feature blocks */
+  .glass {
+    background: linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.04) 0%,
+      rgba(255, 255, 255, 0.015) 100%
+    );
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+  }
+
+  /* Section padding helper for consistent vertical rhythm */
+  .section-y {
+    @apply py-24 md:py-32;
+  }
+}
