@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { SectionShell } from "./SectionShell";
 
 const conversation = [
@@ -41,9 +42,13 @@ export function AIAstrologer() {
         <div className="grid items-center gap-10 md:grid-cols-2">
           <div className="rounded-3xl border border-white/10 bg-white/5 p-6 shadow-card">
             <div className="flex items-center gap-3 border-b border-white/10 pb-4">
-              <div className="grid h-9 w-9 place-items-center rounded-full bg-gold-gradient text-[#1a1f2e]">
-                <span className="font-black">L</span>
-              </div>
+              <Image
+                src="/lively_logo.png"
+                alt="Lively"
+                width={36}
+                height={36}
+                className="h-9 w-9 drop-shadow-[0_0_10px_rgba(212,177,106,0.3)]"
+              />
               <div>
                 <div className="font-display text-sm font-bold">
                   Astrologer

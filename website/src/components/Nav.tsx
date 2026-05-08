@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
@@ -30,10 +31,15 @@ export function Nav() {
       }`}
     >
       <div className="mx-auto flex max-w-7xl items-center justify-between px-5 py-4 md:px-8">
-        <Link href="/" className="group flex items-center gap-2">
-          <span className="grid h-9 w-9 place-items-center rounded-full bg-gold-gradient text-[#1a1f2e] shadow-gold-glow">
-            <span className="text-lg font-black">L</span>
-          </span>
+        <Link href="/" className="group flex items-center gap-2.5">
+          <Image
+            src="/lively_logo.png"
+            alt="Lively"
+            width={36}
+            height={36}
+            priority
+            className="h-9 w-9 drop-shadow-[0_0_12px_rgba(212,177,106,0.35)]"
+          />
           <span className="font-display text-xl font-extrabold tracking-tight">
             Lively
           </span>

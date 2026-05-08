@@ -1,6 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
+import Image from "next/image";
 import { PhoneMock } from "./PhoneMock";
 
 export function Hero() {
@@ -14,6 +15,21 @@ export function Hero() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, ease: "easeOut" }}
         >
+          <motion.div
+            initial={{ opacity: 0, scale: 0.85 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.9, delay: 0.05, ease: "easeOut" }}
+            className="mb-6"
+          >
+            <Image
+              src="/lively_logo.png"
+              alt="Lively"
+              width={88}
+              height={88}
+              priority
+              className="h-20 w-20 drop-shadow-[0_0_30px_rgba(212,177,106,0.5)] animate-floaty"
+            />
+          </motion.div>
           <span className="inline-flex items-center gap-2 rounded-full border border-gold/30 bg-gold/10 px-3 py-1 text-xs font-semibold tracking-wide text-gold">
             <span className="h-1.5 w-1.5 rounded-full bg-gold animate-twinkle" />
             Astrology · Numerology · Human Design
