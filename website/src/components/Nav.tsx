@@ -31,18 +31,15 @@ export function Nav() {
       }`}
     >
       <div className="mx-auto flex max-w-7xl items-center justify-between px-5 py-4 md:px-8">
-        <Link href="/" className="group flex items-center gap-2.5">
+        <Link href="/" className="group flex items-center" aria-label="Lively">
           <Image
             src="/lively_logo.png"
             alt="Lively"
-            width={36}
-            height={36}
+            width={56}
+            height={56}
             priority
-            className="h-9 w-9 drop-shadow-[0_0_12px_rgba(212,177,106,0.35)]"
+            className="h-14 w-14 drop-shadow-[0_0_16px_rgba(212,177,106,0.4)]"
           />
-          <span className="font-display text-xl font-extrabold tracking-tight">
-            Lively
-          </span>
         </Link>
         <nav className="hidden items-center gap-7 md:flex">
           {links.map((l) => (

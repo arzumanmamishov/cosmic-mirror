@@ -37,17 +37,14 @@ export function Footer() {
     <footer className="relative border-t border-white/5 bg-black/30 pt-16">
       <div className="mx-auto grid max-w-7xl gap-10 px-5 pb-10 md:grid-cols-5 md:px-8">
         <div className="md:col-span-2">
-          <div className="flex items-center gap-2.5">
+          <div className="flex items-center">
             <Image
               src="/lively_logo.png"
               alt="Lively"
-              width={36}
-              height={36}
-              className="h-9 w-9 drop-shadow-[0_0_12px_rgba(212,177,106,0.35)]"
+              width={64}
+              height={64}
+              className="h-16 w-16 drop-shadow-[0_0_18px_rgba(212,177,106,0.4)]"
             />
-            <span className="font-display text-xl font-extrabold tracking-tight">
-              Lively
-            </span>
           </div>
           <p className="mt-4 max-w-sm text-sm text-cosmic-muted">
             A complete spiritual toolkit — Western, Vedic, numerology, Human

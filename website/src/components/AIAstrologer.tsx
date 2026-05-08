@@ -45,9 +45,9 @@ export function AIAstrologer() {
               <Image
                 src="/lively_logo.png"
                 alt="Lively"
-                width={36}
-                height={36}
-                className="h-9 w-9 drop-shadow-[0_0_10px_rgba(212,177,106,0.3)]"
+                width={48}
+                height={48}
+                className="h-12 w-12 drop-shadow-[0_0_12px_rgba(212,177,106,0.35)]"
               />
               <div>
                 <div className="font-display text-sm font-bold">

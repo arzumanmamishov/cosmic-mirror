@@ -24,10 +24,10 @@ export function Hero() {
             <Image
               src="/lively_logo.png"
               alt="Lively"
-              width={88}
-              height={88}
+              width={128}
+              height={128}
               priority
-              className="h-20 w-20 drop-shadow-[0_0_30px_rgba(212,177,106,0.5)] animate-floaty"
+              className="h-28 w-28 drop-shadow-[0_0_40px_rgba(212,177,106,0.55)] animate-floaty md:h-32 md:w-32"
             />
           </motion.div>
           <span className="inline-flex items-center gap-2 rounded-full border border-gold/30 bg-gold/10 px-3 py-1 text-xs font-semibold tracking-wide text-gold">
