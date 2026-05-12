@@ -944,6 +944,96 @@ abstract class AppLocalizations {
   /// **'Upgrade to Premium for unlimited chat with your astrologer.'**
   String get aiChatPaywallSubtitle;
 
+  /// No description provided for @aiChatStatusOnline.
+  ///
+  /// In en, this message translates to:
+  /// **'Powered by your chart'**
+  String get aiChatStatusOnline;
+
+  /// No description provided for @aiChatEmptyHeadline.
+  ///
+  /// In en, this message translates to:
+  /// **'Your personal astrologer'**
+  String get aiChatEmptyHeadline;
+
+  /// No description provided for @aiChatEmptySubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Ask anything about your chart, transits, dreams, or the day ahead.'**
+  String get aiChatEmptySubtitle;
+
+  /// No description provided for @aiChatSuggestedQuestions.
+  ///
+  /// In en, this message translates to:
+  /// **'Try asking…'**
+  String get aiChatSuggestedQuestions;
+
+  /// No description provided for @aiChatPrompt1.
+  ///
+  /// In en, this message translates to:
+  /// **'What should I focus on today?'**
+  String get aiChatPrompt1;
+
+  /// No description provided for @aiChatPrompt2.
+  ///
+  /// In en, this message translates to:
+  /// **'Tell me about my Venus placement.'**
+  String get aiChatPrompt2;
+
+  /// No description provided for @aiChatPrompt3.
+  ///
+  /// In en, this message translates to:
+  /// **'How will this week unfold for me?'**
+  String get aiChatPrompt3;
+
+  /// No description provided for @aiChatPrompt4.
+  ///
+  /// In en, this message translates to:
+  /// **'What are my biggest strengths?'**
+  String get aiChatPrompt4;
+
+  /// No description provided for @aiChatPrompt5.
+  ///
+  /// In en, this message translates to:
+  /// **'How can I improve my relationships?'**
+  String get aiChatPrompt5;
+
+  /// No description provided for @aiChatPrompt6.
+  ///
+  /// In en, this message translates to:
+  /// **'What career paths suit my chart?'**
+  String get aiChatPrompt6;
+
+  /// No description provided for @aiChatYou.
+  ///
+  /// In en, this message translates to:
+  /// **'You'**
+  String get aiChatYou;
+
+  /// No description provided for @aiChatAstrologer.
+  ///
+  /// In en, this message translates to:
+  /// **'Astrologer'**
+  String get aiChatAstrologer;
+
+  /// No description provided for @aiChatThinking.
+  ///
+  /// In en, this message translates to:
+  /// **'Thinking…'**
+  String get aiChatThinking;
+
+  /// No description provided for @aiChatRename.
+  ///
+  /// In en, this message translates to:
+  /// **'Rename conversation'**
+  String get aiChatRename;
+
+  /// No description provided for @aiChatDelete.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete conversation'**
+  String get aiChatDelete;
+
   /// No description provided for @avatarChooseFromGallery.
   ///
   /// In en, this message translates to:

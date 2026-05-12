@@ -1,9 +1,15 @@
+import 'package:cosmic_mirror/config/theme/app_palette.dart';
+import 'package:cosmic_mirror/features/ai_chat/domain/entities/chat_entities.dart';
 import 'package:flutter/material.dart';
 
-import '../../../../config/theme/colors.dart';
-import '../../../../config/theme/typography.dart';
-import '../../domain/entities/chat_entities.dart';
-
+/// Modern chat bubble.
+///
+///   - User messages: gold gradient pill aligned to the right.
+///   - AI messages: glass card on the left with the Lively logo as the
+///     avatar, soft rounded corners, no harsh borders.
+///
+/// Reads colors from the palette so it themes correctly in both the
+/// dark cosmic and iOS-style light modes.
 class MessageBubble extends StatelessWidget {
   const MessageBubble({required this.message, super.key});
 
@@ -14,60 +20,128 @@ class MessageBubble extends StatelessWidget {
     final isUser = message.role == MessageRole.user;
 
     return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.only(bottom: 14),
       child: Row(
         mainAxisAlignment:
             isUser ? MainAxisAlignment.end : MainAxisAlignment.start,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           if (!isUser) ...[
-            Container(
-              width: 32,
-              height: 32,
-              decoration: const BoxDecoration(
-                gradient: CosmicColors.primaryGradient,
-                shape: BoxShape.circle,
-              ),
-              child: const Icon(
-                Icons.auto_awesome,
-                size: 16,
-                color: Colors.white,
-              ),
-            ),
-            const SizedBox(width: 8),
-          ],
+            const _Avatar(),
+            const SizedBox(width: 10),
+          ] else
+            const SizedBox(width: 48),
           Flexible(
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              decoration: BoxDecoration(
-                color: isUser
-                    ? CosmicColors.primary.withOpacity(0.2)
-                    : CosmicColors.surfaceLight,
-                borderRadius: BorderRadius.only(
-                  topLeft: const Radius.circular(16),
-                  topRight: const Radius.circular(16),
-                  bottomLeft: Radius.circular(isUser ? 16 : 4),
-                  bottomRight: Radius.circular(isUser ? 4 : 16),
-                ),
-                border: Border.all(
-                  color: isUser
-                      ? CosmicColors.primary.withOpacity(0.3)
-                      : CosmicColors.glassBorder,
-                ),
-              ),
-              child: Text(
-                message.content,
-                style: CosmicTypography.bodyMedium,
-              ),
-            ),
+            child: _Bubble(content: message.content, isUser: isUser),
           ),
-          if (isUser) const SizedBox(width: 40),
+          if (isUser) const SizedBox(width: 4),
         ],
       ),
     );
   }
 }
 
+class _Avatar extends StatelessWidget {
+  const _Avatar();
+
+  @override
+  Widget build(BuildContext context) {
+    final p = context.palette;
+    return Container(
+      width: 36,
+      height: 36,
+      padding: const EdgeInsets.all(1.5),
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        // Subtle gold ring so the avatar reads as the brand mark,
+        // not a generic profile circle.
+        border: Border.all(color: p.gold.withValues(alpha: 0.7), width: 1.2),
+        boxShadow: [
+          BoxShadow(
+            color: p.gold.withValues(alpha: 0.25),
+            blurRadius: 10,
+          ),
+        ],
+      ),
+      child: ClipOval(
+        child: Image.asset(
+          'assets/images/lively_logo.png',
+          fit: BoxFit.cover,
+        ),
+      ),
+    );
+  }
+}
+
+class _Bubble extends StatelessWidget {
+  const _Bubble({required this.content, required this.isUser});
+  final String content;
+  final bool isUser;
+
+  @override
+  Widget build(BuildContext context) {
+    final p = context.palette;
+    final radius = BorderRadius.only(
+      topLeft: const Radius.circular(22),
+      topRight: const Radius.circular(22),
+      bottomLeft: Radius.circular(isUser ? 22 : 6),
+      bottomRight: Radius.circular(isUser ? 6 : 22),
+    );
+
+    if (isUser) {
+      return Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 11),
+        decoration: BoxDecoration(
+          // Brand gold gradient — replaces the previous muted
+          // primary-tinted box for a way more polished user message.
+          gradient: const LinearGradient(
+            colors: [Color(0xFFE9D49A), Color(0xFFD4B16A), Color(0xFF9F7637)],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          borderRadius: radius,
+          boxShadow: [
+            BoxShadow(
+              color: p.gold.withValues(alpha: 0.25),
+              blurRadius: 14,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Text(
+          content,
+          style: const TextStyle(
+            color: Color(0xFF1A1F2E),
+            fontSize: 14.5,
+            fontWeight: FontWeight.w600,
+            height: 1.45,
+          ),
+        ),
+      );
+    }
+
+    // AI message — glass card.
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      decoration: BoxDecoration(
+        color: p.surface,
+        borderRadius: radius,
+        border: Border.all(color: p.glassBorder),
+      ),
+      child: Text(
+        content,
+        style: TextStyle(
+          color: p.textPrimary,
+          fontSize: 14.5,
+          height: 1.5,
+        ),
+      ),
+    );
+  }
+}
+
+/// Three-dot typing indicator with the same avatar + bubble shell as
+/// an AI message. Reads from the palette so it themes correctly.
 class TypingIndicator extends StatefulWidget {
   const TypingIndicator({super.key});
 
@@ -76,7 +150,7 @@ class TypingIndicator extends StatefulWidget {
 }
 
 class _TypingIndicatorState extends State<TypingIndicator>
-    with TickerProviderStateMixin {
+    with SingleTickerProviderStateMixin {
   late final AnimationController _controller;
 
   @override
@@ -96,35 +170,25 @@ class _TypingIndicatorState extends State<TypingIndicator>
 
   @override
   Widget build(BuildContext context) {
+    final p = context.palette;
     return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.only(bottom: 14),
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          const _Avatar(),
+          const SizedBox(width: 10),
           Container(
-            width: 32,
-            height: 32,
-            decoration: const BoxDecoration(
-              gradient: CosmicColors.primaryGradient,
-              shape: BoxShape.circle,
-            ),
-            child: const Icon(
-              Icons.auto_awesome,
-              size: 16,
-              color: Colors.white,
-            ),
-          ),
-          const SizedBox(width: 8),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
             decoration: BoxDecoration(
-              color: CosmicColors.surfaceLight,
+              color: p.surface,
               borderRadius: const BorderRadius.only(
-                topLeft: Radius.circular(16),
-                topRight: Radius.circular(16),
-                bottomRight: Radius.circular(16),
-                bottomLeft: Radius.circular(4),
+                topLeft: Radius.circular(22),
+                topRight: Radius.circular(22),
+                bottomRight: Radius.circular(22),
+                bottomLeft: Radius.circular(6),
               ),
-              border: Border.all(color: CosmicColors.glassBorder),
+              border: Border.all(color: p.glassBorder),
             ),
             child: AnimatedBuilder(
               animation: _controller,
@@ -132,18 +196,20 @@ class _TypingIndicatorState extends State<TypingIndicator>
                 return Row(
                   mainAxisSize: MainAxisSize.min,
                   children: List.generate(3, (i) {
-                    final delay = i * 0.2;
+                    final delay = i * 0.18;
                     final progress =
                         ((_controller.value - delay) % 1.0).clamp(0.0, 1.0);
-                    final opacity = 0.3 + 0.7 * (1 - (progress * 2 - 1).abs());
-                    return Container(
-                      width: 8,
-                      height: 8,
-                      margin: const EdgeInsets.symmetric(horizontal: 2),
-                      decoration: BoxDecoration(
-                        color: CosmicColors.textSecondary
-                            .withOpacity(opacity),
-                        shape: BoxShape.circle,
+                    final t = 1 - (progress * 2 - 1).abs();
+                    final opacity = 0.25 + 0.75 * t;
+                    return Padding(
+                      padding: EdgeInsets.only(left: i == 0 ? 0 : 5),
+                      child: Container(
+                        width: 7,
+                        height: 7,
+                        decoration: BoxDecoration(
+                          color: p.gold.withValues(alpha: opacity),
+                          shape: BoxShape.circle,
+                        ),
                       ),
                     );
                   }),

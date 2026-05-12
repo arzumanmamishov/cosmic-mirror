@@ -456,6 +456,52 @@ class AppLocalizationsTr extends AppLocalizations {
       'Astroloğunla sınırsız sohbet için Premium\'a yükselt.';
 
   @override
+  String get aiChatStatusOnline => 'Haritandan besleniyor';
+
+  @override
+  String get aiChatEmptyHeadline => 'Kişisel astroloğun';
+
+  @override
+  String get aiChatEmptySubtitle =>
+      'Haritan, transitler, rüyaların veya önündeki gün hakkında istediğini sor.';
+
+  @override
+  String get aiChatSuggestedQuestions => 'Şunları sorabilirsin…';
+
+  @override
+  String get aiChatPrompt1 => 'Bugün neye odaklanmalıyım?';
+
+  @override
+  String get aiChatPrompt2 => 'Venüs konumum hakkında ne söylersin?';
+
+  @override
+  String get aiChatPrompt3 => 'Bu hafta nasıl geçecek?';
+
+  @override
+  String get aiChatPrompt4 => 'En güçlü yanlarım neler?';
+
+  @override
+  String get aiChatPrompt5 => 'İlişkilerimi nasıl iyileştirebilirim?';
+
+  @override
+  String get aiChatPrompt6 => 'Haritama hangi kariyer yolları uygun?';
+
+  @override
+  String get aiChatYou => 'Sen';
+
+  @override
+  String get aiChatAstrologer => 'Astrolog';
+
+  @override
+  String get aiChatThinking => 'Düşünüyor…';
+
+  @override
+  String get aiChatRename => 'Sohbeti yeniden adlandır';
+
+  @override
+  String get aiChatDelete => 'Sohbeti sil';
+
+  @override
   String get avatarChooseFromGallery => 'Galeriden seç';
 
   @override

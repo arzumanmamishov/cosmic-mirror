@@ -455,6 +455,52 @@ class AppLocalizationsEn extends AppLocalizations {
       'Upgrade to Premium for unlimited chat with your astrologer.';
 
   @override
+  String get aiChatStatusOnline => 'Powered by your chart';
+
+  @override
+  String get aiChatEmptyHeadline => 'Your personal astrologer';
+
+  @override
+  String get aiChatEmptySubtitle =>
+      'Ask anything about your chart, transits, dreams, or the day ahead.';
+
+  @override
+  String get aiChatSuggestedQuestions => 'Try asking…';
+
+  @override
+  String get aiChatPrompt1 => 'What should I focus on today?';
+
+  @override
+  String get aiChatPrompt2 => 'Tell me about my Venus placement.';
+
+  @override
+  String get aiChatPrompt3 => 'How will this week unfold for me?';
+
+  @override
+  String get aiChatPrompt4 => 'What are my biggest strengths?';
+
+  @override
+  String get aiChatPrompt5 => 'How can I improve my relationships?';
+
+  @override
+  String get aiChatPrompt6 => 'What career paths suit my chart?';
+
+  @override
+  String get aiChatYou => 'You';
+
+  @override
+  String get aiChatAstrologer => 'Astrologer';
+
+  @override
+  String get aiChatThinking => 'Thinking…';
+
+  @override
+  String get aiChatRename => 'Rename conversation';
+
+  @override
+  String get aiChatDelete => 'Delete conversation';
+
+  @override
   String get avatarChooseFromGallery => 'Choose from gallery';
 
   @override
