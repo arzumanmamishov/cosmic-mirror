@@ -69,7 +69,7 @@ class SpaceDetailScreen extends ConsumerWidget {
           spaceAsync.when(
             loading: () => const ShimmerList(itemCount: 4),
             error: (e, _) => ErrorView(
-              message: e.toString(),
+              error: e,
               onRetry: () => ref.invalidate(spaceDetailProvider(spaceId)),
             ),
             data: (s) => RefreshIndicator(
@@ -95,7 +95,7 @@ class SpaceDetailScreen extends ConsumerWidget {
                   postsAsync.when(
                     loading: () => const ShimmerList(itemCount: 3),
                     error: (e, _) => ErrorView(
-                      message: e.toString(),
+                      error: e,
                       onRetry: () => ref.invalidate(spacePostsProvider(spaceId)),
                     ),
                     data: (posts) => posts.isEmpty

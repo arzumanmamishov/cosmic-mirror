@@ -50,7 +50,7 @@ class VedicChartScreen extends ConsumerWidget {
           chartAsync.when(
             loading: () => const ShimmerList(itemCount: 4),
             error: (e, _) => ErrorView(
-              message: e.toString(),
+              error: e,
               onRetry: () => ref.invalidate(activeChartProvider),
             ),
             data: (chart) => _Body(chart: chart),
@@ -715,7 +715,7 @@ class _DashaTab extends ConsumerWidget {
     return dashaAsync.when(
       loading: () => const ShimmerList(itemCount: 5),
       error: (e, _) => ErrorView(
-        message: e.toString(),
+        error: e,
         onRetry: () => ref.invalidate(vedicDashaProvider),
       ),
       data: (tree) => DashaTimeline(tree: tree),
@@ -733,7 +733,7 @@ class _YogasTab extends ConsumerWidget {
     return yogasAsync.when(
       loading: () => const ShimmerList(itemCount: 4),
       error: (e, _) => ErrorView(
-        message: e.toString(),
+        error: e,
         onRetry: () => ref.invalidate(vedicYogasProvider),
       ),
       data: (yogas) {
@@ -768,7 +768,7 @@ class _ShadbalaTab extends ConsumerWidget {
     return shadbalaAsync.when(
       loading: () => const ShimmerList(),
       error: (e, _) => ErrorView(
-        message: e.toString(),
+        error: e,
         onRetry: () => ref.invalidate(vedicShadbalaProvider),
       ),
       data: (map) {
@@ -802,7 +802,7 @@ class _AshtakavargaTab extends ConsumerWidget {
     return avAsync.when(
       loading: () => const ShimmerList(itemCount: 4),
       error: (e, _) => ErrorView(
-        message: e.toString(),
+        error: e,
         onRetry: () => ref.invalidate(vedicAshtakavargaProvider),
       ),
       data: (av) => AshtakavargaGrid(av: av),

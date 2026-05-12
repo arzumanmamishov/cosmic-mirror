@@ -45,7 +45,7 @@ class Env {
         // (e.g. http://10.0.2.2:8080 for the Android emulator).
         return const String.fromEnvironment(
           'API_BASE_URL',
-          defaultValue: 'http://192.168.0.75:8080',
+          defaultValue: 'http://192.168.1.44:8080',
         );
     }
   }

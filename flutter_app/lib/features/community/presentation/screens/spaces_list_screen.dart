@@ -125,7 +125,7 @@ class SpacesListScreen extends ConsumerWidget {
           ),
           error: (e, _) => SliverToBoxAdapter(
             child: ErrorView(
-              message: e.toString(),
+              error: e,
               onRetry: () => ref.invalidate(spacesProvider),
             ),
           ),

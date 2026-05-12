@@ -36,7 +36,7 @@ class MembersScreen extends ConsumerWidget {
           membersAsync.when(
             loading: () => const ShimmerList(itemCount: 5),
             error: (e, _) => ErrorView(
-              message: e.toString(),
+              error: e,
               onRetry: () => ref.invalidate(spaceMembersProvider(spaceId)),
             ),
             data: (members) => ListView.separated(

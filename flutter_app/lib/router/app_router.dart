@@ -40,6 +40,7 @@ import '../features/timeline/presentation/screens/timeline_screen.dart';
 import '../features/vedic_chart/presentation/screens/vedic_chart_screen.dart';
 import '../features/yearly_forecast/presentation/screens/yearly_forecast_screen.dart';
 import '../shared/providers/user_provider.dart';
+import '../shared/widgets/error_page.dart';
 
 /// Pulses GoRouter's refreshListenable on Firebase auth changes AND
 /// any time our own currentUserProvider state changes — without
@@ -66,6 +67,10 @@ final appRouterProvider = Provider<GoRouter>((ref) {
     initialLocation: '/',
     debugLogDiagnostics: true,
     refreshListenable: _routerRefresh,
+    // Fallback for unknown routes + any router-level error (e.g. a
+    // GoException thrown by a misconfigured deep link). Shows the
+    // friendly cosmic ErrorPage with a "Go home" button.
+    errorBuilder: (context, state) => ErrorPage(error: state.error),
     redirect: (context, state) {
       final userState = ref.read(currentUserProvider);
       final isAuthenticated =

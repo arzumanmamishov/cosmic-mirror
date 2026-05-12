@@ -1253,6 +1253,71 @@ class AppLocalizationsEn extends AppLocalizations {
       'None — every digit appears in this name.';
 
   @override
+  String get errOfflineTitle => 'You\'re offline';
+
+  @override
+  String get errOfflineBody =>
+      'Check your connection and try again. Some screens work without a signal, but charts need the sky.';
+
+  @override
+  String get errAuthTitle => 'Session expired';
+
+  @override
+  String get errAuthBody => 'Sign in again to continue. Your data is safe.';
+
+  @override
+  String get errRateLimitTitle => 'Slow down a sec';
+
+  @override
+  String get errRateLimitBody =>
+      'You\'ve hit a daily limit. Try again later or upgrade to remove the cap.';
+
+  @override
+  String get errChatLimitBody =>
+      'You\'ve used today\'s free messages with the astrologer. Upgrade to Premium for unlimited chat, or come back tomorrow.';
+
+  @override
+  String get errNotFoundTitle => 'Not found';
+
+  @override
+  String get errNotFoundBody =>
+      'We couldn\'t find what you were looking for. It might have moved or been removed.';
+
+  @override
+  String get errServerTitle => 'Something\'s off on our side';
+
+  @override
+  String get errServerBody =>
+      'Our server is having a moment. We\'re already looking — please try again in a bit.';
+
+  @override
+  String get errCacheBody =>
+      'We couldn\'t read the local copy. Try again — we\'ll fetch a fresh version.';
+
+  @override
+  String get errGenericTitle => 'Something went wrong';
+
+  @override
+  String get errGenericBody =>
+      'We hit an unexpected error. Tap retry, or restart the app if it keeps happening.';
+
+  @override
+  String get errRetry => 'Try again';
+
+  @override
+  String get errGoHome => 'Go home';
+
+  @override
+  String get errReportProblem => 'Report problem';
+
+  @override
+  String get errCrashTitle => 'The cosmos hiccuped';
+
+  @override
+  String get errCrashBody =>
+      'Something unexpected happened. Restart the app — if it keeps happening, let us know.';
+
+  @override
   String get numerologyLifePathBadge => 'LIFE PATH';
 
   @override

@@ -2414,6 +2414,120 @@ abstract class AppLocalizations {
   /// **'None — every digit appears in this name.'**
   String get numerologyNameKarmicLessonsNone;
 
+  /// No description provided for @errOfflineTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'You\'re offline'**
+  String get errOfflineTitle;
+
+  /// No description provided for @errOfflineBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Check your connection and try again. Some screens work without a signal, but charts need the sky.'**
+  String get errOfflineBody;
+
+  /// No description provided for @errAuthTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Session expired'**
+  String get errAuthTitle;
+
+  /// No description provided for @errAuthBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in again to continue. Your data is safe.'**
+  String get errAuthBody;
+
+  /// No description provided for @errRateLimitTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Slow down a sec'**
+  String get errRateLimitTitle;
+
+  /// No description provided for @errRateLimitBody.
+  ///
+  /// In en, this message translates to:
+  /// **'You\'ve hit a daily limit. Try again later or upgrade to remove the cap.'**
+  String get errRateLimitBody;
+
+  /// No description provided for @errChatLimitBody.
+  ///
+  /// In en, this message translates to:
+  /// **'You\'ve used today\'s free messages with the astrologer. Upgrade to Premium for unlimited chat, or come back tomorrow.'**
+  String get errChatLimitBody;
+
+  /// No description provided for @errNotFoundTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Not found'**
+  String get errNotFoundTitle;
+
+  /// No description provided for @errNotFoundBody.
+  ///
+  /// In en, this message translates to:
+  /// **'We couldn\'t find what you were looking for. It might have moved or been removed.'**
+  String get errNotFoundBody;
+
+  /// No description provided for @errServerTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Something\'s off on our side'**
+  String get errServerTitle;
+
+  /// No description provided for @errServerBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Our server is having a moment. We\'re already looking — please try again in a bit.'**
+  String get errServerBody;
+
+  /// No description provided for @errCacheBody.
+  ///
+  /// In en, this message translates to:
+  /// **'We couldn\'t read the local copy. Try again — we\'ll fetch a fresh version.'**
+  String get errCacheBody;
+
+  /// No description provided for @errGenericTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Something went wrong'**
+  String get errGenericTitle;
+
+  /// No description provided for @errGenericBody.
+  ///
+  /// In en, this message translates to:
+  /// **'We hit an unexpected error. Tap retry, or restart the app if it keeps happening.'**
+  String get errGenericBody;
+
+  /// No description provided for @errRetry.
+  ///
+  /// In en, this message translates to:
+  /// **'Try again'**
+  String get errRetry;
+
+  /// No description provided for @errGoHome.
+  ///
+  /// In en, this message translates to:
+  /// **'Go home'**
+  String get errGoHome;
+
+  /// No description provided for @errReportProblem.
+  ///
+  /// In en, this message translates to:
+  /// **'Report problem'**
+  String get errReportProblem;
+
+  /// No description provided for @errCrashTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'The cosmos hiccuped'**
+  String get errCrashTitle;
+
+  /// No description provided for @errCrashBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Something unexpected happened. Restart the app — if it keeps happening, let us know.'**
+  String get errCrashBody;
+
   /// No description provided for @numerologyLifePathBadge.
   ///
   /// In en, this message translates to:

@@ -4,6 +4,7 @@ import 'package:cosmic_mirror/app.dart';
 import 'package:cosmic_mirror/config/api_url_override.dart';
 import 'package:cosmic_mirror/config/env.dart';
 import 'package:cosmic_mirror/firebase_options.dart';
+import 'package:cosmic_mirror/shared/widgets/error_page.dart';
 import 'package:cosmic_mirror/shared/providers/user_provider.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -71,6 +72,11 @@ Future<void> main() async {
         FlutterError.presentError(details);
         // TODO: Send to crash reporting service (e.g. Crashlytics)
       };
+
+      // Replace Flutter's red error box with our cosmic-themed error
+      // card so widget-build crashes look graceful in the user's app
+      // rather than screaming "RenderBox was not laid out".
+      ErrorWidget.builder = cosmicErrorWidgetBuilder;
 
       final container = ProviderContainer();
 

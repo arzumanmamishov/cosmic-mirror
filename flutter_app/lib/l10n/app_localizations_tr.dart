@@ -1251,6 +1251,72 @@ class AppLocalizationsTr extends AppLocalizations {
       'Yok — bu isimde her rakam bulunuyor.';
 
   @override
+  String get errOfflineTitle => 'Bağlantın yok';
+
+  @override
+  String get errOfflineBody =>
+      'Bağlantını kontrol edip tekrar dene. Bazı ekranlar bağlantısız çalışır ama haritalar için gökyüzü gerek.';
+
+  @override
+  String get errAuthTitle => 'Oturum süresi doldu';
+
+  @override
+  String get errAuthBody =>
+      'Devam etmek için tekrar giriş yap. Verilerin güvende.';
+
+  @override
+  String get errRateLimitTitle => 'Biraz yavaşla';
+
+  @override
+  String get errRateLimitBody =>
+      'Günlük limitine ulaştın. Sonra tekrar dene ya da limiti kaldırmak için yükselt.';
+
+  @override
+  String get errChatLimitBody =>
+      'Bugünkü ücretsiz astrolog mesajlarını kullandın. Sınırsız için Premium\'a yükselt veya yarın tekrar gel.';
+
+  @override
+  String get errNotFoundTitle => 'Bulunamadı';
+
+  @override
+  String get errNotFoundBody =>
+      'Aradığını bulamadık. Taşınmış veya kaldırılmış olabilir.';
+
+  @override
+  String get errServerTitle => 'Bizim tarafımızda bir sorun var';
+
+  @override
+  String get errServerBody =>
+      'Sunucumuz biraz zorlanıyor. Zaten bakıyoruz — lütfen birazdan tekrar dene.';
+
+  @override
+  String get errCacheBody =>
+      'Yerel kopya okunamadı. Tekrar dene — taze veriyi getireceğiz.';
+
+  @override
+  String get errGenericTitle => 'Bir şeyler ters gitti';
+
+  @override
+  String get errGenericBody =>
+      'Beklenmeyen bir hatayla karşılaştık. Tekrar dene veya devam ederse uygulamayı yeniden başlat.';
+
+  @override
+  String get errRetry => 'Tekrar dene';
+
+  @override
+  String get errGoHome => 'Ana sayfaya dön';
+
+  @override
+  String get errReportProblem => 'Sorunu bildir';
+
+  @override
+  String get errCrashTitle => 'Kozmos hıçkırdı';
+
+  @override
+  String get errCrashBody =>
+      'Beklenmeyen bir şey oldu. Uygulamayı yeniden başlat — devam ederse bize haber ver.';
+
+  @override
   String get numerologyLifePathBadge => 'YAŞAM YOLU';
 
   @override

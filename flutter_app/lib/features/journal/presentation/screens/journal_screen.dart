@@ -58,7 +58,7 @@ class JournalScreen extends ConsumerWidget {
           entriesAsync.when(
             loading: () => const ShimmerList(),
             error: (e, _) => ErrorView(
-              message: e.toString(),
+              error: e,
               onRetry: () => ref.invalidate(journalEntriesProvider),
             ),
             data: (entries) {

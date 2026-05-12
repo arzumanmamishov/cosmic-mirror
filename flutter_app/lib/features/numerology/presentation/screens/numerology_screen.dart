@@ -40,7 +40,7 @@ class NumerologyScreen extends ConsumerWidget {
           readingAsync.when(
             loading: () => const ShimmerList(itemCount: 5),
             error: (e, _) => ErrorView(
-              message: e.toString(),
+              error: e,
               onRetry: () => ref.invalidate(numerologyReadingProvider),
             ),
             data: (reading) => _Body(reading: reading),

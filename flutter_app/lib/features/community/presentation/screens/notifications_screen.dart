@@ -58,7 +58,7 @@ class NotificationsScreen extends ConsumerWidget {
           notifsAsync.when(
             loading: () => const ShimmerList(itemCount: 6),
             error: (e, _) => ErrorView(
-              message: e.toString(),
+              error: e,
               onRetry: () => ref.invalidate(notificationsProvider),
             ),
             data: (entries) {

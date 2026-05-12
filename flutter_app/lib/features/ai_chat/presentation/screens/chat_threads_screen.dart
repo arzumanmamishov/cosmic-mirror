@@ -73,7 +73,7 @@ class ChatThreadsScreen extends ConsumerWidget {
           threadsAsync.when(
             loading: () => const ShimmerList(),
             error: (e, _) => ErrorView(
-              message: e.toString(),
+              error: e,
               onRetry: () => ref.invalidate(chatThreadsProvider),
             ),
             data: (threads) {

@@ -88,7 +88,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                 child: postAsync.when(
                   loading: () => const ShimmerList(itemCount: 4),
                   error: (e, _) => ErrorView(
-                    message: e.toString(),
+                    error: e,
                     onRetry: () =>
                         ref.invalidate(postDetailProvider(widget.postId)),
                   ),

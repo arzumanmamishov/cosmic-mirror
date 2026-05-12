@@ -163,7 +163,7 @@ class _Results extends ConsumerWidget {
     return asyncValue.when(
       loading: () => const ShimmerList(itemCount: 3),
       error: (e, _) => ErrorView(
-        message: e.toString(),
+        error: e,
         onRetry: () =>
             ref.invalidate(numerologyNameAnalysisProvider(name)),
       ),

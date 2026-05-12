@@ -85,7 +85,7 @@ class _TimelineTab extends ConsumerWidget {
     return dataAsync.when(
       loading: () => const ShimmerList(),
       error: (e, _) => ErrorView(
-        message: e.toString(),
+        error: e,
         onRetry: () => ref.invalidate(timelineProvider(type)),
       ),
       data: (data) {

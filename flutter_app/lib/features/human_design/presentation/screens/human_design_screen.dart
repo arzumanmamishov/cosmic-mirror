@@ -43,7 +43,7 @@ class HumanDesignScreen extends ConsumerWidget {
           chartAsync.when(
             loading: () => const ShimmerList(itemCount: 5),
             error: (e, _) => ErrorView(
-              message: e.toString(),
+              error: e,
               onRetry: () => ref.invalidate(humanDesignProvider),
             ),
             data: (chart) => _Body(chart: chart),
