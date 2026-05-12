@@ -111,7 +111,12 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
         .sendMessage(threadId, text);
 
     if (response != null) {
-      setState(() => _localMessages = [..._localMessages, response]);
+      // The server now holds both the user message and the AI reply.
+      // Drop the local optimistic copies and refetch so the bubbles
+      // we just showed don't sit on top of the freshly-fetched
+      // server list — that's what was producing doubled prompts.
+      setState(() => _localMessages = const []);
+      ref.invalidate(chatMessagesProvider(threadId));
       _scrollToBottom();
     }
   }

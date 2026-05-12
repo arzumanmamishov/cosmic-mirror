@@ -92,21 +92,10 @@ class _Bubble extends StatelessWidget {
       return Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 11),
         decoration: BoxDecoration(
-          // Brand gold gradient — replaces the previous muted
-          // primary-tinted box for a way more polished user message.
-          gradient: const LinearGradient(
-            colors: [Color(0xFFE9D49A), Color(0xFFD4B16A), Color(0xFF9F7637)],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
+          // Solid brand gold — distinct from the AI's glass card
+          // without a gradient.
+          color: p.gold,
           borderRadius: radius,
-          boxShadow: [
-            BoxShadow(
-              color: p.gold.withValues(alpha: 0.25),
-              blurRadius: 14,
-              offset: const Offset(0, 4),
-            ),
-          ],
         ),
         child: Text(
           content,
