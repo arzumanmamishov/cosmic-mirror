@@ -83,38 +83,47 @@ class AppPalette extends ThemeExtension<AppPalette> {
     ),
   );
 
-  // Light cream/brown palette
+  // iOS-style light palette.
+  //
+  // Mirrors Apple's system colors so the light mode feels native on
+  // both platforms: secondarySystemBackground (#F2F2F7) for the page,
+  // pure white surfaces with a near-white elevated layer for cards,
+  // systemBlue (#007AFF) as the primary action color, true label
+  // black for primary text, and the system secondary/tertiary grays
+  // for hierarchy. We keep our brand gold for the same accents the
+  // dark theme uses (logo glow, master-number badges, etc.) so the
+  // identity carries across.
   static const light = AppPalette(
-    background: Color(0xFFFAF6F0),
-    surface: Color(0xFFFFFFFF),
-    surfaceElevated: Color(0xFFF5EFE6),
-    primary: Color(0xFF8B5A2B),
-    accent: Color(0xFFC76E5E),
-    gold: Color(0xFFB8860B),
-    textPrimary: Color(0xFF2D1810),
-    textSecondary: Color(0xFF8A7565),
-    textTertiary: Color(0xFFB8A89A),
-    success: Color(0xFF5B8C5A),
-    warning: Color(0xFFD4A04C),
-    error: Color(0xFFB85450),
-    glassBorder: Color(0x1A2D1810),
+    background: Color(0xFFF2F2F7), // systemGroupedBackground
+    surface: Color(0xFFFFFFFF), // secondarySystemGroupedBackground
+    surfaceElevated: Color(0xFFE5E5EA), // systemGray5
+    primary: Color(0xFF007AFF), // systemBlue
+    accent: Color(0xFFFF2D55), // systemPink
+    gold: Color(0xFFD4B16A), // brand gold (matches dark)
+    textPrimary: Color(0xFF000000), // label
+    textSecondary: Color(0xFF3C3C43), // secondaryLabel (full alpha)
+    textTertiary: Color(0xFF8E8E93), // systemGray
+    success: Color(0xFF34C759), // systemGreen
+    warning: Color(0xFFFF9500), // systemOrange
+    error: Color(0xFFFF3B30), // systemRed
+    glassBorder: Color(0x14000000), // 8% black hairline
     premiumGradient: LinearGradient(
-      colors: [Color(0xFFC76E5E), Color(0xFF8B3A2B)],
+      colors: [Color(0xFFD4B16A), Color(0xFF9F7637)],
       begin: Alignment.topLeft,
       end: Alignment.bottomRight,
     ),
     primaryGradient: LinearGradient(
-      colors: [Color(0xFF8B5A2B), Color(0xFFC76E5E)],
+      colors: [Color(0xFF007AFF), Color(0xFF5856D6)],
       begin: Alignment.topLeft,
       end: Alignment.bottomRight,
     ),
     cardGradient: LinearGradient(
-      colors: [Color(0xFFFFFFFF), Color(0xFFF5EFE6)],
+      colors: [Color(0xFFFFFFFF), Color(0xFFFAFAFA)],
       begin: Alignment.topLeft,
       end: Alignment.bottomRight,
     ),
     cosmicGlow: LinearGradient(
-      colors: [Color(0x338B5A2B), Color(0x00FAF6F0)],
+      colors: [Color(0x14007AFF), Color(0x00F2F2F7)],
       begin: Alignment.topCenter,
       end: Alignment.bottomCenter,
     ),

@@ -1,16 +1,12 @@
+import 'package:cosmic_mirror/config/theme/app_palette.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 const _kGold = Color(0xFFD4B16A);
-const _kSurface = Color(0xFF1A1F2E);
-const _kBorder = Color(0xFF2A2F3E);
-const _kTextPrimary = Colors.white;
-const _kTextTertiary = Color(0xFF7E8290);
 
-/// Universal pill-shaped search field. Uses the same dark surface +
-/// subtle outline as auth and onboarding inputs, so every search field
-/// across the app reads as the same component (single shape, single
-/// color, no inherited Material InputDecorationTheme bleed).
+/// Universal pill-shaped search field. Reads its colors from the active
+/// AppPalette so it renders correctly in both the dark cosmic theme and
+/// the iOS-style light theme.
 class PillSearchBar extends StatelessWidget {
   const PillSearchBar({
     required this.hint,
@@ -33,16 +29,17 @@ class PillSearchBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final p = context.palette;
     return Container(
       decoration: BoxDecoration(
-        color: _kSurface,
+        color: p.surface,
         borderRadius: BorderRadius.circular(28),
-        border: Border.all(color: _kBorder),
+        border: Border.all(color: p.glassBorder),
       ),
       child: Row(
         children: [
           const SizedBox(width: 18),
-          const Icon(Icons.search_rounded, color: _kTextTertiary, size: 18),
+          Icon(Icons.search_rounded, color: p.textTertiary, size: 18),
           const SizedBox(width: 10),
           Expanded(
             child: TextField(
@@ -53,7 +50,7 @@ class PillSearchBar extends StatelessWidget {
               readOnly: readOnly,
               cursorColor: _kGold,
               style: GoogleFonts.poppins(
-                color: _kTextPrimary,
+                color: p.textPrimary,
                 fontSize: 14,
                 fontWeight: FontWeight.w500,
               ),
@@ -71,7 +68,7 @@ class PillSearchBar extends StatelessWidget {
                 focusColor: Colors.transparent,
                 hintText: hint,
                 hintStyle: GoogleFonts.poppins(
-                  color: _kTextTertiary,
+                  color: p.textTertiary,
                   fontSize: 14,
                   fontWeight: FontWeight.w400,
                 ),

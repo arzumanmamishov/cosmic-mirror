@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:cosmic_mirror/config/theme/app_palette.dart';
 import 'package:cosmic_mirror/l10n/app_localizations.dart';
 import 'package:cosmic_mirror/features/ai_chat/presentation/screens/chat_threads_screen.dart';
+import 'package:cosmic_mirror/features/community/presentation/providers/community_providers.dart';
 import 'package:cosmic_mirror/features/community/presentation/screens/spaces_list_screen.dart';
 import 'package:cosmic_mirror/features/home/presentation/widgets/discussions_section.dart';
 import 'package:cosmic_mirror/features/home/presentation/widgets/today_in_the_sky_card.dart';
@@ -145,10 +146,21 @@ class _DiscoverTabState extends State<_DiscoverTab> {
             delay: const Duration(milliseconds: 60),
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: PillSearchBar(
-                controller: _searchCtrl,
-                hint: l10n.homeSearchHint,
-                onSubmitted: (_) {},
+              child: Consumer(
+                builder: (context, ref, _) => PillSearchBar(
+                  controller: _searchCtrl,
+                  hint: l10n.homeSearchHint,
+                  // Top-level search is global — handing the query off
+                  // to the Spaces list reuses the existing community
+                  // search (autoDispose provider) and lands the user
+                  // on the screen with the most searchable content.
+                  onSubmitted: (q) {
+                    final query = q.trim();
+                    if (query.isEmpty) return;
+                    ref.read(spaceSearchQueryProvider.notifier).state = query;
+                    context.push('/community');
+                  },
+                ),
               ),
             ),
           ),

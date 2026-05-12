@@ -162,16 +162,26 @@ class SpacesListScreen extends ConsumerWidget {
   }
 }
 
-class _SearchBar extends StatefulWidget {
+class _SearchBar extends ConsumerStatefulWidget {
   const _SearchBar({required this.palette});
   final AppPalette palette;
 
   @override
-  State<_SearchBar> createState() => _SearchBarState();
+  ConsumerState<_SearchBar> createState() => _SearchBarState();
 }
 
-class _SearchBarState extends State<_SearchBar> {
-  final _controller = TextEditingController();
+class _SearchBarState extends ConsumerState<_SearchBar> {
+  late final TextEditingController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    // Hydrate from the provider so a query pushed in from the home
+    // top search lands here pre-filled instead of looking empty.
+    _controller = TextEditingController(
+      text: ref.read(spaceSearchQueryProvider),
+    );
+  }
 
   @override
   void dispose() {
@@ -207,6 +217,11 @@ class _SearchBarState extends State<_SearchBar> {
                     border: InputBorder.none,
                     isDense: true,
                   ),
+                  // Live filter on every keystroke — submit-only meant
+                  // the list never updated unless the user pressed
+                  // Enter on the keyboard, which most never do.
+                  onChanged: (v) =>
+                      ref.read(spaceSearchQueryProvider.notifier).state = v,
                   onSubmitted: (v) =>
                       ref.read(spaceSearchQueryProvider.notifier).state = v,
                 ),
