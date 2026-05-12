@@ -159,6 +159,17 @@ final appRouterProvider = Provider<GoRouter>((ref) {
           const ChatThreadsScreen(),
         ),
         routes: [
+          // /chat/new — fresh chat with no thread id. The thread is
+          // only created on the backend after the user sends their
+          // first message, so empty conversations never pollute the
+          // threads list.
+          GoRoute(
+            path: 'new',
+            pageBuilder: (context, state) => _slideTransition(
+              state,
+              const ChatScreen(),
+            ),
+          ),
           GoRoute(
             path: ':threadId',
             pageBuilder: (context, state) {

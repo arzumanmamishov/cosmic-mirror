@@ -22,9 +22,12 @@ const _kGold = Color(0xFFD4B16A);
 /// - Input bar: rounded glass pill, gold-gradient send button, lock
 ///   icon swap when the free daily cap is reached.
 class ChatScreen extends ConsumerStatefulWidget {
-  const ChatScreen({required this.threadId, super.key});
+  const ChatScreen({this.threadId, super.key});
 
-  final String threadId;
+  /// The conversation id. **Null** = fresh chat — the thread is
+  /// only created on the backend after the user sends their first
+  /// message, so empty conversations never end up in the threads list.
+  final String? threadId;
 
   @override
   ConsumerState<ChatScreen> createState() => _ChatScreenState();
@@ -36,9 +39,14 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   final _focusNode = FocusNode();
   List<ChatMessage> _localMessages = [];
 
+  /// Live thread id. Starts as widget.threadId (possibly null) and is
+  /// filled in lazily after the first successful send creates one.
+  String? _threadId;
+
   @override
   void initState() {
     super.initState();
+    _threadId = widget.threadId;
     // Rebuild on every keystroke so the send button enable-state
     // (and its color) reflect the current text.
     _controller.addListener(_onTextChanged);
@@ -72,9 +80,23 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     final text = content.trim();
     if (text.isEmpty) return;
 
+    // For a fresh chat we lazily create the thread on the backend
+    // *only* when the user actually sends — empty conversations never
+    // pollute the threads list.
+    var threadId = _threadId;
+    if (threadId == null) {
+      final newId =
+          await ref.read(chatInputProvider.notifier).createThread();
+      if (newId == null) return; // error already surfaced via state.error
+      threadId = newId;
+      setState(() => _threadId = newId);
+      // Refresh the threads list so the new conversation shows up.
+      ref.invalidate(chatThreadsProvider);
+    }
+
     final userMessage = ChatMessage(
       id: 'local_${DateTime.now().millisecondsSinceEpoch}',
-      threadId: widget.threadId,
+      threadId: threadId,
       role: MessageRole.user,
       content: text,
       createdAt: DateTime.now(),
@@ -86,7 +108,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
 
     final response = await ref
         .read(chatInputProvider.notifier)
-        .sendMessage(widget.threadId, text);
+        .sendMessage(threadId, text);
 
     if (response != null) {
       setState(() => _localMessages = [..._localMessages, response]);
@@ -97,8 +119,11 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   @override
   Widget build(BuildContext context) {
     final p = context.palette;
-    final messagesAsync = ref.watch(chatMessagesProvider(widget.threadId));
     final chatState = ref.watch(chatInputProvider);
+    // For a fresh chat (no thread yet) we don't hit the backend for
+    // messages — we just show the empty state with local messages
+    // (which will become non-empty after the first send).
+    final threadId = _threadId;
 
     return Scaffold(
       backgroundColor: p.background,
@@ -108,30 +133,19 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
           children: [
             const _ChatHeader(),
             Expanded(
-              child: messagesAsync.when(
-                loading: () => const ShimmerList(),
-                error: (e, _) => ErrorView(
-                  error: e,
-                  onRetry: () => ref.invalidate(
-                    chatMessagesProvider(widget.threadId),
-                  ),
-                ),
-                data: (serverMessages) {
-                  final all = [...serverMessages, ..._localMessages];
-                  if (all.isEmpty) return _EmptyState(onPrompt: _sendMessage);
-                  return ListView.builder(
-                    controller: _scrollController,
-                    padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-                    itemCount: all.length + (chatState.isSending ? 1 : 0),
-                    itemBuilder: (context, i) {
-                      if (i == all.length && chatState.isSending) {
-                        return const TypingIndicator();
-                      }
-                      return MessageBubble(message: all[i]);
-                    },
-                  );
-                },
-              ),
+              child: threadId == null
+                  ? _buildBody(<ChatMessage>[], chatState)
+                  : ref.watch(chatMessagesProvider(threadId)).when(
+                        loading: () => const ShimmerList(),
+                        error: (e, _) => ErrorView(
+                          error: e,
+                          onRetry: () => ref.invalidate(
+                            chatMessagesProvider(threadId),
+                          ),
+                        ),
+                        data: (serverMessages) =>
+                            _buildBody(serverMessages, chatState),
+                      ),
             ),
             if (chatState.error != null) _ErrorStrip(message: chatState.error!),
             const _UsageStrip(),
@@ -146,6 +160,26 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
       ),
     );
   }
+
+  /// Renders the message list (or empty state) for both branches —
+  /// fresh chat with no server messages AND established thread with
+  /// the fetched server messages. Keeps the build method readable.
+  Widget _buildBody(List<ChatMessage> serverMessages, ChatInputState chatState) {
+    final all = [...serverMessages, ..._localMessages];
+    if (all.isEmpty) return _EmptyState(onPrompt: _sendMessage);
+    return ListView.builder(
+      controller: _scrollController,
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+      itemCount: all.length + (chatState.isSending ? 1 : 0),
+      itemBuilder: (context, i) {
+        if (i == all.length && chatState.isSending) {
+          return const TypingIndicator();
+        }
+        return MessageBubble(message: all[i]);
+      },
+    );
+  }
+
 }
 
 // ============================================================================

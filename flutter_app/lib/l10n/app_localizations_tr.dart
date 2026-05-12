@@ -1536,6 +1536,10 @@ class AppLocalizationsTr extends AppLocalizations {
   String get communityCreateSpace => 'Alan oluştur';
 
   @override
+  String get communityHeroBlurb =>
+      'Kendi insanlarını bul. Okumalarını paylaş, soru sor, seni heyecanlandıran sohbetleri takip et.';
+
+  @override
   String get communityFilterAll => 'Tümü';
 
   @override

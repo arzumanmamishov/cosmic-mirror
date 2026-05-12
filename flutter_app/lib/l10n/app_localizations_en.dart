@@ -1537,6 +1537,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get communityCreateSpace => 'Create space';
 
   @override
+  String get communityHeroBlurb =>
+      'Find your people. Share readings, ask questions, follow the conversations that move you.';
+
+  @override
   String get communityFilterAll => 'All';
 
   @override

@@ -23,13 +23,10 @@ class ChatThreadsScreen extends ConsumerWidget {
     final threadsAsync = ref.watch(chatThreadsProvider);
     final p = context.palette;
 
-    Future<void> startNew() async {
-      final threadId =
-          await ref.read(chatInputProvider.notifier).createThread();
-      if (threadId != null && context.mounted) {
-        context.push('/chat/$threadId');
-      }
-    }
+    // Open a fresh chat screen with NO thread id — the conversation
+    // only gets created on the backend after the user actually sends
+    // their first message, so we never produce empty thread rows.
+    void startNew() => context.push('/chat/new');
 
     return Scaffold(
       backgroundColor: p.background,
@@ -37,7 +34,9 @@ class ChatThreadsScreen extends ConsumerWidget {
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        leading: const BackButton(),
+        // No leading back button — the Astrologer screen is reached
+        // via the bottom nav tab, not pushed onto a stack.
+        automaticallyImplyLeading: false,
         title: Text(AppLocalizations.of(context).chatThreadsTitle),
       ),
       floatingActionButton: CosmicPulse(

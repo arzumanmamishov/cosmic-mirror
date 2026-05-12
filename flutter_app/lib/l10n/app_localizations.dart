@@ -2942,6 +2942,12 @@ abstract class AppLocalizations {
   /// **'Create space'**
   String get communityCreateSpace;
 
+  /// No description provided for @communityHeroBlurb.
+  ///
+  /// In en, this message translates to:
+  /// **'Find your people. Share readings, ask questions, follow the conversations that move you.'**
+  String get communityHeroBlurb;
+
   /// No description provided for @communityFilterAll.
   ///
   /// In en, this message translates to:

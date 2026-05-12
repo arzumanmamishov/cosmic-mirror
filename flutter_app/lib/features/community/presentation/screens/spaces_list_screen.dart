@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cosmic_mirror/config/theme/app_palette.dart';
 import 'package:cosmic_mirror/features/community/presentation/providers/community_providers.dart';
 import 'package:cosmic_mirror/features/community/presentation/widgets/category_card.dart';
@@ -6,6 +7,7 @@ import 'package:cosmic_mirror/features/community/presentation/widgets/space_card
 import 'package:cosmic_mirror/features/community/presentation/widgets/space_filter_tabs.dart';
 import 'package:cosmic_mirror/l10n/app_localizations.dart';
 import 'package:cosmic_mirror/shared/providers/user_provider.dart';
+import 'package:cosmic_mirror/shared/utils/avatar_url.dart';
 import 'package:cosmic_mirror/shared/widgets/error_view.dart';
 import 'package:cosmic_mirror/shared/widgets/loading_shimmer.dart';
 import 'package:flutter/gestures.dart';
@@ -28,31 +30,30 @@ class SpacesListScreen extends ConsumerWidget {
 
     return CustomScrollView(
       slivers: [
-        SliverAppBar(
-          backgroundColor: Colors.transparent,
-          floating: true,
-          title: Text(
-            l.communityTitle,
-            style: TextStyle(
-              color: p.textPrimary,
-              fontSize: 22,
-              fontWeight: FontWeight.w800,
+        // Top action row — just the bell + avatar, no big AppBar title
+        // (the hero card below carries the brand presence).
+        const SliverPadding(
+          padding: EdgeInsets.fromLTRB(12, 8, 12, 0),
+          sliver: SliverToBoxAdapter(
+            child: Row(
+              children: [
+                Spacer(),
+                _NotificationsBell(),
+                SizedBox(width: 4),
+                _MyProfileAvatar(),
+              ],
             ),
           ),
-          actions: [
-            const _NotificationsBell(),
-            IconButton(
-              tooltip: l.communityNewSpaceTooltip,
-              icon: Icon(Icons.add_circle_outline_rounded, color: p.textPrimary),
-              onPressed: () => context.push('/community/create'),
-            ),
-            const _MyProfileAvatar(),
-            const SizedBox(width: 8),
-          ],
+        ),
+        // Big eye-catching hero card with the community title +
+        // subtitle + primary "Create a space" CTA.
+        const SliverPadding(
+          padding: EdgeInsets.fromLTRB(20, 8, 20, 16),
+          sliver: SliverToBoxAdapter(child: _CommunityHero()),
         ),
         const SliverToBoxAdapter(
           child: Padding(
-            padding: EdgeInsets.fromLTRB(20, 4, 20, 12),
+            padding: EdgeInsets.fromLTRB(20, 0, 20, 12),
             child: SpaceFilterTabs(),
           ),
         ),
@@ -286,13 +287,9 @@ class _MyProfileAvatar extends ConsumerWidget {
     final user = ref.watch(currentUserProvider);
     final name = user.name ?? '';
     final initial = name.isNotEmpty ? name[0].toUpperCase() : '?';
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
-      child: GestureDetector(
-        onTap: () => context.push('/community/user/me'),
-        child: Container(
-          width: 32,
-          height: 32,
+    final url = resolveAvatarUrl(user.avatarUrl);
+
+    Widget fallback() => Container(
           alignment: Alignment.center,
           decoration: BoxDecoration(
             gradient: p.primaryGradient,
@@ -306,7 +303,126 @@ class _MyProfileAvatar extends ConsumerWidget {
               fontWeight: FontWeight.w800,
             ),
           ),
+        );
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
+      child: GestureDetector(
+        onTap: () => context.push('/community/user/me'),
+        child: SizedBox(
+          width: 32,
+          height: 32,
+          child: ClipOval(
+            child: url == null
+                ? fallback()
+                : CachedNetworkImage(
+                    imageUrl: url,
+                    fit: BoxFit.cover,
+                    placeholder: (_, __) => fallback(),
+                    errorWidget: (_, __, ___) => fallback(),
+                  ),
+          ),
         ),
+      ),
+    );
+  }
+}
+
+/// Eye-catching hero card at the top of the Community tab. Carries the
+/// brand presence (gradient, headline, blurb) and the primary
+/// "Create a space" action — which used to be a tiny icon button buried
+/// in the AppBar. Tapping the card itself also pushes to /community/create.
+class _CommunityHero extends ConsumerWidget {
+  const _CommunityHero();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final p = context.palette;
+    final l = AppLocalizations.of(context);
+    return Container(
+      padding: const EdgeInsets.fromLTRB(20, 22, 20, 22),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(24),
+        gradient: LinearGradient(
+          colors: [
+            p.primary.withValues(alpha: 0.20),
+            p.accent.withValues(alpha: 0.18),
+          ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        border: Border.all(color: p.gold.withValues(alpha: 0.30)),
+        boxShadow: [
+          BoxShadow(
+            color: p.gold.withValues(alpha: 0.10),
+            blurRadius: 24,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                width: 36,
+                height: 36,
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                  color: p.gold.withValues(alpha: 0.20),
+                  shape: BoxShape.circle,
+                  border: Border.all(color: p.gold.withValues(alpha: 0.6)),
+                ),
+                child: Icon(
+                  Icons.diversity_3_rounded,
+                  color: p.gold,
+                  size: 18,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Text(
+                l.communityTitle,
+                style: TextStyle(
+                  color: p.textPrimary,
+                  fontSize: 22,
+                  fontWeight: FontWeight.w800,
+                  letterSpacing: -0.2,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          Text(
+            l.communityHeroBlurb,
+            style: TextStyle(
+              color: p.textSecondary,
+              fontSize: 13.5,
+              height: 1.4,
+            ),
+          ),
+          const SizedBox(height: 16),
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton.icon(
+              onPressed: () => context.push('/community/create'),
+              icon: const Icon(Icons.add_rounded, size: 18),
+              label: Text(l.communityCreateSpace),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: p.gold,
+                foregroundColor: const Color(0xFF1A1F2E),
+                padding: const EdgeInsets.symmetric(vertical: 12),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(100),
+                ),
+                textStyle: const TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
