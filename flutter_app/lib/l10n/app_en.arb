@@ -569,6 +569,22 @@
   "dailyReadingResonant": "Resonant",
   "yfYearTheme": "YOUR YEAR THEME",
   "yfQuarterBreakdown": "Quarter Breakdown",
+  "yfHeroSubtitle": "Your cosmic roadmap. One year, four chapters, each with its own weather and weather forecast.",
+  "yfQuarterLabel": "Q{n}",
+  "@yfQuarterLabel": {
+    "placeholders": { "n": { "type": "int" } }
+  },
+  "yfNoData": "No yearly forecast available yet. Check back soon.",
+  "transit30Days": "30 Days",
+  "transit3Months": "3 Months",
+  "transit12Months": "12 Months",
+  "transitHeroTitle": "Transit Forecast",
+  "transitHeroSubtitle": "The sky ahead — pick a window and see when to push, when to wait, and when to listen.",
+  "transitEnergyPositive": "Positive",
+  "transitEnergyChallenging": "Challenging",
+  "transitEnergyIntense": "Intense",
+  "transitEnergyNeutral": "Neutral",
+  "transitNoData": "No transits charted for this window yet.",
 
   "communityTitle": "Community",
   "communityCreateSpace": "Create space",

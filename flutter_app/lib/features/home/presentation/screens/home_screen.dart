@@ -601,8 +601,8 @@ class _CustomBottomNav extends StatelessWidget {
                 palette: p,
               ),
               _NavItem(
-                icon: Icons.forum_outlined,
-                activeIcon: Icons.forum_rounded,
+                icon: Icons.diversity_3_outlined,
+                activeIcon: Icons.diversity_3_rounded,
                 label: l10n.navCommunity,
                 active: currentIndex == 3,
                 onTap: () => onTap(3),

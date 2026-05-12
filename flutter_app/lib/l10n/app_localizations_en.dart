@@ -1531,6 +1531,49 @@ class AppLocalizationsEn extends AppLocalizations {
   String get yfQuarterBreakdown => 'Quarter Breakdown';
 
   @override
+  String get yfHeroSubtitle =>
+      'Your cosmic roadmap. One year, four chapters, each with its own weather and weather forecast.';
+
+  @override
+  String yfQuarterLabel(int n) {
+    return 'Q$n';
+  }
+
+  @override
+  String get yfNoData => 'No yearly forecast available yet. Check back soon.';
+
+  @override
+  String get transit30Days => '30 Days';
+
+  @override
+  String get transit3Months => '3 Months';
+
+  @override
+  String get transit12Months => '12 Months';
+
+  @override
+  String get transitHeroTitle => 'Transit Forecast';
+
+  @override
+  String get transitHeroSubtitle =>
+      'The sky ahead — pick a window and see when to push, when to wait, and when to listen.';
+
+  @override
+  String get transitEnergyPositive => 'Positive';
+
+  @override
+  String get transitEnergyChallenging => 'Challenging';
+
+  @override
+  String get transitEnergyIntense => 'Intense';
+
+  @override
+  String get transitEnergyNeutral => 'Neutral';
+
+  @override
+  String get transitNoData => 'No transits charted for this window yet.';
+
+  @override
   String get communityTitle => 'Community';
 
   @override

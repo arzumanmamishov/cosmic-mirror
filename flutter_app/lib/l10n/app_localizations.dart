@@ -2930,6 +2930,84 @@ abstract class AppLocalizations {
   /// **'Quarter Breakdown'**
   String get yfQuarterBreakdown;
 
+  /// No description provided for @yfHeroSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Your cosmic roadmap. One year, four chapters, each with its own weather and weather forecast.'**
+  String get yfHeroSubtitle;
+
+  /// No description provided for @yfQuarterLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Q{n}'**
+  String yfQuarterLabel(int n);
+
+  /// No description provided for @yfNoData.
+  ///
+  /// In en, this message translates to:
+  /// **'No yearly forecast available yet. Check back soon.'**
+  String get yfNoData;
+
+  /// No description provided for @transit30Days.
+  ///
+  /// In en, this message translates to:
+  /// **'30 Days'**
+  String get transit30Days;
+
+  /// No description provided for @transit3Months.
+  ///
+  /// In en, this message translates to:
+  /// **'3 Months'**
+  String get transit3Months;
+
+  /// No description provided for @transit12Months.
+  ///
+  /// In en, this message translates to:
+  /// **'12 Months'**
+  String get transit12Months;
+
+  /// No description provided for @transitHeroTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Transit Forecast'**
+  String get transitHeroTitle;
+
+  /// No description provided for @transitHeroSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'The sky ahead — pick a window and see when to push, when to wait, and when to listen.'**
+  String get transitHeroSubtitle;
+
+  /// No description provided for @transitEnergyPositive.
+  ///
+  /// In en, this message translates to:
+  /// **'Positive'**
+  String get transitEnergyPositive;
+
+  /// No description provided for @transitEnergyChallenging.
+  ///
+  /// In en, this message translates to:
+  /// **'Challenging'**
+  String get transitEnergyChallenging;
+
+  /// No description provided for @transitEnergyIntense.
+  ///
+  /// In en, this message translates to:
+  /// **'Intense'**
+  String get transitEnergyIntense;
+
+  /// No description provided for @transitEnergyNeutral.
+  ///
+  /// In en, this message translates to:
+  /// **'Neutral'**
+  String get transitEnergyNeutral;
+
+  /// No description provided for @transitNoData.
+  ///
+  /// In en, this message translates to:
+  /// **'No transits charted for this window yet.'**
+  String get transitNoData;
+
   /// No description provided for @communityTitle.
   ///
   /// In en, this message translates to:

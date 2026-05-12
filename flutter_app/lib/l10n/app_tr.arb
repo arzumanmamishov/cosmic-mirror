@@ -569,6 +569,22 @@
   "dailyReadingResonant": "Rezonans",
   "yfYearTheme": "YIL TEMAN",
   "yfQuarterBreakdown": "Çeyrek Dökümü",
+  "yfHeroSubtitle": "Kozmik yol haritan. Bir yıl, dört bölüm — her birinin kendi havası ve hava tahmini.",
+  "yfQuarterLabel": "{n}. Çeyrek",
+  "@yfQuarterLabel": {
+    "placeholders": { "n": { "type": "int" } }
+  },
+  "yfNoData": "Henüz yıllık öngörü hazır değil. Birazdan tekrar bak.",
+  "transit30Days": "30 Gün",
+  "transit3Months": "3 Ay",
+  "transit12Months": "12 Ay",
+  "transitHeroTitle": "Transit Öngörüsü",
+  "transitHeroSubtitle": "Önündeki gökyüzü — bir pencere seç, ne zaman atılım yapacağını, ne zaman bekleyeceğini ve ne zaman dinleyeceğini gör.",
+  "transitEnergyPositive": "Olumlu",
+  "transitEnergyChallenging": "Zorlu",
+  "transitEnergyIntense": "Yoğun",
+  "transitEnergyNeutral": "Nötr",
+  "transitNoData": "Bu pencere için henüz transit haritalanmadı.",
 
   "communityTitle": "Topluluk",
   "communityCreateSpace": "Alan oluştur",

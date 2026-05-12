@@ -1530,6 +1530,50 @@ class AppLocalizationsTr extends AppLocalizations {
   String get yfQuarterBreakdown => 'Çeyrek Dökümü';
 
   @override
+  String get yfHeroSubtitle =>
+      'Kozmik yol haritan. Bir yıl, dört bölüm — her birinin kendi havası ve hava tahmini.';
+
+  @override
+  String yfQuarterLabel(int n) {
+    return '$n. Çeyrek';
+  }
+
+  @override
+  String get yfNoData =>
+      'Henüz yıllık öngörü hazır değil. Birazdan tekrar bak.';
+
+  @override
+  String get transit30Days => '30 Gün';
+
+  @override
+  String get transit3Months => '3 Ay';
+
+  @override
+  String get transit12Months => '12 Ay';
+
+  @override
+  String get transitHeroTitle => 'Transit Öngörüsü';
+
+  @override
+  String get transitHeroSubtitle =>
+      'Önündeki gökyüzü — bir pencere seç, ne zaman atılım yapacağını, ne zaman bekleyeceğini ve ne zaman dinleyeceğini gör.';
+
+  @override
+  String get transitEnergyPositive => 'Olumlu';
+
+  @override
+  String get transitEnergyChallenging => 'Zorlu';
+
+  @override
+  String get transitEnergyIntense => 'Yoğun';
+
+  @override
+  String get transitEnergyNeutral => 'Nötr';
+
+  @override
+  String get transitNoData => 'Bu pencere için henüz transit haritalanmadı.';
+
+  @override
   String get communityTitle => 'Topluluk';
 
   @override
