@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import 'package:cosmic_mirror/config/theme/app_palette.dart';
+import 'package:cosmic_mirror/core/error/error_message.dart';
 import 'package:cosmic_mirror/core/utils/date_utils.dart';
 import 'package:cosmic_mirror/features/ai_chat/domain/entities/chat_entities.dart';
 import 'package:cosmic_mirror/features/ai_chat/presentation/providers/chat_provider.dart';
@@ -106,16 +107,16 @@ class ChatThreadsScreen extends ConsumerWidget {
                         final confirmed =
                             await _confirmDelete(context, t.title);
                         if (!confirmed) return;
-                        final ok = await ref
+                        final err = await ref
                             .read(chatInputProvider.notifier)
                             .deleteThread(t.id);
-                        if (ok) {
+                        if (err == null) {
                           ref.invalidate(chatThreadsProvider);
                         } else if (context.mounted) {
+                          final friendly =
+                              FriendlyError.from(context, err);
                           ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text('Could not delete conversation'),
-                            ),
+                            SnackBar(content: Text(friendly.body)),
                           );
                         }
                       },

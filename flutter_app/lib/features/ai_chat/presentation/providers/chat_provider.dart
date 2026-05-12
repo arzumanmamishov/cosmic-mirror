@@ -84,13 +84,16 @@ class ChatInputNotifier extends StateNotifier<ChatInputState> {
     }
   }
 
-  Future<bool> deleteThread(String threadId) async {
+  /// Deletes a thread on the backend. Returns null on success or the
+  /// raw exception on failure so the caller can run it through
+  /// FriendlyError.from(...) and show a localized snackbar.
+  Future<Object?> deleteThread(String threadId) async {
     try {
       await _client.delete(ApiEndpoints.chatThread(threadId));
-      return true;
+      return null;
     } catch (e) {
       state = ChatInputState(error: e.toString());
-      return false;
+      return e;
     }
   }
 

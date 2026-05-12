@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"time"
 
@@ -64,6 +65,34 @@ func (s *AIService) CreateThread(ctx context.Context, userID uuid.UUID) (*domain
 func (s *AIService) ListThreads(ctx context.Context, userID uuid.UUID) ([]domain.ChatThread, error) {
 	return s.chatRepo.ListThreads(ctx, userID)
 }
+
+// DeleteThread removes a thread + all its messages. Verifies the
+// thread belongs to the caller first — without this, anyone with a
+// thread id could wipe anyone else's conversation.
+//
+// Returns:
+//   - ErrThreadNotFound when no thread exists with that id
+//   - ErrThreadForbidden when the caller doesn't own the thread
+//   - underlying repo error on actual DB failures
+func (s *AIService) DeleteThread(ctx context.Context, userID uuid.UUID, threadID uuid.UUID) error {
+	thread, err := s.chatRepo.GetThread(ctx, threadID)
+	if err != nil {
+		return fmt.Errorf("get thread: %w", err)
+	}
+	if thread == nil {
+		return ErrThreadNotFound
+	}
+	if thread.UserID != userID {
+		return ErrThreadForbidden
+	}
+	return s.chatRepo.DeleteThread(ctx, threadID)
+}
+
+// Sentinel errors the handler maps to clean HTTP statuses.
+var (
+	ErrThreadNotFound  = errors.New("thread not found")
+	ErrThreadForbidden = errors.New("thread does not belong to this user")
+)
 
 func (s *AIService) GetMessages(ctx context.Context, threadID uuid.UUID, limit, offset int) ([]domain.ChatMessage, error) {
 	return s.chatRepo.GetMessages(ctx, threadID, limit, offset)

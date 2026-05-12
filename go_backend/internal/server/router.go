@@ -99,6 +99,7 @@ func NewRouter(h *handler.Handlers, auth *middleware.Auth, rl *middleware.RateLi
 			// AI Chat
 			r.Get("/ai/threads", h.AIChat.ListThreads)
 			r.Post("/ai/threads", h.AIChat.CreateThread)
+			r.Delete("/ai/threads/{threadID}", h.AIChat.DeleteThread)
 			r.Get("/ai/threads/{threadID}/messages", h.AIChat.GetMessages)
 			r.Post("/ai/threads/{threadID}/messages", h.AIChat.SendMessage)
 			r.Get("/ai/usage", h.AIChat.GetUsage)

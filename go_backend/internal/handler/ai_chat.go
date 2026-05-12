@@ -45,6 +45,33 @@ func (h *AIChatHandler) CreateThread(w http.ResponseWriter, r *http.Request) {
 	respondCreated(w, thread)
 }
 
+// DeleteThread removes a chat thread + all its messages. Owner-only.
+//   404 → no thread with that id
+//   403 → thread belongs to a different user
+//   500 → DB failure
+func (h *AIChatHandler) DeleteThread(w http.ResponseWriter, r *http.Request) {
+	userID := middleware.UserIDFromContext(r.Context())
+	threadID, err := uuid.Parse(chi.URLParam(r, "threadID"))
+	if err != nil {
+		respondError(w, http.StatusBadRequest, "invalid_id", "Invalid thread ID")
+		return
+	}
+
+	if err := h.aiSvc.DeleteThread(r.Context(), userID, threadID); err != nil {
+		switch {
+		case errors.Is(err, service.ErrThreadNotFound):
+			respondError(w, http.StatusNotFound, "not_found", "Thread not found")
+		case errors.Is(err, service.ErrThreadForbidden):
+			respondError(w, http.StatusForbidden, "forbidden",
+				"You can't delete someone else's conversation")
+		default:
+			respondError(w, http.StatusInternalServerError, "delete_error", err.Error())
+		}
+		return
+	}
+	respondNoContent(w)
+}
+
 func (h *AIChatHandler) GetMessages(w http.ResponseWriter, r *http.Request) {
 	threadID, err := uuid.Parse(chi.URLParam(r, "threadID"))
 	if err != nil {
