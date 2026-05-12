@@ -1,10 +1,11 @@
-import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
-
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cosmic_mirror/config/theme/app_palette.dart';
 import 'package:cosmic_mirror/l10n/app_localizations.dart';
 import 'package:cosmic_mirror/shared/providers/user_provider.dart';
+import 'package:cosmic_mirror/shared/utils/avatar_url.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 class HomeHeaderBar extends ConsumerWidget {
   const HomeHeaderBar({super.key});
@@ -18,7 +19,9 @@ class HomeHeaderBar extends ConsumerWidget {
       padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
       child: Row(
         children: [
-          // Avatar with gradient ring — taps to open Profile.
+          // Avatar with gradient ring — shows the user's uploaded
+          // photo when one is set, falls back to their initial inside
+          // a tinted circle. Tapping opens Profile.
           GestureDetector(
             onTap: () => context.push('/profile'),
             child: Container(
@@ -29,14 +32,11 @@ class HomeHeaderBar extends ConsumerWidget {
                 shape: BoxShape.circle,
                 gradient: p.primaryGradient,
               ),
-              child: CircleAvatar(
-                backgroundColor: p.surfaceElevated,
-                child: Text(
-                  _initial(user.name),
-                  style: TextStyle(
-                    color: p.textPrimary,
-                    fontWeight: FontWeight.w600,
-                  ),
+              child: ClipOval(
+                child: _AvatarImage(
+                  avatarUrl: user.avatarUrl,
+                  initial: _initial(user.name),
+                  palette: p,
                 ),
               ),
             ),
@@ -88,6 +88,50 @@ class HomeHeaderBar extends ConsumerWidget {
   String _initial(String? name) {
     if (name == null || name.isEmpty) return '✨';
     return name.trim().substring(0, 1).toUpperCase();
+  }
+}
+
+/// The actual avatar image (network) with a graceful fallback to the
+/// user's initial inside a tinted circle when no photo is set OR the
+/// network fetch fails (offline / 404 / broken URL).
+class _AvatarImage extends StatelessWidget {
+  const _AvatarImage({
+    required this.avatarUrl,
+    required this.initial,
+    required this.palette,
+  });
+
+  final String? avatarUrl;
+  final String initial;
+  final AppPalette palette;
+
+  @override
+  Widget build(BuildContext context) {
+    final resolved = resolveAvatarUrl(avatarUrl);
+    if (resolved == null) return _initialFallback();
+    return CachedNetworkImage(
+      imageUrl: resolved,
+      fit: BoxFit.cover,
+      width: 44,
+      height: 44,
+      placeholder: (_, __) => _initialFallback(),
+      errorWidget: (_, __, ___) => _initialFallback(),
+    );
+  }
+
+  Widget _initialFallback() {
+    return Container(
+      color: palette.surfaceElevated,
+      alignment: Alignment.center,
+      child: Text(
+        initial,
+        style: TextStyle(
+          color: palette.textPrimary,
+          fontWeight: FontWeight.w700,
+          fontSize: 16,
+        ),
+      ),
+    );
   }
 }
 

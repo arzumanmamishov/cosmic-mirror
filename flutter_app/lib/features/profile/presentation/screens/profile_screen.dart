@@ -1,5 +1,4 @@
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:cosmic_mirror/config/env.dart';
 import 'package:cosmic_mirror/config/theme/app_palette.dart';
 import 'package:cosmic_mirror/core/network/api_client.dart';
 import 'package:cosmic_mirror/core/network/api_endpoints.dart';
@@ -8,6 +7,7 @@ import 'package:cosmic_mirror/features/auth/presentation/providers/auth_provider
 import 'package:cosmic_mirror/features/profile/presentation/providers/profile_providers.dart';
 import 'package:cosmic_mirror/shared/providers/subscription_state_provider.dart';
 import 'package:cosmic_mirror/shared/providers/user_provider.dart';
+import 'package:cosmic_mirror/shared/utils/avatar_url.dart';
 import 'package:cosmic_mirror/shared/widgets/cosmic_pulse.dart';
 import 'package:cosmic_mirror/shared/widgets/cosmic_starfield.dart';
 import 'package:cosmic_mirror/shared/widgets/staggered_fade_in.dart';
@@ -542,18 +542,22 @@ class _ProfileHero extends ConsumerWidget {
                     ],
                   ),
                   child: ClipOval(
-                    child: user.avatarUrl != null
-                        ? CachedNetworkImage(
-                            imageUrl: _resolveAvatarUrl(user.avatarUrl!),
-                            fit: BoxFit.cover,
-                            width: 94,
-                            height: 94,
-                            placeholder: (_, __) =>
-                                _AvatarFallback(initial: initial),
-                            errorWidget: (_, __, ___) =>
-                                _AvatarFallback(initial: initial),
-                          )
-                        : _AvatarFallback(initial: initial),
+                    child: () {
+                      final url = resolveAvatarUrl(user.avatarUrl);
+                      if (url == null) {
+                        return _AvatarFallback(initial: initial);
+                      }
+                      return CachedNetworkImage(
+                        imageUrl: url,
+                        fit: BoxFit.cover,
+                        width: 94,
+                        height: 94,
+                        placeholder: (_, __) =>
+                            _AvatarFallback(initial: initial),
+                        errorWidget: (_, __, ___) =>
+                            _AvatarFallback(initial: initial),
+                      );
+                    }(),
                   ),
                 ),
                 // Small camera badge in the lower right.
@@ -599,19 +603,6 @@ class _ProfileHero extends ConsumerWidget {
 }
 
 enum _AvatarAction { gallery, camera, remove }
-
-/// Backend stores avatar_url as a relative path like
-/// `/uploads/avatars/{id}_{ts}.jpg?v=...`. Image widgets need an absolute
-/// URL — resolve it against [Env.apiBaseUrl]. Already-absolute URLs are
-/// returned as-is so this works if storage moves to S3/GCS later.
-String _resolveAvatarUrl(String urlOrPath) {
-  if (urlOrPath.startsWith('http://') || urlOrPath.startsWith('https://')) {
-    return urlOrPath;
-  }
-  final base = Env.apiBaseUrl;
-  final trimmedBase = base.endsWith('/') ? base.substring(0, base.length - 1) : base;
-  return '$trimmedBase$urlOrPath';
-}
 
 class _AvatarFallback extends StatelessWidget {
   const _AvatarFallback({required this.initial});
