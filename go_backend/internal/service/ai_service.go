@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"strings"
 	"time"
 
 	"cosmic-mirror/internal/domain"
@@ -34,22 +35,25 @@ type ChatUsage struct {
 }
 
 type AIService struct {
-	chatRepo    repository.ChatRepository
-	profileRepo repository.BirthProfileRepository
-	aiClient    *openai.Client
+	chatRepo      repository.ChatRepository
+	profileRepo   repository.BirthProfileRepository
+	userRepo      repository.UserRepository
+	aiClient      *openai.Client
 	freeChatLimit int
 }
 
 func NewAIService(
 	chatRepo repository.ChatRepository,
 	profileRepo repository.BirthProfileRepository,
+	userRepo repository.UserRepository,
 	aiClient *openai.Client,
 	freeChatLimit int,
 ) *AIService {
 	return &AIService{
-		chatRepo:    chatRepo,
-		profileRepo: profileRepo,
-		aiClient:    aiClient,
+		chatRepo:      chatRepo,
+		profileRepo:   profileRepo,
+		userRepo:      userRepo,
+		aiClient:      aiClient,
 		freeChatLimit: freeChatLimit,
 	}
 }
@@ -152,8 +156,14 @@ func (s *AIService) SendMessage(ctx context.Context, userID uuid.UUID, threadID 
 		return nil, fmt.Errorf("save user message: %w", err)
 	}
 
-	// Get birth profile for context
+	// Get birth profile + the user's name so the AI can address them
+	// personally. Best-effort — empty name just falls back to a
+	// generic friendly tone.
 	profile, _ := s.profileRepo.GetByUserID(ctx, userID)
+	var firstName string
+	if user, _ := s.userRepo.GetByID(ctx, userID); user != nil {
+		firstName = firstNameOf(user.Name)
+	}
 
 	// Get thread history (last 20 messages)
 	history, err := s.chatRepo.GetMessages(ctx, threadID, 20, 0)
@@ -162,7 +172,7 @@ func (s *AIService) SendMessage(ctx context.Context, userID uuid.UUID, threadID 
 	}
 
 	// Build messages for OpenAI
-	systemPrompt := openai.BuildChatSystemPrompt(profile)
+	systemPrompt := openai.BuildChatSystemPrompt(profile, firstName)
 	messages := []openai.Message{{Role: "system", Content: systemPrompt}}
 	for _, msg := range history {
 		messages = append(messages, openai.Message{Role: msg.Role, Content: msg.Content})
@@ -195,4 +205,18 @@ func (s *AIService) SendMessage(ctx context.Context, userID uuid.UUID, threadID 
 	}
 
 	return assistantMsg, nil
+}
+
+// firstNameOf pulls the first whitespace-separated token from a stored
+// name ("Norma Jeane Baker" → "Norma"). Empty / whitespace-only inputs
+// return "" so callers know to fall back to a generic salutation.
+func firstNameOf(fullName string) string {
+	trimmed := strings.TrimSpace(fullName)
+	if trimmed == "" {
+		return ""
+	}
+	if i := strings.IndexAny(trimmed, " \t"); i > 0 {
+		return trimmed[:i]
+	}
+	return trimmed
 }

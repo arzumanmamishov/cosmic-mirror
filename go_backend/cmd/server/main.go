@@ -111,7 +111,7 @@ func main() {
 	chartSvc := service.NewChartService(birthProfileRepo, chartProvider, rdb)
 	vedicSvc := service.NewVedicService(birthProfileRepo, chartProvider, rdb)
 	readingSvc := service.NewReadingService(readingRepo, birthProfileRepo, openaiClient, rdb)
-	aiSvc := service.NewAIService(chatRepo, birthProfileRepo, openaiClient, cfg.FreeTierChatLimit)
+	aiSvc := service.NewAIService(chatRepo, birthProfileRepo, userRepo, openaiClient, cfg.FreeTierChatLimit)
 	compatibilitySvc := service.NewCompatibilityService(compatibilityRepo, birthProfileRepo, openaiClient)
 	subscriptionSvc := service.NewSubscriptionService(subscriptionRepo, cfg.RevenueCatWebhookSecret)
 	stripeSvc := service.NewStripeService(
