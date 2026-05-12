@@ -2,6 +2,7 @@ package openai
 
 import (
 	"fmt"
+	"strings"
 	"time"
 
 	"cosmic-mirror/internal/domain"
@@ -120,50 +121,154 @@ How to talk:
 If you don't know something, say so. If a question doesn't really have an astrological answer, just answer it like a friend would and gesture at the chart only if it's actually relevant.`, birthInfo, nameLine)
 }
 
-func BuildTimelinePrompt(profile *domain.BirthProfile, forecastType string) []Message {
+// TransitEventLite is the subset of a Swiss-Ephemeris-computed transit that we
+// hand to the LLM. We keep it small + flat so it tokenizes cleanly and the
+// model can't get confused by extraneous fields. Defined here (not in the
+// swisseph package) so that prompts.go does not import a provider package.
+type TransitEventLite struct {
+	Date        string // YYYY-MM-DD
+	Type        string // ingress | lunation | retrograde | aspect
+	Body        string
+	NatalPoint  string // for aspects
+	Aspect      string // for aspects
+	Sign        string // for ingresses + lunations
+	Phase       string // for retrogrades + lunations
+	Description string
+}
+
+func formatTransitEvents(events []TransitEventLite) string {
+	if len(events) == 0 {
+		return "(no major transits in this window — focus on the natal chart's standing pattern)"
+	}
+	var b strings.Builder
+	for _, e := range events {
+		b.WriteString("- ")
+		b.WriteString(e.Date)
+		b.WriteString(": ")
+		b.WriteString(e.Description)
+		b.WriteByte('\n')
+	}
+	return b.String()
+}
+
+func BuildTimelinePrompt(profile *domain.BirthProfile, forecastType string, events []TransitEventLite, start, end time.Time) []Message {
 	return []Message{
 		{
 			Role: "system",
 			Content: `You are an insightful astrologer creating timeline forecasts.
 Frame timing as windows of energy, not guarantees. Be practical and encouraging.
+
+CRITICAL: You will be given a list of REAL transit events computed from the Swiss Ephemeris.
+- Do NOT invent dates, planets, or aspects. Only narrate around the events provided.
+- If two events are close in time, you may group them into a single period.
+- Each period's "date_range" must use real dates from the events list.
+- If the events list is empty, return 1-2 periods describing the steady background energy of the chart, without inventing transits.
 Always return valid JSON.`,
 		},
 		{
 			Role: "user",
 			Content: fmt.Sprintf(`Create a %s timeline forecast for someone born on %s in %s.
 
-Return JSON: {"periods": [{"title": "string", "date_range": "string", "description": "2-3 sentences", "energy": "positive|neutral|challenging|intense"}]}
+Window: %s → %s
 
-Include 4-6 meaningful periods based on major transits affecting their chart.`, forecastType, profile.BirthDate.Format("2006-01-02"), profile.BirthPlace),
+REAL TRANSIT EVENTS (Swiss Ephemeris ground truth — narrate AROUND these only):
+%s
+
+Return JSON: {"periods": [{"title": "string", "date_range": "Mon D – Mon D, YYYY", "description": "2-3 sentences in warm second-person voice", "energy": "positive|neutral|challenging|intense"}]}
+
+Group the events into 3-6 meaningful periods. Each period must reference real transits from the list. Tie the energy honestly to the aspect (squares/oppositions/Saturn = challenging or intense; trines/sextiles/Jupiter = positive; ingresses = neutral unless to a personal point).`,
+				forecastType,
+				profile.BirthDate.Format("2006-01-02"),
+				profile.BirthPlace,
+				start.Format("January 2, 2006"),
+				end.Format("January 2, 2006"),
+				formatTransitEvents(events),
+			),
 		},
 	}
 }
 
-func BuildYearlyForecastPrompt(profile *domain.BirthProfile, year int) []Message {
+func BuildYearlyForecastPrompt(profile *domain.BirthProfile, year int, events []TransitEventLite) []Message {
+	q1End := time.Date(year, 4, 1, 0, 0, 0, 0, time.UTC)
+	q2End := time.Date(year, 7, 1, 0, 0, 0, 0, time.UTC)
+	q3End := time.Date(year, 10, 1, 0, 0, 0, 0, time.UTC)
+	yearEnd := time.Date(year+1, 1, 1, 0, 0, 0, 0, time.UTC)
+
+	q1, q2, q3, q4 := splitEventsByQuarters(events, q1End, q2End, q3End, yearEnd)
+
 	return []Message{
 		{
 			Role: "system",
 			Content: `You are a visionary astrologer creating yearly forecasts.
 Frame the year as a growth journey. Be inspiring and practical.
+
+CRITICAL: You will receive REAL transit events computed from the Swiss Ephemeris, pre-bucketed by quarter.
+- Do NOT invent dates, planets, or aspects. Each quarter description must reference the actual transits given for that quarter.
+- The theme + overview can be looser/poetic but must still be grounded in the year's overall pattern of transits.
+- If a quarter has no major transits, write a description focused on the standing chart energy without inventing transits.
 Always return valid JSON.`,
 		},
 		{
 			Role: "user",
 			Content: fmt.Sprintf(`Create a %d yearly forecast for someone born on %s in %s.
 
+REAL TRANSIT EVENTS BY QUARTER (Swiss Ephemeris ground truth — use ONLY these):
+
+Q1 (Jan–Mar):
+%s
+
+Q2 (Apr–Jun):
+%s
+
+Q3 (Jul–Sep):
+%s
+
+Q4 (Oct–Dec):
+%s
+
 Return JSON:
 {
   "theme": "<3-5 word year theme>",
-  "overview": "<2-3 paragraph overview>",
+  "overview": "<2-3 paragraph overview synthesizing the year's biggest transits>",
   "quarters": [
-    {"label": "Q1: January - March", "description": "2-3 paragraphs"},
-    {"label": "Q2: April - June", "description": "2-3 paragraphs"},
-    {"label": "Q3: July - September", "description": "2-3 paragraphs"},
-    {"label": "Q4: October - December", "description": "2-3 paragraphs"}
+    {"label": "Q1: January - March", "description": "2-3 paragraphs referencing the Q1 transits above"},
+    {"label": "Q2: April - June", "description": "2-3 paragraphs referencing the Q2 transits above"},
+    {"label": "Q3: July - September", "description": "2-3 paragraphs referencing the Q3 transits above"},
+    {"label": "Q4: October - December", "description": "2-3 paragraphs referencing the Q4 transits above"}
   ]
-}`, year, profile.BirthDate.Format("2006-01-02"), profile.BirthPlace),
+}`,
+				year,
+				profile.BirthDate.Format("2006-01-02"),
+				profile.BirthPlace,
+				formatTransitEvents(q1),
+				formatTransitEvents(q2),
+				formatTransitEvents(q3),
+				formatTransitEvents(q4),
+			),
 		},
 	}
+}
+
+// splitEventsByQuarters slots events into four quarter buckets by their date.
+// Events outside the year window are dropped.
+func splitEventsByQuarters(events []TransitEventLite, q1End, q2End, q3End, yearEnd time.Time) (q1, q2, q3, q4 []TransitEventLite) {
+	for _, e := range events {
+		t, err := time.Parse("2006-01-02", e.Date)
+		if err != nil {
+			continue
+		}
+		switch {
+		case t.Before(q1End):
+			q1 = append(q1, e)
+		case t.Before(q2End):
+			q2 = append(q2, e)
+		case t.Before(q3End):
+			q3 = append(q3, e)
+		case t.Before(yearEnd):
+			q4 = append(q4, e)
+		}
+	}
+	return
 }
 
 func BuildNotificationPrompt(profile *domain.BirthProfile, date time.Time) []Message {

@@ -2,6 +2,8 @@ package handler
 
 import (
 	"net/http"
+	"strconv"
+	"time"
 
 	"cosmic-mirror/internal/middleware"
 	"cosmic-mirror/internal/service"
@@ -36,18 +38,28 @@ func (h *ChartHandler) GetSummary(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *ChartHandler) GetTimeline(w http.ResponseWriter, r *http.Request) {
-	// forecastType := r.URL.Query().Get("type")
-	respondSuccess(w, map[string]any{
-		"type":    r.URL.Query().Get("type"),
-		"periods": []any{},
-	})
+	userID := middleware.UserIDFromContext(r.Context())
+	forecastType := r.URL.Query().Get("type")
+	timeline, err := h.chartSvc.GetTimeline(r.Context(), userID, forecastType)
+	if err != nil {
+		respondError(w, http.StatusInternalServerError, "timeline_error", err.Error())
+		return
+	}
+	respondSuccess(w, timeline)
 }
 
 func (h *ChartHandler) GetYearlyForecast(w http.ResponseWriter, r *http.Request) {
-	respondSuccess(w, map[string]any{
-		"year":     2024,
-		"theme":    "",
-		"overview": "",
-		"quarters": []any{},
-	})
+	userID := middleware.UserIDFromContext(r.Context())
+	year := time.Now().UTC().Year()
+	if y := r.URL.Query().Get("year"); y != "" {
+		if parsed, err := strconv.Atoi(y); err == nil && parsed >= 1900 && parsed <= 2100 {
+			year = parsed
+		}
+	}
+	forecast, err := h.chartSvc.GetYearlyForecast(r.Context(), userID, year)
+	if err != nil {
+		respondError(w, http.StatusInternalServerError, "yearly_error", err.Error())
+		return
+	}
+	respondSuccess(w, forecast)
 }

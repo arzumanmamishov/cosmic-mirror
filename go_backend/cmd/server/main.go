@@ -108,7 +108,7 @@ func main() {
 	avatarStore := storage.NewAvatarStore(cfg.UploadsDir, "/uploads")
 	statsRepo := postgres.NewStatsRepository(db)
 	userSvc := service.NewUserService(userRepo, birthProfileRepo, statsRepo, avatarStore, rdb)
-	chartSvc := service.NewChartService(birthProfileRepo, chartProvider, rdb)
+	chartSvc := service.NewChartService(birthProfileRepo, chartProvider, openaiClient, rdb)
 	vedicSvc := service.NewVedicService(birthProfileRepo, chartProvider, rdb)
 	readingSvc := service.NewReadingService(readingRepo, birthProfileRepo, openaiClient, rdb)
 	aiSvc := service.NewAIService(chatRepo, birthProfileRepo, userRepo, openaiClient, cfg.FreeTierChatLimit)
