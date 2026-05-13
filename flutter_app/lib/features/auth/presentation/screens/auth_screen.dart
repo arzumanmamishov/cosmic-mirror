@@ -1,4 +1,5 @@
 import 'package:cosmic_mirror/features/auth/presentation/providers/auth_provider.dart';
+import 'package:cosmic_mirror/features/auth/presentation/widgets/firebase_auth_error.dart';
 import 'package:cosmic_mirror/l10n/app_localizations.dart';
 import 'package:cosmic_mirror/shared/widgets/lively_logo.dart';
 import 'package:flutter/foundation.dart'
@@ -75,12 +76,140 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
     }
   }
 
+  /// Opens the "forgot password" dialog. Pre-fills the email field if the
+  /// user has already typed one above. Sends a Firebase password-reset
+  /// link on confirm and shows the outcome inline (success → success
+  /// snackbar, failure → localized error in the dialog).
+  Future<void> _openForgotPasswordDialog() async {
+    final l10n = AppLocalizations.of(context);
+    final emailController = TextEditingController(text: _email.text.trim());
+    String? inlineError;
+    bool sending = false;
+
+    await showDialog<void>(
+      context: context,
+      builder: (dialogContext) {
+        return StatefulBuilder(
+          builder: (dialogContext, setDialogState) {
+            Future<void> submit() async {
+              final email = emailController.text.trim();
+              if (email.isEmpty) {
+                setDialogState(() => inlineError = l10n.authResetPasswordEmailEmpty);
+                return;
+              }
+              setDialogState(() {
+                inlineError = null;
+                sending = true;
+              });
+              final code = await ref
+                  .read(authActionProvider.notifier)
+                  .sendPasswordResetEmail(email);
+              if (!dialogContext.mounted) return;
+              if (code == null) {
+                Navigator.of(dialogContext).pop();
+                if (!mounted) return;
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(l10n.authResetPasswordSent(email)),
+                  ),
+                );
+              } else {
+                setDialogState(() {
+                  sending = false;
+                  inlineError = localizedFirebaseAuthError(l10n, code);
+                });
+              }
+            }
+
+            return AlertDialog(
+              backgroundColor: const Color(0xFF222637),
+              title: Text(
+                l10n.authResetPasswordTitle,
+                style: GoogleFonts.poppins(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Text(
+                    l10n.authResetPasswordBody,
+                    style: GoogleFonts.poppins(
+                      color: const Color(0xFFB6BAC4),
+                      fontSize: 13,
+                      height: 1.4,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  _DarkField(
+                    controller: emailController,
+                    hint: l10n.authEmail,
+                    icon: Icons.mail_outline_rounded,
+                    keyboardType: TextInputType.emailAddress,
+                  ),
+                  if (inlineError != null) ...[
+                    const SizedBox(height: 12),
+                    _ErrorBanner(message: inlineError!),
+                  ],
+                ],
+              ),
+              actions: [
+                TextButton(
+                  onPressed: sending
+                      ? null
+                      : () => Navigator.of(dialogContext).pop(),
+                  child: Text(
+                    l10n.authCancel,
+                    style: GoogleFonts.poppins(
+                      color: const Color(0xFFB6BAC4),
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+                TextButton(
+                  onPressed: sending ? null : submit,
+                  child: sending
+                      ? const SizedBox(
+                          width: 16,
+                          height: 16,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            valueColor: AlwaysStoppedAnimation(_kGold),
+                          ),
+                        )
+                      : Text(
+                          l10n.authResetPasswordSend,
+                          style: GoogleFonts.poppins(
+                            color: _kGold,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+    emailController.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     final authState = ref.watch(authActionProvider);
     final notifier = ref.read(authActionProvider.notifier);
-    final error = _localError ?? authState.error;
     final l10n = AppLocalizations.of(context);
+    // Firebase error codes from authState.error need localization at
+    // render-time; client-side validation messages in _localError are
+    // already localized at construction. We prefer _localError when set
+    // so a fresh validation message immediately replaces a stale
+    // server-side error.
+    final error = _localError ??
+        (authState.error != null
+            ? localizedFirebaseAuthError(l10n, authState.error)
+            : null);
 
     final bottomInset = MediaQuery.of(context).viewInsets.bottom;
     return Scaffold(
@@ -178,7 +307,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                               setState(() => _remember = v ?? false),
                         ),
                         TextButton(
-                          onPressed: () {},
+                          onPressed: () => _openForgotPasswordDialog(),
                           style: TextButton.styleFrom(
                             padding: EdgeInsets.zero,
                             minimumSize: const Size(0, 28),

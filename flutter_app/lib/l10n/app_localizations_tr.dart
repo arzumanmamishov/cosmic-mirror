@@ -94,6 +94,66 @@ class AppLocalizationsTr extends AppLocalizations {
   String get authPasswordTooShort => 'Şifre en az 8 karakter olmalıdır.';
 
   @override
+  String get authResetPasswordTitle => 'Şifreni sıfırla';
+
+  @override
+  String get authResetPasswordBody =>
+      'Hesabındaki e-posta adresini gir, sana yeni bir şifre belirlemen için bir bağlantı gönderelim.';
+
+  @override
+  String get authResetPasswordSend => 'Sıfırlama bağlantısı gönder';
+
+  @override
+  String authResetPasswordSent(Object email) {
+    return 'Gelen kutunu kontrol et — $email adresine sıfırlama bağlantısı gönderdik.';
+  }
+
+  @override
+  String get authResetPasswordEmailEmpty => 'Lütfen önce e-posta adresini gir.';
+
+  @override
+  String get authCancel => 'Vazgeç';
+
+  @override
+  String get authErrorUserNotFound => 'Bu e-posta ile bir hesap bulunamadı.';
+
+  @override
+  String get authErrorWrongPassword => 'Şifre hatalı.';
+
+  @override
+  String get authErrorInvalidCredential => 'E-posta veya şifre hatalı.';
+
+  @override
+  String get authErrorEmailInUse => 'Bu e-posta ile zaten bir hesap var.';
+
+  @override
+  String get authErrorInvalidEmail => 'Lütfen geçerli bir e-posta adresi gir.';
+
+  @override
+  String get authErrorWeakPassword =>
+      'Şifre çok zayıf. En az 8 karakter kullan.';
+
+  @override
+  String get authErrorTooManyRequests =>
+      'Çok fazla deneme yapıldı. Lütfen biraz sonra tekrar dene.';
+
+  @override
+  String get authErrorNetwork =>
+      'Sunucuya ulaşılamıyor — internet bağlantını kontrol edip tekrar dene.';
+
+  @override
+  String get authErrorUserDisabled =>
+      'Bu hesap devre dışı bırakılmış. Lütfen destekle iletişime geç.';
+
+  @override
+  String get authErrorOperationNotAllowed =>
+      'E-posta ile giriş bu uygulamada etkin değil. Lütfen destekle iletişime geç.';
+
+  @override
+  String get authErrorGeneric =>
+      'Kimlik doğrulama başarısız. Lütfen tekrar dene.';
+
+  @override
   String get onboardingNext => 'İleri';
 
   @override

@@ -93,6 +93,66 @@ class AppLocalizationsEn extends AppLocalizations {
   String get authPasswordTooShort => 'Password must be at least 8 characters.';
 
   @override
+  String get authResetPasswordTitle => 'Reset your password';
+
+  @override
+  String get authResetPasswordBody =>
+      'Enter the email address on your account and we\'ll send you a link to set a new password.';
+
+  @override
+  String get authResetPasswordSend => 'Send reset link';
+
+  @override
+  String authResetPasswordSent(Object email) {
+    return 'Check your inbox — we just sent a reset link to $email.';
+  }
+
+  @override
+  String get authResetPasswordEmailEmpty => 'Please enter your email first.';
+
+  @override
+  String get authCancel => 'Cancel';
+
+  @override
+  String get authErrorUserNotFound => 'No account found with this email.';
+
+  @override
+  String get authErrorWrongPassword => 'Incorrect password.';
+
+  @override
+  String get authErrorInvalidCredential => 'Email or password is incorrect.';
+
+  @override
+  String get authErrorEmailInUse =>
+      'An account already exists with this email.';
+
+  @override
+  String get authErrorInvalidEmail => 'Please enter a valid email address.';
+
+  @override
+  String get authErrorWeakPassword =>
+      'Password is too weak. Use at least 8 characters.';
+
+  @override
+  String get authErrorTooManyRequests =>
+      'Too many attempts. Please try again later.';
+
+  @override
+  String get authErrorNetwork =>
+      'Can\'t reach the server — check your internet connection and try again.';
+
+  @override
+  String get authErrorUserDisabled =>
+      'This account has been disabled. Contact support.';
+
+  @override
+  String get authErrorOperationNotAllowed =>
+      'Email sign-in isn\'t enabled for this app. Please contact support.';
+
+  @override
+  String get authErrorGeneric => 'Authentication failed. Please try again.';
+
+  @override
   String get onboardingNext => 'Next';
 
   @override

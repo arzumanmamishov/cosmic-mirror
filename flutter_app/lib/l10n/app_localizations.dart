@@ -266,6 +266,108 @@ abstract class AppLocalizations {
   /// **'Password must be at least 8 characters.'**
   String get authPasswordTooShort;
 
+  /// No description provided for @authResetPasswordTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Reset your password'**
+  String get authResetPasswordTitle;
+
+  /// No description provided for @authResetPasswordBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter the email address on your account and we\'ll send you a link to set a new password.'**
+  String get authResetPasswordBody;
+
+  /// No description provided for @authResetPasswordSend.
+  ///
+  /// In en, this message translates to:
+  /// **'Send reset link'**
+  String get authResetPasswordSend;
+
+  /// No description provided for @authResetPasswordSent.
+  ///
+  /// In en, this message translates to:
+  /// **'Check your inbox — we just sent a reset link to {email}.'**
+  String authResetPasswordSent(Object email);
+
+  /// No description provided for @authResetPasswordEmailEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter your email first.'**
+  String get authResetPasswordEmailEmpty;
+
+  /// No description provided for @authCancel.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel'**
+  String get authCancel;
+
+  /// No description provided for @authErrorUserNotFound.
+  ///
+  /// In en, this message translates to:
+  /// **'No account found with this email.'**
+  String get authErrorUserNotFound;
+
+  /// No description provided for @authErrorWrongPassword.
+  ///
+  /// In en, this message translates to:
+  /// **'Incorrect password.'**
+  String get authErrorWrongPassword;
+
+  /// No description provided for @authErrorInvalidCredential.
+  ///
+  /// In en, this message translates to:
+  /// **'Email or password is incorrect.'**
+  String get authErrorInvalidCredential;
+
+  /// No description provided for @authErrorEmailInUse.
+  ///
+  /// In en, this message translates to:
+  /// **'An account already exists with this email.'**
+  String get authErrorEmailInUse;
+
+  /// No description provided for @authErrorInvalidEmail.
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter a valid email address.'**
+  String get authErrorInvalidEmail;
+
+  /// No description provided for @authErrorWeakPassword.
+  ///
+  /// In en, this message translates to:
+  /// **'Password is too weak. Use at least 8 characters.'**
+  String get authErrorWeakPassword;
+
+  /// No description provided for @authErrorTooManyRequests.
+  ///
+  /// In en, this message translates to:
+  /// **'Too many attempts. Please try again later.'**
+  String get authErrorTooManyRequests;
+
+  /// No description provided for @authErrorNetwork.
+  ///
+  /// In en, this message translates to:
+  /// **'Can\'t reach the server — check your internet connection and try again.'**
+  String get authErrorNetwork;
+
+  /// No description provided for @authErrorUserDisabled.
+  ///
+  /// In en, this message translates to:
+  /// **'This account has been disabled. Contact support.'**
+  String get authErrorUserDisabled;
+
+  /// No description provided for @authErrorOperationNotAllowed.
+  ///
+  /// In en, this message translates to:
+  /// **'Email sign-in isn\'t enabled for this app. Please contact support.'**
+  String get authErrorOperationNotAllowed;
+
+  /// No description provided for @authErrorGeneric.
+  ///
+  /// In en, this message translates to:
+  /// **'Authentication failed. Please try again.'**
+  String get authErrorGeneric;
+
   /// No description provided for @onboardingNext.
   ///
   /// In en, this message translates to:

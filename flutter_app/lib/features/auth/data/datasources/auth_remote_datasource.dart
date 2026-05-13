@@ -89,8 +89,12 @@ class AuthRemoteDataSource {
         password: password,
       );
     } on FirebaseAuthException catch (e) {
+      // The code is the user-facing identifier here — the UI looks it up
+      // against AppLocalizations so errors stay localized. We still pass
+      // Firebase's English message through as a fallback in case the UI
+      // hits an unmapped code (new Firebase rev, exotic config issue).
       throw AuthException(
-        message: _mapFirebaseAuthError(e.code),
+        message: e.message ?? e.code,
         code: e.code,
       );
     }
@@ -104,7 +108,18 @@ class AuthRemoteDataSource {
       );
     } on FirebaseAuthException catch (e) {
       throw AuthException(
-        message: _mapFirebaseAuthError(e.code),
+        message: e.message ?? e.code,
+        code: e.code,
+      );
+    }
+  }
+
+  Future<void> sendPasswordResetEmail(String email) async {
+    try {
+      await _firebaseAuth.sendPasswordResetEmail(email: email);
+    } on FirebaseAuthException catch (e) {
+      throw AuthException(
+        message: e.message ?? e.code,
         code: e.code,
       );
     }
@@ -119,24 +134,5 @@ class AuthRemoteDataSource {
 
   Future<void> deleteAccount() async {
     await _firebaseAuth.currentUser?.delete();
-  }
-
-  String _mapFirebaseAuthError(String code) {
-    switch (code) {
-      case 'user-not-found':
-        return 'No account found with this email.';
-      case 'wrong-password':
-        return 'Incorrect password.';
-      case 'email-already-in-use':
-        return 'An account already exists with this email.';
-      case 'invalid-email':
-        return 'Please enter a valid email address.';
-      case 'weak-password':
-        return 'Password is too weak. Use at least 8 characters.';
-      case 'too-many-requests':
-        return 'Too many attempts. Please try again later.';
-      default:
-        return 'Authentication failed. Please try again.';
-    }
   }
 }

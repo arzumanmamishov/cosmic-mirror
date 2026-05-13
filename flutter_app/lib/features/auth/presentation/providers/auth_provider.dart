@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../../core/error/failures.dart';
 import '../../data/datasources/auth_remote_datasource.dart';
 import '../../data/repositories/auth_repository_impl.dart';
 import '../../domain/entities/user.dart';
@@ -67,7 +68,12 @@ class AuthActionNotifier extends StateNotifier<AuthActionState> {
         return true;
       },
       failure: (failure) {
-        state = AuthActionState(error: failure.message);
+        // We carry the Firebase error CODE in `error` (not the English
+        // message). The screen looks the code up via
+        // localizedFirebaseAuthError to render a properly localized
+        // string. Falling back to the raw message keeps non-Firebase
+        // server errors visible during dev.
+        state = AuthActionState(error: failure.code ?? failure.message);
         return false;
       },
     );
@@ -85,7 +91,12 @@ class AuthActionNotifier extends StateNotifier<AuthActionState> {
         return true;
       },
       failure: (failure) {
-        state = AuthActionState(error: failure.message);
+        // We carry the Firebase error CODE in `error` (not the English
+        // message). The screen looks the code up via
+        // localizedFirebaseAuthError to render a properly localized
+        // string. Falling back to the raw message keeps non-Firebase
+        // server errors visible during dev.
+        state = AuthActionState(error: failure.code ?? failure.message);
         return false;
       },
     );
@@ -103,7 +114,12 @@ class AuthActionNotifier extends StateNotifier<AuthActionState> {
         return true;
       },
       failure: (failure) {
-        state = AuthActionState(error: failure.message);
+        // We carry the Firebase error CODE in `error` (not the English
+        // message). The screen looks the code up via
+        // localizedFirebaseAuthError to render a properly localized
+        // string. Falling back to the raw message keeps non-Firebase
+        // server errors visible during dev.
+        state = AuthActionState(error: failure.code ?? failure.message);
         return false;
       },
     );
@@ -121,9 +137,28 @@ class AuthActionNotifier extends StateNotifier<AuthActionState> {
         return true;
       },
       failure: (failure) {
-        state = AuthActionState(error: failure.message);
+        // We carry the Firebase error CODE in `error` (not the English
+        // message). The screen looks the code up via
+        // localizedFirebaseAuthError to render a properly localized
+        // string. Falling back to the raw message keeps non-Firebase
+        // server errors visible during dev.
+        state = AuthActionState(error: failure.code ?? failure.message);
         return false;
       },
+    );
+  }
+
+  /// Sends a password-reset email via Firebase. Returns the Firebase error
+  /// code on failure (e.g. `user-not-found`, `invalid-email`,
+  /// `network-request-failed`) so the screen can localize it; returns null
+  /// on success. We surface this through a return value rather than the
+  /// AuthActionState because the dialog displays its own banner inline.
+  Future<String?> sendPasswordResetEmail(String email) async {
+    final result = await _repository.sendPasswordResetEmail(email);
+    return result.when(
+      success: (_) => null,
+      failure: (failure) =>
+          failure is AuthFailure ? (failure.code ?? 'unknown') : 'unknown',
     );
   }
 

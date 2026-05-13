@@ -89,6 +89,18 @@ class AuthRepositoryImpl implements AuthRepository {
   }
 
   @override
+  Future<Result<void>> sendPasswordResetEmail(String email) async {
+    try {
+      await _remote.sendPasswordResetEmail(email);
+      return const Success(null);
+    } on AuthException catch (e) {
+      return Err(AuthFailure(message: e.message, code: e.code));
+    } catch (e) {
+      return Err(ServerFailure(message: e.toString()));
+    }
+  }
+
+  @override
   Future<Result<void>> signOut() async {
     try {
       await _remote.signOut();
