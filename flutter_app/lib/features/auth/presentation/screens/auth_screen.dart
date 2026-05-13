@@ -1,6 +1,8 @@
+import 'package:cosmic_mirror/core/error/error_message.dart';
 import 'package:cosmic_mirror/features/auth/presentation/providers/auth_provider.dart';
 import 'package:cosmic_mirror/features/auth/presentation/widgets/firebase_auth_error.dart';
 import 'package:cosmic_mirror/l10n/app_localizations.dart';
+import 'package:cosmic_mirror/shared/providers/user_provider.dart';
 import 'package:cosmic_mirror/shared/widgets/lively_logo.dart';
 import 'package:flutter/foundation.dart'
     show TargetPlatform, defaultTargetPlatform;
@@ -200,16 +202,27 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
   Widget build(BuildContext context) {
     final authState = ref.watch(authActionProvider);
     final notifier = ref.read(authActionProvider.notifier);
+    final bootstrapError = ref.watch(
+      currentUserProvider.select((s) => s.bootstrapError),
+    );
     final l10n = AppLocalizations.of(context);
-    // Firebase error codes from authState.error need localization at
-    // render-time; client-side validation messages in _localError are
-    // already localized at construction. We prefer _localError when set
-    // so a fresh validation message immediately replaces a stale
-    // server-side error.
-    final error = _localError ??
-        (authState.error != null
-            ? localizedFirebaseAuthError(l10n, authState.error)
-            : null);
+    // Error precedence:
+    //  1) _localError — client-side validation, already localized.
+    //  2) authState.error — a Firebase auth error code; localize via
+    //     localizedFirebaseAuthError so Turkish users don't see English.
+    //  3) bootstrapError — Firebase succeeded but the backend session
+    //     POST failed. Without surfacing this users got stranded on
+    //     /auth thinking "I tapped Create account and nothing happened"
+    //     when really the API was just down. Run it through FriendlyError
+    //     so we get a localized two-line message + actionable hint.
+    String? error = _localError;
+    if (error == null && authState.error != null) {
+      error = localizedFirebaseAuthError(l10n, authState.error);
+    }
+    if (error == null && bootstrapError != null) {
+      final friendly = FriendlyError.from(context, bootstrapError);
+      error = '${friendly.title} — ${friendly.body}';
+    }
 
     final bottomInset = MediaQuery.of(context).viewInsets.bottom;
     return Scaffold(

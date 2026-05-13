@@ -23,6 +23,7 @@ class UserState {
     this.avatarUrl,
     this.hasCompletedOnboarding = false,
     this.isLoading = false,
+    this.bootstrapError,
   });
 
   final String? id;
@@ -41,6 +42,13 @@ class UserState {
   final bool hasCompletedOnboarding;
   final bool isLoading;
 
+  /// If non-null, the last bootstrapSession() call failed. This is
+  /// surfaced by the auth screen so users aren't silently stranded
+  /// when the backend is unreachable (e.g. dev API down, bad WiFi).
+  /// Before this existed the listener in main.dart swallowed the
+  /// error and the router got stuck holding the user on /auth.
+  final Object? bootstrapError;
+
   bool get isAuthenticated => id != null;
 
   UserState copyWith({
@@ -54,6 +62,8 @@ class UserState {
     bool clearAvatar = false,
     bool? hasCompletedOnboarding,
     bool? isLoading,
+    Object? bootstrapError,
+    bool clearBootstrapError = false,
   }) {
     return UserState(
       id: id ?? this.id,
@@ -66,6 +76,8 @@ class UserState {
       hasCompletedOnboarding:
           hasCompletedOnboarding ?? this.hasCompletedOnboarding,
       isLoading: isLoading ?? this.isLoading,
+      bootstrapError:
+          clearBootstrapError ? null : (bootstrapError ?? this.bootstrapError),
     );
   }
 }
@@ -76,7 +88,7 @@ class UserNotifier extends StateNotifier<UserState> {
   final ApiClient _apiClient;
 
   Future<void> bootstrapSession() async {
-    state = state.copyWith(isLoading: true);
+    state = state.copyWith(isLoading: true, clearBootstrapError: true);
     try {
       final firebaseUser = fb.FirebaseAuth.instance.currentUser;
       final data = await _apiClient.post<Map<String, dynamic>>(
@@ -105,7 +117,11 @@ class UserNotifier extends StateNotifier<UserState> {
         isLoading: false,
       );
     } catch (e) {
-      state = state.copyWith(isLoading: false);
+      // Record the failure on the state so the auth screen can surface it.
+      // Without this, a backend outage looked identical to "tapped Create
+      // account, nothing happened" — the listener in main.dart used to
+      // swallow this exception and leave the user stranded on /auth.
+      state = state.copyWith(isLoading: false, bootstrapError: e);
       rethrow;
     }
   }
