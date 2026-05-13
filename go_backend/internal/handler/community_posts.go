@@ -33,7 +33,9 @@ func (h *PostsHandler) ListBySpace(w http.ResponseWriter, r *http.Request) {
 		parseOffset(q.Get("offset")),
 	)
 	if err != nil {
-		respondError(w, http.StatusInternalServerError, "posts_list_error", err.Error())
+		// Map ErrForbidden (non-approved viewer) to 403 so the client
+		// can render a "Request to join" CTA instead of an error toast.
+		respondCommunityError(w, err)
 		return
 	}
 	respondSuccess(w, map[string]any{"posts": posts})

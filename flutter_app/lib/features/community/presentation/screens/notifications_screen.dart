@@ -132,7 +132,16 @@ class NotificationsScreen extends ConsumerWidget {
     if (!context.mounted) return;
     switch (n.targetType) {
       case 'space':
-        context.push('/community/${n.targetId}');
+        // A "requested to join your space" notification is for the
+        // owner — route them straight to the manage-requests screen
+        // instead of the space, since the space is something they can
+        // already open from any list and the actionable item here is
+        // the request itself.
+        if (n.type == 'space_join_requested') {
+          context.push('/community/${n.targetId}/requests');
+        } else {
+          context.push('/community/${n.targetId}');
+        }
       case 'post':
         // We don't know the spaceId from a notification — push the post
         // route and let it self-resolve from the post object.

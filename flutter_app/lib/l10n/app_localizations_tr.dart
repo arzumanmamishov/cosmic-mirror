@@ -94,6 +94,35 @@ class AppLocalizationsTr extends AppLocalizations {
   String get authPasswordTooShort => 'Şifre en az 8 karakter olmalıdır.';
 
   @override
+  String get spaceLockedTitle => 'Sadece üyelere özel alan';
+
+  @override
+  String get spaceLockedBody =>
+      'Erişim talebi göndermek için Katıl\'a dokun. Yönetici talebini onaylayacak ya da reddedecek; her iki durumda da bildirim alacaksın.';
+
+  @override
+  String get spacePendingTitle => 'Talep onay bekliyor';
+
+  @override
+  String get spacePendingBody =>
+      'Yönetici henüz talebini incelemedi. Onayladığı an buradaki gönderileri görebileceksin.';
+
+  @override
+  String get spaceManageRequests => 'Katılım taleplerini yönet';
+
+  @override
+  String get spaceRequestsTitle => 'Katılım talepleri';
+
+  @override
+  String get spaceRequestsEmpty => 'Şu anda bekleyen talep yok.';
+
+  @override
+  String get spaceRequestsAccept => 'Kabul et';
+
+  @override
+  String get spaceRequestsDecline => 'Reddet';
+
+  @override
   String get authResetPasswordTitle => 'Şifreni sıfırla';
 
   @override

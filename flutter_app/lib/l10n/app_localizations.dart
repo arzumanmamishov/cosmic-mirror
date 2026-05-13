@@ -266,6 +266,60 @@ abstract class AppLocalizations {
   /// **'Password must be at least 8 characters.'**
   String get authPasswordTooShort;
 
+  /// No description provided for @spaceLockedTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Members-only space'**
+  String get spaceLockedTitle;
+
+  /// No description provided for @spaceLockedBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap Join to request access. The owner will accept or decline your request, and you\'ll get a notification either way.'**
+  String get spaceLockedBody;
+
+  /// No description provided for @spacePendingTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Request pending'**
+  String get spacePendingTitle;
+
+  /// No description provided for @spacePendingBody.
+  ///
+  /// In en, this message translates to:
+  /// **'The space owner hasn\'t reviewed your request yet. You\'ll be able to see posts here as soon as they accept.'**
+  String get spacePendingBody;
+
+  /// No description provided for @spaceManageRequests.
+  ///
+  /// In en, this message translates to:
+  /// **'Manage join requests'**
+  String get spaceManageRequests;
+
+  /// No description provided for @spaceRequestsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Join requests'**
+  String get spaceRequestsTitle;
+
+  /// No description provided for @spaceRequestsEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No pending requests right now.'**
+  String get spaceRequestsEmpty;
+
+  /// No description provided for @spaceRequestsAccept.
+  ///
+  /// In en, this message translates to:
+  /// **'Accept'**
+  String get spaceRequestsAccept;
+
+  /// No description provided for @spaceRequestsDecline.
+  ///
+  /// In en, this message translates to:
+  /// **'Decline'**
+  String get spaceRequestsDecline;
+
   /// No description provided for @authResetPasswordTitle.
   ///
   /// In en, this message translates to:

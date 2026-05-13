@@ -31,6 +31,7 @@ import '../features/numerology/presentation/screens/numerology_screen.dart';
 import '../features/community/presentation/screens/create_space_screen.dart';
 import '../features/community/presentation/screens/edit_space_screen.dart';
 import '../features/community/presentation/screens/hashtag_feed_screen.dart';
+import '../features/community/presentation/screens/join_requests_screen.dart';
 import '../features/community/presentation/screens/members_screen.dart';
 import '../features/community/presentation/screens/notifications_screen.dart';
 import '../features/community/presentation/screens/post_detail_screen.dart';
@@ -302,6 +303,17 @@ final appRouterProvider = Provider<GoRouter>((ref) {
                 pageBuilder: (context, state) => _slideTransition(
                   state,
                   MembersScreen(spaceId: state.pathParameters['spaceId']!),
+                ),
+              ),
+              // Owner-only join-request inbox. Backend returns 403 to
+              // non-owners; the screen renders the ErrorView in that case.
+              GoRoute(
+                path: 'requests',
+                pageBuilder: (context, state) => _slideTransition(
+                  state,
+                  JoinRequestsScreen(
+                    spaceId: state.pathParameters['spaceId']!,
+                  ),
                 ),
               ),
               GoRoute(

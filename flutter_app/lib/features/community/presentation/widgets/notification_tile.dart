@@ -118,6 +118,15 @@ class _ActionIcon extends StatelessWidget {
       case 'space_followed':
         icon = Icons.group_add_rounded;
         color = palette.success;
+      case 'space_join_requested':
+        icon = Icons.how_to_reg_rounded;
+        color = palette.primary;
+      case 'space_join_approved':
+        icon = Icons.check_circle_rounded;
+        color = palette.success;
+      case 'space_join_declined':
+        icon = Icons.cancel_rounded;
+        color = palette.textSecondary;
       case 'post_in_space':
         icon = Icons.article_rounded;
         color = palette.gold;
@@ -155,6 +164,12 @@ String _actionLabel(String type) {
       return 'joined your space';
     case 'space_followed':
       return 'followed your space';
+    case 'space_join_requested':
+      return 'requested to join your space';
+    case 'space_join_approved':
+      return 'accepted your request to join';
+    case 'space_join_declined':
+      return 'declined your request to join';
     case 'post_in_space':
       return 'posted in a space you follow';
     case 'mentioned':

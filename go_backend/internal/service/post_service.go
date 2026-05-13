@@ -66,6 +66,15 @@ func (s *PostService) Create(ctx context.Context, userID, spaceID uuid.UUID, inp
 	if strings.TrimSpace(input.Content) == "" {
 		return nil, errors.New("content is required")
 	}
+	// Posting requires approved membership — pending requesters can see
+	// the space header but cannot write into it.
+	approved, err := s.memberRepo.IsApprovedMember(ctx, spaceID, userID)
+	if err != nil {
+		return nil, err
+	}
+	if !approved {
+		return nil, ErrForbidden
+	}
 	post := &domain.Post{
 		SpaceID:  spaceID,
 		AuthorID: userID,
@@ -73,7 +82,7 @@ func (s *PostService) Create(ctx context.Context, userID, spaceID uuid.UUID, inp
 		LinkURL:  input.LinkURL,
 	}
 
-	err := postgres.WithTx(ctx, s.db, func(tx *sqlx.Tx) error {
+	err = postgres.WithTx(ctx, s.db, func(tx *sqlx.Tx) error {
 		if err := s.postRepo.Create(ctx, tx, post); err != nil {
 			return err
 		}
@@ -129,6 +138,16 @@ func (s *PostService) Get(ctx context.Context, id, userID uuid.UUID) (*domain.Po
 }
 
 func (s *PostService) ListBySpace(ctx context.Context, spaceID, userID uuid.UUID, limit, offset int) ([]domain.PostWithMeta, error) {
+	// Reading a space's posts requires approved membership. Pending
+	// requesters and non-members see ErrForbidden so the client can
+	// render a "Request to join" CTA instead of an empty feed.
+	approved, err := s.memberRepo.IsApprovedMember(ctx, spaceID, userID)
+	if err != nil {
+		return nil, err
+	}
+	if !approved {
+		return nil, ErrForbidden
+	}
 	return s.postRepo.ListBySpace(ctx, spaceID, userID, limit, offset)
 }
 

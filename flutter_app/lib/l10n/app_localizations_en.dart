@@ -93,6 +93,35 @@ class AppLocalizationsEn extends AppLocalizations {
   String get authPasswordTooShort => 'Password must be at least 8 characters.';
 
   @override
+  String get spaceLockedTitle => 'Members-only space';
+
+  @override
+  String get spaceLockedBody =>
+      'Tap Join to request access. The owner will accept or decline your request, and you\'ll get a notification either way.';
+
+  @override
+  String get spacePendingTitle => 'Request pending';
+
+  @override
+  String get spacePendingBody =>
+      'The space owner hasn\'t reviewed your request yet. You\'ll be able to see posts here as soon as they accept.';
+
+  @override
+  String get spaceManageRequests => 'Manage join requests';
+
+  @override
+  String get spaceRequestsTitle => 'Join requests';
+
+  @override
+  String get spaceRequestsEmpty => 'No pending requests right now.';
+
+  @override
+  String get spaceRequestsAccept => 'Accept';
+
+  @override
+  String get spaceRequestsDecline => 'Decline';
+
+  @override
   String get authResetPasswordTitle => 'Reset your password';
 
   @override

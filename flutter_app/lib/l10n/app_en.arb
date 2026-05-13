@@ -32,6 +32,16 @@
   "authPasswordsDontMatch": "Passwords do not match.",
   "authPasswordTooShort": "Password must be at least 8 characters.",
 
+  "spaceLockedTitle": "Members-only space",
+  "spaceLockedBody": "Tap Join to request access. The owner will accept or decline your request, and you'll get a notification either way.",
+  "spacePendingTitle": "Request pending",
+  "spacePendingBody": "The space owner hasn't reviewed your request yet. You'll be able to see posts here as soon as they accept.",
+  "spaceManageRequests": "Manage join requests",
+  "spaceRequestsTitle": "Join requests",
+  "spaceRequestsEmpty": "No pending requests right now.",
+  "spaceRequestsAccept": "Accept",
+  "spaceRequestsDecline": "Decline",
+
   "authResetPasswordTitle": "Reset your password",
   "authResetPasswordBody": "Enter the email address on your account and we'll send you a link to set a new password.",
   "authResetPasswordSend": "Send reset link",

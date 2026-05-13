@@ -78,6 +78,13 @@ class ApiEndpoints {
   static String spaceJoin(String id) => '$basePath/spaces/$id/join';
   static String spaceMembers(String id) => '$basePath/spaces/$id/members';
   static String spacePosts(String id) => '$basePath/spaces/$id/posts';
+  // Join-request inbox + accept/decline (owner-only on the backend).
+  static String spaceJoinRequests(String id) =>
+      '$basePath/spaces/$id/join-requests';
+  static String spaceApproveRequest(String id, String userId) =>
+      '$basePath/spaces/$id/join-requests/$userId/approve';
+  static String spaceDeclineRequest(String id, String userId) =>
+      '$basePath/spaces/$id/join-requests/$userId/decline';
 
   static String post(String id) => '$basePath/posts/$id';
   static String postLike(String id) => '$basePath/posts/$id/like';

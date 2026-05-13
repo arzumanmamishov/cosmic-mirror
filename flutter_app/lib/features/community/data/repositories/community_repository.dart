@@ -105,6 +105,30 @@ class CommunityRepository {
     await _client.delete(ApiEndpoints.spaceJoin(spaceId));
   }
 
+  /// Pending join requests for a space (owner-only on the backend; calling
+  /// as a non-owner returns 403). Each entry is a SpaceMember with
+  /// status='pending'.
+  Future<List<SpaceMember>> listJoinRequests(String spaceId) async {
+    return _client.get<List<SpaceMember>>(
+      ApiEndpoints.spaceJoinRequests(spaceId),
+      fromJson: (raw) {
+        final list =
+            (raw as Map<String, dynamic>)['requests'] as List<dynamic>?;
+        return (list ?? const [])
+            .map((e) => SpaceMember.fromJson(e as Map<String, dynamic>))
+            .toList();
+      },
+    );
+  }
+
+  Future<void> approveJoinRequest(String spaceId, String userId) async {
+    await _client.post<dynamic>(ApiEndpoints.spaceApproveRequest(spaceId, userId));
+  }
+
+  Future<void> declineJoinRequest(String spaceId, String userId) async {
+    await _client.post<dynamic>(ApiEndpoints.spaceDeclineRequest(spaceId, userId));
+  }
+
   Future<List<SpaceMember>> listMembers(
     String spaceId, {
     int limit = 50,

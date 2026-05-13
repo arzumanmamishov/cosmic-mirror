@@ -147,6 +147,13 @@ func NewRouter(h *handler.Handlers, auth *middleware.Auth, rl *middleware.RateLi
 			r.Delete("/spaces/{spaceID}/join", h.Spaces.Leave)
 			r.Get("/spaces/{spaceID}/members", h.Spaces.Members)
 
+			// Community: join-request inbox for space owners. Approve
+			// flips the pending row to approved + bumps member_count;
+			// decline drops it (the user can re-request later).
+			r.Get("/spaces/{spaceID}/join-requests", h.Spaces.ListJoinRequests)
+			r.Post("/spaces/{spaceID}/join-requests/{userID}/approve", h.Spaces.ApproveJoinRequest)
+			r.Post("/spaces/{spaceID}/join-requests/{userID}/decline", h.Spaces.DeclineJoinRequest)
+
 			// Community: posts (nested under space for create/list, flat for the rest)
 			r.Get("/spaces/{spaceID}/posts", h.Posts.ListBySpace)
 			r.Post("/spaces/{spaceID}/posts", h.Posts.Create)

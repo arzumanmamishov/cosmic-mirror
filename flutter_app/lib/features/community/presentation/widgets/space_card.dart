@@ -106,6 +106,7 @@ class SpaceCard extends StatelessWidget {
             JoinButton(
               spaceId: s.id,
               initialJoined: space.isJoined,
+              initialPending: space.isPending,
             ),
           ],
         ),

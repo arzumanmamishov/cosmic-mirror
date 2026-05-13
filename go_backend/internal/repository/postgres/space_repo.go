@@ -49,7 +49,10 @@ func (r *SpaceRepository) GetByID(ctx context.Context, id, currentUserID uuid.UU
 	err := r.db.GetContext(ctx, &s,
 		`SELECT s.*,
 		        c.name AS category_name,
-		        EXISTS(SELECT 1 FROM space_members m WHERE m.space_id = s.id AND m.user_id = $2) AS is_joined
+		        EXISTS(SELECT 1 FROM space_members m
+		               WHERE m.space_id = s.id AND m.user_id = $2 AND m.status = 'approved') AS is_joined,
+		        EXISTS(SELECT 1 FROM space_members m
+		               WHERE m.space_id = s.id AND m.user_id = $2 AND m.status = 'pending') AS is_pending
 		 FROM spaces s
 		 LEFT JOIN space_categories c ON c.id = s.category_id
 		 WHERE s.id = $1`,
@@ -88,7 +91,9 @@ func (r *SpaceRepository) List(
 	idx := 2
 
 	if filter == SpaceFilterJoined {
-		condition = append(condition, "EXISTS (SELECT 1 FROM space_members m WHERE m.space_id = s.id AND m.user_id = $1)")
+		// "Joined" means approved-only. Pending requests don't count
+		// because the user can't read the space's content yet.
+		condition = append(condition, "EXISTS (SELECT 1 FROM space_members m WHERE m.space_id = s.id AND m.user_id = $1 AND m.status = 'approved')")
 	}
 	if categoryID != nil {
 		condition = append(condition, "s.category_id = $"+itoa(idx))
@@ -109,7 +114,10 @@ func (r *SpaceRepository) List(
 
 	sql := `SELECT s.*,
 	               c.name AS category_name,
-	               EXISTS(SELECT 1 FROM space_members m WHERE m.space_id = s.id AND m.user_id = $1) AS is_joined
+	               EXISTS(SELECT 1 FROM space_members m
+	                      WHERE m.space_id = s.id AND m.user_id = $1 AND m.status = 'approved') AS is_joined,
+	               EXISTS(SELECT 1 FROM space_members m
+	                      WHERE m.space_id = s.id AND m.user_id = $1 AND m.status = 'pending') AS is_pending
 	        FROM spaces s
 	        LEFT JOIN space_categories c ON c.id = s.category_id
 	        ` + where + `
@@ -156,9 +164,12 @@ func (r *SpaceRepository) ListByMember(ctx context.Context, targetUserID, curren
 	err := r.db.SelectContext(ctx, &spaces,
 		`SELECT s.*,
 		        c.name AS category_name,
-		        EXISTS(SELECT 1 FROM space_members m2 WHERE m2.space_id = s.id AND m2.user_id = $1) AS is_joined
+		        EXISTS(SELECT 1 FROM space_members m2
+		               WHERE m2.space_id = s.id AND m2.user_id = $1 AND m2.status = 'approved') AS is_joined,
+		        EXISTS(SELECT 1 FROM space_members m2
+		               WHERE m2.space_id = s.id AND m2.user_id = $1 AND m2.status = 'pending') AS is_pending
 		 FROM spaces s
-		 JOIN space_members m ON m.space_id = s.id AND m.user_id = $2
+		 JOIN space_members m ON m.space_id = s.id AND m.user_id = $2 AND m.status = 'approved'
 		 LEFT JOIN space_categories c ON c.id = s.category_id
 		 ORDER BY m.joined_at DESC
 		 LIMIT $3 OFFSET $4`,

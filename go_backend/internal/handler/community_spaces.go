@@ -178,6 +178,67 @@ func (h *SpacesHandler) GetUserProfile(w http.ResponseWriter, r *http.Request) {
 	respondSuccess(w, profile)
 }
 
+// ListJoinRequests returns pending join requests for a space. Owner-only.
+func (h *SpacesHandler) ListJoinRequests(w http.ResponseWriter, r *http.Request) {
+	ownerID := middleware.UserIDFromContext(r.Context())
+	id, err := uuid.Parse(chi.URLParam(r, "spaceID"))
+	if err != nil {
+		respondError(w, http.StatusBadRequest, "invalid_id", "Invalid space ID")
+		return
+	}
+	q := r.URL.Query()
+	limit := parseLimit(q.Get("limit"), 50, 200)
+	offset := parseOffset(q.Get("offset"))
+	requests, err := h.communitySvc.ListJoinRequests(r.Context(), id, ownerID, limit, offset)
+	if err != nil {
+		respondCommunityError(w, err)
+		return
+	}
+	respondSuccess(w, map[string]any{"requests": requests})
+}
+
+// ApproveJoinRequest accepts a pending request. Owner-only.
+func (h *SpacesHandler) ApproveJoinRequest(w http.ResponseWriter, r *http.Request) {
+	ownerID := middleware.UserIDFromContext(r.Context())
+	spaceID, err := uuid.Parse(chi.URLParam(r, "spaceID"))
+	if err != nil {
+		respondError(w, http.StatusBadRequest, "invalid_id", "Invalid space ID")
+		return
+	}
+	requesterID, err := uuid.Parse(chi.URLParam(r, "userID"))
+	if err != nil {
+		respondError(w, http.StatusBadRequest, "invalid_id", "Invalid user ID")
+		return
+	}
+	if err := h.communitySvc.ApproveJoinRequest(r.Context(), spaceID, ownerID, requesterID); err != nil {
+		respondCommunityError(w, err)
+		return
+	}
+	respondNoContent(w)
+}
+
+// DeclineJoinRequest declines a pending request. Owner-only. The
+// declined user may re-request later — declined rows are deleted, not
+// retained as a permanent block.
+func (h *SpacesHandler) DeclineJoinRequest(w http.ResponseWriter, r *http.Request) {
+	ownerID := middleware.UserIDFromContext(r.Context())
+	spaceID, err := uuid.Parse(chi.URLParam(r, "spaceID"))
+	if err != nil {
+		respondError(w, http.StatusBadRequest, "invalid_id", "Invalid space ID")
+		return
+	}
+	requesterID, err := uuid.Parse(chi.URLParam(r, "userID"))
+	if err != nil {
+		respondError(w, http.StatusBadRequest, "invalid_id", "Invalid user ID")
+		return
+	}
+	if err := h.communitySvc.DeclineJoinRequest(r.Context(), spaceID, ownerID, requesterID); err != nil {
+		respondCommunityError(w, err)
+		return
+	}
+	respondNoContent(w)
+}
+
 func (h *SpacesHandler) Members(w http.ResponseWriter, r *http.Request) {
 	id, err := uuid.Parse(chi.URLParam(r, "spaceID"))
 	if err != nil {

@@ -36,18 +36,26 @@ type Space struct {
 
 // SpaceWithMeta is the list-response shape — Space plus per-viewer flags
 // and the joined category name. Returned from List/Get list endpoints.
+//
+// IsJoined is true ONLY when the viewer is an APPROVED member (so it
+// gates access to posts). IsPending is true when the viewer has
+// requested to join but hasn't been approved yet — used by the UI to
+// show a "Pending approval" state on the Join button.
 type SpaceWithMeta struct {
 	Space
 	IsJoined     bool    `db:"is_joined"     json:"is_joined"`
+	IsPending    bool    `db:"is_pending"    json:"is_pending"`
 	CategoryName *string `db:"category_name" json:"category_name,omitempty"`
 }
 
 // SpaceMember is one user's membership of one space (joined to user data
-// for display).
+// for display). Status is 'approved' for regular members; 'pending' rows
+// are only returned by the owner-only join-requests endpoint.
 type SpaceMember struct {
 	SpaceID         uuid.UUID `db:"space_id"        json:"space_id"`
 	UserID          uuid.UUID `db:"user_id"         json:"user_id"`
-	Role            string    `db:"role"            json:"role"` // member|mod|owner
+	Role            string    `db:"role"            json:"role"`   // member|mod|owner
+	Status          string    `db:"status"          json:"status"` // pending|approved
 	JoinedAt        time.Time `db:"joined_at"       json:"joined_at"`
 	UserName        string    `db:"user_name"       json:"user_name"`
 	UserAvatarURL   *string   `db:"user_avatar_url" json:"user_avatar_url,omitempty"`

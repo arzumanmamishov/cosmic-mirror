@@ -93,3 +93,11 @@ final userCommunityProfileProvider = FutureProvider.autoDispose
     .family<UserCommunityProfile, String>((ref, userIdOrMe) async {
   return ref.read(communityRepositoryProvider).getUserProfile(userIdOrMe);
 });
+
+/// Pending join-requests inbox for a space owner. Family-keyed by space id.
+/// Backend returns 403 for non-owners, surfaced here as a provider error so
+/// the screen can show "Only the owner can see this".
+final spaceJoinRequestsProvider = FutureProvider.autoDispose
+    .family<List<SpaceMember>, String>((ref, spaceId) async {
+  return ref.read(communityRepositoryProvider).listJoinRequests(spaceId);
+});

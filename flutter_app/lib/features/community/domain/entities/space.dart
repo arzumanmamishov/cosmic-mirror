@@ -74,11 +74,16 @@ class Space extends Equatable {
   List<Object?> get props => [id, handle, memberCount];
 }
 
-/// List-response variant: Space + per-viewer flag + joined category name.
+/// List-response variant: Space + per-viewer flags + joined category name.
+///
+/// [isJoined] is true only for APPROVED members. [isPending] is true when
+/// the viewer has requested to join but the owner hasn't accepted yet —
+/// the UI uses it to render "Pending approval" instead of "Join".
 class SpaceWithMeta extends Equatable {
   const SpaceWithMeta({
     required this.space,
     required this.isJoined,
+    required this.isPending,
     this.categoryName,
   });
 
@@ -86,22 +91,25 @@ class SpaceWithMeta extends Equatable {
     return SpaceWithMeta(
       space: Space.fromJson(json),
       isJoined: json['is_joined'] as bool? ?? false,
+      isPending: json['is_pending'] as bool? ?? false,
       categoryName: json['category_name'] as String?,
     );
   }
 
   final Space space;
   final bool isJoined;
+  final bool isPending;
   final String? categoryName;
 
   @override
-  List<Object?> get props => [space, isJoined];
+  List<Object?> get props => [space, isJoined, isPending];
 }
 
 class SpaceMember extends Equatable {
   const SpaceMember({
     required this.userId,
     required this.role,
+    required this.status,
     required this.joinedAt,
     required this.userName,
     this.userAvatarUrl,
@@ -111,6 +119,7 @@ class SpaceMember extends Equatable {
     return SpaceMember(
       userId: json['user_id'] as String? ?? '',
       role: json['role'] as String? ?? 'member',
+      status: json['status'] as String? ?? 'approved',
       joinedAt: DateTime.tryParse(json['joined_at'] as String? ?? '') ??
           DateTime.now(),
       userName: json['user_name'] as String? ?? '',
@@ -120,10 +129,11 @@ class SpaceMember extends Equatable {
 
   final String userId;
   final String role;
+  final String status; // 'pending' | 'approved'
   final DateTime joinedAt;
   final String userName;
   final String? userAvatarUrl;
 
   @override
-  List<Object?> get props => [userId, role];
+  List<Object?> get props => [userId, role, status];
 }

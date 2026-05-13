@@ -32,6 +32,16 @@
   "authPasswordsDontMatch": "Şifreler eşleşmiyor.",
   "authPasswordTooShort": "Şifre en az 8 karakter olmalıdır.",
 
+  "spaceLockedTitle": "Sadece üyelere özel alan",
+  "spaceLockedBody": "Erişim talebi göndermek için Katıl'a dokun. Yönetici talebini onaylayacak ya da reddedecek; her iki durumda da bildirim alacaksın.",
+  "spacePendingTitle": "Talep onay bekliyor",
+  "spacePendingBody": "Yönetici henüz talebini incelemedi. Onayladığı an buradaki gönderileri görebileceksin.",
+  "spaceManageRequests": "Katılım taleplerini yönet",
+  "spaceRequestsTitle": "Katılım talepleri",
+  "spaceRequestsEmpty": "Şu anda bekleyen talep yok.",
+  "spaceRequestsAccept": "Kabul et",
+  "spaceRequestsDecline": "Reddet",
+
   "authResetPasswordTitle": "Şifreni sıfırla",
   "authResetPasswordBody": "Hesabındaki e-posta adresini gir, sana yeni bir şifre belirlemen için bir bağlantı gönderelim.",
   "authResetPasswordSend": "Sıfırlama bağlantısı gönder",

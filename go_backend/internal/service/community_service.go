@@ -104,7 +104,8 @@ func (s *CommunityService) CreateSpace(ctx context.Context, userID uuid.UUID, in
 		if err := s.spaceRepo.Create(ctx, space); err != nil {
 			return fmt.Errorf("create space: %w", err)
 		}
-		if _, err := s.memberRepo.Add(ctx, tx, space.ID, userID, "owner"); err != nil {
+		// The creator is always approved instantly — they're the owner.
+		if _, err := s.memberRepo.Add(ctx, tx, space.ID, userID, "owner", "approved"); err != nil {
 			return fmt.Errorf("add owner membership: %w", err)
 		}
 		return nil
@@ -129,8 +130,10 @@ func (s *CommunityService) DeleteSpace(ctx context.Context, id, userID uuid.UUID
 	return s.spaceRepo.Delete(ctx, id)
 }
 
-// JoinSpace makes user a member. Idempotent — no-op if already joined.
-// Emits a `space_member_joined` notification to the space owner.
+// JoinSpace files a join REQUEST. The user does not become an approved
+// member until the space owner accepts. Idempotent — repeat calls while
+// pending or already approved are no-ops. Emits a
+// `space_join_requested` notification to the space owner.
 func (s *CommunityService) JoinSpace(ctx context.Context, spaceID, userID uuid.UUID) error {
 	space, err := s.spaceRepo.GetByID(ctx, spaceID, userID)
 	if err != nil {
@@ -141,21 +144,21 @@ func (s *CommunityService) JoinSpace(ctx context.Context, spaceID, userID uuid.U
 	}
 
 	return postgres.WithTx(ctx, s.db, func(tx *sqlx.Tx) error {
-		added, err := s.memberRepo.Add(ctx, tx, spaceID, userID, "member")
+		added, err := s.memberRepo.Add(ctx, tx, spaceID, userID, "member", "pending")
 		if err != nil {
 			return err
 		}
 		if !added {
-			return nil // already a member
+			return nil // already requested or already a member
 		}
-		if err := s.spaceRepo.IncrementMemberCount(ctx, tx, spaceID, +1); err != nil {
-			return err
-		}
+		// member_count is NOT incremented here — pending requests don't
+		// count toward the visible member count. ApproveJoinRequest
+		// increments it.
 		actorID := userID
 		_ = s.notifSvc.Emit(ctx, tx, EmitParams{
 			RecipientID: space.CreatedBy,
 			ActorID:     &actorID,
-			Type:        "space_member_joined",
+			Type:        "space_join_requested",
 			TargetType:  "space",
 			TargetID:    spaceID,
 		})
@@ -163,13 +166,96 @@ func (s *CommunityService) JoinSpace(ctx context.Context, spaceID, userID uuid.U
 	})
 }
 
+// ApproveJoinRequest flips a pending request to approved. Only the
+// space owner may call this. Increments member_count and notifies the
+// requester.
+func (s *CommunityService) ApproveJoinRequest(ctx context.Context, spaceID, ownerID, requesterID uuid.UUID) error {
+	if err := s.assertOwner(ctx, spaceID, ownerID); err != nil {
+		return err
+	}
+	return postgres.WithTx(ctx, s.db, func(tx *sqlx.Tx) error {
+		ok, err := s.memberRepo.Approve(ctx, tx, spaceID, requesterID)
+		if err != nil {
+			return err
+		}
+		if !ok {
+			// Either no pending request exists or it was already
+			// approved. Treat as a no-op so the owner's UI can be
+			// optimistic without worrying about double-clicks.
+			return nil
+		}
+		if err := s.spaceRepo.IncrementMemberCount(ctx, tx, spaceID, +1); err != nil {
+			return err
+		}
+		actor := ownerID
+		_ = s.notifSvc.Emit(ctx, tx, EmitParams{
+			RecipientID: requesterID,
+			ActorID:     &actor,
+			Type:        "space_join_approved",
+			TargetType:  "space",
+			TargetID:    spaceID,
+		})
+		return nil
+	})
+}
+
+// DeclineJoinRequest drops a pending request. Only the space owner may
+// call this. The requester can re-request later — declined rows are
+// deleted (not marked rejected) so there's no permanent block.
+func (s *CommunityService) DeclineJoinRequest(ctx context.Context, spaceID, ownerID, requesterID uuid.UUID) error {
+	if err := s.assertOwner(ctx, spaceID, ownerID); err != nil {
+		return err
+	}
+	return postgres.WithTx(ctx, s.db, func(tx *sqlx.Tx) error {
+		ok, err := s.memberRepo.Decline(ctx, tx, spaceID, requesterID)
+		if err != nil {
+			return err
+		}
+		if !ok {
+			return nil
+		}
+		actor := ownerID
+		_ = s.notifSvc.Emit(ctx, tx, EmitParams{
+			RecipientID: requesterID,
+			ActorID:     &actor,
+			Type:        "space_join_declined",
+			TargetType:  "space",
+			TargetID:    spaceID,
+		})
+		return nil
+	})
+}
+
+// ListJoinRequests returns pending requests for the owner's manage-
+// requests screen.
+func (s *CommunityService) ListJoinRequests(ctx context.Context, spaceID, ownerID uuid.UUID, limit, offset int) ([]domain.SpaceMember, error) {
+	if err := s.assertOwner(ctx, spaceID, ownerID); err != nil {
+		return nil, err
+	}
+	return s.memberRepo.ListPending(ctx, spaceID, limit, offset)
+}
+
+// IsApprovedMember is a cheap check used by other services (PostService)
+// to gate access to space content.
+func (s *CommunityService) IsApprovedMember(ctx context.Context, spaceID, userID uuid.UUID) (bool, error) {
+	return s.memberRepo.IsApprovedMember(ctx, spaceID, userID)
+}
+
 func (s *CommunityService) LeaveSpace(ctx context.Context, spaceID, userID uuid.UUID) error {
 	return postgres.WithTx(ctx, s.db, func(tx *sqlx.Tx) error {
+		// Remove deletes regardless of status, so leaving works whether
+		// the user was approved or still pending. We only decrement
+		// member_count if the removed row was an approved member —
+		// otherwise we'd drift negative.
+		approved, err := s.memberRepo.IsApprovedMember(ctx, spaceID, userID)
+		if err != nil {
+			return err
+		}
 		removed, err := s.memberRepo.Remove(ctx, tx, spaceID, userID)
 		if err != nil {
 			return err
 		}
-		if !removed {
+		if !removed || !approved {
 			return nil
 		}
 		return s.spaceRepo.IncrementMemberCount(ctx, tx, spaceID, -1)
