@@ -1,10 +1,8 @@
+import 'package:cosmic_mirror/core/network/api_endpoints.dart';
+import 'package:cosmic_mirror/features/daily_reading/data/models/daily_reading_model.dart';
+import 'package:cosmic_mirror/features/daily_reading/domain/entities/daily_reading.dart';
+import 'package:cosmic_mirror/shared/providers/user_provider.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
-import '../../../../core/network/api_client.dart';
-import '../../../../core/network/api_endpoints.dart';
-import '../../../../shared/providers/user_provider.dart';
-import '../../data/models/daily_reading_model.dart';
-import '../../domain/entities/daily_reading.dart';
 
 final dailyReadingProvider =
     FutureProvider.autoDispose<DailyReading>((ref) async {

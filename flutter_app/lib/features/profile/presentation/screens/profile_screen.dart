@@ -1,6 +1,5 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cosmic_mirror/config/theme/app_palette.dart';
-import 'package:cosmic_mirror/core/network/api_client.dart';
 import 'package:cosmic_mirror/core/network/api_endpoints.dart';
 import 'package:cosmic_mirror/l10n/app_localizations.dart';
 import 'package:cosmic_mirror/features/auth/presentation/providers/auth_provider.dart';
@@ -54,7 +53,6 @@ class ProfileScreen extends ConsumerWidget {
           Positioned.fill(
             child: CosmicStarfield(
               color: p.textPrimary,
-              starCount: 60,
               intensity: 0.7,
             ),
           ),
@@ -73,9 +71,9 @@ class ProfileScreen extends ConsumerWidget {
                   ),
                 ),
               const SizedBox(height: 16),
-              FadeSlideIn(
-                delay: const Duration(milliseconds: 160),
-                child: const _StatsRow(),
+              const FadeSlideIn(
+                delay: Duration(milliseconds: 160),
+                child: _StatsRow(),
               ),
               const SizedBox(height: 16),
               FadeSlideIn(
@@ -89,9 +87,9 @@ class ProfileScreen extends ConsumerWidget {
                   AppLocalizations.of(context).profileBirthData,
                 ),
               ),
-              FadeSlideIn(
-                delay: const Duration(milliseconds: 320),
-                child: const _BirthDataCard(),
+              const FadeSlideIn(
+                delay: Duration(milliseconds: 320),
+                child: _BirthDataCard(),
               ),
               const SizedBox(height: 16),
               FadeSlideIn(
@@ -100,9 +98,9 @@ class ProfileScreen extends ConsumerWidget {
                   AppLocalizations.of(context).profileAccount,
                 ),
               ),
-              FadeSlideIn(
-                delay: const Duration(milliseconds: 400),
-                child: const _AccountLinks(),
+              const FadeSlideIn(
+                delay: Duration(milliseconds: 400),
+                child: _AccountLinks(),
               ),
               const SizedBox(height: 24),
               FadeSlideIn(
@@ -133,7 +131,7 @@ class ProfileScreen extends ConsumerWidget {
                         );
                       },
                     );
-                    if (confirmed == true) {
+                    if (confirmed ?? false) {
                       await ref.read(authRepositoryProvider).signOut();
                       ref.read(currentUserProvider.notifier).clear();
                       if (context.mounted) context.go('/auth');
@@ -443,8 +441,7 @@ class _ProfileHero extends ConsumerWidget {
               ListTile(
                 leading: Icon(Icons.photo_library_rounded, color: p.primary),
                 title: Text(l10n.avatarChooseFromGallery),
-                onTap: () =>
-                    Navigator.pop(sheetContext, _AvatarAction.gallery),
+                onTap: () => Navigator.pop(sheetContext, _AvatarAction.gallery),
               ),
               ListTile(
                 leading: Icon(Icons.photo_camera_rounded, color: p.primary),
@@ -510,9 +507,8 @@ class _ProfileHero extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final p = context.palette;
-    final initial = (user.name?.isNotEmpty ?? false)
-        ? user.name![0].toUpperCase()
-        : '✦';
+    final initial =
+        (user.name?.isNotEmpty ?? false) ? user.name![0].toUpperCase() : '✦';
 
     return Column(
       children: [
@@ -884,7 +880,8 @@ class _SubscriptionCard extends StatelessWidget {
                 children: [
                   Text(
                     isPremium
-                        ? AppLocalizations.of(context).profileSubscriptionPremium
+                        ? AppLocalizations.of(context)
+                            .profileSubscriptionPremium
                         : AppLocalizations.of(context).profileSubscriptionFree,
                     style: TextStyle(
                       color: isPremium ? Colors.white : p.textPrimary,
@@ -958,13 +955,12 @@ class _BirthDataCard extends ConsumerWidget {
     final profileAsync = ref.watch(birthProfileProvider);
     final profile = profileAsync.asData?.value;
 
-    String birthDate = '—';
-    String birthTime = '—';
-    String birthPlace = '—';
+    var birthDate = '—';
+    var birthTime = '—';
+    var birthPlace = '—';
     if (profile != null) {
       final d = profile.birthDate;
-      birthDate =
-          '${_monthName(d.month)} ${d.day}, ${d.year}';
+      birthDate = '${_monthName(d.month)} ${d.day}, ${d.year}';
       birthPlace = profile.birthPlace.isNotEmpty ? profile.birthPlace : '—';
       if (profile.birthTimeKnown && profile.birthTime != null) {
         final t = profile.birthTime!;
@@ -1017,8 +1013,18 @@ class _BirthDataCard extends ConsumerWidget {
 
   String _monthName(int m) {
     const months = [
-      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec',
     ];
     return months[(m - 1).clamp(0, 11)];
   }

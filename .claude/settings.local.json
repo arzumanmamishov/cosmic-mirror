@@ -32,7 +32,18 @@
       "Bash(curl -s \"http://localhost:8080/api/v1/places/search?q=Tbilisi\")",
       "Bash(docker exec *)",
       "Bash(go vet *)",
-      "Bash(flutter gen-l10n *)"
+      "Bash(flutter gen-l10n *)",
+      "Bash(flutter test *)",
+      "Bash(grep -v \"^$\")",
+      "Bash(awk '{print $1}')",
+      "Bash(awk '-F • ' '{print $NF}')",
+      "Bash(awk '/^  \\(google_sign_in_ios|firebase_messaging|google_sign_in\\):$/,/^    version:/' pubspec.lock)",
+      "Bash(awk '/^  google_sign_in_ios:$/,/^    version:/' pubspec.lock)",
+      "Bash(curl -s \"https://pub.dev/api/packages/google_sign_in_ios\")",
+      "Bash(python3 -c \"import json,sys; d=json.load\\(sys.stdin\\); vs=[v['version'] for v in d['versions']]; print\\('\\\\n'.join\\(v for v in vs if v.startswith\\('5.7'\\) or v.startswith\\('5.8'\\) or v.startswith\\('5.9'\\) or v.startswith\\('5.6'\\)\\)\\)\")",
+      "Bash(curl -s https://pub.dev/api/packages/google_sign_in_ios/versions/__TRACKED_VAR__)",
+      "Bash(rm -f Podfile.lock)",
+      "Bash(pod install *)"
     ]
   }
 }
