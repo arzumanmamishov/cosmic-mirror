@@ -43,7 +43,13 @@
       "Bash(python3 -c \"import json,sys; d=json.load\\(sys.stdin\\); vs=[v['version'] for v in d['versions']]; print\\('\\\\n'.join\\(v for v in vs if v.startswith\\('5.7'\\) or v.startswith\\('5.8'\\) or v.startswith\\('5.9'\\) or v.startswith\\('5.6'\\)\\)\\)\")",
       "Bash(curl -s https://pub.dev/api/packages/google_sign_in_ios/versions/__TRACKED_VAR__)",
       "Bash(rm -f Podfile.lock)",
-      "Bash(pod install *)"
+      "Bash(pod install *)",
+      "Bash(flutter build *)",
+      "Bash(cat \"/Users/arzumanmamishov/.pub-cache/hosted/pub.dev/firebase_messaging-14.9.4/ios/Classes/FLTFirebaseMessagingPlugin.h\" 2>&1 | head -20)",
+      "Read(//Users/arzumanmamishov/.pub-cache/hosted/pub.dev/firebase_messaging-14.9.4/ios/Classes/**)",
+      "Bash(python3)",
+      "Bash(rm -rf ~/Library/Developer/Xcode/DerivedData/Runner-*)",
+      "Read(//Users/arzumanmamishov/Library/Developer/Xcode/DerivedData/**)"
     ]
   }
 }

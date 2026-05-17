@@ -28,7 +28,13 @@ require File.expand_path(File.join('packages', 'flutter_tools', 'bin', 'podhelpe
 flutter_ios_podfile_setup
 
 target 'Runner' do
-  use_frameworks!
+  # Static linkage avoids the "non-modular header inside framework
+  # module" failure that hits when firebase_messaging's plugin header
+  # imports <Firebase/Firebase.h> from inside a dynamic framework.
+  # Firebase iOS SDK only ships an umbrella header (not a Clang
+  # module), so dynamic-framework integration won't compile it.
+  use_frameworks! :linkage => :static
+  use_modular_headers!
 
   flutter_install_all_ios_pods File.dirname(File.realpath(__FILE__))
   target 'RunnerTests' do
@@ -39,5 +45,24 @@ end
 post_install do |installer|
   installer.pods_project.targets.each do |target|
     flutter_additional_ios_build_settings(target)
+    target.build_configurations.each do |config|
+      # firebase_messaging / firebase_auth plugin umbrella headers
+      # transitively #import <Firebase/Firebase.h>, which is not a
+      # Clang module. The check fires both inside the Pods (where
+      # use_frameworks! makes each pod a framework module) AND inside
+      # the Runner target when it imports the firebase_messaging
+      # module via GeneratedPluginRegistrant, so the setting needs to
+      # be on both the Pods project AND the consumer Runner project.
+      config.build_settings['CLANG_ALLOW_NON_MODULAR_INCLUDES_IN_FRAMEWORK_MODULES'] = 'YES'
+    end
+  end
+
+  installer.aggregate_targets.each do |aggregate_target|
+    aggregate_target.user_project.native_targets.each do |target|
+      target.build_configurations.each do |config|
+        config.build_settings['CLANG_ALLOW_NON_MODULAR_INCLUDES_IN_FRAMEWORK_MODULES'] = 'YES'
+      end
+    end
+    aggregate_target.user_project.save
   end
 end
