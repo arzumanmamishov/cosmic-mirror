@@ -73,6 +73,12 @@ dev_dependencies:
   mocktail: ^1.0.3
   very_good_analysis: ^5.1.0
 
+# Pin google_sign_in_ios to a 5.7.x release so it keeps using
+# GoogleSignIn 7.x / GoogleUtilities 7.x — newer 5.8+ pulls
+# GoogleSignIn 8 which clashes with Firebase iOS 10's GoogleUtilities 7.
+dependency_overrides:
+  google_sign_in_ios: ">=5.7.0 <5.8.0"
+
 flutter:
   uses-material-design: true
   generate: true
