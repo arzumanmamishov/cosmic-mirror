@@ -1,27 +1,20 @@
+import 'package:cosmic_mirror/config/theme/app_palette.dart';
+import 'package:cosmic_mirror/config/theme/lively_type.dart';
+import 'package:cosmic_mirror/features/onboarding/presentation/providers/onboarding_provider.dart';
 import 'package:cosmic_mirror/l10n/app_localizations.dart';
 import 'package:cosmic_mirror/shared/providers/user_provider.dart';
-import 'package:cosmic_mirror/shared/widgets/lively_logo.dart';
+import 'package:cosmic_mirror/shared/widgets/lively/gold_button.dart';
+import 'package:cosmic_mirror/shared/widgets/lively/lively_backdrop.dart';
+import 'package:cosmic_mirror/shared/widgets/lively/mini_wheel.dart';
 import 'package:cosmic_mirror/shared/widgets/staggered_fade_in.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:google_fonts/google_fonts.dart';
 
-const _kGold = Color(0xFFD4B16A);
-const _kGoldLight = Color(0xFFE9D49A);
-const _kGoldDark = Color(0xFF9F7637);
-const _kGoldGradient = LinearGradient(
-  colors: [_kGoldLight, _kGold, _kGoldDark],
-  begin: Alignment.topLeft,
-  end: Alignment.bottomRight,
-);
-
-const _kBackground = Color(0xFF1A1F2E);
-const _kTextSecondary = Color(0xFFB6BAC4);
-
-/// Post-onboarding welcome screen — gold LIVELY logo, staggered welcome
-/// copy that fades and slides in line by line, then a gold CTA at the
-/// bottom that refreshes the user session and drops the user into /home.
+/// Post-onboarding payoff — the chart reveal. The whole screen builds
+/// itself in front of the user: kicker, title, the spinning-up mini
+/// wheel, then the three luminary cards, an opening line, and the CTA,
+/// each fading up on a staggered delay.
 class WelcomeScreen extends ConsumerStatefulWidget {
   const WelcomeScreen({super.key});
 
@@ -30,165 +23,251 @@ class WelcomeScreen extends ConsumerStatefulWidget {
 }
 
 class _WelcomeScreenState extends ConsumerState<WelcomeScreen> {
-  bool _enteringCosmos = false;
+  bool _entering = false;
 
-  Future<void> _enterCosmos() async {
-    if (_enteringCosmos) return;
-    setState(() => _enteringCosmos = true);
+  Future<void> _enter() async {
+    if (_entering) return;
+    setState(() => _entering = true);
     // Re-bootstrap so the backend's updated has_completed_onboarding flag
-    // (set when the birth profile was saved) is reflected in our user
-    // state. Without this refresh the router redirect would bounce the
-    // user back to /onboarding when they try to enter /home.
+    // is reflected — otherwise the router bounces the user to /onboarding.
     try {
       await ref.read(currentUserProvider.notifier).bootstrapSession();
-    } catch (_) {
-      // Even if the refresh fails, fall through — the next /home request
-      // will hit the backend and either succeed or surface its own error.
-    }
+    } catch (_) {/* fall through — /home will surface its own error */}
     if (mounted) context.go('/home');
   }
 
   @override
   Widget build(BuildContext context) {
-    final user = ref.watch(currentUserProvider);
+    final p = context.palette;
     final l10n = AppLocalizations.of(context);
+    final user = ref.watch(currentUserProvider);
+    final onb = ref.watch(onboardingProvider);
+
     final name = (user.name?.trim().isNotEmpty ?? false)
         ? user.name!.trim().split(' ').first
         : l10n.stargazer;
 
+    final sun = user.sunSign;
+    final moon = user.moonSign;
+    final rising = user.risingSign;
+
+    final dateLine = _dateLine(onb);
+
     return Scaffold(
-      backgroundColor: _kBackground,
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(28, 24, 28, 28),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              const SizedBox(height: 12),
-              const FadeSlideIn(
-                duration: Duration(milliseconds: 800),
-                offset: 16,
-                child: Center(child: LivelyLogo(size: 140)),
-              ),
-              const Spacer(),
-              FadeSlideIn(
-                delay: const Duration(milliseconds: 700),
-                duration: const Duration(milliseconds: 700),
-                child: Text(
-                  l10n.welcomeHello,
-                  textAlign: TextAlign.center,
-                  style: GoogleFonts.poppins(
-                    color: Colors.white,
-                    fontSize: 28,
-                    fontWeight: FontWeight.w400,
-                    height: 1.1,
+      body: LivelyBackdrop(
+        seed: 42,
+        intensity: 1.4,
+        child: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(24, 8, 24, 24),
+            child: Column(
+              children: [
+                const SizedBox(height: 4),
+
+                // kicker + date
+                FadeSlideIn(
+                  duration: const Duration(milliseconds: 700),
+                  child: Column(
+                    children: [
+                      Text(
+                        '✨  ${l10n.welcomeKicker(name)}'.toUpperCase(),
+                        style: LivelyType.kicker(p.primary)
+                            .copyWith(letterSpacing: 2.4),
+                      ),
+                      if (dateLine != null) ...[
+                        const SizedBox(height: 8),
+                        Text(
+                          dateLine,
+                          style: LivelyType.mono(p.textMuted, size: 11),
+                        ),
+                      ],
+                    ],
                   ),
                 ),
-              ),
-              const SizedBox(height: 6),
-              FadeSlideIn(
-                delay: const Duration(milliseconds: 1100),
-                duration: const Duration(milliseconds: 800),
-                offset: 30,
-                child: ShaderMask(
-                  shaderCallback: (rect) => _kGoldGradient.createShader(rect),
-                  child: Text(
-                    name,
+
+                const SizedBox(height: 26),
+
+                // title
+                FadeSlideIn(
+                  delay: const Duration(milliseconds: 150),
+                  duration: const Duration(milliseconds: 700),
+                  child: Text.rich(
+                    TextSpan(
+                      children: [
+                        TextSpan(text: '${l10n.welcomeChartReady}\n'),
+                        TextSpan(
+                          text: l10n.welcomeChartReady2,
+                          style: LivelyType.d2(p.primary),
+                        ),
+                      ],
+                    ),
                     textAlign: TextAlign.center,
-                    style: GoogleFonts.cormorantGaramond(
-                      color: Colors.white,
-                      fontSize: 56,
-                      fontWeight: FontWeight.w700,
-                      height: 1.0,
-                      letterSpacing: 0.6,
+                    style: LivelyType.d2(p.textPrimary),
+                  ),
+                ),
+
+                const SizedBox(height: 26),
+
+                // wheel — scales in
+                FadeSlideIn(
+                  delay: const Duration(milliseconds: 350),
+                  duration: const Duration(milliseconds: 600),
+                  child: TweenAnimationBuilder<double>(
+                    tween: Tween(begin: 0.6, end: 1),
+                    duration: const Duration(milliseconds: 800),
+                    curve: Curves.easeOutBack,
+                    builder: (_, scale, child) =>
+                        Transform.scale(scale: scale, child: child),
+                    child: MiniWheel(
+                      size: 220,
+                      sun: sun ?? 'leo',
+                      moon: moon ?? 'pisces',
+                      rising: rising ?? 'scorpio',
                     ),
                   ),
                 ),
-              ),
-              const SizedBox(height: 36),
-              FadeSlideIn(
-                delay: const Duration(milliseconds: 1900),
-                duration: const Duration(milliseconds: 700),
-                child: Text(
-                  l10n.welcomeJourneyBegins,
-                  textAlign: TextAlign.center,
-                  style: GoogleFonts.poppins(
-                    color: Colors.white,
-                    fontSize: 17,
-                    fontWeight: FontWeight.w600,
-                    height: 1.4,
-                    letterSpacing: 0.2,
+
+                const SizedBox(height: 26),
+
+                // luminary cards
+                Row(
+                  children: [
+                    Expanded(
+                      child: _LuminaryCard(
+                        kind: l10n.welcomeSun,
+                        sign: sun,
+                        delayMs: 900,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: _LuminaryCard(
+                        kind: l10n.welcomeMoon,
+                        sign: moon,
+                        delayMs: 1050,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: _LuminaryCard(
+                        kind: l10n.welcomeRising,
+                        sign: rising,
+                        delayMs: 1200,
+                      ),
+                    ),
+                  ],
+                ),
+
+                const Spacer(),
+
+                // opening line
+                FadeSlideIn(
+                  delay: const Duration(milliseconds: 1400),
+                  duration: const Duration(milliseconds: 700),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 12),
+                    child: Text(
+                      l10n.welcomeStarsAligned,
+                      textAlign: TextAlign.center,
+                      style: LivelyType.d3(p.textMuted).copyWith(fontSize: 17),
+                    ),
                   ),
                 ),
-              ),
-              const SizedBox(height: 12),
-              FadeSlideIn(
-                delay: const Duration(milliseconds: 2400),
-                duration: const Duration(milliseconds: 700),
-                child: Text(
-                  l10n.welcomeStarsAligned,
-                  textAlign: TextAlign.center,
-                  style: GoogleFonts.poppins(
-                    color: _kTextSecondary,
-                    fontSize: 13.5,
-                    fontWeight: FontWeight.w400,
-                    height: 1.5,
+
+                const SizedBox(height: 20),
+
+                // CTA
+                FadeSlideIn(
+                  delay: const Duration(milliseconds: 1600),
+                  duration: const Duration(milliseconds: 700),
+                  child: GoldButton(
+                    label: _entering ? l10n.welcomeAligning : l10n.welcomeEnter,
+                    loading: _entering,
+                    trailingArrow: !_entering,
+                    onPressed: _entering ? null : _enter,
                   ),
                 ),
-              ),
-              const Spacer(),
-              FadeSlideIn(
-                delay: const Duration(milliseconds: 3000),
-                duration: const Duration(milliseconds: 700),
-                child: SizedBox(
-                  width: double.infinity,
-                  child: _GoldCta(
-                    label: _enteringCosmos
-                        ? l10n.welcomeAligning
-                        : l10n.welcomeEnter,
-                    onPressed: _enteringCosmos ? null : () => _enterCosmos(),
-                  ),
-                ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
     );
   }
+
+  /// "JULY 28, 1996 · 10:31 AM · ISTANBUL" — pieces are omitted when the
+  /// onboarding state doesn't have them.
+  String? _dateLine(OnboardingState onb) {
+    final parts = <String>[];
+    final d = onb.birthDate;
+    if (d != null) {
+      const months = [
+        'JANUARY', 'FEBRUARY', 'MARCH', 'APRIL', 'MAY', 'JUNE',
+        'JULY', 'AUGUST', 'SEPTEMBER', 'OCTOBER', 'NOVEMBER', 'DECEMBER',
+      ];
+      parts.add('${months[d.month - 1]} ${d.day}, ${d.year}');
+    }
+    final t = onb.birthTime;
+    if (t != null && onb.birthTimeKnown) {
+      final h = t.hour % 12 == 0 ? 12 : t.hour % 12;
+      final m = t.minute.toString().padLeft(2, '0');
+      final ap = t.hour < 12 ? 'AM' : 'PM';
+      parts.add('$h:$m $ap');
+    }
+    final place = onb.birthPlace;
+    if (place != null && place.trim().isNotEmpty) {
+      parts.add(place.split(',').first.trim().toUpperCase());
+    }
+    return parts.isEmpty ? null : parts.join('  ·  ');
+  }
 }
 
-class _GoldCta extends StatelessWidget {
-  const _GoldCta({required this.label, required this.onPressed});
+class _LuminaryCard extends StatelessWidget {
+  const _LuminaryCard({
+    required this.kind,
+    required this.sign,
+    required this.delayMs,
+  });
 
-  final String label;
-  final VoidCallback? onPressed;
+  final String kind;
+  final String? sign;
+  final int delayMs;
 
   @override
   Widget build(BuildContext context) {
-    final disabled = onPressed == null;
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: onPressed,
-        borderRadius: BorderRadius.circular(16),
-        child: Ink(
-          height: 54,
-          decoration: BoxDecoration(
-            color: disabled ? _kGoldDark.withValues(alpha: 0.6) : _kGoldDark,
-            borderRadius: BorderRadius.circular(16),
-          ),
-          child: Center(
-            child: Text(
-              label,
-              style: GoogleFonts.poppins(
-                color: Colors.white,
-                fontSize: 15,
-                fontWeight: FontWeight.w800,
-                letterSpacing: 0.5,
-              ),
+    final p = context.palette;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final signLabel = (sign != null && sign!.trim().isNotEmpty)
+        ? '${sign![0].toUpperCase()}${sign!.substring(1).toLowerCase()}'
+        : '—';
+    return FadeSlideIn(
+      delay: Duration(milliseconds: delayMs),
+      duration: const Duration(milliseconds: 600),
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 8),
+        decoration: BoxDecoration(
+          color: isDark ? p.surfaceGlass : p.surface,
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: p.glassBorder),
+        ),
+        child: Column(
+          children: [
+            Text(
+              kind.toUpperCase(),
+              style: LivelyType.caption(p.textMuted)
+                  .copyWith(fontSize: 9, letterSpacing: 1.3),
             ),
-          ),
+            const SizedBox(height: 6),
+            Text(
+              glyphForSign(sign),
+              style: TextStyle(fontSize: 24, color: p.primary, height: 1),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              signLabel,
+              style: LivelyType.d3(p.textPrimary).copyWith(fontSize: 18),
+            ),
+          ],
         ),
       ),
     );

@@ -32,7 +32,19 @@
       "Bash(curl -s \"http://localhost:8080/api/v1/places/search?q=Tbilisi\")",
       "Bash(docker exec *)",
       "Bash(go vet *)",
-      "Bash(flutter gen-l10n *)"
+      "Bash(flutter gen-l10n *)",
+      "Bash(git check-ignore *)",
+      "Bash(grep -n \"'Astrologer'\\\\|'Ask your astrologer\\\\|'Daily limit reached'\\\\|'Premium · Unlimited'\\\\|'You'\\\\\\\\\\\\\\\\'ve reached'\\\\|'Upgrade to Premium for'\\\\|'of.*messages today'\\\\|messages today'\" /c/Users/webde/cosmic-mirror/flutter_app/lib/features/ai_chat/presentation/screens/chat_screen.dart)",
+      "PowerShell(Start-Process \"C:\\\\Program Files\\\\Docker\\\\Docker\\\\Docker Desktop.exe\" -ErrorAction SilentlyContinue)",
+      "PowerShell(\"launched\")",
+      "Bash(docker version *)",
+      "Bash(go get *)",
+      "Bash(curl -s \"http://localhost:8080/api/v1/places/search?q=Baku\")",
+      "Bash(curl -s \"http://localhost:8080/api/v1/places/search?q=New+York+City\")",
+      "Bash(curl -s \"http://localhost:8080/api/v1/places/search?q=Tokyo\")",
+      "Bash(curl -s \"http://localhost:8080/api/v1/places/search?q=London\")",
+      "Bash(cd /c/Users/webde/cosmic-mirror && grep -rh 'respondError\\\\b' go_backend/internal/handler 2>/dev/null | head -30)",
+      "Read(//c/c/Users/webde/cosmic-mirror/go_backend/internal/**)"
     ]
   }
 }

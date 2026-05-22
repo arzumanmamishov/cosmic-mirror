@@ -220,6 +220,15 @@ class AppLocalizationsTr extends AppLocalizations {
   String get onboardingNameHint => 'Adın';
 
   @override
+  String get onboardingNameReassure =>
+      'Bunu asla paylaşmayız. İstediğin zaman Profil\'den değiştirebilirsin.';
+
+  @override
+  String onboardingFocusCount(int count) {
+    return '$count / 3 seçildi';
+  }
+
+  @override
   String get onboardingFocusTitle => 'Senin için en önemli olan ne?';
 
   @override
@@ -268,10 +277,36 @@ class AppLocalizationsTr extends AppLocalizations {
   String get welcomeStarsAligned => 'Yıldızlar bu an için hizalandı.';
 
   @override
-  String get welcomeEnter => 'Kozmosuna Gir';
+  String get welcomeEnter => 'Lively\'e Gir';
 
   @override
   String get welcomeAligning => 'Yıldızlar hizalanıyor…';
+
+  @override
+  String welcomeKicker(Object name) {
+    return 'Hoş geldin, $name';
+  }
+
+  @override
+  String get welcomeChartReady => 'Haritan';
+
+  @override
+  String get welcomeChartReady2 => 'hazır.';
+
+  @override
+  String get welcomeSun => 'Güneş';
+
+  @override
+  String get welcomeMoon => 'Ay';
+
+  @override
+  String get welcomeRising => 'Yükselen';
+
+  @override
+  String get authHeroSignIn => 'Gökyüzü,\nsana özel.';
+
+  @override
+  String get authHeroSignUp => 'Kozmik profilini\noluştur.';
 
   @override
   String get homeSearchHint => 'Okuma, astrolog, alan ara…';

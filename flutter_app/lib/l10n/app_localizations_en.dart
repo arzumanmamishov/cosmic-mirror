@@ -219,6 +219,15 @@ class AppLocalizationsEn extends AppLocalizations {
   String get onboardingNameHint => 'First name';
 
   @override
+  String get onboardingNameReassure =>
+      'We\'ll never share this. Change it any time in Profile.';
+
+  @override
+  String onboardingFocusCount(int count) {
+    return '$count of 3 selected';
+  }
+
+  @override
   String get onboardingFocusTitle => 'What matters most to you?';
 
   @override
@@ -267,10 +276,36 @@ class AppLocalizationsEn extends AppLocalizations {
   String get welcomeStarsAligned => 'The stars have aligned for this moment.';
 
   @override
-  String get welcomeEnter => 'Enter Your Cosmos';
+  String get welcomeEnter => 'Enter Lively';
 
   @override
   String get welcomeAligning => 'Aligning the stars…';
+
+  @override
+  String welcomeKicker(Object name) {
+    return 'Welcome, $name';
+  }
+
+  @override
+  String get welcomeChartReady => 'Your chart';
+
+  @override
+  String get welcomeChartReady2 => 'is ready.';
+
+  @override
+  String get welcomeSun => 'Sun';
+
+  @override
+  String get welcomeMoon => 'Moon';
+
+  @override
+  String get welcomeRising => 'Rising';
+
+  @override
+  String get authHeroSignIn => 'The sky,\nmade personal.';
+
+  @override
+  String get authHeroSignUp => 'Begin your\ncosmic profile.';
 
   @override
   String get homeSearchHint => 'Search readings, astrologers, spaces…';

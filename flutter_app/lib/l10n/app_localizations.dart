@@ -488,6 +488,18 @@ abstract class AppLocalizations {
   /// **'First name'**
   String get onboardingNameHint;
 
+  /// No description provided for @onboardingNameReassure.
+  ///
+  /// In en, this message translates to:
+  /// **'We\'ll never share this. Change it any time in Profile.'**
+  String get onboardingNameReassure;
+
+  /// No description provided for @onboardingFocusCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} of 3 selected'**
+  String onboardingFocusCount(int count);
+
   /// No description provided for @onboardingFocusTitle.
   ///
   /// In en, this message translates to:
@@ -581,7 +593,7 @@ abstract class AppLocalizations {
   /// No description provided for @welcomeEnter.
   ///
   /// In en, this message translates to:
-  /// **'Enter Your Cosmos'**
+  /// **'Enter Lively'**
   String get welcomeEnter;
 
   /// No description provided for @welcomeAligning.
@@ -589,6 +601,54 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Aligning the stars…'**
   String get welcomeAligning;
+
+  /// No description provided for @welcomeKicker.
+  ///
+  /// In en, this message translates to:
+  /// **'Welcome, {name}'**
+  String welcomeKicker(Object name);
+
+  /// No description provided for @welcomeChartReady.
+  ///
+  /// In en, this message translates to:
+  /// **'Your chart'**
+  String get welcomeChartReady;
+
+  /// No description provided for @welcomeChartReady2.
+  ///
+  /// In en, this message translates to:
+  /// **'is ready.'**
+  String get welcomeChartReady2;
+
+  /// No description provided for @welcomeSun.
+  ///
+  /// In en, this message translates to:
+  /// **'Sun'**
+  String get welcomeSun;
+
+  /// No description provided for @welcomeMoon.
+  ///
+  /// In en, this message translates to:
+  /// **'Moon'**
+  String get welcomeMoon;
+
+  /// No description provided for @welcomeRising.
+  ///
+  /// In en, this message translates to:
+  /// **'Rising'**
+  String get welcomeRising;
+
+  /// No description provided for @authHeroSignIn.
+  ///
+  /// In en, this message translates to:
+  /// **'The sky,\nmade personal.'**
+  String get authHeroSignIn;
+
+  /// No description provided for @authHeroSignUp.
+  ///
+  /// In en, this message translates to:
+  /// **'Begin your\ncosmic profile.'**
+  String get authHeroSignUp;
 
   /// No description provided for @homeSearchHint.
   ///

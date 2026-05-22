@@ -1,6 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../../core/network/api_client.dart';
 import '../../../../shared/providers/user_provider.dart';
 import '../../data/repositories/onboarding_repository_impl.dart';
 import '../../domain/entities/birth_profile.dart';
