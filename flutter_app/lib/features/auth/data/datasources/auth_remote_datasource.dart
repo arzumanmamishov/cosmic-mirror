@@ -126,10 +126,19 @@ class AuthRemoteDataSource {
   }
 
   Future<void> signOut() async {
-    await Future.wait([
-      _firebaseAuth.signOut(),
-      _googleSignIn.signOut(),
-    ]);
+    // Firebase is the source of truth for auth — sign out of it first,
+    // on its own, so a slow or flaky Google Sign-In plugin can't block
+    // or hang the whole logout. The previous Future.wait meant any
+    // GoogleSignIn.signOut() stall left the user stuck "logged in".
+    await _firebaseAuth.signOut();
+    // Google sign-out is best-effort: the user may never have used it,
+    // and the plugin can throw or hang on some device configs. A short
+    // timeout guarantees logout always completes.
+    try {
+      await _googleSignIn.signOut().timeout(const Duration(seconds: 5));
+    } catch (_) {
+      /* Firebase is already signed out — nothing more to do. */
+    }
   }
 
   Future<void> deleteAccount() async {
