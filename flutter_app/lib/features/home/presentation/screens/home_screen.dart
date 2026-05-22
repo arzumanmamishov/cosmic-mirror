@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import 'package:cosmic_mirror/config/theme/app_palette.dart';
+import 'package:cosmic_mirror/config/theme/lively_type.dart';
 import 'package:cosmic_mirror/l10n/app_localizations.dart';
 import 'package:cosmic_mirror/features/ai_chat/presentation/screens/chat_threads_screen.dart';
 import 'package:cosmic_mirror/features/community/presentation/providers/community_providers.dart';
@@ -13,7 +14,7 @@ import 'package:cosmic_mirror/features/home/presentation/widgets/header_bar.dart
 import 'package:cosmic_mirror/features/home/presentation/widgets/premium_upgrade_card.dart';
 import 'package:cosmic_mirror/features/home/presentation/widgets/todays_insight_card.dart';
 import 'package:cosmic_mirror/shared/widgets/category_chip_bar.dart';
-import 'package:cosmic_mirror/shared/widgets/cosmic_starfield.dart';
+import 'package:cosmic_mirror/shared/widgets/lively/lively_backdrop.dart';
 import 'package:cosmic_mirror/shared/widgets/pill_search_bar.dart';
 import 'package:cosmic_mirror/shared/widgets/staggered_fade_in.dart';
 
@@ -36,60 +37,22 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
     return Scaffold(
       backgroundColor: p.background,
-      body: Stack(
-        children: [
-          _ZodiacBackdrop(palette: p),
-          Positioned.fill(
-            child: IndexedStack(
-              index: _currentIndex,
-              children: const [
-                _DiscoverTab(),
-                _ChartsTab(),
-                ChatThreadsScreen(),
-                _CommunityTab(),
-              ],
-            ),
-          ),
-        ],
+      body: LivelyBackdrop(
+        seed: 3,
+        intensity: 0.85,
+        child: IndexedStack(
+          index: _currentIndex,
+          children: const [
+            _DiscoverTab(),
+            _ChartsTab(),
+            ChatThreadsScreen(),
+            _CommunityTab(),
+          ],
+        ),
       ),
       bottomNavigationBar: _CustomBottomNav(
         currentIndex: _currentIndex,
         onTap: (i) => setState(() => _currentIndex = i),
-      ),
-    );
-  }
-}
-
-/// Subtle radial backdrop with twinkling starfield.
-class _ZodiacBackdrop extends StatelessWidget {
-  const _ZodiacBackdrop({required this.palette});
-  final AppPalette palette;
-
-  @override
-  Widget build(BuildContext context) {
-    return Positioned.fill(
-      child: Stack(
-        children: [
-          Positioned.fill(
-            child: DecoratedBox(
-              decoration: BoxDecoration(
-                gradient: RadialGradient(
-                  center: const Alignment(0, -0.3),
-                  radius: 1.2,
-                  colors: [
-                    palette.primary.withValues(alpha: 0.12),
-                    Colors.transparent,
-                  ],
-                ),
-              ),
-            ),
-          ),
-          CosmicStarfield(
-            color: palette.textPrimary,
-            starCount: 80,
-            intensity: 0.9,
-          ),
-        ],
       ),
     );
   }
@@ -362,27 +325,22 @@ class _ChartsTabState extends State<_ChartsTab> {
         padding: const EdgeInsets.only(bottom: 32),
         children: [
           Padding(
-            padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
+            padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
             child: FadeSlideIn(
               child: Text(
                 l10n.homeChartsTitle,
-                style: TextStyle(
-                  color: p.textPrimary,
-                  fontSize: 26,
-                  fontWeight: FontWeight.w700,
-                  height: 1.1,
-                ),
+                style: LivelyType.d2(p.textPrimary),
               ),
             ),
           ),
-          const SizedBox(height: 4),
+          const SizedBox(height: 8),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20),
             child: FadeSlideIn(
               delay: const Duration(milliseconds: 60),
               child: Text(
                 l10n.homeChartsSubtitle,
-                style: TextStyle(color: p.textSecondary, fontSize: 13),
+                style: LivelyType.body(p.textMuted),
               ),
             ),
           ),
@@ -482,12 +440,10 @@ class _ChartFeatureCard extends StatelessWidget {
                 children: [
                   Row(
                     children: [
-                      Text(
-                        feature.title,
-                        style: TextStyle(
-                          color: p.textPrimary,
-                          fontSize: 15,
-                          fontWeight: FontWeight.w700,
+                      Flexible(
+                        child: Text(
+                          feature.title,
+                          style: LivelyType.h2(p.textPrimary),
                         ),
                       ),
                       if (feature.badge != null) ...[
@@ -502,13 +458,9 @@ class _ChartFeatureCard extends StatelessWidget {
                             borderRadius: BorderRadius.circular(8),
                           ),
                           child: Text(
-                            feature.badge!,
-                            style: TextStyle(
-                              color: p.primary,
-                              fontSize: 9,
-                              fontWeight: FontWeight.w700,
-                              letterSpacing: 0.6,
-                            ),
+                            feature.badge!.toUpperCase(),
+                            style: LivelyType.caption(p.primary)
+                                .copyWith(fontSize: 9),
                           ),
                         ),
                       ],
@@ -517,11 +469,7 @@ class _ChartFeatureCard extends StatelessWidget {
                   const SizedBox(height: 4),
                   Text(
                     feature.subtitle,
-                    style: TextStyle(
-                      color: p.textSecondary,
-                      fontSize: 12.5,
-                      height: 1.4,
-                    ),
+                    style: LivelyType.small(p.textMuted),
                   ),
                 ],
               ),
@@ -635,8 +583,9 @@ class _NavItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final activeColor = palette.textPrimary;
-    final inactiveColor = palette.textSecondary;
+    // Gold for the active tab — matches the Lively accent system.
+    final activeColor = palette.primary;
+    final inactiveColor = palette.textMuted;
     return Expanded(
       child: GestureDetector(
         onTap: onTap,
@@ -653,9 +602,10 @@ class _NavItem extends StatelessWidget {
             const SizedBox(height: 4),
             Text(
               label,
-              style: TextStyle(
-                color: active ? activeColor : inactiveColor,
-                fontSize: 11,
+              style: LivelyType.caption(
+                active ? activeColor : inactiveColor,
+              ).copyWith(
+                letterSpacing: 0.2,
                 fontWeight: active ? FontWeight.w700 : FontWeight.w500,
               ),
             ),

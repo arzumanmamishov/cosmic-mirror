@@ -5,9 +5,12 @@ import 'package:url_launcher/url_launcher.dart';
 
 import '../../../../config/api_url_override.dart';
 import '../../../../config/env.dart';
+import '../../../../config/theme/app_palette.dart';
 import '../../../../config/theme/colors.dart';
+import '../../../../config/theme/lively_type.dart';
 import '../../../../config/theme/typography.dart';
 import '../../../../l10n/app_localizations.dart';
+import '../../../../shared/widgets/lively/lively_backdrop.dart';
 import '../../../../shared/providers/locale_provider.dart';
 import '../../../../shared/providers/subscription_state_provider.dart';
 import '../../../../shared/providers/theme_provider.dart';
@@ -22,13 +25,31 @@ class SettingsScreen extends ConsumerWidget {
     final isPremium = ref.watch(isPremiumProvider);
     final l10n = AppLocalizations.of(context);
 
+    final p = context.palette;
     return Scaffold(
-      appBar: AppBar(title: Text(l10n.settingsTitle)),
-      body: ListView(
-        padding: const EdgeInsets.symmetric(vertical: 8),
-        children: [
-          // Subscription
-          _SectionHeader(l10n.settingsSubscription),
+      backgroundColor: p.background,
+      extendBodyBehindAppBar: true,
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        leading: const BackButton(),
+      ),
+      body: LivelyBackdrop(
+        seed: 9,
+        intensity: 0.6,
+        child: SafeArea(
+          child: ListView(
+            padding: const EdgeInsets.only(bottom: 8),
+            children: [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(20, 4, 20, 12),
+                child: Text(
+                  l10n.settingsTitle,
+                  style: LivelyType.d2(p.textPrimary),
+                ),
+              ),
+              // Subscription
+              _SectionHeader(l10n.settingsSubscription),
           ListTile(
             leading: Icon(
               Icons.auto_awesome,
@@ -188,15 +209,17 @@ class SettingsScreen extends ConsumerWidget {
             },
           ),
 
-          const SizedBox(height: 32),
-          Center(
-            child: Text(
-              l10n.settingsAppVersion,
-              style: CosmicTypography.caption,
-            ),
+              const SizedBox(height: 32),
+              Center(
+                child: Text(
+                  l10n.settingsAppVersion,
+                  style: CosmicTypography.caption,
+                ),
+              ),
+              const SizedBox(height: 32),
+            ],
           ),
-          const SizedBox(height: 32),
-        ],
+        ),
       ),
     );
   }
@@ -209,10 +232,11 @@ class _SectionHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 16, 16, 4),
+      padding: const EdgeInsets.fromLTRB(20, 18, 16, 6),
       child: Text(
         title.toUpperCase(),
-        style: CosmicTypography.overline,
+        style: LivelyType.caption(context.palette.primary)
+            .copyWith(letterSpacing: 1.4),
       ),
     );
   }
