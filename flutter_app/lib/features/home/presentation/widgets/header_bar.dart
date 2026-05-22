@@ -71,13 +71,8 @@ class HomeHeaderBar extends ConsumerWidget {
             ),
           ),
           _IconButton(
-            icon: Icons.forum_rounded,
-            onTap: () => context.push('/chat'),
-          ),
-          const SizedBox(width: 8),
-          _IconButton(
             icon: Icons.notifications_rounded,
-            onTap: () => context.push('/settings'),
+            onTap: () => context.push('/community/notifications'),
             hasBadge: true,
           ),
         ],
