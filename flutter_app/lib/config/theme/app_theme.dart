@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 import 'app_palette.dart';
 
@@ -26,11 +25,11 @@ class CosmicTheme {
       colorScheme: ColorScheme(
         brightness: brightness,
         primary: p.primary,
-        onPrimary: brightness == Brightness.dark
-            ? const Color(0xFFFFFFFF)
-            : const Color(0xFFFFFFFF),
+        // primary is gold in both themes — its foreground must be the
+        // dark ink token, not white.
+        onPrimary: p.onPrimary,
         secondary: p.accent,
-        onSecondary: const Color(0xFFFFFFFF),
+        onSecondary: p.onPrimary,
         surface: p.surface,
         onSurface: p.textPrimary,
         error: p.error,
@@ -38,7 +37,10 @@ class CosmicTheme {
         surfaceContainerHighest: p.surfaceElevated,
         outline: p.glassBorder,
       ),
-      textTheme: GoogleFonts.interTextTheme(baseTextTheme).apply(
+      // Bundled Geist family applied across the whole text theme — every
+      // raw Text widget inherits the design-system UI font.
+      textTheme: baseTextTheme.apply(
+        fontFamily: 'Geist',
         bodyColor: p.textPrimary,
         displayColor: p.textPrimary,
       ),
@@ -49,7 +51,7 @@ class CosmicTheme {
         centerTitle: true,
         iconTheme: IconThemeData(color: p.textPrimary),
         titleTextStyle: TextStyle(
-          fontFamily: 'Inter',
+          fontFamily: 'Geist',
           fontSize: 18,
           fontWeight: FontWeight.w600,
           color: p.textPrimary,
@@ -67,15 +69,13 @@ class CosmicTheme {
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
           backgroundColor: p.primary,
-          foregroundColor: brightness == Brightness.dark
-              ? p.textPrimary
-              : Colors.white,
+          foregroundColor: p.onPrimary,
           minimumSize: const Size(double.infinity, 52),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
           ),
           textStyle: const TextStyle(
-            fontFamily: 'Inter',
+            fontFamily: 'Geist',
             fontSize: 16,
             fontWeight: FontWeight.w600,
           ),
@@ -90,7 +90,7 @@ class CosmicTheme {
           ),
           side: BorderSide(color: p.glassBorder),
           textStyle: const TextStyle(
-            fontFamily: 'Inter',
+            fontFamily: 'Geist',
             fontSize: 16,
             fontWeight: FontWeight.w600,
           ),
@@ -100,7 +100,7 @@ class CosmicTheme {
         style: TextButton.styleFrom(
           foregroundColor: p.primary,
           textStyle: const TextStyle(
-            fontFamily: 'Inter',
+            fontFamily: 'Geist',
             fontSize: 14,
             fontWeight: FontWeight.w600,
           ),

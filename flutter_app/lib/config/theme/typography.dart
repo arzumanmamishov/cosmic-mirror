@@ -1,114 +1,140 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 import 'colors.dart';
 
+/// Legacy text styles for screens that pre-date [LivelyType]. Re-pointed
+/// at the bundled Lively fonts — **Instrument Serif** (italic display) and
+/// **Geist** (UI) — so older screens inherit the design-system type
+/// identity. New screens should prefer `LivelyType`.
 class CosmicTypography {
   CosmicTypography._();
 
-  static TextStyle get displayLarge => GoogleFonts.playfairDisplay(
-        fontSize: 32,
-        fontWeight: FontWeight.w700,
-        color: CosmicColors.textPrimary,
-        letterSpacing: -0.5,
-      );
+  static const String _serif = 'InstrumentSerif';
+  static const String _ui = 'Geist';
 
-  static TextStyle get displayMedium => GoogleFonts.playfairDisplay(
-        fontSize: 28,
-        fontWeight: FontWeight.w600,
-        color: CosmicColors.textPrimary,
-        letterSpacing: -0.3,
-      );
+  static const TextStyle displayLarge = TextStyle(
+    fontFamily: _serif,
+    fontStyle: FontStyle.italic,
+    fontSize: 34,
+    fontWeight: FontWeight.w400,
+    color: CosmicColors.textPrimary,
+    letterSpacing: -0.5,
+  );
 
-  static TextStyle get displaySmall => GoogleFonts.playfairDisplay(
-        fontSize: 24,
-        fontWeight: FontWeight.w600,
-        color: CosmicColors.textPrimary,
-      );
+  static const TextStyle displayMedium = TextStyle(
+    fontFamily: _serif,
+    fontStyle: FontStyle.italic,
+    fontSize: 29,
+    fontWeight: FontWeight.w400,
+    color: CosmicColors.textPrimary,
+    letterSpacing: -0.3,
+  );
 
-  static TextStyle get headlineLarge => GoogleFonts.inter(
-        fontSize: 22,
-        fontWeight: FontWeight.w700,
-        color: CosmicColors.textPrimary,
-      );
+  static const TextStyle displaySmall = TextStyle(
+    fontFamily: _serif,
+    fontStyle: FontStyle.italic,
+    fontSize: 25,
+    fontWeight: FontWeight.w400,
+    color: CosmicColors.textPrimary,
+  );
 
-  static TextStyle get headlineMedium => GoogleFonts.inter(
-        fontSize: 20,
-        fontWeight: FontWeight.w600,
-        color: CosmicColors.textPrimary,
-      );
+  static const TextStyle headlineLarge = TextStyle(
+    fontFamily: _ui,
+    fontSize: 22,
+    fontWeight: FontWeight.w600,
+    color: CosmicColors.textPrimary,
+    letterSpacing: -0.2,
+  );
 
-  static TextStyle get headlineSmall => GoogleFonts.inter(
-        fontSize: 18,
-        fontWeight: FontWeight.w600,
-        color: CosmicColors.textPrimary,
-      );
+  static const TextStyle headlineMedium = TextStyle(
+    fontFamily: _ui,
+    fontSize: 20,
+    fontWeight: FontWeight.w600,
+    color: CosmicColors.textPrimary,
+  );
 
-  static TextStyle get titleLarge => GoogleFonts.inter(
-        fontSize: 17,
-        fontWeight: FontWeight.w600,
-        color: CosmicColors.textPrimary,
-      );
+  static const TextStyle headlineSmall = TextStyle(
+    fontFamily: _ui,
+    fontSize: 18,
+    fontWeight: FontWeight.w600,
+    color: CosmicColors.textPrimary,
+  );
 
-  static TextStyle get titleMedium => GoogleFonts.inter(
-        fontSize: 16,
-        fontWeight: FontWeight.w500,
-        color: CosmicColors.textPrimary,
-      );
+  static const TextStyle titleLarge = TextStyle(
+    fontFamily: _ui,
+    fontSize: 17,
+    fontWeight: FontWeight.w500,
+    color: CosmicColors.textPrimary,
+  );
 
-  static TextStyle get bodyLarge => GoogleFonts.inter(
-        fontSize: 16,
-        fontWeight: FontWeight.w400,
-        color: CosmicColors.textPrimary,
-        height: 1.5,
-      );
+  static const TextStyle titleMedium = TextStyle(
+    fontFamily: _ui,
+    fontSize: 16,
+    fontWeight: FontWeight.w500,
+    color: CosmicColors.textPrimary,
+  );
 
-  static TextStyle get bodyMedium => GoogleFonts.inter(
-        fontSize: 14,
-        fontWeight: FontWeight.w400,
-        color: CosmicColors.textPrimary,
-        height: 1.5,
-      );
+  static const TextStyle bodyLarge = TextStyle(
+    fontFamily: _ui,
+    fontSize: 16,
+    fontWeight: FontWeight.w400,
+    color: CosmicColors.textPrimary,
+    height: 1.5,
+  );
 
-  static TextStyle get bodySmall => GoogleFonts.inter(
-        fontSize: 13,
-        fontWeight: FontWeight.w400,
-        color: CosmicColors.textSecondary,
-        height: 1.4,
-      );
+  static const TextStyle bodyMedium = TextStyle(
+    fontFamily: _ui,
+    fontSize: 14,
+    fontWeight: FontWeight.w400,
+    color: CosmicColors.textPrimary,
+    height: 1.5,
+  );
 
-  static TextStyle get labelLarge => GoogleFonts.inter(
-        fontSize: 14,
-        fontWeight: FontWeight.w600,
-        color: CosmicColors.textPrimary,
-        letterSpacing: 0.5,
-      );
+  static const TextStyle bodySmall = TextStyle(
+    fontFamily: _ui,
+    fontSize: 13,
+    fontWeight: FontWeight.w400,
+    color: CosmicColors.textSecondary,
+    height: 1.4,
+  );
 
-  static TextStyle get labelSmall => GoogleFonts.inter(
-        fontSize: 11,
-        fontWeight: FontWeight.w500,
-        color: CosmicColors.textSecondary,
-        letterSpacing: 1.0,
-      );
+  static const TextStyle labelLarge = TextStyle(
+    fontFamily: _ui,
+    fontSize: 14,
+    fontWeight: FontWeight.w600,
+    color: CosmicColors.textPrimary,
+    letterSpacing: 0.3,
+  );
 
-  static TextStyle get caption => GoogleFonts.inter(
-        fontSize: 12,
-        fontWeight: FontWeight.w400,
-        color: CosmicColors.textSecondary,
-      );
+  static const TextStyle labelSmall = TextStyle(
+    fontFamily: _ui,
+    fontSize: 11,
+    fontWeight: FontWeight.w500,
+    color: CosmicColors.textSecondary,
+    letterSpacing: 0.8,
+  );
 
-  static TextStyle get overline => GoogleFonts.inter(
-        fontSize: 11,
-        fontWeight: FontWeight.w600,
-        color: CosmicColors.textSecondary,
-        letterSpacing: 1.5,
-      );
+  static const TextStyle caption = TextStyle(
+    fontFamily: _ui,
+    fontSize: 12,
+    fontWeight: FontWeight.w400,
+    color: CosmicColors.textSecondary,
+  );
 
-  static TextStyle get affirmation => GoogleFonts.playfairDisplay(
-        fontSize: 20,
-        fontWeight: FontWeight.w500,
-        fontStyle: FontStyle.italic,
-        color: CosmicColors.gold,
-        height: 1.6,
-      );
+  static const TextStyle overline = TextStyle(
+    fontFamily: _ui,
+    fontSize: 11,
+    fontWeight: FontWeight.w600,
+    color: CosmicColors.textSecondary,
+    letterSpacing: 1.2,
+  );
+
+  static const TextStyle affirmation = TextStyle(
+    fontFamily: _serif,
+    fontStyle: FontStyle.italic,
+    fontSize: 21,
+    fontWeight: FontWeight.w400,
+    color: CosmicColors.gold,
+    height: 1.6,
+  );
 }
