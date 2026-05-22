@@ -1,5 +1,6 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cosmic_mirror/config/theme/app_palette.dart';
+import 'package:cosmic_mirror/config/theme/lively_type.dart';
 import 'package:cosmic_mirror/core/network/api_endpoints.dart';
 import 'package:cosmic_mirror/l10n/app_localizations.dart';
 import 'package:cosmic_mirror/features/auth/presentation/providers/auth_provider.dart';
@@ -8,7 +9,7 @@ import 'package:cosmic_mirror/shared/providers/subscription_state_provider.dart'
 import 'package:cosmic_mirror/shared/providers/user_provider.dart';
 import 'package:cosmic_mirror/shared/utils/avatar_url.dart';
 import 'package:cosmic_mirror/shared/widgets/cosmic_pulse.dart';
-import 'package:cosmic_mirror/shared/widgets/cosmic_starfield.dart';
+import 'package:cosmic_mirror/shared/widgets/lively/lively_backdrop.dart';
 import 'package:cosmic_mirror/shared/widgets/staggered_fade_in.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -48,17 +49,12 @@ class ProfileScreen extends ConsumerWidget {
           ),
         ],
       ),
-      body: Stack(
-        children: [
-          Positioned.fill(
-            child: CosmicStarfield(
-              color: p.textPrimary,
-              intensity: 0.7,
-            ),
-          ),
-          ListView(
-            padding: const EdgeInsets.fromLTRB(20, 90, 20, 40),
-            children: [
+      body: LivelyBackdrop(
+        seed: 17,
+        intensity: 0.6,
+        child: ListView(
+          padding: const EdgeInsets.fromLTRB(20, 90, 20, 40),
+          children: [
               FadeSlideIn(child: _ProfileHero(user: user)),
               const SizedBox(height: 24),
               if (user.sunSign != null)
@@ -143,14 +139,13 @@ class ProfileScreen extends ConsumerWidget {
               Center(
                 child: Text(
                   'Lively · v1.0.0',
-                  style: TextStyle(color: p.textTertiary, fontSize: 12),
+                  style: LivelyType.mono(p.textTertiary, size: 12),
                 ),
               ),
             ],
           ),
-        ],
-      ),
-    );
+        ),
+      );
   }
 }
 
@@ -582,16 +577,12 @@ class _ProfileHero extends ConsumerWidget {
         const SizedBox(height: 16),
         Text(
           user.name ?? AppLocalizations.of(context).stargazer,
-          style: TextStyle(
-            color: p.textPrimary,
-            fontSize: 24,
-            fontWeight: FontWeight.w700,
-          ),
+          style: LivelyType.d3(p.textPrimary),
         ),
         const SizedBox(height: 4),
         Text(
           user.email ?? '—',
-          style: TextStyle(color: p.textSecondary, fontSize: 13),
+          style: LivelyType.small(p.textMuted),
         ),
       ],
     );
@@ -933,12 +924,8 @@ class _SectionTitle extends StatelessWidget {
       padding: const EdgeInsets.fromLTRB(4, 8, 4, 10),
       child: Text(
         title.toUpperCase(),
-        style: TextStyle(
-          color: p.textTertiary,
-          fontSize: 11,
-          letterSpacing: 1.4,
-          fontWeight: FontWeight.w700,
-        ),
+        style: LivelyType.caption(p.primary)
+            .copyWith(letterSpacing: 1.4, fontWeight: FontWeight.w700),
       ),
     );
   }
