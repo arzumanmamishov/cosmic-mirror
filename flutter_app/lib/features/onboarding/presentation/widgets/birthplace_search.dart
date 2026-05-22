@@ -1,18 +1,13 @@
 import 'dart:async';
 
+import 'package:cosmic_mirror/config/theme/app_palette.dart';
+import 'package:cosmic_mirror/config/theme/lively_type.dart';
+import 'package:cosmic_mirror/core/network/api_client.dart';
+import 'package:cosmic_mirror/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 
-import '../../../../core/network/api_client.dart';
-
-const _kGold = Color(0xFFD4B16A);
-const _kSurface = Color(0xFF1A1F2E);
-const _kSurfaceElevated = Color(0xFF1F2436);
-const _kBorder = Color(0xFF2A2F3E);
-const _kTextPrimary = Colors.white;
-const _kTextSecondary = Color(0xFFB6BAC4);
-const _kTextTertiary = Color(0xFF7E8290);
-
+/// Birthplace search — a Lively-styled search field, a results list, and
+/// a confirmation chip once a place is chosen.
 class BirthplaceSearch extends StatefulWidget {
   const BirthplaceSearch({
     required this.onPlaceSelected,
@@ -62,10 +57,10 @@ class _BirthplaceSearchState extends State<BirthplaceSearch> {
       });
       return;
     }
-
-    _debounce = Timer(const Duration(milliseconds: 400), () {
-      _searchPlaces(query);
-    });
+    _debounce = Timer(
+      const Duration(milliseconds: 400),
+      () => _searchPlaces(query),
+    );
   }
 
   Future<void> _searchPlaces(String query) async {
@@ -76,7 +71,6 @@ class _BirthplaceSearchState extends State<BirthplaceSearch> {
         '/api/v1/places/search',
         queryParameters: {'q': query},
       );
-
       final places = (results['places'] as List<dynamic>?)
               ?.map(
                 (p) => _PlaceSuggestion(
@@ -88,7 +82,6 @@ class _BirthplaceSearchState extends State<BirthplaceSearch> {
               )
               .toList() ??
           [];
-
       if (mounted) {
         setState(() {
           _suggestions = places;
@@ -123,62 +116,59 @@ class _BirthplaceSearchState extends State<BirthplaceSearch> {
 
   @override
   Widget build(BuildContext context) {
+    final p = context.palette;
+    final l10n = AppLocalizations.of(context);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Column(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Search input — same style as the auth email/password fields.
+        // search field — fill = page background, per the design brief
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 16),
           decoration: BoxDecoration(
-            color: _kSurface,
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: _kBorder),
+            color: p.background,
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(
+              color: _focusNode.hasFocus ? p.primary : p.line,
+            ),
           ),
           child: Row(
             children: [
-              const Icon(
-                Icons.location_on_outlined,
-                color: _kTextTertiary,
-                size: 18,
-              ),
-              const SizedBox(width: 12),
+              Icon(Icons.location_on_outlined, color: p.textMuted, size: 18),
+              const SizedBox(width: 10),
               Expanded(
                 child: TextField(
                   controller: _controller,
                   focusNode: _focusNode,
-                  cursorColor: _kGold,
+                  cursorColor: p.primary,
                   onChanged: (value) {
                     _showSuggestions = true;
                     _onSearchChanged(value);
                   },
-                  style: GoogleFonts.poppins(
-                    color: _kTextPrimary,
-                    fontSize: 14,
-                    fontWeight: FontWeight.w500,
-                  ),
+                  onTap: () => setState(() {}),
+                  style: LivelyType.h2(p.textPrimary)
+                      .copyWith(fontWeight: FontWeight.w400),
                   decoration: InputDecoration(
                     isCollapsed: true,
-                    contentPadding: const EdgeInsets.symmetric(vertical: 18),
+                    contentPadding: const EdgeInsets.symmetric(vertical: 16),
                     border: InputBorder.none,
                     enabledBorder: InputBorder.none,
                     focusedBorder: InputBorder.none,
-                    hintText: 'Search for a city…',
-                    hintStyle: GoogleFonts.poppins(
-                      color: _kTextTertiary,
-                      fontSize: 14,
-                      fontWeight: FontWeight.w400,
-                    ),
+                    hintText: l10n.placesSearchHint,
+                    hintStyle: LivelyType.h2(p.textDim)
+                        .copyWith(fontWeight: FontWeight.w400),
                   ),
                 ),
               ),
               if (_isLoading)
-                const SizedBox(
+                SizedBox(
                   width: 18,
                   height: 18,
                   child: CircularProgressIndicator(
                     strokeWidth: 2,
-                    valueColor: AlwaysStoppedAnimation(_kGold),
+                    valueColor: AlwaysStoppedAnimation(p.primary),
                   ),
                 )
               else if (_controller.text.isNotEmpty)
@@ -191,38 +181,29 @@ class _BirthplaceSearchState extends State<BirthplaceSearch> {
                     });
                   },
                   behavior: HitTestBehavior.opaque,
-                  child: const Icon(
-                    Icons.close_rounded,
-                    color: _kTextTertiary,
-                    size: 18,
-                  ),
+                  child: Icon(Icons.close_rounded, color: p.textMuted, size: 18),
                 ),
             ],
           ),
         ),
 
-        // Suggestions panel — flexible so it never overflows. ListView
-        // already scrolls internally; the outer Flexible bounds the
-        // height to whatever vertical space is available.
+        // results list
         if (_showSuggestions && _suggestions.isNotEmpty) ...[
           const SizedBox(height: 10),
           Flexible(
             child: Container(
               decoration: BoxDecoration(
-                color: _kSurfaceElevated,
-                borderRadius: BorderRadius.circular(14),
-                border: Border.all(color: _kBorder),
+                color: isDark ? p.surfaceGlass : p.surface,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: p.line),
               ),
               clipBehavior: Clip.antiAlias,
               child: ListView.separated(
                 shrinkWrap: true,
                 padding: EdgeInsets.zero,
                 itemCount: _suggestions.length,
-                separatorBuilder: (_, __) => const Divider(
-                  height: 1,
-                  thickness: 1,
-                  color: _kBorder,
-                ),
+                separatorBuilder: (_, __) =>
+                    Divider(height: 1, thickness: 1, color: p.line),
                 itemBuilder: (context, index) {
                   final place = _suggestions[index];
                   return InkWell(
@@ -230,28 +211,32 @@ class _BirthplaceSearchState extends State<BirthplaceSearch> {
                     child: Padding(
                       padding: const EdgeInsets.symmetric(
                         horizontal: 14,
-                        vertical: 12,
+                        vertical: 13,
                       ),
                       child: Row(
                         children: [
-                          const Icon(
-                            Icons.location_on_rounded,
-                            color: _kGold,
-                            size: 18,
+                          Container(
+                            width: 30,
+                            height: 30,
+                            decoration: BoxDecoration(
+                              color: p.primary.withValues(alpha: 0.12),
+                              borderRadius: BorderRadius.circular(9),
+                            ),
+                            child: Icon(Icons.location_on_rounded,
+                                color: p.primary, size: 16),
                           ),
                           const SizedBox(width: 12),
                           Expanded(
                             child: Text(
                               place.name,
-                              style: GoogleFonts.poppins(
-                                color: _kTextPrimary,
-                                fontSize: 13,
-                                fontWeight: FontWeight.w500,
-                                height: 1.3,
-                              ),
+                              style: LivelyType.body(p.textPrimary),
                               maxLines: 2,
                               overflow: TextOverflow.ellipsis,
                             ),
+                          ),
+                          Text(
+                            place.timezone,
+                            style: LivelyType.mono(p.textMuted, size: 10),
                           ),
                         ],
                       ),
@@ -263,32 +248,24 @@ class _BirthplaceSearchState extends State<BirthplaceSearch> {
           ),
         ],
 
-        // Confirmation chip — shown after a place was selected.
+        // confirmation chip
         if (widget.selectedPlace != null && !_showSuggestions) ...[
           const SizedBox(height: 14),
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
             decoration: BoxDecoration(
-              color: _kGold.withValues(alpha: 0.10),
+              color: p.primary.withValues(alpha: 0.10),
               borderRadius: BorderRadius.circular(14),
-              border: Border.all(color: _kGold.withValues(alpha: 0.4)),
+              border: Border.all(color: p.glassBorder),
             ),
             child: Row(
               children: [
-                const Icon(
-                  Icons.check_circle_rounded,
-                  color: _kGold,
-                  size: 18,
-                ),
+                Icon(Icons.check_circle_rounded, color: p.primary, size: 18),
                 const SizedBox(width: 10),
                 Expanded(
                   child: Text(
                     widget.selectedPlace!,
-                    style: GoogleFonts.poppins(
-                      color: _kTextSecondary,
-                      fontSize: 13,
-                      fontWeight: FontWeight.w500,
-                    ),
+                    style: LivelyType.body(p.textPrimary),
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                   ),

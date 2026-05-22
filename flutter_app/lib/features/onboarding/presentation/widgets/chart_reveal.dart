@@ -1,10 +1,13 @@
+import 'package:cosmic_mirror/config/theme/app_palette.dart';
+import 'package:cosmic_mirror/config/theme/lively_type.dart';
+import 'package:cosmic_mirror/shared/widgets/lively/mini_wheel.dart';
 import 'package:flutter/material.dart';
 
-import '../../../../config/theme/colors.dart';
-import '../../../../config/theme/typography.dart';
 import '../../../../shared/widgets/loading_shimmer.dart';
 import '../providers/onboarding_provider.dart';
 
+/// The in-onboarding "Big Three" reveal — Sun / Moon / Rising cards that
+/// fade-and-rise in sequence, styled with the Lively design system.
 class ChartRevealWidget extends StatefulWidget {
   const ChartRevealWidget({required this.state, super.key});
 
@@ -35,7 +38,6 @@ class _ChartRevealWidgetState extends State<ChartRevealWidget>
       duration: const Duration(milliseconds: 800),
       vsync: this,
     );
-
     _startAnimations();
   }
 
@@ -58,6 +60,7 @@ class _ChartRevealWidgetState extends State<ChartRevealWidget>
 
   @override
   Widget build(BuildContext context) {
+    final p = context.palette;
     final chart = widget.state.chartReveal;
 
     if (widget.state.isLoading || chart == null) {
@@ -66,11 +69,11 @@ class _ChartRevealWidgetState extends State<ChartRevealWidget>
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            LoadingShimmer(height: 80, borderRadius: 16),
+            LoadingShimmer(height: 84, borderRadius: 16),
             SizedBox(height: 16),
-            LoadingShimmer(height: 80, borderRadius: 16),
+            LoadingShimmer(height: 84, borderRadius: 16),
             SizedBox(height: 16),
-            LoadingShimmer(height: 80, borderRadius: 16),
+            LoadingShimmer(height: 84, borderRadius: 16),
           ],
         ),
       );
@@ -87,35 +90,38 @@ class _ChartRevealWidgetState extends State<ChartRevealWidget>
       padding: const EdgeInsets.symmetric(horizontal: 24),
       child: Column(
         children: [
-          Text('Your Cosmic Blueprint', style: CosmicTypography.displaySmall),
           const SizedBox(height: 8),
           Text(
-            'Here are your Big Three',
-            style: CosmicTypography.bodySmall,
+            'Your cosmic blueprint',
+            style: LivelyType.d3(p.textPrimary),
+            textAlign: TextAlign.center,
           ),
-          const SizedBox(height: 32),
+          const SizedBox(height: 8),
+          Text(
+            'Here are your Big Three.',
+            style: LivelyType.body(p.textMuted),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 28),
           _RevealCard(
             controller: _sunController,
-            icon: Icons.wb_sunny,
-            iconColor: CosmicColors.gold,
+            icon: Icons.wb_sunny_rounded,
             label: 'Sun Sign',
             sign: sunSign,
             description: sunDesc,
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 12),
           _RevealCard(
             controller: _moonController,
             icon: Icons.nightlight_round,
-            iconColor: CosmicColors.primaryLight,
             label: 'Moon Sign',
             sign: moonSign,
             description: moonDesc,
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 12),
           _RevealCard(
             controller: _risingController,
             icon: Icons.arrow_upward_rounded,
-            iconColor: CosmicColors.accent,
             label: 'Rising Sign',
             sign: risingSign,
             description: risingDesc,
@@ -130,7 +136,6 @@ class _RevealCard extends StatelessWidget {
   const _RevealCard({
     required this.controller,
     required this.icon,
-    required this.iconColor,
     required this.label,
     required this.sign,
     required this.description,
@@ -138,66 +143,69 @@ class _RevealCard extends StatelessWidget {
 
   final AnimationController controller;
   final IconData icon;
-  final Color iconColor;
   final String label;
   final String sign;
   final String description;
 
   @override
   Widget build(BuildContext context) {
+    final p = context.palette;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return FadeTransition(
       opacity: CurvedAnimation(parent: controller, curve: Curves.easeOut),
       child: SlideTransition(
         position: Tween<Offset>(
           begin: const Offset(0, 0.3),
           end: Offset.zero,
-        ).animate(CurvedAnimation(
-          parent: controller,
-          curve: Curves.easeOutCubic,
-        )),
+        ).animate(
+          CurvedAnimation(parent: controller, curve: Curves.easeOutCubic),
+        ),
         child: Container(
-          padding: const EdgeInsets.all(20),
+          padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            gradient: LinearGradient(
-              colors: [
-                iconColor.withOpacity(0.1),
-                CosmicColors.surface,
-              ],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
+            color: isDark ? p.surfaceGlass : p.surface,
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: iconColor.withOpacity(0.3)),
+            border: Border.all(color: p.glassBorder),
           ),
           child: Row(
             children: [
+              // glyph medallion
               Container(
                 width: 48,
                 height: 48,
+                alignment: Alignment.center,
                 decoration: BoxDecoration(
-                  color: iconColor.withOpacity(0.15),
+                  color: p.primary.withValues(alpha: 0.12),
                   shape: BoxShape.circle,
+                  border: Border.all(color: p.glassBorder),
                 ),
-                child: Icon(icon, color: iconColor, size: 24),
+                child: Text(
+                  glyphForSign(sign),
+                  style: TextStyle(fontSize: 22, color: p.primary, height: 1),
+                ),
               ),
-              const SizedBox(width: 16),
+              const SizedBox(width: 14),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      label,
-                      style: CosmicTypography.caption.copyWith(
-                        color: iconColor,
-                        letterSpacing: 1.2,
-                      ),
+                    Row(
+                      children: [
+                        Icon(icon, color: p.primary, size: 12),
+                        const SizedBox(width: 6),
+                        Text(
+                          label.toUpperCase(),
+                          style: LivelyType.caption(p.textMuted),
+                        ),
+                      ],
                     ),
-                    Text(sign, style: CosmicTypography.headlineMedium),
+                    const SizedBox(height: 2),
+                    Text(sign, style: LivelyType.d3(p.textPrimary).copyWith(fontSize: 22)),
                     if (description.isNotEmpty) ...[
                       const SizedBox(height: 4),
                       Text(
                         description,
-                        style: CosmicTypography.bodySmall,
+                        style: LivelyType.small(p.textMuted),
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
                       ),
