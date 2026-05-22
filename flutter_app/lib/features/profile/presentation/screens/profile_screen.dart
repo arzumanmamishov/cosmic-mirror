@@ -217,7 +217,10 @@ class _EditProfileForm extends StatefulWidget {
 
   final TextEditingController nameCtrl;
   final String? email;
-  final ValueChanged<String> onSave;
+  // Returns a Future so the Save button can await the network call —
+  // a plain ValueChanged<String> silently discarded the async result,
+  // so the spinner never showed and double-taps fired duplicate PUTs.
+  final Future<void> Function(String) onSave;
   final VoidCallback onEditBirthData;
 
   @override
@@ -368,7 +371,7 @@ class _EditProfileFormState extends State<_EditProfileForm> {
                       return;
                     }
                     setState(() => _saving = true);
-                    widget.onSave(newName);
+                    await widget.onSave(newName);
                     if (mounted) setState(() => _saving = false);
                   },
             style: ElevatedButton.styleFrom(
