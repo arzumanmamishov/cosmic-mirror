@@ -6,8 +6,8 @@ import 'package:cosmic_mirror/features/numerology/presentation/widgets/karmic_gr
 import 'package:cosmic_mirror/features/numerology/presentation/widgets/number_card.dart';
 import 'package:cosmic_mirror/features/numerology/presentation/widgets/personal_today_card.dart';
 import 'package:cosmic_mirror/l10n/app_localizations.dart';
-import 'package:cosmic_mirror/shared/widgets/cosmic_starfield.dart';
 import 'package:cosmic_mirror/shared/widgets/error_view.dart';
+import 'package:cosmic_mirror/shared/widgets/lively/lively_backdrop.dart';
 import 'package:cosmic_mirror/shared/widgets/loading_shimmer.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -29,23 +29,17 @@ class NumerologyScreen extends ConsumerWidget {
         leading: const BackButton(),
         title: Text(AppLocalizations.of(context).numerologyTitle),
       ),
-      body: Stack(
-        children: [
-          Positioned.fill(
-            child: CosmicStarfield(
-              color: p.textPrimary,
-              intensity: 0.7,
-            ),
+      body: LivelyBackdrop(
+        seed: 23,
+        intensity: 0.6,
+        child: readingAsync.when(
+          loading: () => const ShimmerList(itemCount: 5),
+          error: (e, _) => ErrorView(
+            error: e,
+            onRetry: () => ref.invalidate(numerologyReadingProvider),
           ),
-          readingAsync.when(
-            loading: () => const ShimmerList(itemCount: 5),
-            error: (e, _) => ErrorView(
-              error: e,
-              onRetry: () => ref.invalidate(numerologyReadingProvider),
-            ),
-            data: (reading) => _Body(reading: reading),
-          ),
-        ],
+          data: (reading) => _Body(reading: reading),
+        ),
       ),
     );
   }

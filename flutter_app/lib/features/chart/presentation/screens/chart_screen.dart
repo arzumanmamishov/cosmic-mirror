@@ -4,8 +4,8 @@ import 'package:cosmic_mirror/features/chart/presentation/widgets/natal_chart_wh
 import 'package:cosmic_mirror/l10n/app_localizations.dart';
 import 'package:cosmic_mirror/shared/providers/user_provider.dart';
 import 'package:cosmic_mirror/shared/widgets/cosmic_pulse.dart';
-import 'package:cosmic_mirror/shared/widgets/cosmic_starfield.dart';
 import 'package:cosmic_mirror/shared/widgets/error_view.dart';
+import 'package:cosmic_mirror/shared/widgets/lively/lively_backdrop.dart';
 import 'package:cosmic_mirror/shared/widgets/loading_shimmer.dart';
 import 'package:cosmic_mirror/shared/widgets/staggered_fade_in.dart';
 import 'package:flutter/material.dart';
@@ -35,24 +35,17 @@ class ChartScreen extends ConsumerWidget {
         leading: const BackButton(),
         title: Text(AppLocalizations.of(context).chartScreenTitle),
       ),
-      body: Stack(
-        children: [
-          Positioned.fill(
-            child: CosmicStarfield(
-              color: p.textPrimary,
-              starCount: 60,
-              intensity: 0.7,
-            ),
+      body: LivelyBackdrop(
+        seed: 21,
+        intensity: 0.6,
+        child: chartAsync.when(
+          loading: () => const ShimmerList(itemCount: 4),
+          error: (error, _) => ErrorView(
+            message: error.toString(),
+            onRetry: () => ref.invalidate(chartProvider),
           ),
-          chartAsync.when(
-            loading: () => const ShimmerList(itemCount: 4),
-            error: (error, _) => ErrorView(
-              message: error.toString(),
-              onRetry: () => ref.invalidate(chartProvider),
-            ),
-            data: (chart) => _ChartContent(chart: chart),
-          ),
-        ],
+          data: (chart) => _ChartContent(chart: chart),
+        ),
       ),
     );
   }

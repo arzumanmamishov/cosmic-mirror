@@ -9,8 +9,8 @@ import 'package:cosmic_mirror/features/human_design/presentation/widgets/incarna
 import 'package:cosmic_mirror/features/human_design/presentation/widgets/type_card.dart';
 import 'package:cosmic_mirror/features/human_design/presentation/widgets/variables_strip.dart';
 import 'package:cosmic_mirror/l10n/app_localizations.dart';
-import 'package:cosmic_mirror/shared/widgets/cosmic_starfield.dart';
 import 'package:cosmic_mirror/shared/widgets/error_view.dart';
+import 'package:cosmic_mirror/shared/widgets/lively/lively_backdrop.dart';
 import 'package:cosmic_mirror/shared/widgets/loading_shimmer.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -31,24 +31,17 @@ class HumanDesignScreen extends ConsumerWidget {
         leading: const BackButton(),
         title: Text(AppLocalizations.of(context).humanDesignTitle),
       ),
-      body: Stack(
-        children: [
-          Positioned.fill(
-            child: CosmicStarfield(
-              color: p.textPrimary,
-              starCount: 50,
-              intensity: 0.6,
-            ),
+      body: LivelyBackdrop(
+        seed: 24,
+        intensity: 0.6,
+        child: chartAsync.when(
+          loading: () => const ShimmerList(itemCount: 5),
+          error: (e, _) => ErrorView(
+            error: e,
+            onRetry: () => ref.invalidate(humanDesignProvider),
           ),
-          chartAsync.when(
-            loading: () => const ShimmerList(itemCount: 5),
-            error: (e, _) => ErrorView(
-              error: e,
-              onRetry: () => ref.invalidate(humanDesignProvider),
-            ),
-            data: (chart) => _Body(chart: chart),
-          ),
-        ],
+          data: (chart) => _Body(chart: chart),
+        ),
       ),
     );
   }

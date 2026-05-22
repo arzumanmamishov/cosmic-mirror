@@ -9,8 +9,8 @@ import 'package:cosmic_mirror/features/vedic_chart/presentation/widgets/north_in
 import 'package:cosmic_mirror/features/vedic_chart/presentation/widgets/shadbala_radar.dart';
 import 'package:cosmic_mirror/features/vedic_chart/presentation/widgets/yoga_card.dart';
 import 'package:cosmic_mirror/l10n/app_localizations.dart';
-import 'package:cosmic_mirror/shared/widgets/cosmic_starfield.dart';
 import 'package:cosmic_mirror/shared/widgets/error_view.dart';
+import 'package:cosmic_mirror/shared/widgets/lively/lively_backdrop.dart';
 import 'package:cosmic_mirror/shared/widgets/loading_shimmer.dart';
 import 'package:cosmic_mirror/shared/widgets/staggered_fade_in.dart';
 import 'package:flutter/material.dart';
@@ -39,23 +39,17 @@ class VedicChartScreen extends ConsumerWidget {
           SizedBox(width: 8),
         ],
       ),
-      body: Stack(
-        children: [
-          Positioned.fill(
-            child: CosmicStarfield(
-              color: p.textPrimary,
-              intensity: 0.7,
-            ),
+      body: LivelyBackdrop(
+        seed: 22,
+        intensity: 0.6,
+        child: chartAsync.when(
+          loading: () => const ShimmerList(itemCount: 4),
+          error: (e, _) => ErrorView(
+            error: e,
+            onRetry: () => ref.invalidate(activeChartProvider),
           ),
-          chartAsync.when(
-            loading: () => const ShimmerList(itemCount: 4),
-            error: (e, _) => ErrorView(
-              error: e,
-              onRetry: () => ref.invalidate(activeChartProvider),
-            ),
-            data: (chart) => _Body(chart: chart),
-          ),
-        ],
+          data: (chart) => _Body(chart: chart),
+        ),
       ),
     );
   }
