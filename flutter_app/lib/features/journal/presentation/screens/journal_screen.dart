@@ -7,8 +7,8 @@ import 'package:cosmic_mirror/config/theme/app_palette.dart';
 import 'package:cosmic_mirror/core/network/api_endpoints.dart';
 import 'package:cosmic_mirror/l10n/app_localizations.dart';
 import 'package:cosmic_mirror/shared/providers/user_provider.dart';
-import 'package:cosmic_mirror/shared/widgets/cosmic_starfield.dart';
 import 'package:cosmic_mirror/shared/widgets/error_view.dart';
+import 'package:cosmic_mirror/shared/widgets/lively/lively_backdrop.dart';
 import 'package:cosmic_mirror/shared/widgets/loading_shimmer.dart';
 import 'package:cosmic_mirror/shared/widgets/staggered_fade_in.dart';
 
@@ -46,43 +46,36 @@ class JournalScreen extends ConsumerWidget {
           style: const TextStyle(fontWeight: FontWeight.w600),
         ),
       ),
-      body: Stack(
-        children: [
-          Positioned.fill(
-            child: CosmicStarfield(
-              color: p.textPrimary,
-              starCount: 50,
-              intensity: 0.6,
-            ),
+      body: LivelyBackdrop(
+        seed: 28,
+        intensity: 0.6,
+        child: entriesAsync.when(
+          loading: () => const ShimmerList(),
+          error: (e, _) => ErrorView(
+            error: e,
+            onRetry: () => ref.invalidate(journalEntriesProvider),
           ),
-          entriesAsync.when(
-            loading: () => const ShimmerList(),
-            error: (e, _) => ErrorView(
-              error: e,
-              onRetry: () => ref.invalidate(journalEntriesProvider),
-            ),
-            data: (entries) {
-              if (entries.isEmpty) return _EmptyState();
-              return ListView.separated(
-                padding: const EdgeInsets.fromLTRB(20, 100, 20, 100),
-                itemCount: entries.length + 1,
-                separatorBuilder: (_, __) => const SizedBox(height: 12),
-                itemBuilder: (context, i) {
-                  if (i == 0) {
-                    return FadeSlideIn(
-                      child: _Header(count: entries.length),
-                    );
-                  }
-                  final entry = entries[i - 1];
+          data: (entries) {
+            if (entries.isEmpty) return _EmptyState();
+            return ListView.separated(
+              padding: const EdgeInsets.fromLTRB(20, 100, 20, 100),
+              itemCount: entries.length + 1,
+              separatorBuilder: (_, __) => const SizedBox(height: 12),
+              itemBuilder: (context, i) {
+                if (i == 0) {
                   return FadeSlideIn(
-                    delay: Duration(milliseconds: 80 + i * 50),
-                    child: _EntryCard(entry: entry),
+                    child: _Header(count: entries.length),
                   );
-                },
-              );
-            },
-          ),
-        ],
+                }
+                final entry = entries[i - 1];
+                return FadeSlideIn(
+                  delay: Duration(milliseconds: 80 + i * 50),
+                  child: _EntryCard(entry: entry),
+                );
+              },
+            );
+          },
+        ),
       ),
     );
   }
