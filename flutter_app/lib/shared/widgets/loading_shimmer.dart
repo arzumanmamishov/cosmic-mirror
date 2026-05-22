@@ -54,6 +54,14 @@ class LoadingShimmer extends StatelessWidget {
   }
 }
 
+/// A small stack of skeleton placeholder cards shown while a screen
+/// loads.
+///
+/// Built as a [Column] — NOT a ListView — on purpose: a loading
+/// placeholder only ever shows a handful of fixed items, and a Column
+/// renders safely in every context (a screen body, a list item, inside
+/// a card). The old ListView crashed with "Vertical viewport was given
+/// unbounded height" whenever it appeared inside another scrollable.
 class ShimmerList extends StatelessWidget {
   const ShimmerList({
     super.key,
@@ -66,23 +74,28 @@ class ShimmerList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ListView.builder(
+    return Padding(
       padding: padding.add(const EdgeInsets.symmetric(vertical: 20)),
-      itemCount: itemCount,
-      itemBuilder: (context, index) => Padding(
-        padding: const EdgeInsets.only(bottom: 16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const LoadingShimmer(height: 120, borderRadius: 16),
-            const SizedBox(height: 12),
-            LoadingShimmer(
-              width: MediaQuery.sizeOf(context).width * 0.6,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          for (var i = 0; i < itemCount; i++)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const LoadingShimmer(height: 120, borderRadius: 16),
+                  const SizedBox(height: 12),
+                  LoadingShimmer(
+                    width: MediaQuery.sizeOf(context).width * 0.6,
+                  ),
+                  const SizedBox(height: 8),
+                  const LoadingShimmer(height: 12),
+                ],
+              ),
             ),
-            const SizedBox(height: 8),
-            const LoadingShimmer(height: 12),
-          ],
-        ),
+        ],
       ),
     );
   }
