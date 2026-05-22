@@ -224,12 +224,9 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                  const SizedBox(height: 6),
-                  const Align(
-                    alignment: Alignment.centerLeft,
-                    child: LivelyLogo(size: 48),
-                  ),
-                  const SizedBox(height: 76),
+                  const SizedBox(height: 8),
+                  const Center(child: LivelyLogo(size: 116)),
+                  const SizedBox(height: 28),
 
                   // hero
                   Text(

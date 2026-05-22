@@ -6,6 +6,7 @@ import 'package:cosmic_mirror/shared/providers/user_provider.dart';
 import 'package:cosmic_mirror/shared/widgets/lively/gold_button.dart';
 import 'package:cosmic_mirror/shared/widgets/lively/lively_backdrop.dart';
 import 'package:cosmic_mirror/shared/widgets/lively/mini_wheel.dart';
+import 'package:cosmic_mirror/shared/widgets/lively_logo.dart';
 import 'package:cosmic_mirror/shared/widgets/staggered_fade_in.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -64,11 +65,13 @@ class _WelcomeScreenState extends ConsumerState<WelcomeScreen> {
               children: [
                 const SizedBox(height: 4),
 
-                // kicker + date
+                // logo + kicker + date
                 FadeSlideIn(
                   duration: const Duration(milliseconds: 700),
                   child: Column(
                     children: [
+                      const LivelyLogo(size: 64),
+                      const SizedBox(height: 14),
                       Text(
                         '✨  ${l10n.welcomeKicker(name)}'.toUpperCase(),
                         style: LivelyType.kicker(p.primary)
