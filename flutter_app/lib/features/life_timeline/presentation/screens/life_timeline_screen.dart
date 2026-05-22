@@ -5,7 +5,7 @@ import 'package:cosmic_mirror/config/theme/app_palette.dart';
 import 'package:cosmic_mirror/features/life_timeline/data/life_timeline_data.dart';
 import 'package:cosmic_mirror/features/life_timeline/presentation/widgets/add_event_sheet.dart';
 import 'package:cosmic_mirror/l10n/app_localizations.dart';
-import 'package:cosmic_mirror/shared/widgets/cosmic_starfield.dart';
+import 'package:cosmic_mirror/shared/widgets/lively/lively_backdrop.dart';
 import 'package:cosmic_mirror/shared/widgets/staggered_fade_in.dart';
 
 /// LifeTimelineScreen — a vertical timeline of the user's life mapped against
@@ -65,36 +65,29 @@ class _LifeTimelineScreenState extends State<LifeTimelineScreen> {
           style: const TextStyle(fontWeight: FontWeight.w600),
         ),
       ),
-      body: Stack(
-        children: [
-          Positioned.fill(
-            child: CosmicStarfield(
-              color: p.textPrimary,
-              starCount: 60,
-              intensity: 0.7,
-            ),
-          ),
-          ListView.builder(
-            padding: const EdgeInsets.fromLTRB(20, 90, 20, 100),
-            itemCount: _events.length + 1,
-            itemBuilder: (context, i) {
-              if (i == 0) {
-                return FadeSlideIn(child: _Header(count: _events.length));
-              }
-              final event = _events[i - 1];
-              final isFirst = i == 1;
-              final isLast = i == _events.length;
-              return FadeSlideIn(
-                delay: Duration(milliseconds: 80 + i * 50),
-                child: _TimelineItem(
-                  event: event,
-                  isFirst: isFirst,
-                  isLast: isLast,
-                ),
-              );
-            },
-          ),
-        ],
+      body: LivelyBackdrop(
+        seed: 25,
+        intensity: 0.6,
+        child: ListView.builder(
+          padding: const EdgeInsets.fromLTRB(20, 90, 20, 100),
+          itemCount: _events.length + 1,
+          itemBuilder: (context, i) {
+            if (i == 0) {
+              return FadeSlideIn(child: _Header(count: _events.length));
+            }
+            final event = _events[i - 1];
+            final isFirst = i == 1;
+            final isLast = i == _events.length;
+            return FadeSlideIn(
+              delay: Duration(milliseconds: 80 + i * 50),
+              child: _TimelineItem(
+                event: event,
+                isFirst: isFirst,
+                isLast: isLast,
+              ),
+            );
+          },
+        ),
       ),
     );
   }

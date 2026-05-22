@@ -10,8 +10,8 @@ import 'package:cosmic_mirror/features/ai_chat/presentation/providers/chat_provi
 import 'package:cosmic_mirror/l10n/app_localizations.dart';
 import 'package:cosmic_mirror/features/ai_chat/presentation/widgets/cosmic_memory_panel.dart';
 import 'package:cosmic_mirror/shared/widgets/cosmic_pulse.dart';
-import 'package:cosmic_mirror/shared/widgets/cosmic_starfield.dart';
 import 'package:cosmic_mirror/shared/widgets/error_view.dart';
+import 'package:cosmic_mirror/shared/widgets/lively/lively_backdrop.dart';
 import 'package:cosmic_mirror/shared/widgets/loading_shimmer.dart';
 import 'package:cosmic_mirror/shared/widgets/staggered_fade_in.dart';
 
@@ -61,30 +61,24 @@ class ChatThreadsScreen extends ConsumerWidget {
           shape: const StadiumBorder(),
         ).withGradient(p.primaryGradient),
       ),
-      body: Stack(
-        children: [
-          Positioned.fill(
-            child: CosmicStarfield(
-              color: p.textPrimary,
-              starCount: 50,
-              intensity: 0.6,
-            ),
+      body: LivelyBackdrop(
+        seed: 26,
+        intensity: 0.6,
+        child: threadsAsync.when(
+          loading: () => const ShimmerList(),
+          error: (e, _) => ErrorView(
+            error: e,
+            onRetry: () => ref.invalidate(chatThreadsProvider),
           ),
-          threadsAsync.when(
-            loading: () => const ShimmerList(),
-            error: (e, _) => ErrorView(
-              error: e,
-              onRetry: () => ref.invalidate(chatThreadsProvider),
-            ),
-            data: (threads) {
-              if (threads.isEmpty) {
-                return _EmptyState(onStart: startNew);
-              }
-              return ListView.separated(
-                padding: const EdgeInsets.fromLTRB(20, 100, 20, 100),
-                itemCount: threads.length + 2,
-                separatorBuilder: (_, __) => const SizedBox(height: 12),
-                itemBuilder: (context, i) {
+          data: (threads) {
+            if (threads.isEmpty) {
+              return _EmptyState(onStart: startNew);
+            }
+            return ListView.separated(
+              padding: const EdgeInsets.fromLTRB(20, 100, 20, 100),
+              itemCount: threads.length + 2,
+              separatorBuilder: (_, __) => const SizedBox(height: 12),
+              itemBuilder: (context, i) {
                   if (i == 0) {
                     return FadeSlideIn(
                       child: _Header(threadCount: threads.length),
@@ -125,9 +119,8 @@ class ChatThreadsScreen extends ConsumerWidget {
               );
             },
           ),
-        ],
-      ),
-    );
+        ),
+      );
   }
 
   Future<bool> _confirmDelete(BuildContext context, String? title) async {
