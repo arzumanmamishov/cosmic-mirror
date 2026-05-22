@@ -87,3 +87,19 @@ flutter:
     - assets/images/
     - assets/icons/
     - assets/animations/
+
+  # Lively design-system fonts — bundled (not runtime-fetched) per the
+  # design handoff. Geist + Geist Mono are variable fonts; Flutter maps
+  # FontWeight onto their wght axis.
+  fonts:
+    - family: InstrumentSerif
+      fonts:
+        - asset: assets/fonts/InstrumentSerif-Regular.ttf
+        - asset: assets/fonts/InstrumentSerif-Italic.ttf
+          style: italic
+    - family: Geist
+      fonts:
+        - asset: assets/fonts/Geist.ttf
+    - family: GeistMono
+      fonts:
+        - asset: assets/fonts/GeistMono.ttf
