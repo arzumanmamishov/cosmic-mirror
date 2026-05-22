@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:shimmer/shimmer.dart';
 
-import '../../config/theme/colors.dart';
+import '../../config/theme/app_palette.dart';
 
+/// A single shimmering placeholder block. Theme-aware: it reads
+/// [AppPalette] so the placeholder + sweep colors are light in light
+/// mode and dark in dark mode (previously it used dark-only constants
+/// and rendered near-black on the light theme).
 class LoadingShimmer extends StatelessWidget {
   const LoadingShimmer({
     super.key,
@@ -26,14 +30,23 @@ class LoadingShimmer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final p = context.palette;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    // base = the resting placeholder block; highlight = the sweep.
+    final base = isDark ? p.surfaceElevated : p.bgDeep;
+    final highlight = isDark
+        ? Color.lerp(p.surfaceElevated, p.textPrimary, 0.08)!
+        : p.surface;
+
     return Shimmer.fromColors(
-      baseColor: CosmicColors.surfaceLight,
-      highlightColor: CosmicColors.surface.withOpacity(0.5),
+      baseColor: base,
+      highlightColor: highlight,
       child: Container(
         width: width,
         height: height,
         decoration: BoxDecoration(
-          color: CosmicColors.surfaceLight,
+          color: base,
           borderRadius: BorderRadius.circular(borderRadius),
         ),
       ),
