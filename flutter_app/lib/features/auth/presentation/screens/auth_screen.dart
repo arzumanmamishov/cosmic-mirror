@@ -7,8 +7,8 @@ import 'package:cosmic_mirror/l10n/app_localizations.dart';
 import 'package:cosmic_mirror/shared/providers/user_provider.dart';
 import 'package:cosmic_mirror/shared/widgets/lively/gold_button.dart';
 import 'package:cosmic_mirror/shared/widgets/lively/lively_backdrop.dart';
-import 'package:cosmic_mirror/shared/widgets/lively/lively_brand.dart';
 import 'package:cosmic_mirror/shared/widgets/lively/lively_field.dart';
+import 'package:cosmic_mirror/shared/widgets/lively_logo.dart';
 import 'package:flutter/foundation.dart'
     show TargetPlatform, defaultTargetPlatform;
 import 'package:flutter/material.dart';
@@ -227,7 +227,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                   const SizedBox(height: 6),
                   const Align(
                     alignment: Alignment.centerLeft,
-                    child: LivelyLockup(),
+                    child: LivelyLogo(size: 48),
                   ),
                   const SizedBox(height: 76),
 
