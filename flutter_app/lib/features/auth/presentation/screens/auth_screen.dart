@@ -206,14 +206,24 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
             physics: const ClampingScrollPhysics(),
             padding: EdgeInsets.fromLTRB(24, 12, 24, 24 + bottomInset),
             child: ConstrainedBox(
+              // Clamp to >= 0: on the very first frame MediaQuery.size
+              // can be zero, which made this go negative → "BoxConstraints
+              // has a negative minimum height" → blank screen.
               constraints: BoxConstraints(
-                minHeight: MediaQuery.of(context).size.height -
-                    MediaQuery.of(context).padding.vertical -
-                    36,
+                minHeight: (MediaQuery.of(context).size.height -
+                        MediaQuery.of(context).padding.vertical -
+                        36)
+                    .clamp(0.0, double.infinity),
               ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
+              // IntrinsicHeight gives the Column a bounded height inside
+              // the scroll view so the Spacer() between hero and form
+              // has something to flex into. Without it the Spacer's
+              // Expanded hits unbounded constraints → "RenderBox was not
+              // laid out" → blank screen.
+              child: IntrinsicHeight(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
                   const SizedBox(height: 6),
                   const Align(
                     alignment: Alignment.centerLeft,
@@ -389,6 +399,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                   ),
                   const SizedBox(height: 8),
                 ],
+                ),
               ),
             ),
           ),
