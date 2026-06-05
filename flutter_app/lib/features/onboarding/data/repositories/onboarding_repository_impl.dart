@@ -32,8 +32,14 @@ class OnboardingRepositoryImpl implements OnboardingRepository {
       return const Success(null);
     } on ServerException catch (e) {
       return Err(ServerFailure(message: e.message, statusCode: e.statusCode));
+    } on AuthException catch (e) {
+      return Err(AuthFailure(message: e.message));
+    } on RateLimitException {
+      return const Err(RateLimitFailure());
     } on NetworkException {
       return const Err(NetworkFailure());
+    } catch (e) {
+      return Err(ServerFailure(message: e.toString()));
     }
   }
 
@@ -47,8 +53,14 @@ class OnboardingRepositoryImpl implements OnboardingRepository {
       return const Success(null);
     } on ServerException catch (e) {
       return Err(ServerFailure(message: e.message));
+    } on AuthException catch (e) {
+      return Err(AuthFailure(message: e.message));
+    } on RateLimitException {
+      return const Err(RateLimitFailure());
     } on NetworkException {
       return const Err(NetworkFailure());
+    } catch (e) {
+      return Err(ServerFailure(message: e.toString()));
     }
   }
 
@@ -62,8 +74,14 @@ class OnboardingRepositoryImpl implements OnboardingRepository {
       return const Success(null);
     } on ServerException catch (e) {
       return Err(ServerFailure(message: e.message));
+    } on AuthException catch (e) {
+      return Err(AuthFailure(message: e.message));
+    } on RateLimitException {
+      return const Err(RateLimitFailure());
     } on NetworkException {
       return const Err(NetworkFailure());
+    } catch (e) {
+      return Err(ServerFailure(message: e.toString()));
     }
   }
 
@@ -76,8 +94,14 @@ class OnboardingRepositoryImpl implements OnboardingRepository {
       return Success(data);
     } on ServerException catch (e) {
       return Err(ServerFailure(message: e.message));
+    } on AuthException catch (e) {
+      return Err(AuthFailure(message: e.message));
+    } on RateLimitException {
+      return const Err(RateLimitFailure());
     } on NetworkException {
       return const Err(NetworkFailure());
+    } catch (e) {
+      return Err(ServerFailure(message: e.toString()));
     }
   }
 }

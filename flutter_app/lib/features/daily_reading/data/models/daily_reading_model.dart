@@ -20,19 +20,25 @@ class DailyReadingModel extends DailyReading {
   });
 
   factory DailyReadingModel.fromJson(Map<String, dynamic> json) {
+    // Defensive parsing: a number serialized as a double (8.0) or a
+    // missing/null field would crash a hard `as int`/`as String` cast and
+    // take down the whole daily-reading screen. Mirror the null-safe
+    // pattern used by the other models.
     return DailyReadingModel(
-      id: json['id'] as String,
-      readingDate: DateTime.parse(json['reading_date'] as String),
-      energyLevel: json['energy_level'] as int,
-      emotional: json['emotional'] as String,
-      love: json['love'] as String,
-      career: json['career'] as String,
-      health: json['health'] as String,
-      caution: json['caution'] as String,
-      action: json['action'] as String,
-      affirmation: json['affirmation'] as String,
-      luckyColor: json['lucky_color'] as String,
-      luckyNumber: json['lucky_number'] as int,
+      id: json['id'] as String? ?? '',
+      readingDate:
+          DateTime.tryParse(json['reading_date'] as String? ?? '') ??
+              DateTime.now(),
+      energyLevel: (json['energy_level'] as num?)?.toInt() ?? 0,
+      emotional: json['emotional'] as String? ?? '',
+      love: json['love'] as String? ?? '',
+      career: json['career'] as String? ?? '',
+      health: json['health'] as String? ?? '',
+      caution: json['caution'] as String? ?? '',
+      action: json['action'] as String? ?? '',
+      affirmation: json['affirmation'] as String? ?? '',
+      luckyColor: json['lucky_color'] as String? ?? '',
+      luckyNumber: (json['lucky_number'] as num?)?.toInt() ?? 0,
       sunSign: json['sun_sign'] as String?,
       moonSign: json['moon_sign'] as String?,
       risingSign: json['rising_sign'] as String?,

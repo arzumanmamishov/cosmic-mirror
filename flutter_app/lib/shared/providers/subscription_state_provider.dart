@@ -2,16 +2,19 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:purchases_flutter/purchases_flutter.dart';
 
 import '../../config/constants.dart';
+import '../../config/env.dart';
 
 final customerInfoProvider = FutureProvider<CustomerInfo>((ref) async {
   return Purchases.getCustomerInfo();
 });
 
 final isPremiumProvider = Provider<bool>((ref) {
-  // TESTING OVERRIDE: always premium so all gated features are accessible.
-  // Remove this short-circuit before production.
-  return true;
-  // ignore: dead_code
+  // Dev-only override: unlock all gated features while testing. Gated on
+  // Env.isDev so production builds always use the real RevenueCat
+  // entitlement check below — this can no longer accidentally ship "on".
+  if (Env.isDev) {
+    return true;
+  }
   final customerInfo = ref.watch(customerInfoProvider);
   return customerInfo.whenOrNull(
         data: (info) =>

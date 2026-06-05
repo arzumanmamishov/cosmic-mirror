@@ -182,9 +182,15 @@ class _OnboardingFlowState extends ConsumerState<OnboardingFlow> {
         final success = await notifier.submitName();
         if (success) notifier.nextStep();
       case 4:
-        await notifier.loadChartReveal();
-        notifier.nextStep();
-        if (state.chartReveal == null && mounted) {
+        // Use the returned success flag, not state.chartReveal — `state`
+        // is the snapshot captured before the await, so it never reflects
+        // the chart we just loaded. Reading it here always looked "null"
+        // and bounced the user past the reveal step to /welcome.
+        final loaded = await notifier.loadChartReveal();
+        if (!mounted) return;
+        if (loaded) {
+          notifier.nextStep();
+        } else {
           context.go('/welcome');
         }
       case 5:

@@ -25,11 +25,17 @@ class ApiClient {
                 },
               ),
             ) {
+    // Order matters for onError: Dio runs error interceptors in
+    // registration order, and _ErrorInterceptor *throws* (converting the
+    // DioException into a domain exception), which terminates the chain.
+    // _RetryInterceptor must therefore run BEFORE _ErrorInterceptor so it
+    // still sees the raw status code and can retry transient 5xx; the
+    // conversion to domain exceptions happens last.
     _dio.interceptors.addAll([
       _AuthInterceptor(),
-      _ErrorInterceptor(),
-      if (Env.isDev) _LoggingInterceptor(),
       _RetryInterceptor(_dio),
+      if (Env.isDev) _LoggingInterceptor(),
+      _ErrorInterceptor(),
     ]);
   }
 

@@ -1,4 +1,5 @@
 import 'package:cosmic_mirror/config/theme/app_palette.dart';
+import 'package:cosmic_mirror/core/utils/string_utils.dart';
 import 'package:cosmic_mirror/features/vedic_chart/data/repositories/vedic_repository.dart';
 import 'package:cosmic_mirror/features/vedic_chart/domain/entities/vedic_chart.dart';
 import 'package:cosmic_mirror/features/vedic_chart/presentation/providers/vedic_providers.dart';
@@ -350,7 +351,7 @@ class _PlanetsTab extends StatelessWidget {
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Text(
-                  pl.name.substring(0, 2),
+                  pl.name.abbrev(),
                   style: TextStyle(
                     color: _dignityColor(pl.dignity, p),
                     fontSize: 14,

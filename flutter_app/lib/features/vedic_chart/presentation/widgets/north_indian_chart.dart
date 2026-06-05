@@ -1,4 +1,5 @@
 import 'package:cosmic_mirror/config/theme/app_palette.dart';
+import 'package:cosmic_mirror/core/utils/string_utils.dart';
 import 'package:cosmic_mirror/features/vedic_chart/domain/entities/vedic_chart.dart';
 import 'package:flutter/material.dart';
 
@@ -181,10 +182,13 @@ class _NorthIndianPainter extends CustomPainter {
     for (final entry in grouped.entries) {
       final house = entry.key;
       final planets = entry.value;
-      final center = _planetAnchors[house]!;
+      // Houses outside 1–12 (e.g. a planet whose house field was omitted
+      // and defaulted to 0) have no anchor — skip rather than crash.
+      final center = _planetAnchors[house];
+      if (center == null) continue;
       var dy = -(planets.length - 1) * 7;
       for (final p in planets) {
-        final glyph = _planetAbbrev[p.name] ?? p.name.substring(0, 2);
+        final glyph = _planetAbbrev[p.name] ?? p.name.abbrev();
         final color = p.combust
             ? textSecondary
             : (p.retrograde ? accent : textPrimary);

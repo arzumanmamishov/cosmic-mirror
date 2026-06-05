@@ -1,3 +1,5 @@
+import 'package:cosmic_mirror/core/utils/date_utils.dart';
+
 class Validators {
   Validators._();
 
@@ -39,16 +41,20 @@ class Validators {
     if (date == null) {
       return 'Please select your birth date';
     }
-    final now = DateTime.now();
-    final age = now.year - date.year;
+    // Check the future case first — otherwise a future date yields a
+    // negative age and the misleading "must be at least 13" message.
+    if (date.isAfter(DateTime.now())) {
+      return 'Birth date cannot be in the future';
+    }
+    // Use the calendar-accurate age (accounts for month/day), not a bare
+    // year subtraction which is off by one for anyone who hasn't had this
+    // year's birthday yet.
+    final age = CosmicDateUtils.calculateAge(date);
     if (age < 13) {
       return 'You must be at least 13 years old';
     }
     if (age > 120) {
       return 'Please enter a valid birth date';
-    }
-    if (date.isAfter(now)) {
-      return 'Birth date cannot be in the future';
     }
     return null;
   }

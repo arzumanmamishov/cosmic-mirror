@@ -19,6 +19,15 @@ class ShadbalaRadar extends StatelessWidget {
   final ShadbalaBreakdown bala;
   final double size;
 
+  List<double> get _components => [
+        bala.sthana,
+        bala.dig,
+        bala.kala,
+        bala.chesta,
+        bala.naisargika,
+        bala.drik,
+      ];
+
   @override
   Widget build(BuildContext context) {
     final p = context.palette;
@@ -49,14 +58,7 @@ class ShadbalaRadar extends StatelessWidget {
           height: size,
           child: CustomPaint(
             painter: _RadarPainter(
-              values: [
-                bala.sthana,
-                bala.dig,
-                bala.kala,
-                bala.chesta,
-                bala.naisargika,
-                bala.drik,
-              ],
+              values: _components,
               labels: const [
                 'Sthana',
                 'Dig',
@@ -65,7 +67,14 @@ class ShadbalaRadar extends StatelessWidget {
                 'Naisargika',
                 'Drik',
               ],
-              max: 60,
+              // Scale to the data, using each axis's fair share of the
+              // planet's required total (required / 6 axes) as a floor so
+              // the rings stay meaningful instead of a hard-coded 60.
+              max: [
+                ..._components,
+                bala.required / 6,
+                1.0,
+              ].reduce(math.max),
               gridColor: p.glassBorder,
               fillColor: p.primary.withValues(alpha: 0.25),
               strokeColor: p.primary,
@@ -163,8 +172,10 @@ class _RadarPainter extends CustomPainter {
     final dataPath = Path();
     for (var k = 0; k < n; k++) {
       final theta = -math.pi / 2 + twoPi * k / n;
-      final v = (values[k].clamp(-max, max)) / max;
-      final r = radius * v.abs();
+      // Clamp negatives to the center (zero strength) rather than mirroring
+      // them outward with abs() — a negative bala must not look strong.
+      final v = values[k].clamp(0.0, max) / max;
+      final r = radius * v;
       final pt = Offset(
         center.dx + r * math.cos(theta),
         center.dy + r * math.sin(theta),

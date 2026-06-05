@@ -1,4 +1,5 @@
 import 'package:cosmic_mirror/config/theme/app_palette.dart';
+import 'package:cosmic_mirror/core/utils/string_utils.dart';
 import 'package:cosmic_mirror/features/vedic_chart/domain/entities/dasha.dart';
 import 'package:flutter/material.dart';
 
@@ -126,7 +127,7 @@ class _MahaTile extends StatelessWidget {
                 borderRadius: BorderRadius.circular(10),
               ),
               child: Text(
-                _grahaAbbr[period.lord] ?? period.lord.substring(0, 2),
+                _grahaAbbr[period.lord] ?? period.lord.abbrev(),
                 style: TextStyle(
                   color: isActive ? p.primary : p.textPrimary,
                   fontSize: 14,

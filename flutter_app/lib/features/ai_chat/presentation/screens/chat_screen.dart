@@ -43,6 +43,12 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   /// filled in lazily after the first successful send creates one.
   String? _threadId;
 
+  /// Re-entrancy guard. `chatState.isSending` only flips once the send
+  /// reaches the network, but a fresh chat first awaits createThread() —
+  /// a rapid double-tap in that window would otherwise create two
+  /// threads / send twice.
+  bool _isSubmitting = false;
+
   @override
   void initState() {
     super.initState();
@@ -78,46 +84,50 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
 
   Future<void> _sendMessage(String content) async {
     final text = content.trim();
-    if (text.isEmpty) return;
+    if (text.isEmpty || _isSubmitting) return;
+    _isSubmitting = true;
+    try {
+      // For a fresh chat we lazily create the thread on the backend
+      // *only* when the user actually sends — empty conversations never
+      // pollute the threads list.
+      var threadId = _threadId;
+      if (threadId == null) {
+        final newId =
+            await ref.read(chatInputProvider.notifier).createThread();
+        if (newId == null) return; // error already surfaced via state.error
+        threadId = newId;
+        setState(() => _threadId = newId);
+        // Refresh the threads list so the new conversation shows up.
+        ref.invalidate(chatThreadsProvider);
+      }
 
-    // For a fresh chat we lazily create the thread on the backend
-    // *only* when the user actually sends — empty conversations never
-    // pollute the threads list.
-    var threadId = _threadId;
-    if (threadId == null) {
-      final newId =
-          await ref.read(chatInputProvider.notifier).createThread();
-      if (newId == null) return; // error already surfaced via state.error
-      threadId = newId;
-      setState(() => _threadId = newId);
-      // Refresh the threads list so the new conversation shows up.
-      ref.invalidate(chatThreadsProvider);
-    }
+      final userMessage = ChatMessage(
+        id: 'local_${DateTime.now().millisecondsSinceEpoch}',
+        threadId: threadId,
+        role: MessageRole.user,
+        content: text,
+        createdAt: DateTime.now(),
+      );
 
-    final userMessage = ChatMessage(
-      id: 'local_${DateTime.now().millisecondsSinceEpoch}',
-      threadId: threadId,
-      role: MessageRole.user,
-      content: text,
-      createdAt: DateTime.now(),
-    );
-
-    setState(() => _localMessages = [..._localMessages, userMessage]);
-    _controller.clear();
-    _scrollToBottom();
-
-    final response = await ref
-        .read(chatInputProvider.notifier)
-        .sendMessage(threadId, text);
-
-    if (response != null) {
-      // The server now holds both the user message and the AI reply.
-      // Drop the local optimistic copies and refetch so the bubbles
-      // we just showed don't sit on top of the freshly-fetched
-      // server list — that's what was producing doubled prompts.
-      setState(() => _localMessages = const []);
-      ref.invalidate(chatMessagesProvider(threadId));
+      setState(() => _localMessages = [..._localMessages, userMessage]);
+      _controller.clear();
       _scrollToBottom();
+
+      final response = await ref
+          .read(chatInputProvider.notifier)
+          .sendMessage(threadId, text);
+
+      if (response != null) {
+        // The server now holds both the user message and the AI reply.
+        // Drop the local optimistic copies and refetch so the bubbles
+        // we just showed don't sit on top of the freshly-fetched
+        // server list — that's what was producing doubled prompts.
+        setState(() => _localMessages = const []);
+        ref.invalidate(chatMessagesProvider(threadId));
+        _scrollToBottom();
+      }
+    } finally {
+      _isSubmitting = false;
     }
   }
 

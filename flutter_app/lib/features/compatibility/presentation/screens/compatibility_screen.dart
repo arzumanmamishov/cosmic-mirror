@@ -36,7 +36,13 @@ class CompatibilityScreen extends ConsumerWidget {
         leading: const BackButton(),
       ),
       floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => context.push('/compatibility/add'),
+        onPressed: () async {
+          // Await the add flow, then refresh so a newly added person
+          // shows up immediately instead of only after the autoDispose
+          // provider is otherwise rebuilt.
+          await context.push('/compatibility/add');
+          ref.invalidate(savedPeopleProvider);
+        },
         backgroundColor: p.primary,
         foregroundColor: Colors.white,
         icon: const Icon(Icons.person_add_rounded),

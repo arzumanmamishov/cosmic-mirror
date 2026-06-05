@@ -1,5 +1,6 @@
 import 'package:cosmic_mirror/config/theme/app_palette.dart';
 import 'package:cosmic_mirror/core/network/api_endpoints.dart';
+import 'package:cosmic_mirror/core/utils/string_utils.dart';
 import 'package:cosmic_mirror/features/chart/presentation/widgets/natal_chart_wheel.dart';
 import 'package:cosmic_mirror/l10n/app_localizations.dart';
 import 'package:cosmic_mirror/shared/providers/user_provider.dart';
@@ -669,7 +670,7 @@ class _AspectsTab extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      '${a['planet1']} ${type[0].toUpperCase()}${type.substring(1)} ${a['planet2']}',
+                      '${a['planet1']} ${type.capitalizeFirst()} ${a['planet2']}',
                       style: TextStyle(
                         color: p.textPrimary,
                         fontSize: 13,
