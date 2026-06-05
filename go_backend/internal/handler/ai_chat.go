@@ -73,6 +73,7 @@ func (h *AIChatHandler) DeleteThread(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *AIChatHandler) GetMessages(w http.ResponseWriter, r *http.Request) {
+	userID := middleware.UserIDFromContext(r.Context())
 	threadID, err := uuid.Parse(chi.URLParam(r, "threadID"))
 	if err != nil {
 		respondError(w, http.StatusBadRequest, "invalid_id", "Invalid thread ID")
@@ -92,9 +93,17 @@ func (h *AIChatHandler) GetMessages(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	messages, err := h.aiSvc.GetMessages(r.Context(), threadID, limit, offset)
+	messages, err := h.aiSvc.GetMessages(r.Context(), userID, threadID, limit, offset)
 	if err != nil {
-		respondError(w, http.StatusInternalServerError, "messages_error", err.Error())
+		switch {
+		case errors.Is(err, service.ErrThreadNotFound):
+			respondError(w, http.StatusNotFound, "not_found", "Thread not found")
+		case errors.Is(err, service.ErrThreadForbidden):
+			respondError(w, http.StatusForbidden, "forbidden",
+				"You can't read someone else's conversation")
+		default:
+			respondError(w, http.StatusInternalServerError, "messages_error", err.Error())
+		}
 		return
 	}
 	if messages == nil {
@@ -141,7 +150,15 @@ func (h *AIChatHandler) SendMessage(w http.ResponseWriter, r *http.Request) {
 			})
 			return
 		}
-		respondError(w, http.StatusInternalServerError, "send_error", err.Error())
+		switch {
+		case errors.Is(err, service.ErrThreadNotFound):
+			respondError(w, http.StatusNotFound, "not_found", "Thread not found")
+		case errors.Is(err, service.ErrThreadForbidden):
+			respondError(w, http.StatusForbidden, "forbidden",
+				"You can't post into someone else's conversation")
+		default:
+			respondError(w, http.StatusInternalServerError, "send_error", err.Error())
+		}
 		return
 	}
 	respondSuccess(w, response)

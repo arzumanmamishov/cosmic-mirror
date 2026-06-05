@@ -2,12 +2,18 @@ package repository
 
 import (
 	"context"
+	"errors"
 	"time"
 
 	"cosmic-mirror/internal/domain"
 
 	"github.com/google/uuid"
 )
+
+// ErrJournalEntryNotFound is returned by JournalRepository.Update when no
+// entry matches the given id for the given user — either it doesn't exist
+// or it belongs to someone else. Handlers map this to a 404.
+var ErrJournalEntryNotFound = errors.New("journal entry not found")
 
 type UserRepository interface {
 	Create(ctx context.Context, user *domain.User) error
@@ -63,7 +69,7 @@ type CompatibilityRepository interface {
 
 type JournalRepository interface {
 	Create(ctx context.Context, entry *domain.JournalEntry) error
-	Update(ctx context.Context, id uuid.UUID, input domain.UpdateJournalInput) error
+	Update(ctx context.Context, id, userID uuid.UUID, input domain.UpdateJournalInput) error
 	List(ctx context.Context, userID uuid.UUID, limit, offset int) ([]domain.JournalEntry, error)
 	GetByID(ctx context.Context, id uuid.UUID) (*domain.JournalEntry, error)
 }

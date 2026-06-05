@@ -113,10 +113,7 @@ func (s *PostService) fanOutNewPost(spaceID, postID, actorID uuid.UUID, content 
 	if err != nil {
 		return
 	}
-	snippet := content
-	if len(snippet) > 140 {
-		snippet = snippet[:140] + "…"
-	}
+	snippet := truncateRunes(content, 140, "…")
 	s.notifSvc.EmitMany(ctx, nil, memberIDs, EmitParams{
 		ActorID:    &actorID,
 		Type:       "post_in_space",
@@ -165,8 +162,9 @@ func (s *PostService) Update(ctx context.Context, id, userID uuid.UUID, input do
 
 	// Re-extract hashtags if content changed.
 	return postgres.WithTx(ctx, s.db, func(tx *sqlx.Tx) error {
-		// Update post itself
-		if err := s.postRepo.Update(ctx, id, input); err != nil {
+		// Update post itself — on the tx so it rolls back with the
+		// hashtag re-linking below if anything fails.
+		if err := s.postRepo.UpdateTx(ctx, tx, id, input); err != nil {
 			return err
 		}
 		if input.Content != nil {

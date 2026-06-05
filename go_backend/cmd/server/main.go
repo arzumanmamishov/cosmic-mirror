@@ -135,7 +135,7 @@ func main() {
 
 	// Middleware
 	authMiddleware := middleware.NewAuth(firebaseAuth, userRepo)
-	rateLimiter := middleware.NewRateLimiter(rdb, cfg.FreeTierRateLimit, cfg.PremiumRateLimit)
+	rateLimiter := middleware.NewRateLimiter(rdb, cfg.FreeTierRateLimit, cfg.PremiumRateLimit, subscriptionSvc.IsPremium)
 
 	// Handlers
 	handlers := &handler.Handlers{

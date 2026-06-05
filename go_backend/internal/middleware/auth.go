@@ -16,9 +16,8 @@ import (
 type contextKey string
 
 const (
-	userIDKey     contextKey = "userID"
+	userIDKey      contextKey = "userID"
 	firebaseUIDKey contextKey = "firebaseUID"
-	isPremiumKey  contextKey = "isPremium"
 )
 
 type Auth struct {

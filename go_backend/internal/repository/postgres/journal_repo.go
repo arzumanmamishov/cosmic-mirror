@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"cosmic-mirror/internal/domain"
+	"cosmic-mirror/internal/repository"
 
 	"github.com/google/uuid"
 	"github.com/jmoiron/sqlx"
@@ -34,16 +35,28 @@ func (r *JournalRepository) Create(ctx context.Context, entry *domain.JournalEnt
 	return err
 }
 
-func (r *JournalRepository) Update(ctx context.Context, id uuid.UUID, input domain.UpdateJournalInput) error {
-	_, err := r.db.ExecContext(ctx,
+func (r *JournalRepository) Update(ctx context.Context, id, userID uuid.UUID, input domain.UpdateJournalInput) error {
+	// Scope by user_id as well as id — otherwise any authenticated user
+	// could overwrite another user's entry by guessing its id (IDOR).
+	res, err := r.db.ExecContext(ctx,
 		`UPDATE journal_entries SET
 		 content = COALESCE($1, content),
 		 mood = COALESCE($2, mood),
 		 updated_at = $3
-		 WHERE id = $4`,
-		input.Content, input.Mood, time.Now(), id,
+		 WHERE id = $4 AND user_id = $5`,
+		input.Content, input.Mood, time.Now(), id, userID,
 	)
-	return err
+	if err != nil {
+		return err
+	}
+	n, err := res.RowsAffected()
+	if err != nil {
+		return err
+	}
+	if n == 0 {
+		return repository.ErrJournalEntryNotFound
+	}
+	return nil
 }
 
 func (r *JournalRepository) List(ctx context.Context, userID uuid.UUID, limit, offset int) ([]domain.JournalEntry, error) {

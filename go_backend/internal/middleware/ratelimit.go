@@ -1,25 +1,34 @@
 package middleware
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"strconv"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/redis/go-redis/v9"
 )
+
+// PremiumChecker reports whether a user currently has premium access.
+// Injected so the limiter can pick the right tier without depending on
+// an upstream middleware to stash the flag in the request context.
+type PremiumChecker func(ctx context.Context, userID uuid.UUID) bool
 
 type RateLimiter struct {
 	rdb          *redis.Client
 	freeLimit    int
 	premiumLimit int
+	isPremium    PremiumChecker
 }
 
-func NewRateLimiter(rdb *redis.Client, freeLimit, premiumLimit int) *RateLimiter {
+func NewRateLimiter(rdb *redis.Client, freeLimit, premiumLimit int, isPremium PremiumChecker) *RateLimiter {
 	return &RateLimiter{
 		rdb:          rdb,
 		freeLimit:    freeLimit,
 		premiumLimit: premiumLimit,
+		isPremium:    isPremium,
 	}
 }
 
@@ -32,8 +41,7 @@ func (rl *RateLimiter) Limit(next http.Handler) http.Handler {
 		}
 
 		limit := rl.freeLimit
-		// Check premium status from context if available
-		if isPremium, ok := r.Context().Value(isPremiumKey).(bool); ok && isPremium {
+		if rl.isPremium != nil && rl.isPremium(r.Context(), userID) {
 			limit = rl.premiumLimit
 		}
 

@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"errors"
 	"net/http"
 	"strconv"
 	"time"
@@ -75,6 +76,7 @@ func (h *JournalHandler) Create(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *JournalHandler) Update(w http.ResponseWriter, r *http.Request) {
+	userID := middleware.UserIDFromContext(r.Context())
 	entryID, err := uuid.Parse(chi.URLParam(r, "entryID"))
 	if err != nil {
 		respondError(w, http.StatusBadRequest, "invalid_id", "Invalid entry ID")
@@ -87,7 +89,11 @@ func (h *JournalHandler) Update(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := h.journalRepo.Update(r.Context(), entryID, input); err != nil {
+	if err := h.journalRepo.Update(r.Context(), entryID, userID, input); err != nil {
+		if errors.Is(err, repository.ErrJournalEntryNotFound) {
+			respondError(w, http.StatusNotFound, "not_found", "Journal entry not found")
+			return
+		}
 		respondError(w, http.StatusInternalServerError, "update_error", err.Error())
 		return
 	}

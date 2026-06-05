@@ -68,10 +68,7 @@ func (s *CommentService) Create(ctx context.Context, userID, postID uuid.UUID, i
 		}
 
 		actor := userID
-		snippet := c.Content
-		if len(snippet) > 140 {
-			snippet = snippet[:140] + "…"
-		}
+		snippet := truncateRunes(c.Content, 140, "…")
 
 		// Notify the post author.
 		if err := s.notifSvc.Emit(ctx, tx, EmitParams{

@@ -70,24 +70,33 @@ func (s *AIService) ListThreads(ctx context.Context, userID uuid.UUID) ([]domain
 	return s.chatRepo.ListThreads(ctx, userID)
 }
 
-// DeleteThread removes a thread + all its messages. Verifies the
-// thread belongs to the caller first — without this, anyone with a
-// thread id could wipe anyone else's conversation.
+// assertThreadOwner loads a thread and verifies it belongs to the
+// caller. Every per-thread operation must go through this — otherwise
+// anyone holding a thread id can read, write, or wipe another user's
+// conversation (IDOR).
 //
 // Returns:
 //   - ErrThreadNotFound when no thread exists with that id
 //   - ErrThreadForbidden when the caller doesn't own the thread
 //   - underlying repo error on actual DB failures
-func (s *AIService) DeleteThread(ctx context.Context, userID uuid.UUID, threadID uuid.UUID) error {
+func (s *AIService) assertThreadOwner(ctx context.Context, userID, threadID uuid.UUID) (*domain.ChatThread, error) {
 	thread, err := s.chatRepo.GetThread(ctx, threadID)
 	if err != nil {
-		return fmt.Errorf("get thread: %w", err)
+		return nil, fmt.Errorf("get thread: %w", err)
 	}
 	if thread == nil {
-		return ErrThreadNotFound
+		return nil, ErrThreadNotFound
 	}
 	if thread.UserID != userID {
-		return ErrThreadForbidden
+		return nil, ErrThreadForbidden
+	}
+	return thread, nil
+}
+
+// DeleteThread removes a thread + all its messages. Owner-only.
+func (s *AIService) DeleteThread(ctx context.Context, userID uuid.UUID, threadID uuid.UUID) error {
+	if _, err := s.assertThreadOwner(ctx, userID, threadID); err != nil {
+		return err
 	}
 	return s.chatRepo.DeleteThread(ctx, threadID)
 }
@@ -98,7 +107,10 @@ var (
 	ErrThreadForbidden = errors.New("thread does not belong to this user")
 )
 
-func (s *AIService) GetMessages(ctx context.Context, threadID uuid.UUID, limit, offset int) ([]domain.ChatMessage, error) {
+func (s *AIService) GetMessages(ctx context.Context, userID uuid.UUID, threadID uuid.UUID, limit, offset int) ([]domain.ChatMessage, error) {
+	if _, err := s.assertThreadOwner(ctx, userID, threadID); err != nil {
+		return nil, err
+	}
 	return s.chatRepo.GetMessages(ctx, threadID, limit, offset)
 }
 
@@ -126,6 +138,13 @@ func nextResetAt() time.Time {
 }
 
 func (s *AIService) SendMessage(ctx context.Context, userID uuid.UUID, threadID uuid.UUID, content string, isPremium bool) (*domain.ChatMessage, error) {
+	// Verify the caller owns this thread before doing anything — without
+	// this, anyone could post into another user's conversation (IDOR).
+	thread, err := s.assertThreadOwner(ctx, userID, threadID)
+	if err != nil {
+		return nil, err
+	}
+
 	// Daily cap for free users — premium bypasses entirely.
 	if !isPremium {
 		count, err := s.chatRepo.CountUserMessagesToday(ctx, userID)
@@ -195,12 +214,8 @@ func (s *AIService) SendMessage(ctx context.Context, userID uuid.UUID, threadID 
 	}
 
 	// Auto-title the thread from first exchange
-	thread, _ := s.chatRepo.GetThread(ctx, threadID)
 	if thread != nil && thread.Title == nil {
-		title := content
-		if len(title) > 50 {
-			title = title[:50] + "..."
-		}
+		title := truncateRunes(content, 50, "...")
 		thread.Title = &title
 	}
 

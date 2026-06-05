@@ -94,7 +94,22 @@ func (r *PostRepository) ListByAuthor(ctx context.Context, authorID, currentUser
 }
 
 func (r *PostRepository) Update(ctx context.Context, id uuid.UUID, input domain.UpdatePostInput) error {
-	_, err := r.db.ExecContext(ctx,
+	return r.update(ctx, r.db, id, input)
+}
+
+// UpdateTx runs the post update on the given transaction so it commits or
+// rolls back atomically with the caller's hashtag re-linking.
+func (r *PostRepository) UpdateTx(ctx context.Context, tx *sqlx.Tx, id uuid.UUID, input domain.UpdatePostInput) error {
+	return r.update(ctx, tx, id, input)
+}
+
+// sqlx.DB and sqlx.Tx both satisfy this, so the query lives in one place.
+type execContext interface {
+	ExecContext(ctx context.Context, query string, args ...any) (sql.Result, error)
+}
+
+func (r *PostRepository) update(ctx context.Context, q execContext, id uuid.UUID, input domain.UpdatePostInput) error {
+	_, err := q.ExecContext(ctx,
 		`UPDATE posts SET
 		   content    = COALESCE($1, content),
 		   link_url   = COALESCE($2, link_url),

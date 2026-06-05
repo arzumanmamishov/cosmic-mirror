@@ -161,7 +161,15 @@ func ComputeTransitEvents(
 						signNameFromIndex(signIndexFromLongitude(positions["Sun"].Longitude))),
 				})
 			}
-			if crossesValue(delta0, delta1, 180) || crossesValue(delta0, delta1, -180) {
+			// Full moon: the Moon-Sun delta passes 180°. We can't detect
+			// this with crossesValue(..., 180) because normalizeSignedDelta's
+			// branch cut sits exactly at ±180 — the delta wraps from ~+179
+			// to ~-179, which the >90° guard rejects as an artifact. Shift
+			// the delta by 180° so opposition becomes a clean zero-crossing
+			// away from the cut.
+			fullDelta0 := normalizeSignedDelta(delta0 - 180)
+			fullDelta1 := normalizeSignedDelta(delta1 - 180)
+			if crossesZero(fullDelta0, fullDelta1) {
 				out = append(out, TransitEvent{
 					Date:        day,
 					Type:        "lunation",
@@ -373,10 +381,6 @@ func crossesZero(a, b float64) bool {
 		return false
 	}
 	return (a < 0 && b >= 0) || (a > 0 && b <= 0)
-}
-
-func crossesValue(a, b, target float64) bool {
-	return crossesZero(a-target, b-target)
 }
 
 // angularOrb returns the smallest distance between two longitudes

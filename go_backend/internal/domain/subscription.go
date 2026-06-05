@@ -37,7 +37,13 @@ type Subscription struct {
 }
 
 func (s *Subscription) IsPremium() bool {
-	return s.Status == StatusActive || s.Status == StatusTrialing
+	if s.Status != StatusActive && s.Status != StatusTrialing {
+		return false
+	}
+	// Even when the status wasn't flipped to expired (e.g. a missed or
+	// late billing webhook), a subscription whose expiry has already
+	// passed must not grant premium access.
+	return !s.IsExpired()
 }
 
 func (s *Subscription) IsTrialing() bool {
