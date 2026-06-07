@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"cosmic-mirror/internal/domain"
+	"cosmic-mirror/internal/repository"
 
 	"github.com/google/uuid"
 	"github.com/jmoiron/sqlx"
@@ -102,7 +103,7 @@ func (r *SubscriptionRepository) UpdateFromStripe(
 	currentPeriodEnd *time.Time,
 	cancelAtPeriodEnd bool,
 ) error {
-	_, err := r.db.ExecContext(ctx,
+	res, err := r.db.ExecContext(ctx,
 		`UPDATE subscriptions SET
 		   status = $1,
 		   price_id = $2,
@@ -115,5 +116,15 @@ func (r *SubscriptionRepository) UpdateFromStripe(
 		status, priceID, planType, currentPeriodEnd,
 		cancelAtPeriodEnd, time.Now(), stripeSubscriptionID,
 	)
-	return err
+	if err != nil {
+		return err
+	}
+	n, err := res.RowsAffected()
+	if err != nil {
+		return err
+	}
+	if n == 0 {
+		return repository.ErrSubscriptionNotFound
+	}
+	return nil
 }

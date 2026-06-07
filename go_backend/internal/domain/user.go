@@ -39,6 +39,42 @@ type UserPreferences struct {
 	NotificationEnabled bool      `db:"notification_enabled" json:"notification_enabled"`
 	NotificationTime    string    `db:"notification_time" json:"notification_time"`
 	Theme               string    `db:"theme" json:"theme"`
+	NotifDailyReading   bool      `db:"notif_daily_reading" json:"notif_daily_reading"`
+	NotifAffirmation    bool      `db:"notif_affirmation" json:"notif_affirmation"`
+	NotifWeekly         bool      `db:"notif_weekly" json:"notif_weekly"`
+}
+
+// DefaultUserPreferences mirrors the column defaults in migration 001/009 so
+// a user who has never saved preferences still gets a sensible row to read
+// and to merge partial updates onto.
+func DefaultUserPreferences(userID uuid.UUID) UserPreferences {
+	return UserPreferences{
+		UserID:              userID,
+		FocusAreas:          []string{},
+		NotificationEnabled: true,
+		NotificationTime:    "09:00",
+		Theme:               "dark",
+		NotifDailyReading:   true,
+		NotifAffirmation:    true,
+		NotifWeekly:         true,
+	}
+}
+
+// UpdatePreferencesInput is a partial update — only non-nil fields are applied.
+type UpdatePreferencesInput struct {
+	FocusAreas          *[]string `json:"focus_areas"`
+	NotificationEnabled *bool     `json:"notification_enabled"`
+	NotificationTime    *string   `json:"notification_time"`
+	Theme               *string   `json:"theme"`
+}
+
+// UpdateNotificationPrefsInput is a partial update for the per-category
+// notification toggles (preferred_time maps to notification_time).
+type UpdateNotificationPrefsInput struct {
+	DailyReading  *bool   `json:"daily_reading"`
+	Affirmation   *bool   `json:"affirmation"`
+	Weekly        *bool   `json:"weekly"`
+	PreferredTime *string `json:"preferred_time"`
 }
 
 type CreateUserInput struct {

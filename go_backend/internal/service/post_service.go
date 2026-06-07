@@ -131,6 +131,15 @@ func (s *PostService) Get(ctx context.Context, id, userID uuid.UUID) (*domain.Po
 	if p == nil {
 		return nil, ErrPostNotFound
 	}
+	// Reading a single post requires approved membership in its space —
+	// otherwise a non-member holding a post id could read gated content.
+	approved, err := s.memberRepo.IsApprovedMember(ctx, p.SpaceID, userID)
+	if err != nil {
+		return nil, err
+	}
+	if !approved {
+		return nil, ErrForbidden
+	}
 	return p, nil
 }
 

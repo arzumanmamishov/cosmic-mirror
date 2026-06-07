@@ -184,8 +184,8 @@ func (s *AIService) SendMessage(ctx context.Context, userID uuid.UUID, threadID 
 		firstName = firstNameOf(user.Name)
 	}
 
-	// Get thread history (last 20 messages)
-	history, err := s.chatRepo.GetMessages(ctx, threadID, 20, 0)
+	// Get thread history (most recent 20 messages, chronological)
+	history, err := s.chatRepo.GetRecentMessages(ctx, threadID, 20)
 	if err != nil {
 		return nil, fmt.Errorf("get history: %w", err)
 	}

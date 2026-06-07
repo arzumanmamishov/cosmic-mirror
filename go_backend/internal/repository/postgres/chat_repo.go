@@ -122,6 +122,24 @@ func (r *ChatRepository) GetMessages(ctx context.Context, threadID uuid.UUID, li
 	return messages, err
 }
 
+// GetRecentMessages returns the most recent `limit` messages in the thread,
+// re-ordered chronologically (oldest→newest). GetMessages with ASC+offset 0
+// returns the OLDEST messages, so feeding it to the model as "history" froze
+// context on the first exchange once a thread passed `limit` messages.
+func (r *ChatRepository) GetRecentMessages(ctx context.Context, threadID uuid.UUID, limit int) ([]domain.ChatMessage, error) {
+	var messages []domain.ChatMessage
+	err := r.db.SelectContext(ctx, &messages,
+		`SELECT id, thread_id, role, content, created_at FROM (
+		     SELECT id, thread_id, role, content, created_at
+		     FROM chat_messages WHERE thread_id = $1
+		     ORDER BY created_at DESC LIMIT $2
+		 ) recent
+		 ORDER BY created_at ASC`,
+		threadID, limit,
+	)
+	return messages, err
+}
+
 func (r *ChatRepository) CountUserMessagesToday(ctx context.Context, userID uuid.UUID) (int, error) {
 	var count int
 	err := r.db.GetContext(ctx, &count,

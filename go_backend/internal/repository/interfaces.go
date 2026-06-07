@@ -15,6 +15,12 @@ import (
 // or it belongs to someone else. Handlers map this to a 404.
 var ErrJournalEntryNotFound = errors.New("journal entry not found")
 
+// ErrSubscriptionNotFound is returned by SubscriptionRepository.UpdateFromStripe
+// when no row matches the Stripe subscription id — typically because a
+// `subscription.created` webhook arrived before the Subscribe flow persisted
+// the row. Callers use it to self-heal instead of silently dropping the event.
+var ErrSubscriptionNotFound = errors.New("subscription not found")
+
 type UserRepository interface {
 	Create(ctx context.Context, user *domain.User) error
 	GetByID(ctx context.Context, id uuid.UUID) (*domain.User, error)
@@ -52,6 +58,7 @@ type ChatRepository interface {
 	DeleteThread(ctx context.Context, id uuid.UUID) error
 	CreateMessage(ctx context.Context, msg *domain.ChatMessage) error
 	GetMessages(ctx context.Context, threadID uuid.UUID, limit, offset int) ([]domain.ChatMessage, error)
+	GetRecentMessages(ctx context.Context, threadID uuid.UUID, limit int) ([]domain.ChatMessage, error)
 	CountUserMessagesToday(ctx context.Context, userID uuid.UUID) (int, error)
 }
 

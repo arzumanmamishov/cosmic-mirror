@@ -18,6 +18,7 @@ type LikeService struct {
 	likeRepo    *postgres.LikeRepository
 	postRepo    *postgres.PostRepository
 	commentRepo *postgres.CommentRepository
+	memberRepo  *postgres.SpaceMemberRepository
 	notifSvc    *CommunityNotificationService
 }
 
@@ -26,21 +27,68 @@ func NewLikeService(
 	likeRepo *postgres.LikeRepository,
 	postRepo *postgres.PostRepository,
 	commentRepo *postgres.CommentRepository,
+	memberRepo *postgres.SpaceMemberRepository,
 	notifSvc *CommunityNotificationService,
 ) *LikeService {
 	return &LikeService{
 		db: db, likeRepo: likeRepo, postRepo: postRepo,
-		commentRepo: commentRepo, notifSvc: notifSvc,
+		commentRepo: commentRepo, memberRepo: memberRepo, notifSvc: notifSvc,
 	}
 }
 
 var ErrInvalidTargetType = errors.New("target type must be 'post' or 'comment'")
+
+// assertMemberForTarget resolves the space a like target belongs to and
+// returns ErrForbidden unless the user is an approved member — liking is a
+// write into a gated space and must not be possible for non-members.
+// Returns ErrPostNotFound / ErrCommentNotFound when the target is missing.
+func (s *LikeService) assertMemberForTarget(ctx context.Context, userID uuid.UUID, targetType string, targetID uuid.UUID) error {
+	var spaceID uuid.UUID
+	switch targetType {
+	case "post":
+		post, err := s.postRepo.GetBareByID(ctx, targetID)
+		if err != nil {
+			return err
+		}
+		if post == nil {
+			return ErrPostNotFound
+		}
+		spaceID = post.SpaceID
+	case "comment":
+		c, err := s.commentRepo.GetBareByID(ctx, targetID)
+		if err != nil {
+			return err
+		}
+		if c == nil {
+			return ErrCommentNotFound
+		}
+		post, err := s.postRepo.GetBareByID(ctx, c.PostID)
+		if err != nil {
+			return err
+		}
+		if post == nil {
+			return ErrPostNotFound
+		}
+		spaceID = post.SpaceID
+	}
+	approved, err := s.memberRepo.IsApprovedMember(ctx, spaceID, userID)
+	if err != nil {
+		return err
+	}
+	if !approved {
+		return ErrForbidden
+	}
+	return nil
+}
 
 func (s *LikeService) Like(ctx context.Context, userID uuid.UUID, targetType string, targetID uuid.UUID) error {
 	switch targetType {
 	case "post", "comment":
 	default:
 		return ErrInvalidTargetType
+	}
+	if err := s.assertMemberForTarget(ctx, userID, targetType, targetID); err != nil {
+		return err
 	}
 
 	return postgres.WithTx(ctx, s.db, func(tx *sqlx.Tx) error {

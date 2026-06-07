@@ -20,6 +20,7 @@ import (
 	"cosmic-mirror/internal/server"
 	"cosmic-mirror/internal/service"
 	"cosmic-mirror/internal/storage"
+	"cosmic-mirror/internal/worker"
 
 	"github.com/jmoiron/sqlx"
 	_ "github.com/jackc/pgx/v5/stdlib"
@@ -93,6 +94,8 @@ func main() {
 	chatRepo := postgres.NewChatRepository(db)
 	compatibilityRepo := postgres.NewCompatibilityRepository(db)
 	journalRepo := postgres.NewJournalRepository(db)
+	preferencesRepo := postgres.NewPreferencesRepository(db)
+	ritualRepo := postgres.NewRitualRepository(db)
 	subscriptionRepo := postgres.NewSubscriptionRepository(db)
 	// Community / Spaces forum
 	spaceRepo := postgres.NewSpaceRepository(db)
@@ -127,8 +130,8 @@ func main() {
 	communityNotifSvc := service.NewCommunityNotificationService(communityNotifRepo)
 	communitySvc := service.NewCommunityService(db, spaceRepo, spaceMemberRepo, spaceCategoryRepo, postRepo, userRepo, communityNotifSvc)
 	postSvc := service.NewPostService(db, postRepo, spaceRepo, spaceMemberRepo, hashtagRepo, communityNotifSvc)
-	commentSvc := service.NewCommentService(db, commentRepo, postRepo, communityNotifSvc)
-	likeSvc := service.NewLikeService(db, likeRepo, postRepo, commentRepo, communityNotifSvc)
+	commentSvc := service.NewCommentService(db, commentRepo, postRepo, spaceMemberRepo, communityNotifSvc)
+	likeSvc := service.NewLikeService(db, likeRepo, postRepo, commentRepo, spaceMemberRepo, communityNotifSvc)
 	// Numerology + Human Design
 	numerologySvc := service.NewNumerologyService(userRepo, birthProfileRepo)
 	humanDesignSvc := service.NewHumanDesignService(birthProfileRepo, chartProvider, rdb)
@@ -140,7 +143,7 @@ func main() {
 	// Handlers
 	handlers := &handler.Handlers{
 		Auth:          handler.NewAuthHandler(userSvc, subscriptionSvc),
-		User:          handler.NewUserHandler(userSvc),
+		User:          handler.NewUserHandler(userSvc, preferencesRepo, ritualRepo),
 		Chart:         handler.NewChartHandler(chartSvc),
 		Vedic:         handler.NewVedicHandler(vedicSvc),
 		DailyReading:  handler.NewDailyReadingHandler(readingSvc),
@@ -160,6 +163,18 @@ func main() {
 		Numerology:  handler.NewNumerologyHandler(numerologySvc),
 		HumanDesign: handler.NewHumanDesignHandler(humanDesignSvc),
 	}
+
+	// Background workers — scheduled on simple interval tickers, tied to a
+	// context cancelled on shutdown. Daily readings are also generated
+	// lazily on request, so these are best-effort pre-generation/dispatch.
+	workerCtx, stopWorkers := context.WithCancel(context.Background())
+	defer stopWorkers()
+	dailyReadingsWorker := worker.NewDailyReadingsWorker(db, readingSvc)
+	notificationsWorker := worker.NewNotificationsWorker(db)
+	cleanupWorker := worker.NewCleanupWorker(db, rdb)
+	scheduleWorker(workerCtx, "daily_readings", 24*time.Hour, dailyReadingsWorker.Run)
+	scheduleWorker(workerCtx, "notifications", 15*time.Minute, notificationsWorker.Run)
+	scheduleWorker(workerCtx, "cleanup", 24*time.Hour, cleanupWorker.Run)
 
 	// Router
 	router := server.NewRouter(handlers, authMiddleware, rateLimiter, cfg)
@@ -194,4 +209,24 @@ func main() {
 		slog.Error("server forced to shutdown", "error", err)
 	}
 	slog.Info("server stopped")
+}
+
+// scheduleWorker runs fn on an interval ticker in its own goroutine until ctx
+// is cancelled. Errors are logged, not fatal — a failed run shouldn't stop
+// future runs or the server.
+func scheduleWorker(ctx context.Context, name string, interval time.Duration, fn func(context.Context) error) {
+	go func() {
+		ticker := time.NewTicker(interval)
+		defer ticker.Stop()
+		for {
+			select {
+			case <-ctx.Done():
+				return
+			case <-ticker.C:
+				if err := fn(ctx); err != nil {
+					slog.Error("worker run failed", "worker", name, "error", err)
+				}
+			}
+		}
+	}()
 }

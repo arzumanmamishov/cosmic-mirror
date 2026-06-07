@@ -2,7 +2,9 @@ package service
 
 import (
 	"context"
+	"errors"
 	"fmt"
+	"log/slog"
 	"time"
 
 	"cosmic-mirror/internal/domain"
@@ -264,15 +266,41 @@ func (s *StripeService) applySubscriptionRecord(ctx context.Context, sub *stripe
 			}
 		}
 	}
-	return s.subRepo.UpdateFromStripe(
-		ctx,
-		sub.ID,
-		mapStripeStatus(sub.Status),
-		priceID,
-		planType,
-		timePtrFromUnix(sub.CurrentPeriodEnd),
-		sub.CancelAtPeriodEnd,
+	status := mapStripeStatus(sub.Status)
+	periodEnd := timePtrFromUnix(sub.CurrentPeriodEnd)
+	err := s.subRepo.UpdateFromStripe(
+		ctx, sub.ID, status, priceID, planType, periodEnd, sub.CancelAtPeriodEnd,
 	)
+	if !errors.Is(err, repository.ErrSubscriptionNotFound) {
+		return err
+	}
+
+	// No row carries this Stripe subscription id yet. This happens when a
+	// `subscription.created` webhook races ahead of the Subscribe flow's
+	// write. If we already have a row for this customer (created by
+	// Subscribe), link the subscription id onto it; otherwise log and let
+	// Subscribe create the row — don't silently drop the event.
+	if sub.Customer != nil {
+		existing, gerr := s.subRepo.GetByStripeCustomer(ctx, sub.Customer.ID)
+		if gerr != nil {
+			return gerr
+		}
+		if existing != nil {
+			subID := sub.ID
+			pid := priceID
+			existing.StripeSubscriptionID = &subID
+			existing.Status = status
+			existing.PriceID = &pid
+			existing.PlanType = planType
+			existing.CurrentPeriodEnd = periodEnd
+			existing.ExpiresAt = periodEnd
+			existing.CancelAtPeriodEnd = sub.CancelAtPeriodEnd
+			return s.subRepo.Upsert(ctx, existing)
+		}
+	}
+	slog.Warn("stripe webhook for unknown subscription; will be reconciled by subscribe flow",
+		"stripe_subscription_id", sub.ID)
+	return nil
 }
 
 func mapStripeStatus(s stripe.SubscriptionStatus) domain.SubscriptionStatus {

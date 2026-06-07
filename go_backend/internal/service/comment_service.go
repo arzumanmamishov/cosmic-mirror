@@ -16,6 +16,7 @@ type CommentService struct {
 	db          *sqlx.DB
 	commentRepo *postgres.CommentRepository
 	postRepo    *postgres.PostRepository
+	memberRepo  *postgres.SpaceMemberRepository
 	notifSvc    *CommunityNotificationService
 }
 
@@ -23,9 +24,24 @@ func NewCommentService(
 	db *sqlx.DB,
 	commentRepo *postgres.CommentRepository,
 	postRepo *postgres.PostRepository,
+	memberRepo *postgres.SpaceMemberRepository,
 	notifSvc *CommunityNotificationService,
 ) *CommentService {
-	return &CommentService{db: db, commentRepo: commentRepo, postRepo: postRepo, notifSvc: notifSvc}
+	return &CommentService{db: db, commentRepo: commentRepo, postRepo: postRepo, memberRepo: memberRepo, notifSvc: notifSvc}
+}
+
+// assertMember returns ErrForbidden unless the user is an approved member
+// of the space. Used to keep gated-space content (posts, comments, likes)
+// from leaking to non-members who happen to hold an id.
+func (s *CommentService) assertMember(ctx context.Context, spaceID, userID uuid.UUID) error {
+	approved, err := s.memberRepo.IsApprovedMember(ctx, spaceID, userID)
+	if err != nil {
+		return err
+	}
+	if !approved {
+		return ErrForbidden
+	}
+	return nil
 }
 
 var ErrCommentNotFound = errors.New("comment not found")
@@ -40,6 +56,9 @@ func (s *CommentService) Create(ctx context.Context, userID, postID uuid.UUID, i
 	}
 	if post == nil {
 		return nil, ErrPostNotFound
+	}
+	if err := s.assertMember(ctx, post.SpaceID, userID); err != nil {
+		return nil, err
 	}
 
 	c := &domain.Comment{
@@ -103,6 +122,17 @@ func (s *CommentService) Create(ctx context.Context, userID, postID uuid.UUID, i
 }
 
 func (s *CommentService) ListByPost(ctx context.Context, postID, userID uuid.UUID) ([]domain.CommentWithMeta, error) {
+	// Reading comments requires approved membership in the post's space.
+	post, err := s.postRepo.GetBareByID(ctx, postID)
+	if err != nil {
+		return nil, err
+	}
+	if post == nil {
+		return nil, ErrPostNotFound
+	}
+	if err := s.assertMember(ctx, post.SpaceID, userID); err != nil {
+		return nil, err
+	}
 	return s.commentRepo.ListByPost(ctx, postID, userID)
 }
 
