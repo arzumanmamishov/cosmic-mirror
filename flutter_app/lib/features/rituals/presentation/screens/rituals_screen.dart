@@ -6,6 +6,7 @@ import '../../../../config/theme/typography.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../../shared/widgets/cosmic_card.dart';
 import '../../../../shared/widgets/premium_gate.dart';
+import '../providers/rituals_provider.dart';
 
 class RitualsScreen extends ConsumerWidget {
   const RitualsScreen({super.key});
@@ -13,6 +14,12 @@ class RitualsScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l = AppLocalizations.of(context);
+    final todayAsync = ref.watch(ritualsTodayProvider);
+    final today = todayAsync.valueOrNull;
+
+    bool done(String type) => today?.isCompleted(type) ?? false;
+    void complete(String type) => completeRitual(ref, type);
+
     return Scaffold(
       appBar: AppBar(
         title: Text(l.ritualsTitle),
@@ -39,8 +46,8 @@ class RitualsScreen extends ConsumerWidget {
                 description: l.ritualMorningDesc,
                 icon: Icons.wb_sunny_outlined,
                 color: CosmicColors.gold,
-                isCompleted: false,
-                onComplete: () {},
+                isCompleted: done('morning_intention'),
+                onComplete: () => complete('morning_intention'),
               ),
               const SizedBox(height: 12),
               _RitualCard(
@@ -48,8 +55,8 @@ class RitualsScreen extends ConsumerWidget {
                 description: l.ritualAffirmationDesc,
                 icon: Icons.auto_awesome,
                 color: CosmicColors.primary,
-                isCompleted: false,
-                onComplete: () {},
+                isCompleted: done('affirmation'),
+                onComplete: () => complete('affirmation'),
               ),
               const SizedBox(height: 12),
               _RitualCard(
@@ -57,8 +64,8 @@ class RitualsScreen extends ConsumerWidget {
                 description: l.ritualEveningDesc,
                 icon: Icons.nightlight_round,
                 color: CosmicColors.accent,
-                isCompleted: false,
-                onComplete: () {},
+                isCompleted: done('evening_reflection'),
+                onComplete: () => complete('evening_reflection'),
               ),
             ],
           ),

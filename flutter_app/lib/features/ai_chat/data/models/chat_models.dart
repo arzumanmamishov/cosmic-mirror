@@ -11,13 +11,13 @@ class ChatThreadModel extends ChatThread {
 
   factory ChatThreadModel.fromJson(Map<String, dynamic> json) {
     return ChatThreadModel(
-      id: json['id'] as String,
+      id: json['id'] as String? ?? '',
       title: json['title'] as String?,
       lastMessage: json['last_message'] as String?,
-      createdAt: DateTime.parse(json['created_at'] as String),
-      updatedAt: json['updated_at'] != null
-          ? DateTime.parse(json['updated_at'] as String)
-          : null,
+      createdAt:
+          DateTime.tryParse(json['created_at'] as String? ?? '') ??
+              DateTime.now(),
+      updatedAt: DateTime.tryParse(json['updated_at'] as String? ?? ''),
     );
   }
 }
@@ -33,11 +33,13 @@ class ChatMessageModel extends ChatMessage {
 
   factory ChatMessageModel.fromJson(Map<String, dynamic> json) {
     return ChatMessageModel(
-      id: json['id'] as String,
-      threadId: json['thread_id'] as String,
+      id: json['id'] as String? ?? '',
+      threadId: json['thread_id'] as String? ?? '',
       role: json['role'] == 'user' ? MessageRole.user : MessageRole.assistant,
-      content: json['content'] as String,
-      createdAt: DateTime.parse(json['created_at'] as String),
+      content: json['content'] as String? ?? '',
+      createdAt:
+          DateTime.tryParse(json['created_at'] as String? ?? '') ??
+              DateTime.now(),
     );
   }
 }

@@ -75,8 +75,8 @@ class _JournalEntryScreenState extends ConsumerState<JournalEntryScreen> {
 
       if (mounted) context.pop();
     } catch (e) {
-      setState(() => _isSaving = false);
       if (mounted) {
+        setState(() => _isSaving = false);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(

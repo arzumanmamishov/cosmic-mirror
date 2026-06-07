@@ -49,6 +49,7 @@ class _EditBirthDataScreenState extends ConsumerState<EditBirthDataScreen> {
 
   bool _saving = false;
   bool _initialized = false;
+  bool _hydrateScheduled = false;
   String? _error;
 
   void _hydrate(BirthProfile profile) {
@@ -129,8 +130,16 @@ class _EditBirthDataScreenState extends ConsumerState<EditBirthDataScreen> {
   Widget build(BuildContext context) {
     final p = context.palette;
     final profileAsync = ref.watch(birthProfileProvider);
+    // Hydrate form fields once, AFTER this frame — calling setState directly
+    // here would throw "setState during build" when the provider is already
+    // resolved (cached) at first build.
     profileAsync.whenData((profile) {
-      if (profile != null) _hydrate(profile);
+      if (profile != null && !_initialized && !_hydrateScheduled) {
+        _hydrateScheduled = true;
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (mounted) _hydrate(profile);
+        });
+      }
     });
 
     return Scaffold(

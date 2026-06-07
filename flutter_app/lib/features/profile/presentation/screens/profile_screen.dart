@@ -15,6 +15,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class ProfileScreen extends ConsumerWidget {
   const ProfileScreen({super.key});
@@ -1160,19 +1161,19 @@ class _AccountLinks extends StatelessWidget {
           _ActionRow(
             icon: Icons.notifications_rounded,
             label: AppLocalizations.of(context).profileNotifications,
-            onTap: () => context.push('/notifications'),
+            onTap: () => context.push('/community/notifications'),
           ),
           _RowDivider(p: p),
           _ActionRow(
             icon: Icons.shield_rounded,
             label: AppLocalizations.of(context).profilePrivacy,
-            onTap: () => context.push('/legal/privacy'),
+            onTap: () => launchUrl(Uri.parse('https://livelyapp.co/privacy')),
           ),
           _RowDivider(p: p),
           _ActionRow(
             icon: Icons.help_rounded,
             label: AppLocalizations.of(context).profileHelp,
-            onTap: () => context.push('/support'),
+            onTap: () => launchUrl(Uri.parse('mailto:support@livelyapp.co')),
           ),
           _RowDivider(p: p),
           _ActionRow(
