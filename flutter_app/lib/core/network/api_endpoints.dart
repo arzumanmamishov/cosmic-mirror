@@ -115,6 +115,9 @@ class ApiEndpoints {
       '$basePath/numerology/compatibility';
   static const String numerologyName = '$basePath/numerology/name';
 
+  // Pythagoras Square (Psychomatrix)
+  static const String psychomatrix = '$basePath/psychomatrix';
+
   // Human Design
   static const String humanDesign = '$basePath/human-design';
 }

@@ -28,6 +28,7 @@ import '../features/human_design/presentation/screens/human_design_screen.dart';
 import '../features/numerology/presentation/screens/numerology_compat_screen.dart';
 import '../features/numerology/presentation/screens/numerology_name_calculator_screen.dart';
 import '../features/numerology/presentation/screens/numerology_screen.dart';
+import '../features/psychomatrix/presentation/screens/psychomatrix_screen.dart';
 import '../features/community/presentation/screens/create_space_screen.dart';
 import '../features/community/presentation/screens/edit_space_screen.dart';
 import '../features/community/presentation/screens/hashtag_feed_screen.dart';
@@ -219,6 +220,13 @@ final appRouterProvider = Provider<GoRouter>((ref) {
             ),
           ),
         ],
+      ),
+      GoRoute(
+        path: '/psychomatrix',
+        pageBuilder: (context, state) => _slideTransition(
+          state,
+          const PsychomatrixScreen(),
+        ),
       ),
       GoRoute(
         path: '/human-design',

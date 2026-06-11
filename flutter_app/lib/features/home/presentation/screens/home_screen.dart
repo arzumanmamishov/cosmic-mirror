@@ -253,6 +253,15 @@ List<_ChartFeature> _allChartFeatures(AppLocalizations l10n) => [
         badge: l10n.chartBadgeNew,
       ),
       _ChartFeature(
+        icon: Icons.grid_3x3_rounded,
+        title: 'Pythagoras Square',
+        subtitle: 'Your psychomatrix by birth date',
+        route: '/psychomatrix',
+        gradientBuilder: (p) => LinearGradient(colors: [p.primary, p.gold]),
+        category: 'Esoteric',
+        badge: l10n.chartBadgeNew,
+      ),
+      _ChartFeature(
         icon: Icons.timeline_rounded,
         title: l10n.chartCosmicTimeline,
         subtitle: l10n.chartCosmicTimelineSubtitle,

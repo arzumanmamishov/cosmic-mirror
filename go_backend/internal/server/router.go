@@ -190,6 +190,9 @@ func NewRouter(h *handler.Handlers, auth *middleware.Auth, rl *middleware.RateLi
 			r.Post("/numerology/compatibility", h.Numerology.Compare)
 			r.Post("/numerology/name", h.Numerology.AnalyzeName)
 
+			// Pythagoras Square (Psychomatrix)
+			r.Get("/psychomatrix", h.Psychomatrix.GetReading)
+
 			// Human Design
 			r.Get("/human-design", h.HumanDesign.GetChart)
 		})
