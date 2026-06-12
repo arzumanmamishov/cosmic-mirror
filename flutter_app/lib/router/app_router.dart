@@ -28,6 +28,7 @@ import '../features/human_design/presentation/screens/human_design_screen.dart';
 import '../features/numerology/presentation/screens/numerology_compat_screen.dart';
 import '../features/numerology/presentation/screens/numerology_name_calculator_screen.dart';
 import '../features/numerology/presentation/screens/numerology_screen.dart';
+import '../features/destiny_matrix/presentation/screens/destiny_matrix_screen.dart';
 import '../features/psychomatrix/presentation/screens/psychomatrix_screen.dart';
 import '../features/community/presentation/screens/create_space_screen.dart';
 import '../features/community/presentation/screens/edit_space_screen.dart';
@@ -226,6 +227,13 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         pageBuilder: (context, state) => _slideTransition(
           state,
           const PsychomatrixScreen(),
+        ),
+      ),
+      GoRoute(
+        path: '/destiny-matrix',
+        pageBuilder: (context, state) => _slideTransition(
+          state,
+          const DestinyMatrixScreen(),
         ),
       ),
       GoRoute(

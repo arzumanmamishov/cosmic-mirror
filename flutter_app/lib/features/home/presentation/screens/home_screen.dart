@@ -262,6 +262,15 @@ List<_ChartFeature> _allChartFeatures(AppLocalizations l10n) => [
         badge: l10n.chartBadgeNew,
       ),
       _ChartFeature(
+        icon: Icons.auto_awesome_motion_rounded,
+        title: 'Matrix of Destiny',
+        subtitle: 'Your 22-arcana octagram',
+        route: '/destiny-matrix',
+        gradientBuilder: (p) => LinearGradient(colors: [p.accent, p.primary]),
+        category: 'Esoteric',
+        badge: l10n.chartBadgeNew,
+      ),
+      _ChartFeature(
         icon: Icons.timeline_rounded,
         title: l10n.chartCosmicTimeline,
         subtitle: l10n.chartCosmicTimelineSubtitle,

@@ -136,6 +136,7 @@ func main() {
 	numerologySvc := service.NewNumerologyService(userRepo, birthProfileRepo)
 	humanDesignSvc := service.NewHumanDesignService(birthProfileRepo, chartProvider, rdb)
 	psychomatrixSvc := service.NewPsychomatrixService(birthProfileRepo)
+	destinyMatrixSvc := service.NewDestinyMatrixService(birthProfileRepo)
 
 	// Middleware
 	authMiddleware := middleware.NewAuth(firebaseAuth, userRepo)
@@ -163,7 +164,8 @@ func main() {
 		// Numerology + Human Design
 		Numerology:   handler.NewNumerologyHandler(numerologySvc),
 		HumanDesign:  handler.NewHumanDesignHandler(humanDesignSvc),
-		Psychomatrix: handler.NewPsychomatrixHandler(psychomatrixSvc),
+		Psychomatrix:  handler.NewPsychomatrixHandler(psychomatrixSvc),
+		DestinyMatrix: handler.NewDestinyMatrixHandler(destinyMatrixSvc),
 	}
 
 	// Background workers — scheduled on simple interval tickers, tied to a

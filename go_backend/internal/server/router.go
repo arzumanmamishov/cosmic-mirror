@@ -193,6 +193,9 @@ func NewRouter(h *handler.Handlers, auth *middleware.Auth, rl *middleware.RateLi
 			// Pythagoras Square (Psychomatrix)
 			r.Get("/psychomatrix", h.Psychomatrix.GetReading)
 
+			// Matrix of Destiny (22-arcana octagram)
+			r.Get("/destiny-matrix", h.DestinyMatrix.GetReading)
+
 			// Human Design
 			r.Get("/human-design", h.HumanDesign.GetChart)
 		})

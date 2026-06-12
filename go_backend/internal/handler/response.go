@@ -24,9 +24,10 @@ type Handlers struct {
 	CommunityNotifications *CommunityNotificationsHandler
 	Discovery              *DiscoveryHandler
 	// Numerology + Human Design
-	Numerology   *NumerologyHandler
-	HumanDesign  *HumanDesignHandler
-	Psychomatrix *PsychomatrixHandler
+	Numerology    *NumerologyHandler
+	HumanDesign   *HumanDesignHandler
+	Psychomatrix  *PsychomatrixHandler
+	DestinyMatrix *DestinyMatrixHandler
 }
 
 type errorResponse struct {

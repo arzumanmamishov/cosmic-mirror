@@ -118,6 +118,9 @@ class ApiEndpoints {
   // Pythagoras Square (Psychomatrix)
   static const String psychomatrix = '$basePath/psychomatrix';
 
+  // Matrix of Destiny (22-arcana octagram)
+  static const String destinyMatrix = '$basePath/destiny-matrix';
+
   // Human Design
   static const String humanDesign = '$basePath/human-design';
 }
