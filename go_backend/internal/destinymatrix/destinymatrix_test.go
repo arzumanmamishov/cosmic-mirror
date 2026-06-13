@@ -1,6 +1,7 @@
 package destinymatrix
 
 import (
+	"reflect"
 	"testing"
 	"time"
 )
@@ -137,7 +138,7 @@ func TestDeterminism(t *testing.T) {
 	d := date(1987, 1, 7)
 	first := Compute(d)
 	for i := 0; i < 100; i++ {
-		if Compute(d) != first {
+		if !reflect.DeepEqual(Compute(d), first) {
 			t.Fatalf("Compute is not deterministic for %v", d)
 		}
 	}
@@ -157,6 +158,50 @@ func TestSweepRangeInvariant(t *testing.T) {
 					if v < 1 || v > 22 {
 						t.Errorf("%04d-%02d-%02d point %s = %d, out of range 1..22",
 							y, m, d, pd.Key, v)
+					}
+				}
+			}
+		}
+	}
+}
+
+// TestAgeLadderShape asserts every birthdate yields exactly 80 rungs whose
+// ages walk 1..80 in order and whose arcana stay in 1..22. The boundary
+// rungs (ages 10/20/.../70) must also match the corresponding corner
+// arcana so the perimeter visually matches the corners.
+func TestAgeLadderShape(t *testing.T) {
+	years := []int{1900, 1987, 1999, 2000, 2024, 2026}
+	for _, y := range years {
+		for m := 1; m <= 12; m++ {
+			for d := 1; d <= 28; d++ {
+				res := Compute(date(y, m, d))
+				ladder := res.AgeLadder
+				if len(ladder) != 80 {
+					t.Fatalf("%04d-%02d-%02d ladder has %d rungs, want 80",
+						y, m, d, len(ladder))
+				}
+				for i, rung := range ladder {
+					if rung.Age != i+1 {
+						t.Errorf("%04d-%02d-%02d ladder[%d].Age = %d, want %d",
+							y, m, d, i, rung.Age, i+1)
+					}
+					if rung.Arcana < 1 || rung.Arcana > 22 {
+						t.Errorf("%04d-%02d-%02d ladder[age %d] arcana = %d, out of range 1..22",
+							y, m, d, rung.Age, rung.Arcana)
+					}
+				}
+				// Decade boundaries: age 10 should match TL, age 20 → B, …
+				boundaries := map[int]int{
+					10: res.TL, 20: res.B, 30: res.TR,
+					40: res.C, 50: res.BR, 60: res.D, 70: res.BL,
+				}
+				// Age 80 wraps back to the starting corner A.
+				boundaries[80] = res.A
+				for age, want := range boundaries {
+					got := ladder[age-1].Arcana
+					if got != want {
+						t.Errorf("%04d-%02d-%02d ladder[age %d] = %d, want corner %d",
+							y, m, d, age, got, want)
 					}
 				}
 			}

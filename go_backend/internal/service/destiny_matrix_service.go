@@ -58,9 +58,18 @@ func (s *DestinyMatrixService) GetReading(ctx context.Context, userID uuid.UUID)
 		})
 	}
 
+	ladder := make([]domain.AgeArcana, 0, len(res.AgeLadder))
+	for _, rung := range res.AgeLadder {
+		ladder = append(ladder, domain.AgeArcana{
+			Age:    rung.Age,
+			Arcana: rung.Arcana,
+		})
+	}
+
 	return &domain.DestinyMatrixReading{
 		BirthDate: profile.BirthDate.Format("2006-01-02"),
 		Points:    points,
 		Lines:     lines,
+		AgeLadder: ladder,
 	}, nil
 }

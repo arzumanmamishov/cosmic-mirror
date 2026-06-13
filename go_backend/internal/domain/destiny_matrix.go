@@ -19,11 +19,19 @@ type DestinyLine struct {
 	Theme     string   `json:"theme"`
 }
 
+// AgeArcana is one rung of the perimeter age-ladder: the year of life and
+// the arcana that rules it.
+type AgeArcana struct {
+	Age    int `json:"age"`    // 1..80
+	Arcana int `json:"arcana"` // 1..22
+}
+
 // DestinyMatrixReading is the full response for GET /api/v1/destiny-matrix.
-// Points always holds 9 entries (A,B,C,D,E,TL,TR,BR,BL in order); Lines
-// always holds 4.
+// Points always holds 15 entries (the 9 outer + 4 inner + 2 chakras);
+// Lines holds 4; AgeLadder holds 80 rungs (ages 1..80).
 type DestinyMatrixReading struct {
 	BirthDate string         `json:"birth_date"` // YYYY-MM-DD
 	Points    []DestinyPoint `json:"points"`
 	Lines     []DestinyLine  `json:"lines"`
+	AgeLadder []AgeArcana    `json:"age_ladder"`
 }
