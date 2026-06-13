@@ -1,8 +1,3 @@
-import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
-import 'package:intl/intl.dart';
-
 import 'package:cosmic_mirror/config/theme/app_palette.dart';
 import 'package:cosmic_mirror/core/network/api_endpoints.dart';
 import 'package:cosmic_mirror/features/onboarding/presentation/widgets/birthplace_search.dart';
@@ -10,6 +5,10 @@ import 'package:cosmic_mirror/l10n/app_localizations.dart';
 import 'package:cosmic_mirror/shared/providers/user_provider.dart';
 import 'package:cosmic_mirror/shared/widgets/cosmic_starfield.dart';
 import 'package:cosmic_mirror/shared/widgets/staggered_fade_in.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import 'package:intl/intl.dart';
 
 class AddPersonScreen extends ConsumerStatefulWidget {
   const AddPersonScreen({super.key});
@@ -335,7 +334,7 @@ class _AddPersonScreenState extends ConsumerState<AddPersonScreen> {
                   child: Row(
                     children: [
                       Icon(Icons.error_outline_rounded,
-                          color: p.error, size: 18),
+                          color: p.error, size: 18,),
                       const SizedBox(width: 10),
                       Expanded(
                         child: Text(

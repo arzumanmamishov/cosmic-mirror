@@ -1,6 +1,5 @@
+import 'package:cosmic_mirror/config/theme/app_palette.dart';
 import 'package:flutter/material.dart';
-
-import 'app_palette.dart';
 
 class CosmicTheme {
   CosmicTheme._();
@@ -165,4 +164,3 @@ class CosmicTheme {
     );
   }
 }
-

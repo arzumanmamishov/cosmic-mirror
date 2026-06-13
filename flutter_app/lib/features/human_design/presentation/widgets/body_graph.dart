@@ -94,20 +94,20 @@ class _BodyGraphPainter extends CustomPainter {
   static const Map<String, Map<int, Offset>> _gateOffsets = {
     'Head': {
       64: Offset(-0.45, 0.50),
-      61: Offset(0.00, 0.55),
+      61: Offset(0, 0.55),
       63: Offset(0.45, 0.50),
     },
     'Ajna': {
       47: Offset(-0.45, -0.50),
-      24: Offset(0.00, -0.55),
+      24: Offset(0, -0.55),
       4: Offset(0.45, -0.50),
       17: Offset(-0.40, -0.05),
       11: Offset(0.40, -0.05),
-      43: Offset(0.00, 0.50),
+      43: Offset(0, 0.50),
     },
     'Throat': {
       62: Offset(-0.60, -0.70),
-      23: Offset(0.00, -0.70),
+      23: Offset(0, -0.70),
       56: Offset(0.60, -0.70),
       16: Offset(-0.75, -0.30),
       35: Offset(0.75, -0.30),
@@ -119,14 +119,14 @@ class _BodyGraphPainter extends CustomPainter {
       45: Offset(0.60, 0.70),
     },
     'G': {
-      1: Offset(0.00, -0.55),
+      1: Offset(0, -0.55),
       7: Offset(-0.35, -0.35),
       13: Offset(0.35, -0.35),
-      10: Offset(-0.55, 0.00),
-      25: Offset(0.55, 0.00),
+      10: Offset(-0.55, 0),
+      25: Offset(0.55, 0),
       15: Offset(-0.35, 0.35),
       46: Offset(0.35, 0.35),
-      2: Offset(0.00, 0.55),
+      2: Offset(0, 0.55),
     },
     'Heart': {
       21: Offset(-0.20, -0.30),
@@ -136,13 +136,13 @@ class _BodyGraphPainter extends CustomPainter {
     },
     'Sacral': {
       5: Offset(-0.55, -0.70),
-      14: Offset(0.00, -0.70),
+      14: Offset(0, -0.70),
       29: Offset(0.55, -0.70),
       34: Offset(-0.75, -0.35),
       59: Offset(0.75, -0.35),
       27: Offset(-0.70, 0.40),
       42: Offset(-0.40, 0.70),
-      3: Offset(0.00, 0.70),
+      3: Offset(0, 0.70),
       9: Offset(0.40, 0.70),
     },
     'Spleen': {
@@ -165,7 +165,7 @@ class _BodyGraphPainter extends CustomPainter {
     },
     'Root': {
       53: Offset(-0.55, -0.70),
-      60: Offset(0.00, -0.70),
+      60: Offset(0, -0.70),
       52: Offset(0.55, -0.70),
       54: Offset(-0.75, -0.35),
       19: Offset(0.75, -0.35),

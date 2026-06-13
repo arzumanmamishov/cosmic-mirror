@@ -107,10 +107,10 @@ class _Body extends ConsumerWidget {
           SliverToBoxAdapter(
             child: FadeSlideIn(child: _Hero(chart: chart)),
           ),
-          SliverToBoxAdapter(
+          const SliverToBoxAdapter(
             child: FadeSlideIn(
-              delay: const Duration(milliseconds: 200),
-              child: const _TabBar(),
+              delay: Duration(milliseconds: 200),
+              child: _TabBar(),
             ),
           ),
         ],

@@ -111,8 +111,9 @@ class _RequestTileState extends ConsumerState<_RequestTile> {
       // Member count (and is_joined for the requester) changes on approve,
       // so blow away the space detail cache too.
       if (accept) {
-        ref.invalidate(spaceDetailProvider(widget.spaceId));
-        ref.invalidate(spaceMembersProvider(widget.spaceId));
+        ref
+          ..invalidate(spaceDetailProvider(widget.spaceId))
+          ..invalidate(spaceMembersProvider(widget.spaceId));
       }
     } catch (_) {
       if (mounted) setState(() => _busy = false);

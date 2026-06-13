@@ -114,7 +114,6 @@ class _WelcomeScreenState extends ConsumerState<WelcomeScreen> {
                 // wheel — scales in
                 FadeSlideIn(
                   delay: const Duration(milliseconds: 350),
-                  duration: const Duration(milliseconds: 600),
                   child: TweenAnimationBuilder<double>(
                     tween: Tween(begin: 0.6, end: 1),
                     duration: const Duration(milliseconds: 800),
@@ -122,7 +121,6 @@ class _WelcomeScreenState extends ConsumerState<WelcomeScreen> {
                     builder: (_, scale, child) =>
                         Transform.scale(scale: scale, child: child),
                     child: MiniWheel(
-                      size: 220,
                       sun: sun ?? 'leo',
                       moon: moon ?? 'pisces',
                       rising: rising ?? 'scorpio',
@@ -245,7 +243,6 @@ class _LuminaryCard extends StatelessWidget {
         : '—';
     return FadeSlideIn(
       delay: Duration(milliseconds: delayMs),
-      duration: const Duration(milliseconds: 600),
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 8),
         decoration: BoxDecoration(

@@ -42,8 +42,9 @@ class _EditSpaceScreenState extends ConsumerState<EditSpaceScreen> {
             name: _name.text.trim(),
             description: _description.text.trim(),
           );
-      ref.invalidate(spaceDetailProvider(widget.spaceId));
-      ref.invalidate(spacesProvider);
+      ref
+        ..invalidate(spaceDetailProvider(widget.spaceId))
+        ..invalidate(spacesProvider);
       if (mounted) context.pop();
     } catch (e) {
       setState(() => _error = e.toString());
@@ -129,7 +130,7 @@ class _EditSpaceScreenState extends ConsumerState<EditSpaceScreen> {
             ),
           ),
           spaceAsync.when(
-            loading: () => const ShimmerList(itemCount: 3),
+            loading: () => const ShimmerList(),
             error: (e, _) => ErrorView(
               error: e,
               onRetry: () =>
@@ -172,7 +173,7 @@ class _EditSpaceScreenState extends ConsumerState<EditSpaceScreen> {
                   if (_error != null) ...[
                     const SizedBox(height: 12),
                     Text(_error!,
-                        style: TextStyle(color: p.error, fontSize: 12)),
+                        style: TextStyle(color: p.error, fontSize: 12),),
                   ],
                 ],
               );
@@ -201,7 +202,7 @@ class _EditSpaceScreenState extends ConsumerState<EditSpaceScreen> {
       );
 
   Widget _editable(AppPalette p, String label, TextEditingController c,
-          {int maxLines = 1}) =>
+          {int maxLines = 1,}) =>
       Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

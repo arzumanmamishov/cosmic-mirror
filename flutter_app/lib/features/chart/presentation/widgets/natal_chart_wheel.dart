@@ -174,16 +174,17 @@ class _ChartPainter extends CustomPainter {
       ..style = PaintingStyle.stroke
       ..strokeWidth = 1.0;
 
-    canvas.drawCircle(center, outerR, ringPaint);
-    canvas.drawCircle(center, signR, ringPaint);
-    canvas.drawCircle(center, houseR, ringPaint);
+    canvas
+      ..drawCircle(center, outerR, ringPaint)
+      ..drawCircle(center, signR, ringPaint)
+      ..drawCircle(center, houseR, ringPaint);
 
     // Subtle radial gradient fill in the very center
     final fillPaint = Paint()
       ..shader = RadialGradient(
         colors: [
           surfaceColor.withValues(alpha: 0.4),
-          surfaceColor.withValues(alpha: 0.0),
+          surfaceColor.withValues(alpha: 0),
         ],
       ).createShader(
         Rect.fromCircle(center: center, radius: houseR - 10),
@@ -256,10 +257,11 @@ class _ChartPainter extends CustomPainter {
       final houseNum = (cusp['number'] as int?) ?? (i + 1);
       final isAxis = houseNum == 1 || houseNum == 4 ||
           houseNum == 7 || houseNum == 10;
-      dividerPaint.strokeWidth = isAxis ? 1.6 : 0.8;
-      dividerPaint.color = isAxis
-          ? ringColor.withValues(alpha: 0.85)
-          : ringColor.withValues(alpha: 0.45);
+      dividerPaint
+        ..strokeWidth = isAxis ? 1.6 : 0.8
+        ..color = isAxis
+            ? ringColor.withValues(alpha: 0.85)
+            : ringColor.withValues(alpha: 0.45);
 
       canvas.drawLine(
         _polar(center, innerR, ang),
@@ -273,7 +275,7 @@ class _ChartPainter extends CustomPainter {
       final nextSign = next['sign'] as String? ?? 'Aries';
       final nextDeg = (next['degree'] as num?)?.toDouble() ?? 0.0;
       final nextSignIdx = _signNames.indexOf(nextSign).clamp(0, 11);
-      var nextLon = _toRadians(nextSignIdx * 30 + nextDeg);
+      final nextLon = _toRadians(nextSignIdx * 30 + nextDeg);
       // Handle wrap so the midpoint is inside the house, not opposite
       var span = nextLon - lonRad;
       if (span <= 0) span += 2 * math.pi;
@@ -376,7 +378,6 @@ class _ChartPainter extends CustomPainter {
         pos,
         color: textColor,
         size: 16,
-        weight: FontWeight.w500,
       );
 
       // Retrograde mark

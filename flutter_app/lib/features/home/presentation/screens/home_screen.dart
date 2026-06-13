@@ -1,22 +1,21 @@
-import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
-
 import 'package:cosmic_mirror/config/theme/app_palette.dart';
 import 'package:cosmic_mirror/config/theme/lively_type.dart';
-import 'package:cosmic_mirror/l10n/app_localizations.dart';
 import 'package:cosmic_mirror/features/ai_chat/presentation/screens/chat_threads_screen.dart';
 import 'package:cosmic_mirror/features/community/presentation/providers/community_providers.dart';
 import 'package:cosmic_mirror/features/community/presentation/screens/spaces_list_screen.dart';
 import 'package:cosmic_mirror/features/home/presentation/widgets/discussions_section.dart';
-import 'package:cosmic_mirror/features/home/presentation/widgets/today_in_the_sky_card.dart';
 import 'package:cosmic_mirror/features/home/presentation/widgets/header_bar.dart';
 import 'package:cosmic_mirror/features/home/presentation/widgets/premium_upgrade_card.dart';
+import 'package:cosmic_mirror/features/home/presentation/widgets/today_in_the_sky_card.dart';
 import 'package:cosmic_mirror/features/home/presentation/widgets/todays_insight_card.dart';
+import 'package:cosmic_mirror/l10n/app_localizations.dart';
 import 'package:cosmic_mirror/shared/widgets/category_chip_bar.dart';
 import 'package:cosmic_mirror/shared/widgets/lively/lively_backdrop.dart';
 import 'package:cosmic_mirror/shared/widgets/pill_search_bar.dart';
 import 'package:cosmic_mirror/shared/widgets/staggered_fade_in.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 /// Astrolite-aligned home: cosmic backdrop, greeting + pill search at the
 /// top, horizontal category chips beneath, glass content cards, and a

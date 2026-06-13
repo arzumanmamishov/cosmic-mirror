@@ -1,6 +1,6 @@
+import 'package:cosmic_mirror/config/theme/colors.dart';
+import 'package:cosmic_mirror/config/theme/lively_type.dart' show LivelyType;
 import 'package:flutter/material.dart';
-
-import 'colors.dart';
 
 /// Legacy text styles for screens that pre-date [LivelyType]. Re-pointed
 /// at the bundled Lively fonts — **Instrument Serif** (italic display) and

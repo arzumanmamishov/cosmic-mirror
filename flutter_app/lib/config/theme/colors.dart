@@ -1,3 +1,4 @@
+import 'package:cosmic_mirror/config/theme/app_palette.dart' show AppPalette;
 import 'package:flutter/material.dart';
 
 /// Legacy color constants used by screens that pre-date the

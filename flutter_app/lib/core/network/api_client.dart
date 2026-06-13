@@ -1,9 +1,8 @@
+import 'package:cosmic_mirror/config/env.dart';
+import 'package:cosmic_mirror/core/error/exceptions.dart';
 import 'package:dio/dio.dart';
 import 'package:firebase_auth/firebase_auth.dart' as fb;
 import 'package:flutter/foundation.dart';
-
-import '../../config/env.dart';
-import '../error/exceptions.dart';
 
 class ApiClient {
   ApiClient({Dio? dio})
@@ -191,6 +190,11 @@ class _ErrorInterceptor extends Interceptor {
           statusCode: statusCode,
           code: code,
         );
+      // DioExceptionType has a small but growing set of values (badResponse,
+      // connectionTimeout, connectionError, badCertificate, cancel, etc.).
+      // The default is an intentional catch-all so future enum additions
+      // still surface as a ServerException rather than going unhandled.
+      // ignore: no_default_cases
       default:
         throw ServerException(
           message: err.message ?? 'An unexpected error occurred.',

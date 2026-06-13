@@ -1,6 +1,5 @@
-import 'package:flutter/material.dart';
-
 import 'package:cosmic_mirror/config/theme/app_palette.dart';
+import 'package:flutter/material.dart';
 
 /// CosmicMemoryPanel surfaces what the AI astrologer remembers about the user
 /// — recurring themes, ongoing transits, and key concerns from prior chats.
@@ -14,13 +13,13 @@ class CosmicMemoryPanel extends StatelessWidget {
     _Memory(
       icon: Icons.swap_vert_rounded,
       label: 'Saturn return (1st pass)',
-      detail: 'You\'ve asked about this 4 times since February.',
+      detail: "You've asked about this 4 times since February.",
       color: Color(0xFF7B61FF),
     ),
     _Memory(
       icon: Icons.work_rounded,
       label: 'Career transition',
-      detail: 'You\'re weighing a move into product design.',
+      detail: "You're weighing a move into product design.",
       color: Color(0xFFB8860B),
     ),
     _Memory(

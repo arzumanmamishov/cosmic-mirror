@@ -1,11 +1,10 @@
+import 'package:cosmic_mirror/core/error/exceptions.dart';
+import 'package:cosmic_mirror/core/network/api_client.dart';
+import 'package:cosmic_mirror/core/network/api_endpoints.dart';
+import 'package:cosmic_mirror/features/ai_chat/data/models/chat_models.dart';
+import 'package:cosmic_mirror/features/ai_chat/domain/entities/chat_entities.dart';
+import 'package:cosmic_mirror/shared/providers/user_provider.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
-import '../../../../core/error/exceptions.dart';
-import '../../../../core/network/api_client.dart';
-import '../../../../core/network/api_endpoints.dart';
-import '../../../../shared/providers/user_provider.dart';
-import '../../data/models/chat_models.dart';
-import '../../domain/entities/chat_entities.dart';
 
 final chatThreadsProvider =
     FutureProvider.autoDispose<List<ChatThread>>((ref) async {

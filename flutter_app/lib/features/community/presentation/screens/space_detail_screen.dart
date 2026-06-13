@@ -183,7 +183,7 @@ class _PostList extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final postsAsync = ref.watch(spacePostsProvider(spaceId));
     return postsAsync.when(
-      loading: () => const ShimmerList(itemCount: 3),
+      loading: () => const ShimmerList(),
       error: (e, _) => ErrorView(
         error: e,
         onRetry: () => ref.invalidate(spacePostsProvider(spaceId)),

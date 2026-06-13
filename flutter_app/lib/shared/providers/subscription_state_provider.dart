@@ -1,8 +1,7 @@
+import 'package:cosmic_mirror/config/constants.dart';
+import 'package:cosmic_mirror/config/env.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:purchases_flutter/purchases_flutter.dart';
-
-import '../../config/constants.dart';
-import '../../config/env.dart';
 
 final customerInfoProvider = FutureProvider<CustomerInfo>((ref) async {
   return Purchases.getCustomerInfo();

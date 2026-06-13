@@ -1,8 +1,7 @@
+import 'package:cosmic_mirror/config/theme/colors.dart';
+import 'package:cosmic_mirror/config/theme/typography.dart';
+import 'package:cosmic_mirror/shared/widgets/cosmic_card.dart';
 import 'package:flutter/material.dart';
-
-import '../../../../config/theme/colors.dart';
-import '../../../../config/theme/typography.dart';
-import '../../../../shared/widgets/cosmic_card.dart';
 
 class StreakWidget extends StatelessWidget {
   const StreakWidget({super.key});
@@ -20,9 +19,9 @@ class StreakWidget extends StatelessWidget {
           Row(
             children: [
               const Icon(Icons.local_fire_department,
-                  color: CosmicColors.gold, size: 22),
+                  color: CosmicColors.gold, size: 22,),
               const SizedBox(width: 8),
-              Text(
+              const Text(
                 '$streakDays Day Streak',
                 style: CosmicTypography.titleLarge,
               ),
@@ -31,7 +30,7 @@ class StreakWidget extends StatelessWidget {
                 padding:
                     const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                 decoration: BoxDecoration(
-                  color: CosmicColors.gold.withOpacity(0.15),
+                  color: CosmicColors.gold.withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Text(
@@ -61,7 +60,7 @@ class StreakWidget extends StatelessWidget {
                       color: isCompleted
                           ? CosmicColors.primary
                           : isToday
-                              ? CosmicColors.primary.withOpacity(0.2)
+                              ? CosmicColors.primary.withValues(alpha: 0.2)
                               : CosmicColors.surfaceLight,
                       shape: BoxShape.circle,
                       border: isToday
@@ -71,7 +70,7 @@ class StreakWidget extends StatelessWidget {
                     child: Center(
                       child: isCompleted
                           ? const Icon(Icons.check,
-                              size: 16, color: Colors.white)
+                              size: 16, color: Colors.white,)
                           : Text(
                               dayLabels[index],
                               style: CosmicTypography.caption.copyWith(

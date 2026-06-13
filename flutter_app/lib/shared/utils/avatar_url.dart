@@ -1,4 +1,9 @@
+
+import 'package:cached_network_image/cached_network_image.dart' show CachedNetworkImage;
 import 'package:cosmic_mirror/config/env.dart';
+import 'package:flutter/cupertino.dart' show Image;
+import 'package:flutter/material.dart' show Image;
+import 'package:flutter/widgets.dart' show Image;
 
 /// Resolves a stored `avatar_url` value to an absolute URL safe to
 /// hand to [CachedNetworkImage] or [Image.network].

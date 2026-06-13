@@ -163,7 +163,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                             ),
                             const SizedBox(width: 16),
                             Icon(Icons.chat_bubble_outline_rounded,
-                                size: 16, color: p.textSecondary),
+                                size: 16, color: p.textSecondary,),
                             const SizedBox(width: 4),
                             Text(
                               '${pst.commentCount}',
@@ -186,7 +186,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                           ),
                         ),
                         commentsAsync.when(
-                          loading: () => const ShimmerList(itemCount: 3),
+                          loading: () => const ShimmerList(),
                           error: (e, _) => Text(
                             e.toString(),
                             style: TextStyle(color: p.error, fontSize: 12),

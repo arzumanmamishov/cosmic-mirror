@@ -1,11 +1,10 @@
+import 'package:cosmic_mirror/config/theme/colors.dart';
+import 'package:cosmic_mirror/config/theme/typography.dart';
+import 'package:cosmic_mirror/shared/providers/subscription_state_provider.dart';
+import 'package:cosmic_mirror/shared/widgets/cosmic_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-
-import '../../config/theme/colors.dart';
-import '../../config/theme/typography.dart';
-import '../providers/subscription_state_provider.dart';
-import 'cosmic_button.dart';
 
 class PremiumGate extends ConsumerWidget {
   const PremiumGate({
@@ -57,15 +56,15 @@ class _UpgradePrompt extends StatelessWidget {
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
-            CosmicColors.primary.withOpacity(0.15),
-            CosmicColors.accent.withOpacity(0.1),
+            CosmicColors.primary.withValues(alpha: 0.15),
+            CosmicColors.accent.withValues(alpha: 0.1),
           ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: CosmicColors.primary.withOpacity(0.3),
+          color: CosmicColors.primary.withValues(alpha: 0.3),
         ),
       ),
       child: Column(
@@ -82,7 +81,7 @@ class _UpgradePrompt extends StatelessWidget {
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 8),
-          Text(
+          const Text(
             'Upgrade to Premium for full access to personalized insights.',
             style: CosmicTypography.bodySmall,
             textAlign: TextAlign.center,

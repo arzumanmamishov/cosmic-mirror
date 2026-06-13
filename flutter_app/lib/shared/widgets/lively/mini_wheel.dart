@@ -80,37 +80,37 @@ class _WheelPainter extends CustomPainter {
     final outer = size.width / 2 - 4;
     final inner = outer - 22;
 
-    // soft central glow
-    canvas.drawCircle(
-      c,
-      outer,
-      Paint()
-        ..shader = RadialGradient(
-          colors: [
-            primary.withValues(alpha: 0.08),
-            primary.withValues(alpha: 0.0),
-          ],
-          stops: const [0.0, 0.8],
-        ).createShader(Rect.fromCircle(center: c, radius: outer)),
-    );
-
-    // outer + inner rings
-    canvas.drawCircle(
-      c,
-      outer,
-      Paint()
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 0.8
-        ..color = primary.withValues(alpha: 0.6),
-    );
-    canvas.drawCircle(
-      c,
-      inner,
-      Paint()
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 0.5
-        ..color = primary.withValues(alpha: 0.4),
-    );
+    canvas
+      // soft central glow
+      ..drawCircle(
+        c,
+        outer,
+        Paint()
+          ..shader = RadialGradient(
+            colors: [
+              primary.withValues(alpha: 0.08),
+              primary.withValues(alpha: 0),
+            ],
+            stops: const [0.0, 0.8],
+          ).createShader(Rect.fromCircle(center: c, radius: outer)),
+      )
+      // outer + inner rings
+      ..drawCircle(
+        c,
+        outer,
+        Paint()
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 0.8
+          ..color = primary.withValues(alpha: 0.6),
+      )
+      ..drawCircle(
+        c,
+        inner,
+        Paint()
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 0.5
+          ..color = primary.withValues(alpha: 0.4),
+      );
 
     // 12 ticks between the rings
     final tick = Paint()
@@ -134,8 +134,9 @@ class _WheelPainter extends CustomPainter {
     ];
     for (final (angle, sign) in luminaries) {
       final pos = c + Offset(math.cos(angle), math.sin(angle)) * medR;
-      canvas.drawCircle(pos, 14, Paint()..color = medallionFill);
-      canvas.drawCircle(
+      canvas
+        ..drawCircle(pos, 14, Paint()..color = medallionFill)
+        ..drawCircle(
         pos,
         14,
         Paint()

@@ -38,7 +38,7 @@ const List<Astrologer> mockAstrologers = [
   Astrologer(
     name: 'Lilith Cooper',
     specialty: 'Vedic Astrology',
-    rating: 5.0,
+    rating: 5,
     imageUrl:
         'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=200&q=80',
     online: true,

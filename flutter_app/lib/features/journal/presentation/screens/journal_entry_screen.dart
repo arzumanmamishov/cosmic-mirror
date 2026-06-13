@@ -1,14 +1,13 @@
-import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
-import 'package:intl/intl.dart';
-
 import 'package:cosmic_mirror/config/theme/app_palette.dart';
 import 'package:cosmic_mirror/core/network/api_endpoints.dart';
 import 'package:cosmic_mirror/l10n/app_localizations.dart';
 import 'package:cosmic_mirror/shared/providers/user_provider.dart';
 import 'package:cosmic_mirror/shared/widgets/cosmic_starfield.dart';
 import 'package:cosmic_mirror/shared/widgets/staggered_fade_in.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import 'package:intl/intl.dart';
 
 class JournalEntryScreen extends ConsumerStatefulWidget {
   const JournalEntryScreen({super.key, this.entryId});
@@ -221,7 +220,7 @@ class _JournalEntryScreenState extends ConsumerState<JournalEntryScreen> {
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             Text(m.emoji,
-                                style: const TextStyle(fontSize: 18)),
+                                style: const TextStyle(fontSize: 18),),
                             const SizedBox(width: 6),
                             Text(
                               m.label,

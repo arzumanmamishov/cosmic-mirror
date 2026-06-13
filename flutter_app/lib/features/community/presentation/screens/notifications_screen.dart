@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:cosmic_mirror/config/theme/app_palette.dart';
 import 'package:cosmic_mirror/features/community/domain/entities/notification.dart';
 import 'package:cosmic_mirror/features/community/presentation/providers/community_providers.dart';
@@ -138,19 +140,19 @@ class NotificationsScreen extends ConsumerWidget {
         // already open from any list and the actionable item here is
         // the request itself.
         if (n.type == 'space_join_requested') {
-          context.push('/community/${n.targetId}/requests');
+          unawaited(context.push('/community/${n.targetId}/requests'));
         } else {
-          context.push('/community/${n.targetId}');
+          unawaited(context.push('/community/${n.targetId}'));
         }
       case 'post':
         // We don't know the spaceId from a notification — push the post
         // route and let it self-resolve from the post object.
-        context.push('/community/post/${n.targetId}');
+        unawaited(context.push('/community/post/${n.targetId}'));
       case 'comment':
         // For now route to the actor's profile since we don't have a
         // direct comment-deep-link route.
         if (n.actorId != null) {
-          context.push('/community/user/${n.actorId}');
+          unawaited(context.push('/community/user/${n.actorId}'));
         }
     }
   }

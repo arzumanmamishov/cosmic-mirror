@@ -191,7 +191,7 @@ class _NumerologyCompatScreenState
             child: Row(
               children: [
                 Icon(Icons.calendar_today_rounded,
-                    color: p.textSecondary, size: 16),
+                    color: p.textSecondary, size: 16,),
                 const SizedBox(width: 10),
                 Text(
                   _birthDate == null

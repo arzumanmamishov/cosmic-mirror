@@ -1,10 +1,9 @@
+import 'package:cosmic_mirror/config/theme/colors.dart';
+import 'package:cosmic_mirror/config/theme/typography.dart';
+import 'package:cosmic_mirror/shared/widgets/cosmic_card.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-
-import '../../../../config/theme/colors.dart';
-import '../../../../config/theme/typography.dart';
-import '../../../../shared/widgets/cosmic_card.dart';
 
 class DailyEnergyCard extends ConsumerWidget {
   const DailyEnergyCard({super.key});
@@ -23,7 +22,7 @@ class DailyEnergyCard extends ConsumerWidget {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                 decoration: BoxDecoration(
-                  color: CosmicColors.gold.withOpacity(0.15),
+                  color: CosmicColors.gold.withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Text(
@@ -41,12 +40,12 @@ class DailyEnergyCard extends ConsumerWidget {
             ],
           ),
           const SizedBox(height: 16),
-          Text(
+          const Text(
             'A day for inner reflection and creative expression',
             style: CosmicTypography.headlineSmall,
           ),
           const SizedBox(height: 8),
-          Text(
+          const Text(
             'The Moon in Pisces heightens your intuition. Trust your instincts today, especially in conversations that matter.',
             style: CosmicTypography.bodySmall,
             maxLines: 3,
@@ -56,11 +55,11 @@ class DailyEnergyCard extends ConsumerWidget {
           // Energy level indicator
           Row(
             children: [
-              _EnergyDot(filled: true, color: CosmicColors.success),
-              _EnergyDot(filled: true, color: CosmicColors.success),
-              _EnergyDot(filled: true, color: CosmicColors.gold),
-              _EnergyDot(filled: true, color: CosmicColors.gold),
-              _EnergyDot(filled: false, color: CosmicColors.textTertiary),
+              const _EnergyDot(filled: true, color: CosmicColors.success),
+              const _EnergyDot(filled: true, color: CosmicColors.success),
+              const _EnergyDot(filled: true, color: CosmicColors.gold),
+              const _EnergyDot(filled: true, color: CosmicColors.gold),
+              const _EnergyDot(filled: false, color: CosmicColors.textTertiary),
               const SizedBox(width: 8),
               Text(
                 'Moderate Energy',

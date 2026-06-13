@@ -1,10 +1,10 @@
-import '../../../../core/error/exceptions.dart';
-import '../../../../core/error/failures.dart';
-import '../../../../core/utils/result.dart';
-import '../../domain/entities/user.dart';
-import '../../domain/repositories/auth_repository.dart';
-import '../datasources/auth_remote_datasource.dart';
-import '../models/user_model.dart';
+import 'package:cosmic_mirror/core/error/exceptions.dart';
+import 'package:cosmic_mirror/core/error/failures.dart';
+import 'package:cosmic_mirror/core/utils/result.dart';
+import 'package:cosmic_mirror/features/auth/data/datasources/auth_remote_datasource.dart';
+import 'package:cosmic_mirror/features/auth/data/models/user_model.dart';
+import 'package:cosmic_mirror/features/auth/domain/entities/user.dart';
+import 'package:cosmic_mirror/features/auth/domain/repositories/auth_repository.dart';
 
 class AuthRepositoryImpl implements AuthRepository {
   AuthRepositoryImpl({required AuthRemoteDataSource remoteDataSource})

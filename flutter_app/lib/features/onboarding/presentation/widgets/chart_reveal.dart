@@ -1,10 +1,11 @@
+import 'dart:async';
+
 import 'package:cosmic_mirror/config/theme/app_palette.dart';
 import 'package:cosmic_mirror/config/theme/lively_type.dart';
+import 'package:cosmic_mirror/features/onboarding/presentation/providers/onboarding_provider.dart';
 import 'package:cosmic_mirror/shared/widgets/lively/mini_wheel.dart';
+import 'package:cosmic_mirror/shared/widgets/loading_shimmer.dart';
 import 'package:flutter/material.dart';
-
-import '../../../../shared/widgets/loading_shimmer.dart';
-import '../providers/onboarding_provider.dart';
 
 /// The in-onboarding "Big Three" reveal — Sun / Moon / Rising cards that
 /// fade-and-rise in sequence, styled with the Lively design system.
@@ -43,11 +44,11 @@ class _ChartRevealWidgetState extends State<ChartRevealWidget>
 
   Future<void> _startAnimations() async {
     await Future<void>.delayed(const Duration(milliseconds: 300));
-    if (mounted) _sunController.forward();
+    if (mounted) unawaited(_sunController.forward());
     await Future<void>.delayed(const Duration(milliseconds: 400));
-    if (mounted) _moonController.forward();
+    if (mounted) unawaited(_moonController.forward());
     await Future<void>.delayed(const Duration(milliseconds: 400));
-    if (mounted) _risingController.forward();
+    if (mounted) unawaited(_risingController.forward());
   }
 
   @override

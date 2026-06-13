@@ -82,10 +82,10 @@ class _ChartContent extends StatelessWidget {
               ),
             ),
           ),
-          SliverToBoxAdapter(
+          const SliverToBoxAdapter(
             child: FadeSlideIn(
-              delay: const Duration(milliseconds: 200),
-              child: const _DetailTabs(),
+              delay: Duration(milliseconds: 200),
+              child: _DetailTabs(),
             ),
           ),
         ],
@@ -185,7 +185,6 @@ class _Hero extends StatelessWidget {
               planets: planets,
               houses: houses,
               aspects: aspects,
-              size: 320,
             ),
           ),
           const SizedBox(height: 20),

@@ -1,9 +1,8 @@
+import 'package:cosmic_mirror/config/theme/colors.dart';
+import 'package:cosmic_mirror/config/theme/typography.dart';
+import 'package:cosmic_mirror/shared/widgets/cosmic_card.dart';
 import 'package:flutter/material.dart';
 import 'package:share_plus/share_plus.dart';
-
-import '../../../../config/theme/colors.dart';
-import '../../../../config/theme/typography.dart';
-import '../../../../shared/widgets/cosmic_card.dart';
 
 class AffirmationCard extends StatelessWidget {
   const AffirmationCard({super.key});
@@ -42,7 +41,7 @@ class AffirmationCard extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 16),
-          Text(
+          const Text(
             affirmation,
             style: CosmicTypography.affirmation,
             textAlign: TextAlign.center,

@@ -1,3 +1,4 @@
+import 'package:cosmic_mirror/core/network/api_client.dart' show ApiClient;
 import 'package:shared_preferences/shared_preferences.dart';
 
 /// Runtime override for the dev API base URL.

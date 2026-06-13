@@ -1,11 +1,11 @@
-import '../../../../core/error/exceptions.dart';
-import '../../../../core/error/failures.dart';
-import '../../../../core/network/api_client.dart';
-import '../../../../core/network/api_endpoints.dart';
-import '../../../../core/utils/result.dart';
-import '../../domain/entities/birth_profile.dart';
-import '../../domain/repositories/onboarding_repository.dart';
-import '../models/birth_profile_model.dart';
+import 'package:cosmic_mirror/core/error/exceptions.dart';
+import 'package:cosmic_mirror/core/error/failures.dart';
+import 'package:cosmic_mirror/core/network/api_client.dart';
+import 'package:cosmic_mirror/core/network/api_endpoints.dart';
+import 'package:cosmic_mirror/core/utils/result.dart';
+import 'package:cosmic_mirror/features/onboarding/data/models/birth_profile_model.dart';
+import 'package:cosmic_mirror/features/onboarding/domain/entities/birth_profile.dart';
+import 'package:cosmic_mirror/features/onboarding/domain/repositories/onboarding_repository.dart';
 
 class OnboardingRepositoryImpl implements OnboardingRepository {
   OnboardingRepositoryImpl({required ApiClient apiClient})

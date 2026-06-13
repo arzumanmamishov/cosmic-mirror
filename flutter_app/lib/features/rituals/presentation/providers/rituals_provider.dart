@@ -1,7 +1,6 @@
+import 'package:cosmic_mirror/core/network/api_endpoints.dart';
+import 'package:cosmic_mirror/shared/providers/user_provider.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
-import '../../../../core/network/api_endpoints.dart';
-import '../../../../shared/providers/user_provider.dart';
 
 /// Today's ritual state: which ritual types are completed, and the current
 /// streak. Keyed by the backend ritual_type

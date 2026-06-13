@@ -1,8 +1,7 @@
-import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
-
 import 'package:cosmic_mirror/config/theme/app_palette.dart';
 import 'package:cosmic_mirror/features/life_timeline/data/life_timeline_data.dart';
+import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 
 /// Bottom sheet for adding a new life-timeline moment. Returns a [LifeEvent]
 /// when saved, or null if dismissed.
@@ -109,7 +108,7 @@ class _AddEventSheetState extends State<AddEventSheet> {
                 const SizedBox(height: 20),
 
                 // Title
-                _Label(label: 'Title'),
+                const _Label(label: 'Title'),
                 const SizedBox(height: 6),
                 TextField(
                   controller: _titleCtrl,
@@ -119,7 +118,7 @@ class _AddEventSheetState extends State<AddEventSheet> {
                 const SizedBox(height: 16),
 
                 // Date
-                _Label(label: 'When'),
+                const _Label(label: 'When'),
                 const SizedBox(height: 6),
                 InkWell(
                   onTap: _pickDate,
@@ -157,7 +156,7 @@ class _AddEventSheetState extends State<AddEventSheet> {
                 const SizedBox(height: 16),
 
                 // Category
-                _Label(label: 'Category'),
+                const _Label(label: 'Category'),
                 const SizedBox(height: 8),
                 Wrap(
                   spacing: 8,
@@ -209,7 +208,7 @@ class _AddEventSheetState extends State<AddEventSheet> {
                 const SizedBox(height: 16),
 
                 // Mood
-                _Label(label: 'How did it feel?', optional: true),
+                const _Label(label: 'How did it feel?', optional: true),
                 const SizedBox(height: 8),
                 Wrap(
                   spacing: 8,
@@ -249,7 +248,7 @@ class _AddEventSheetState extends State<AddEventSheet> {
                 const SizedBox(height: 16),
 
                 // Description
-                _Label(label: 'Notes', optional: true),
+                const _Label(label: 'Notes', optional: true),
                 const SizedBox(height: 6),
                 TextField(
                   controller: _descCtrl,

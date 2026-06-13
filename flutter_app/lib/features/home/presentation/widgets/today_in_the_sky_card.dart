@@ -64,7 +64,6 @@ class TodayInTheSkyCard extends StatelessWidget {
           ),
           const SizedBox(height: 16),
           Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               _MoonGlyph(illumination: phase.illumination, waxing: phase.waxing),
               const SizedBox(width: 16),
@@ -211,30 +210,33 @@ class _MoonPainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     final r = size.width / 2;
     final center = Offset(r, r);
-    // Dark base (the unlit side).
-    canvas.drawCircle(
-      center,
-      r,
-      Paint()..color = const Color(0xFF2D324A),
-    );
 
     // Lit fraction. illumination is 0..1 where 0=new and 1=full.
     // We draw the lit half-circle, then carve out the "shadow" oval based
     // on illumination so the terminator looks correct. Right side lit
     // when waxing, left side lit when waning.
-    canvas.save();
-    canvas.clipPath(Path()..addOval(Rect.fromCircle(center: center, radius: r)));
-
-    // Full lit hemisphere on the lit side.
     final litRect = waxing
         ? Rect.fromLTWH(r, 0, r, size.height)
         : Rect.fromLTWH(0, 0, r, size.height);
-    canvas.drawRect(
-      litRect,
-      Paint()..shader = const RadialGradient(
-        colors: [_kGoldLight, _kGold],
-      ).createShader(Rect.fromCircle(center: center, radius: r)),
-    );
+
+    canvas
+      // Dark base (the unlit side).
+      ..drawCircle(
+        center,
+        r,
+        Paint()..color = const Color(0xFF2D324A),
+      )
+      ..save()
+      ..clipPath(
+        Path()..addOval(Rect.fromCircle(center: center, radius: r)),
+      )
+      // Full lit hemisphere on the lit side.
+      ..drawRect(
+        litRect,
+        Paint()..shader = const RadialGradient(
+          colors: [_kGoldLight, _kGold],
+        ).createShader(Rect.fromCircle(center: center, radius: r)),
+      );
 
     // Shadow ellipse that sweeps across the disk based on illumination.
     // illumination 0.5 → no ellipse (terminator is straight)
@@ -259,17 +261,17 @@ class _MoonPainter extends CustomPainter {
       );
     }
 
-    canvas.restore();
-
-    // Thin gold rim.
-    canvas.drawCircle(
-      center,
-      r - 0.5,
-      Paint()
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 1
-        ..color = _kGold.withValues(alpha: 0.4),
-    );
+    canvas
+      ..restore()
+      // Thin gold rim.
+      ..drawCircle(
+        center,
+        r - 0.5,
+        Paint()
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 1
+          ..color = _kGold.withValues(alpha: 0.4),
+      );
   }
 
   @override

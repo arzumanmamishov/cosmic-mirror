@@ -1,19 +1,18 @@
-import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
-
 import 'package:cosmic_mirror/config/theme/app_palette.dart';
 import 'package:cosmic_mirror/core/error/error_message.dart';
 import 'package:cosmic_mirror/core/utils/date_utils.dart';
 import 'package:cosmic_mirror/features/ai_chat/domain/entities/chat_entities.dart';
 import 'package:cosmic_mirror/features/ai_chat/presentation/providers/chat_provider.dart';
-import 'package:cosmic_mirror/l10n/app_localizations.dart';
 import 'package:cosmic_mirror/features/ai_chat/presentation/widgets/cosmic_memory_panel.dart';
+import 'package:cosmic_mirror/l10n/app_localizations.dart';
 import 'package:cosmic_mirror/shared/widgets/cosmic_pulse.dart';
 import 'package:cosmic_mirror/shared/widgets/error_view.dart';
 import 'package:cosmic_mirror/shared/widgets/lively/lively_backdrop.dart';
 import 'package:cosmic_mirror/shared/widgets/loading_shimmer.dart';
 import 'package:cosmic_mirror/shared/widgets/staggered_fade_in.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 class ChatThreadsScreen extends ConsumerWidget {
   const ChatThreadsScreen({super.key});

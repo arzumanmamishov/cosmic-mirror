@@ -1,8 +1,7 @@
 import 'dart:ui';
 
+import 'package:cosmic_mirror/config/theme/colors.dart';
 import 'package:flutter/material.dart';
-
-import '../../config/theme/colors.dart';
 
 class CosmicCard extends StatelessWidget {
   const CosmicCard({

@@ -1,21 +1,20 @@
+import 'package:cosmic_mirror/config/api_url_override.dart';
+import 'package:cosmic_mirror/config/env.dart';
+import 'package:cosmic_mirror/config/theme/app_palette.dart';
+import 'package:cosmic_mirror/config/theme/colors.dart';
+import 'package:cosmic_mirror/config/theme/lively_type.dart';
+import 'package:cosmic_mirror/config/theme/typography.dart';
+import 'package:cosmic_mirror/features/auth/presentation/providers/auth_provider.dart';
+import 'package:cosmic_mirror/l10n/app_localizations.dart';
+import 'package:cosmic_mirror/shared/providers/locale_provider.dart';
+import 'package:cosmic_mirror/shared/providers/subscription_state_provider.dart';
+import 'package:cosmic_mirror/shared/providers/theme_provider.dart';
+import 'package:cosmic_mirror/shared/providers/user_provider.dart';
+import 'package:cosmic_mirror/shared/widgets/lively/lively_backdrop.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher.dart';
-
-import '../../../../config/api_url_override.dart';
-import '../../../../config/env.dart';
-import '../../../../config/theme/app_palette.dart';
-import '../../../../config/theme/colors.dart';
-import '../../../../config/theme/lively_type.dart';
-import '../../../../config/theme/typography.dart';
-import '../../../../l10n/app_localizations.dart';
-import '../../../../shared/widgets/lively/lively_backdrop.dart';
-import '../../../../shared/providers/locale_provider.dart';
-import '../../../../shared/providers/subscription_state_provider.dart';
-import '../../../../shared/providers/theme_provider.dart';
-import '../../../../shared/providers/user_provider.dart';
-import '../../../auth/presentation/providers/auth_provider.dart';
 
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
@@ -163,7 +162,7 @@ class SettingsScreen extends ConsumerWidget {
                 },
               );
 
-              if (confirmed == true) {
+              if (confirmed ?? false) {
                 await ref.read(authRepositoryProvider).signOut();
                 ref.read(currentUserProvider.notifier).clear();
                 if (context.mounted) context.go('/auth');
@@ -201,7 +200,7 @@ class SettingsScreen extends ConsumerWidget {
                 },
               );
 
-              if (confirmed == true) {
+              if (confirmed ?? false) {
                 await ref.read(authRepositoryProvider).deleteAccount();
                 ref.read(currentUserProvider.notifier).clear();
                 if (context.mounted) context.go('/auth');

@@ -1,7 +1,6 @@
+import 'package:cosmic_mirror/config/theme/app_palette.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-
-import 'package:cosmic_mirror/config/theme/app_palette.dart';
 
 class PremiumUpgradeCard extends StatelessWidget {
   const PremiumUpgradeCard({super.key});
@@ -26,7 +25,7 @@ class PremiumUpgradeCard extends StatelessWidget {
       child: Stack(
         children: [
           // Decorative cosmic watermark
-          Positioned(
+          const Positioned(
             right: -24,
             top: -16,
             child: Opacity(

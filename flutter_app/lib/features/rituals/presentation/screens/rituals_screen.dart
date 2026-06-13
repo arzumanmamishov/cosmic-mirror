@@ -1,12 +1,11 @@
+import 'package:cosmic_mirror/config/theme/colors.dart';
+import 'package:cosmic_mirror/config/theme/typography.dart';
+import 'package:cosmic_mirror/features/rituals/presentation/providers/rituals_provider.dart';
+import 'package:cosmic_mirror/l10n/app_localizations.dart';
+import 'package:cosmic_mirror/shared/widgets/cosmic_card.dart';
+import 'package:cosmic_mirror/shared/widgets/premium_gate.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
-import '../../../../config/theme/colors.dart';
-import '../../../../config/theme/typography.dart';
-import '../../../../l10n/app_localizations.dart';
-import '../../../../shared/widgets/cosmic_card.dart';
-import '../../../../shared/widgets/premium_gate.dart';
-import '../providers/rituals_provider.dart';
 
 class RitualsScreen extends ConsumerWidget {
   const RitualsScreen({super.key});
@@ -102,7 +101,7 @@ class _RitualCard extends StatelessWidget {
             width: 48,
             height: 48,
             decoration: BoxDecoration(
-              color: color.withOpacity(isCompleted ? 0.05 : 0.12),
+              color: color.withValues(alpha: isCompleted ? 0.05 : 0.12),
               borderRadius: BorderRadius.circular(12),
             ),
             child: Icon(

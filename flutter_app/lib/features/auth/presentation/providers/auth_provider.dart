@@ -1,10 +1,9 @@
+import 'package:cosmic_mirror/core/error/failures.dart';
+import 'package:cosmic_mirror/features/auth/data/datasources/auth_remote_datasource.dart';
+import 'package:cosmic_mirror/features/auth/data/repositories/auth_repository_impl.dart';
+import 'package:cosmic_mirror/features/auth/domain/entities/user.dart';
+import 'package:cosmic_mirror/features/auth/domain/repositories/auth_repository.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
-import '../../../../core/error/failures.dart';
-import '../../data/datasources/auth_remote_datasource.dart';
-import '../../data/repositories/auth_repository_impl.dart';
-import '../../domain/entities/user.dart';
-import '../../domain/repositories/auth_repository.dart';
 
 final authRemoteDataSourceProvider = Provider<AuthRemoteDataSource>((ref) {
   return AuthRemoteDataSource();

@@ -1,7 +1,6 @@
-import 'package:flutter/material.dart';
-
 import 'package:cosmic_mirror/config/theme/app_palette.dart';
 import 'package:cosmic_mirror/features/home/data/home_mock_data.dart';
+import 'package:flutter/material.dart';
 
 class AstrologersSection extends StatelessWidget {
   const AstrologersSection({super.key});

@@ -1,4 +1,4 @@
-import '../../domain/entities/birth_profile.dart';
+import 'package:cosmic_mirror/features/onboarding/domain/entities/birth_profile.dart';
 
 class BirthProfileModel extends BirthProfile {
   const BirthProfileModel({

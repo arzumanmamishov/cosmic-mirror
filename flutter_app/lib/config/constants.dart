@@ -19,11 +19,11 @@ class AppConstants {
   static const Duration revealAnimation = Duration(milliseconds: 800);
 
   // UI
-  static const double cardRadius = 16.0;
-  static const double buttonRadius = 12.0;
-  static const double inputRadius = 12.0;
-  static const double bottomNavHeight = 80.0;
-  static const double minTouchTarget = 48.0;
+  static const double cardRadius = 16;
+  static const double buttonRadius = 12;
+  static const double inputRadius = 12;
+  static const double bottomNavHeight = 80;
+  static const double minTouchTarget = 48;
 
   // Pagination
   static const int defaultPageSize = 20;

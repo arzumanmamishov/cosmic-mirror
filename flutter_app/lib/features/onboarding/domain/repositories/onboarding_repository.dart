@@ -1,5 +1,5 @@
-import '../../../../core/utils/result.dart';
-import '../entities/birth_profile.dart';
+import 'package:cosmic_mirror/core/utils/result.dart';
+import 'package:cosmic_mirror/features/onboarding/domain/entities/birth_profile.dart';
 
 abstract class OnboardingRepository {
   Future<Result<void>> saveBirthProfile(BirthProfile profile);

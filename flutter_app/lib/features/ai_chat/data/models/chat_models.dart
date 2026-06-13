@@ -1,4 +1,4 @@
-import '../../domain/entities/chat_entities.dart';
+import 'package:cosmic_mirror/features/ai_chat/domain/entities/chat_entities.dart';
 
 class ChatThreadModel extends ChatThread {
   const ChatThreadModel({

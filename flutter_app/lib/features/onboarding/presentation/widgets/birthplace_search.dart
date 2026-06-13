@@ -72,7 +72,8 @@ class _BirthplaceSearchState extends State<BirthplaceSearch> {
         queryParameters: {'q': query},
       );
       final places = (results['places'] as List<dynamic>?)
-              ?.map(
+              ?.cast<Map<String, dynamic>>()
+              .map(
                 (p) => _PlaceSuggestion(
                   name: p['name'] as String,
                   latitude: (p['latitude'] as num).toDouble(),
@@ -223,7 +224,7 @@ class _BirthplaceSearchState extends State<BirthplaceSearch> {
                               borderRadius: BorderRadius.circular(9),
                             ),
                             child: Icon(Icons.location_on_rounded,
-                                color: p.primary, size: 16),
+                                color: p.primary, size: 16,),
                           ),
                           const SizedBox(width: 12),
                           Expanded(

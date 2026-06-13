@@ -1,12 +1,11 @@
-import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
-
 import 'package:cosmic_mirror/config/theme/app_palette.dart';
 import 'package:cosmic_mirror/features/life_timeline/data/life_timeline_data.dart';
 import 'package:cosmic_mirror/features/life_timeline/presentation/widgets/add_event_sheet.dart';
 import 'package:cosmic_mirror/l10n/app_localizations.dart';
 import 'package:cosmic_mirror/shared/widgets/lively/lively_backdrop.dart';
 import 'package:cosmic_mirror/shared/widgets/staggered_fade_in.dart';
+import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 
 /// LifeTimelineScreen — a vertical timeline of the user's life mapped against
 /// the astrological transits that were active at each moment. The longer they

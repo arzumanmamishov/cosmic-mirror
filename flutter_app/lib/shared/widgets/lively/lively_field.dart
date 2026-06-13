@@ -89,7 +89,6 @@ class _LivelyFieldState extends State<LivelyField> {
                 ? [
                     BoxShadow(
                       color: p.primary.withValues(alpha: 0.18),
-                      blurRadius: 0,
                       spreadRadius: 3,
                     ),
                   ]

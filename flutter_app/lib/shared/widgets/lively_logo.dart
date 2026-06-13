@@ -91,40 +91,41 @@ class _RamHornsPainter extends CustomPainter {
     final innerLeftX = w * 0.40;
     final innerRightX = w * 0.60;
 
-    path.moveTo(cx, bottomY);
-    path.cubicTo(
-      cx - w * 0.05, h * 0.65,
-      outerLeftX - w * 0.04, h * 0.45,
-      outerLeftX, topY + h * 0.05,
-    );
-    path.cubicTo(
-      outerLeftX + w * 0.02, topY - h * 0.05,
-      outerLeftX + w * 0.10, topY - h * 0.02,
-      outerLeftX + w * 0.13, topY + h * 0.04,
-    );
-    path.cubicTo(
-      outerLeftX + w * 0.10, topY + h * 0.10,
-      innerLeftX - w * 0.02, h * 0.50,
-      innerLeftX, h * 0.78,
-    );
-    path.lineTo(cx, bottomY - h * 0.02);
-    path.lineTo(innerRightX, h * 0.78);
-    path.cubicTo(
-      innerRightX + w * 0.02, h * 0.50,
-      outerRightX - w * 0.10, topY + h * 0.10,
-      outerRightX - w * 0.13, topY + h * 0.04,
-    );
-    path.cubicTo(
-      outerRightX - w * 0.10, topY - h * 0.02,
-      outerRightX - w * 0.02, topY - h * 0.05,
-      outerRightX, topY + h * 0.05,
-    );
-    path.cubicTo(
-      outerRightX + w * 0.04, h * 0.45,
-      cx + w * 0.05, h * 0.65,
-      cx, bottomY,
-    );
-    path.close();
+    path
+      ..moveTo(cx, bottomY)
+      ..cubicTo(
+        cx - w * 0.05, h * 0.65,
+        outerLeftX - w * 0.04, h * 0.45,
+        outerLeftX, topY + h * 0.05,
+      )
+      ..cubicTo(
+        outerLeftX + w * 0.02, topY - h * 0.05,
+        outerLeftX + w * 0.10, topY - h * 0.02,
+        outerLeftX + w * 0.13, topY + h * 0.04,
+      )
+      ..cubicTo(
+        outerLeftX + w * 0.10, topY + h * 0.10,
+        innerLeftX - w * 0.02, h * 0.50,
+        innerLeftX, h * 0.78,
+      )
+      ..lineTo(cx, bottomY - h * 0.02)
+      ..lineTo(innerRightX, h * 0.78)
+      ..cubicTo(
+        innerRightX + w * 0.02, h * 0.50,
+        outerRightX - w * 0.10, topY + h * 0.10,
+        outerRightX - w * 0.13, topY + h * 0.04,
+      )
+      ..cubicTo(
+        outerRightX - w * 0.10, topY - h * 0.02,
+        outerRightX - w * 0.02, topY - h * 0.05,
+        outerRightX, topY + h * 0.05,
+      )
+      ..cubicTo(
+        outerRightX + w * 0.04, h * 0.45,
+        cx + w * 0.05, h * 0.65,
+        cx, bottomY,
+      )
+      ..close();
 
     canvas
       ..drawPath(

@@ -1,8 +1,3 @@
-import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:intl/intl.dart';
-import 'package:share_plus/share_plus.dart';
-
 import 'package:cosmic_mirror/config/theme/app_palette.dart';
 import 'package:cosmic_mirror/features/daily_reading/domain/entities/daily_reading.dart';
 import 'package:cosmic_mirror/features/daily_reading/presentation/providers/daily_reading_provider.dart';
@@ -12,6 +7,10 @@ import 'package:cosmic_mirror/shared/widgets/cosmic_starfield.dart';
 import 'package:cosmic_mirror/shared/widgets/error_view.dart';
 import 'package:cosmic_mirror/shared/widgets/loading_shimmer.dart';
 import 'package:cosmic_mirror/shared/widgets/staggered_fade_in.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:intl/intl.dart';
+import 'package:share_plus/share_plus.dart';
 
 class DailyReadingScreen extends ConsumerWidget {
   const DailyReadingScreen({super.key});
@@ -84,49 +83,49 @@ class _ReadingBody extends StatelessWidget {
                 icon: Icons.favorite_rounded,
                 iconColor: const Color(0xFFE14B8A),
                 content: reading.emotional,
-              )),
+              ),),
               const SizedBox(height: 12),
               _staggered(1, _SectionCard(
                 title: l10n.dailyReadingLove,
                 icon: Icons.auto_awesome_rounded,
                 iconColor: const Color(0xFFC76E5E),
                 content: reading.love,
-              )),
+              ),),
               const SizedBox(height: 12),
               _staggered(2, _SectionCard(
                 title: l10n.dailyReadingCareer,
                 icon: Icons.work_rounded,
                 iconColor: const Color(0xFFB8860B),
                 content: reading.career,
-              )),
+              ),),
               const SizedBox(height: 12),
               _staggered(3, _SectionCard(
                 title: l10n.dailyReadingHealth,
                 icon: Icons.spa_rounded,
                 iconColor: const Color(0xFF5ED39A),
                 content: reading.health,
-              )),
+              ),),
               const SizedBox(height: 12),
               _staggered(4, _SectionCard(
                 title: l10n.dailyReadingCaution,
                 icon: Icons.shield_moon_rounded,
                 iconColor: const Color(0xFFF2B66D),
                 content: reading.caution,
-              )),
+              ),),
               const SizedBox(height: 12),
               _staggered(5, _SectionCard(
                 title: l10n.dailyReadingAction,
                 icon: Icons.bolt_rounded,
                 iconColor: const Color(0xFF7B61FF),
                 content: reading.action,
-              )),
+              ),),
               const SizedBox(height: 24),
               _staggered(6, _AffirmationCard(text: reading.affirmation)),
               const SizedBox(height: 16),
               _staggered(7, _LuckyRow(
                 color: reading.luckyColor,
                 number: reading.luckyNumber,
-              )),
+              ),),
             ],
           ),
         ),
@@ -211,7 +210,6 @@ class _Hero extends StatelessWidget {
                     children: [
                       CosmicPulse(
                         color: _ringColor(p, reading.energyLevel),
-                        maxRadius: 60,
                         child: _EnergyRing(level: reading.energyLevel),
                       ),
                       const SizedBox(width: 18),

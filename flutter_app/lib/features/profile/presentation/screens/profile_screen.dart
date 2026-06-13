@@ -2,9 +2,9 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cosmic_mirror/config/theme/app_palette.dart';
 import 'package:cosmic_mirror/config/theme/lively_type.dart';
 import 'package:cosmic_mirror/core/network/api_endpoints.dart';
-import 'package:cosmic_mirror/l10n/app_localizations.dart';
 import 'package:cosmic_mirror/features/auth/presentation/providers/auth_provider.dart';
 import 'package:cosmic_mirror/features/profile/presentation/providers/profile_providers.dart';
+import 'package:cosmic_mirror/l10n/app_localizations.dart';
 import 'package:cosmic_mirror/shared/providers/subscription_state_provider.dart';
 import 'package:cosmic_mirror/shared/providers/user_provider.dart';
 import 'package:cosmic_mirror/shared/utils/avatar_url.dart';
@@ -140,7 +140,7 @@ class ProfileScreen extends ConsumerWidget {
               Center(
                 child: Text(
                   'Lively · v1.0.0',
-                  style: LivelyType.mono(p.textTertiary, size: 12),
+                  style: LivelyType.mono(p.textTertiary),
                 ),
               ),
             ],

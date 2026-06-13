@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:cosmic_mirror/config/theme/app_palette.dart';
 import 'package:cosmic_mirror/features/community/presentation/providers/community_providers.dart';
 import 'package:cosmic_mirror/l10n/app_localizations.dart';
@@ -52,9 +54,8 @@ class _CreateSpaceScreenState extends ConsumerState<CreateSpaceScreen> {
       );
       ref.invalidate(spacesProvider);
       if (mounted) {
-        context
-          ..pop()
-          ..push('/community/${space.id}');
+        context.pop();
+        unawaited(context.push('/community/${space.id}'));
       }
     } catch (e) {
       setState(() => _error = e.toString());
@@ -191,7 +192,7 @@ class _CreateSpaceScreenState extends ConsumerState<CreateSpaceScreen> {
                   'Mature topics — shown with a Spicy badge.',
                   style: TextStyle(color: p.textSecondary, fontSize: 12),
                 ),
-                activeColor: p.warning,
+                activeThumbColor: p.warning,
               ),
               if (_error != null) ...[
                 const SizedBox(height: 12),

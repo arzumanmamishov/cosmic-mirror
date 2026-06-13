@@ -23,7 +23,7 @@ class CyclesTimeline extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'PINNACLES — life\'s themes',
+          "PINNACLES — life's themes",
           style: TextStyle(
             color: p.textSecondary,
             fontSize: 11,
@@ -63,7 +63,7 @@ class CyclesTimeline extends StatelessWidget {
           ),
         const SizedBox(height: 12),
         Text(
-          'You are ${currentAge} — active cycle is highlighted.',
+          'You are $currentAge — active cycle is highlighted.',
           style: TextStyle(color: p.textTertiary, fontSize: 11),
         ),
       ],

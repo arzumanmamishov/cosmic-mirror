@@ -1,7 +1,3 @@
-import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:share_plus/share_plus.dart';
-
 import 'package:cosmic_mirror/config/theme/app_palette.dart';
 import 'package:cosmic_mirror/core/network/api_endpoints.dart';
 import 'package:cosmic_mirror/l10n/app_localizations.dart';
@@ -11,6 +7,9 @@ import 'package:cosmic_mirror/shared/widgets/cosmic_starfield.dart';
 import 'package:cosmic_mirror/shared/widgets/error_view.dart';
 import 'package:cosmic_mirror/shared/widgets/loading_shimmer.dart';
 import 'package:cosmic_mirror/shared/widgets/staggered_fade_in.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:share_plus/share_plus.dart';
 
 final compatibilityReportProvider = FutureProvider.autoDispose
     .family<Map<String, dynamic>, String>((ref, personId) async {
@@ -176,11 +175,11 @@ class _Hero extends StatelessWidget {
                 color: p.primary,
                 maxRadius: 80,
                 duration: const Duration(seconds: 4),
-                child: const SizedBox(width: 0, height: 0),
+                child: const SizedBox.shrink(),
               ),
               Positioned(
                 left: MediaQuery.sizeOf(context).width / 2 - 90,
-                child: _Avatar(label: 'You', glyph: '☉'),
+                child: const _Avatar(label: 'You', glyph: '☉'),
               ),
               Positioned(
                 right: MediaQuery.sizeOf(context).width / 2 - 90,

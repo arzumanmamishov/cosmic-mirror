@@ -35,8 +35,9 @@ class _ComposePostSheetState extends ConsumerState<ComposePostSheet> {
 
   @override
   void dispose() {
-    _content.removeListener(_onChanged);
-    _content.dispose();
+    _content
+      ..removeListener(_onChanged)
+      ..dispose();
     _link.dispose();
     super.dispose();
   }

@@ -56,9 +56,9 @@ class PaywallNotifier extends StateNotifier<PaywallState> {
 
   /// Kicks off the Stripe Payment Sheet for the currently selected plan.
   /// Returns true on a confirmed purchase, false on cancel or any error
-  /// (the error string is left in [state.error] so the UI can surface it).
+  /// (the error string is left in `state.error` so the UI can surface it).
   Future<bool> purchase() async {
-    state = state.copyWith(isPurchasing: true, error: null);
+    state = state.copyWith(isPurchasing: true);
     try {
       final api = _ref.read(apiClientProvider);
       final params = await api.post<Map<String, dynamic>>(
@@ -113,7 +113,7 @@ class PaywallNotifier extends StateNotifier<PaywallState> {
   /// the source of truth is the server. Re-fetch the session and return
   /// whether the user is now Premium.
   Future<bool> restore() async {
-    state = state.copyWith(isPurchasing: true, error: null);
+    state = state.copyWith(isPurchasing: true);
     try {
       await _ref.read(currentUserProvider.notifier).bootstrapSession();
       state = state.copyWith(isPurchasing: false);

@@ -42,7 +42,6 @@ class PersonalTodayCard extends StatelessWidget {
 
   Widget _row(String label, NumerologyNumber n) {
     return Row(
-      crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         Container(
           width: 44,

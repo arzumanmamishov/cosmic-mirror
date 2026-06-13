@@ -209,15 +209,15 @@ class _StarFallPainter extends CustomPainter {
         ..shader = shader
         ..strokeCap = StrokeCap.round
         ..strokeWidth = s.thickness;
-      canvas.drawLine(Offset(tailX, tailY), Offset(headX, headY), trailPaint);
-
-      canvas.drawCircle(
-        Offset(headX, headY),
-        s.thickness * 1.3,
-        Paint()
-          ..color = color.withValues(alpha: alpha)
-          ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 1.5),
-      );
+      canvas
+        ..drawLine(Offset(tailX, tailY), Offset(headX, headY), trailPaint)
+        ..drawCircle(
+          Offset(headX, headY),
+          s.thickness * 1.3,
+          Paint()
+            ..color = color.withValues(alpha: alpha)
+            ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 1.5),
+        );
     }
   }
 

@@ -103,7 +103,7 @@ final List<LifeEvent> mockLifeEvents = [
     date: DateTime(2024, 3, 14),
     title: 'Got the offer',
     description:
-        'Accepted the senior role at the design studio. Felt like everything I\'ve worked toward suddenly clicked into place.',
+        "Accepted the senior role at the design studio. Felt like everything I've worked toward suddenly clicked into place.",
     category: LifeEventCategory.career,
     transits: ['Jupiter trine natal MC', 'Venus in 10th house'],
     mood: 'Elated',
@@ -123,7 +123,7 @@ final List<LifeEvent> mockLifeEvents = [
     date: DateTime(2024, 10, 22),
     title: 'Met Theo',
     description:
-        'Coffee at 4pm became dinner became a long walk. Felt the kind of recognition you can\'t fake.',
+        "Coffee at 4pm became dinner became a long walk. Felt the kind of recognition you can't fake.",
     category: LifeEventCategory.love,
     transits: ['Venus trine natal Sun', 'Sun in 7th house'],
     mood: 'Open',

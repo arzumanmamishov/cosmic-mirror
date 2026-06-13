@@ -1,8 +1,7 @@
+import 'package:cosmic_mirror/core/error/exceptions.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:sign_in_with_apple/sign_in_with_apple.dart';
-
-import '../../../../core/error/exceptions.dart';
 
 class AuthRemoteDataSource {
   AuthRemoteDataSource({
@@ -12,7 +11,6 @@ class AuthRemoteDataSource {
         _googleSignIn = googleSignIn ??
             GoogleSignIn(
               scopes: ['email'],
-              signInOption: SignInOption.standard,
             );
 
   final FirebaseAuth _firebaseAuth;

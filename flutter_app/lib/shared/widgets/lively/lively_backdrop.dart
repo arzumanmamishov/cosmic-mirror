@@ -97,7 +97,14 @@ class _LivelyBackdropState extends State<LivelyBackdrop>
 }
 
 class _Star {
-  _Star(this.dx, this.dy, this.r, this.a, this.twinkles, this.phase);
+  _Star(
+    this.dx,
+    this.dy,
+    this.r,
+    this.a, {
+    required this.twinkles,
+    required this.phase,
+  });
   final double dx; // 0..1
   final double dy; // 0..1
   final double r;
@@ -146,9 +153,9 @@ class _StarfieldPainter extends CustomPainter {
         rnd(),
         big ? 1.6 + rnd() * 0.8 : 0.4 + rnd() * 0.8,
         big ? 0.55 + rnd() * 0.35 : 0.15 + rnd() * 0.4,
-        rnd() < 0.3,
-        rnd(),
-      ));
+        twinkles: rnd() < 0.3,
+        phase: rnd(),
+      ),);
     }
     _cache[key] = out;
     return out;
@@ -168,7 +175,7 @@ class _StarfieldPainter extends CustomPainter {
         ..shader = RadialGradient(
           colors: [
             auroraColor.withValues(alpha: 0.10),
-            auroraColor.withValues(alpha: 0.0),
+            auroraColor.withValues(alpha: 0),
           ],
         ).createShader(auroraRect);
       canvas.drawOval(auroraRect, auroraPaint);
@@ -182,7 +189,7 @@ class _StarfieldPainter extends CustomPainter {
         final pulse =
             (math.sin((t + star.phase) * math.pi * 2) + 1) / 2; // 0..1
         final lo = alpha * 0.4;
-        final hi = math.min(1.0, alpha * 1.6);
+        final hi = math.min(1, alpha * 1.6);
         alpha = lo + (hi - lo) * pulse;
       }
       paint.color = starColor.withValues(alpha: alpha.clamp(0.0, 1.0));

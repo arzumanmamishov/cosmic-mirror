@@ -1,4 +1,4 @@
-import '../../domain/entities/daily_reading.dart';
+import 'package:cosmic_mirror/features/daily_reading/domain/entities/daily_reading.dart';
 
 class DailyReadingModel extends DailyReading {
   const DailyReadingModel({

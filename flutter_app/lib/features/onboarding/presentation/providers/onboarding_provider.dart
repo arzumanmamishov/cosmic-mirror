@@ -1,9 +1,8 @@
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-
-import 'package:cosmic_mirror/shared/providers/user_provider.dart';
 import 'package:cosmic_mirror/features/onboarding/data/repositories/onboarding_repository_impl.dart';
 import 'package:cosmic_mirror/features/onboarding/domain/entities/birth_profile.dart';
 import 'package:cosmic_mirror/features/onboarding/domain/repositories/onboarding_repository.dart';
+import 'package:cosmic_mirror/shared/providers/user_provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 final onboardingRepositoryProvider = Provider<OnboardingRepository>((ref) {
   return OnboardingRepositoryImpl(apiClient: ref.read(apiClientProvider));

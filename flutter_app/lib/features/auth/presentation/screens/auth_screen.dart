@@ -92,7 +92,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
               final email = emailController.text.trim();
               if (email.isEmpty) {
                 setDialogState(
-                    () => inlineError = l10n.authResetPasswordEmailEmpty);
+                    () => inlineError = l10n.authResetPasswordEmailEmpty,);
                 return;
               }
               setDialogState(() {
@@ -184,7 +184,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
         ref.watch(currentUserProvider.select((s) => s.bootstrapError));
 
     // Error precedence: client validation → Firebase code → bootstrap.
-    String? error = _localError;
+    var error = _localError;
     if (error == null && authState.error != null) {
       error = localizedFirebaseAuthError(l10n, authState.error);
     }
@@ -284,7 +284,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                       trailing: _EyeToggle(
                         obscured: _obscureConfirm,
                         onTap: () => setState(
-                            () => _obscureConfirm = !_obscureConfirm),
+                            () => _obscureConfirm = !_obscureConfirm,),
                       ),
                     ),
                   ] else ...[

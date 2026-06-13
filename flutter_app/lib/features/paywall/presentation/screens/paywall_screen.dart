@@ -1,12 +1,11 @@
+import 'package:cosmic_mirror/config/theme/colors.dart';
+import 'package:cosmic_mirror/config/theme/typography.dart';
+import 'package:cosmic_mirror/features/paywall/presentation/providers/subscription_provider.dart';
+import 'package:cosmic_mirror/l10n/app_localizations.dart';
+import 'package:cosmic_mirror/shared/widgets/cosmic_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-
-import '../../../../config/theme/colors.dart';
-import '../../../../config/theme/typography.dart';
-import '../../../../l10n/app_localizations.dart';
-import '../../../../shared/widgets/cosmic_button.dart';
-import '../providers/subscription_provider.dart';
 
 class PaywallScreen extends ConsumerWidget {
   const PaywallScreen({super.key});
@@ -68,7 +67,7 @@ class PaywallScreen extends ConsumerWidget {
                           shape: BoxShape.circle,
                           boxShadow: [
                             BoxShadow(
-                              color: CosmicColors.primary.withOpacity(0.4),
+                              color: CosmicColors.primary.withValues(alpha: 0.4),
                               blurRadius: 24,
                             ),
                           ],
@@ -78,7 +77,7 @@ class PaywallScreen extends ConsumerWidget {
                       const SizedBox(height: 20),
                       Text(l10n.paywallHeadline,
                           style: CosmicTypography.displayMedium,
-                          textAlign: TextAlign.center),
+                          textAlign: TextAlign.center,),
                       const SizedBox(height: 8),
                       Text(
                         l10n.paywallSubheadline,
@@ -98,7 +97,7 @@ class PaywallScreen extends ConsumerWidget {
                                 width: 40,
                                 height: 40,
                                 decoration: BoxDecoration(
-                                  color: CosmicColors.primary.withOpacity(0.12),
+                                  color: CosmicColors.primary.withValues(alpha: 0.12),
                                   borderRadius: BorderRadius.circular(10),
                                 ),
                                 child: Icon(icon, color: CosmicColors.primaryLight, size: 20),
@@ -161,7 +160,7 @@ class PaywallScreen extends ConsumerWidget {
                             vertical: 6,
                           ),
                           decoration: BoxDecoration(
-                            color: CosmicColors.success.withOpacity(0.1),
+                            color: CosmicColors.success.withValues(alpha: 0.1),
                             borderRadius: BorderRadius.circular(8),
                           ),
                           child: Text(

@@ -150,7 +150,7 @@ class BirthTimePicker extends StatelessWidget {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Icon(Icons.brightness_5_rounded,
-                      size: 44, color: p.primary.withValues(alpha: 0.7)),
+                      size: 44, color: p.primary.withValues(alpha: 0.7),),
                   const SizedBox(height: 16),
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 24),

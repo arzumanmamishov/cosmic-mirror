@@ -1,11 +1,10 @@
+import 'package:cosmic_mirror/config/theme/app_theme.dart';
+import 'package:cosmic_mirror/l10n/app_localizations.dart';
+import 'package:cosmic_mirror/router/app_router.dart';
+import 'package:cosmic_mirror/shared/providers/locale_provider.dart';
+import 'package:cosmic_mirror/shared/providers/theme_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
-import 'config/theme/app_theme.dart';
-import 'l10n/app_localizations.dart';
-import 'router/app_router.dart';
-import 'shared/providers/locale_provider.dart';
-import 'shared/providers/theme_provider.dart';
 
 class CosmicMirrorApp extends ConsumerWidget {
   const CosmicMirrorApp({super.key});

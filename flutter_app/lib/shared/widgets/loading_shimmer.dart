@@ -1,7 +1,6 @@
+import 'package:cosmic_mirror/config/theme/app_palette.dart';
 import 'package:flutter/material.dart';
 import 'package:shimmer/shimmer.dart';
-
-import '../../config/theme/app_palette.dart';
 
 /// A single shimmering placeholder block. Theme-aware: it reads
 /// [AppPalette] so the placeholder + sweep colors are light in light

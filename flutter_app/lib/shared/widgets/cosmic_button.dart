@@ -1,6 +1,5 @@
+import 'package:cosmic_mirror/config/theme/colors.dart';
 import 'package:flutter/material.dart';
-
-import '../../config/theme/colors.dart';
 
 class CosmicButton extends StatelessWidget {
   const CosmicButton({
@@ -31,7 +30,7 @@ class CosmicButton extends StatelessWidget {
               borderRadius: BorderRadius.circular(12),
               boxShadow: [
                 BoxShadow(
-                  color: CosmicColors.primary.withOpacity(0.3),
+                  color: CosmicColors.primary.withValues(alpha: 0.3),
                   blurRadius: 12,
                   offset: const Offset(0, 4),
                 ),

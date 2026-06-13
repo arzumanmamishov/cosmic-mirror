@@ -61,7 +61,6 @@ class Env {
   /// at build time with `--dart-define=STRIPE_PUBLISHABLE_KEY=pk_test_…`.
   static const stripePublishableKey = String.fromEnvironment(
     'STRIPE_PUBLISHABLE_KEY',
-    defaultValue: '',
   );
 
   /// `merchant.com.lively.app` for Apple Pay — wire to a real merchant

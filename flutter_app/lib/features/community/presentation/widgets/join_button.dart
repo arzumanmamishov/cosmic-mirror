@@ -62,7 +62,6 @@ class _JoinButtonState extends ConsumerState<JoinButton> {
         } finally {
           if (mounted) setState(() => _busy = false);
         }
-        break;
       case JoinState.pending:
         // Tapping a pending pill does nothing — request is in flight
         // with the owner. We could add a "Cancel request" action later
@@ -81,7 +80,6 @@ class _JoinButtonState extends ConsumerState<JoinButton> {
         } finally {
           if (mounted) setState(() => _busy = false);
         }
-        break;
     }
   }
 

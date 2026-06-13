@@ -1,4 +1,4 @@
-import '../../domain/entities/user.dart';
+import 'package:cosmic_mirror/features/auth/domain/entities/user.dart';
 
 class UserModel extends AppUser {
   const UserModel({

@@ -1,8 +1,7 @@
+import 'package:cosmic_mirror/config/theme/colors.dart';
+import 'package:cosmic_mirror/config/theme/typography.dart';
+import 'package:cosmic_mirror/shared/widgets/cosmic_button.dart';
 import 'package:flutter/material.dart';
-
-import '../../config/theme/colors.dart';
-import '../../config/theme/typography.dart';
-import 'cosmic_button.dart';
 
 class EmptyState extends StatelessWidget {
   const EmptyState({

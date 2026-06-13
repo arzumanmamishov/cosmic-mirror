@@ -161,7 +161,7 @@ class _Results extends ConsumerWidget {
     final asyncValue = ref.watch(numerologyNameAnalysisProvider(name));
 
     return asyncValue.when(
-      loading: () => const ShimmerList(itemCount: 3),
+      loading: () => const ShimmerList(),
       error: (e, _) => ErrorView(
         error: e,
         onRetry: () =>

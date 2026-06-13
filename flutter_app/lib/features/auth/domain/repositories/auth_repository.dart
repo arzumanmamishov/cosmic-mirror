@@ -1,5 +1,5 @@
-import '../../../../core/utils/result.dart';
-import '../entities/user.dart';
+import 'package:cosmic_mirror/core/utils/result.dart';
+import 'package:cosmic_mirror/features/auth/domain/entities/user.dart';
 
 abstract class AuthRepository {
   Future<Result<AppUser>> signInWithApple();

@@ -1,5 +1,11 @@
 import 'package:cosmic_mirror/config/theme/app_palette.dart';
 import 'package:cosmic_mirror/config/theme/lively_type.dart';
+import 'package:cosmic_mirror/features/onboarding/presentation/providers/onboarding_provider.dart';
+import 'package:cosmic_mirror/features/onboarding/presentation/widgets/birth_date_picker.dart';
+import 'package:cosmic_mirror/features/onboarding/presentation/widgets/birth_time_picker.dart';
+import 'package:cosmic_mirror/features/onboarding/presentation/widgets/birthplace_search.dart';
+import 'package:cosmic_mirror/features/onboarding/presentation/widgets/chart_reveal.dart';
+import 'package:cosmic_mirror/l10n/app_localizations.dart';
 import 'package:cosmic_mirror/shared/widgets/lively/gold_button.dart';
 import 'package:cosmic_mirror/shared/widgets/lively/lively_backdrop.dart';
 import 'package:cosmic_mirror/shared/widgets/lively/lively_chip.dart';
@@ -8,13 +14,6 @@ import 'package:cosmic_mirror/shared/widgets/lively/step_progress.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-
-import '../../../../l10n/app_localizations.dart';
-import '../providers/onboarding_provider.dart';
-import '../widgets/birth_date_picker.dart';
-import '../widgets/birth_time_picker.dart';
-import '../widgets/birthplace_search.dart';
-import '../widgets/chart_reveal.dart';
 
 /// The Lively onboarding flow — a cosmic backdrop with a shared shell
 /// (back chip · step rail · counter · hero heading · gold CTA) wrapping

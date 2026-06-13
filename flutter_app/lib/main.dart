@@ -4,8 +4,8 @@ import 'package:cosmic_mirror/app.dart';
 import 'package:cosmic_mirror/config/api_url_override.dart';
 import 'package:cosmic_mirror/config/env.dart';
 import 'package:cosmic_mirror/firebase_options.dart';
-import 'package:cosmic_mirror/shared/widgets/error_page.dart';
 import 'package:cosmic_mirror/shared/providers/user_provider.dart';
+import 'package:cosmic_mirror/shared/widgets/error_page.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
@@ -17,7 +17,7 @@ import 'package:hive_flutter/hive_flutter.dart';
 import 'package:purchases_flutter/purchases_flutter.dart';
 
 Future<void> main() async {
-  runZonedGuarded(
+  unawaited(runZonedGuarded(
     () async {
       WidgetsFlutterBinding.ensureInitialized();
 
@@ -105,5 +105,5 @@ Future<void> main() async {
       debugPrint('Stack trace: $stackTrace');
       // TODO: Send to crash reporting service
     },
-  );
+  ),);
 }

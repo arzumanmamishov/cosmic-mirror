@@ -1,15 +1,14 @@
 import 'package:cosmic_mirror/config/theme/app_palette.dart';
 import 'package:cosmic_mirror/core/network/api_endpoints.dart';
-import 'package:cosmic_mirror/l10n/app_localizations.dart';
+import 'package:cosmic_mirror/features/chart/presentation/screens/chart_screen.dart'
+    show chartProvider;
+import 'package:cosmic_mirror/features/human_design/presentation/providers/human_design_providers.dart'
+    show humanDesignProvider;
 import 'package:cosmic_mirror/features/onboarding/data/models/birth_profile_model.dart';
 import 'package:cosmic_mirror/features/onboarding/domain/entities/birth_profile.dart';
 import 'package:cosmic_mirror/features/onboarding/presentation/widgets/birth_date_picker.dart';
 import 'package:cosmic_mirror/features/onboarding/presentation/widgets/birth_time_picker.dart';
 import 'package:cosmic_mirror/features/onboarding/presentation/widgets/birthplace_search.dart';
-import 'package:cosmic_mirror/features/chart/presentation/screens/chart_screen.dart'
-    show chartProvider;
-import 'package:cosmic_mirror/features/human_design/presentation/providers/human_design_providers.dart'
-    show humanDesignProvider;
 import 'package:cosmic_mirror/features/profile/presentation/providers/profile_providers.dart';
 import 'package:cosmic_mirror/features/vedic_chart/presentation/providers/vedic_providers.dart'
     show
@@ -19,6 +18,7 @@ import 'package:cosmic_mirror/features/vedic_chart/presentation/providers/vedic_
         vedicRasiProvider,
         vedicShadbalaProvider,
         vedicYogasProvider;
+import 'package:cosmic_mirror/l10n/app_localizations.dart';
 import 'package:cosmic_mirror/shared/providers/user_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -129,18 +129,18 @@ class _EditBirthDataScreenState extends ConsumerState<EditBirthDataScreen> {
   @override
   Widget build(BuildContext context) {
     final p = context.palette;
-    final profileAsync = ref.watch(birthProfileProvider);
     // Hydrate form fields once, AFTER this frame — calling setState directly
     // here would throw "setState during build" when the provider is already
     // resolved (cached) at first build.
-    profileAsync.whenData((profile) {
-      if (profile != null && !_initialized && !_hydrateScheduled) {
-        _hydrateScheduled = true;
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          if (mounted) _hydrate(profile);
-        });
-      }
-    });
+    final profileAsync = ref.watch(birthProfileProvider)
+      ..whenData((profile) {
+        if (profile != null && !_initialized && !_hydrateScheduled) {
+          _hydrateScheduled = true;
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (mounted) _hydrate(profile);
+          });
+        }
+      });
 
     return Scaffold(
       backgroundColor: p.background,
