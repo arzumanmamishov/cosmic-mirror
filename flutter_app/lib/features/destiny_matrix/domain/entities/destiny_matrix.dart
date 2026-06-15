@@ -1,7 +1,8 @@
 import 'package:equatable/equatable.dart';
 
-/// One of the nine octagram points (A,B,C,D,E,TL,TR,BR,BL). [arcana] is the
-/// Major Arcana value 1..22 at that position.
+/// One octagram point. [key] is a stable identifier (e.g. "day", "center",
+/// "tl", "heaven", "arm_left_1", "diag_tl_3"); [arcana] is the Major Arcana
+/// value 1..22 at that position.
 class DestinyPoint extends Equatable {
   const DestinyPoint({
     required this.key,
@@ -34,7 +35,7 @@ class DestinyPoint extends Equatable {
   List<Object?> get props => [key, arcana];
 }
 
-/// One of the four interpretive lines spanning three points.
+/// One interpretive line spanning an ordered list of point keys.
 class DestinyLine extends Equatable {
   const DestinyLine({
     required this.key,
@@ -64,28 +65,43 @@ class DestinyLine extends Equatable {
   List<Object?> get props => [key, pointKeys];
 }
 
-/// One rung of the perimeter age-ladder: the year of life (1..80) and the
-/// arcana (1..22) ruling it.
+/// One rung of the perimeter age-ladder: a (possibly fractional) age, a
+/// readable label, and the arcana (1..22) ruling it.
 class AgeArcana extends Equatable {
-  const AgeArcana({required this.age, required this.arcana});
+  const AgeArcana({
+    required this.age,
+    required this.label,
+    required this.arcana,
+  });
 
   factory AgeArcana.fromJson(Map<String, dynamic> json) {
+    final age = (json['age'] as num?)?.toDouble() ?? 0;
     return AgeArcana(
-      age: (json['age'] as num?)?.toInt() ?? 0,
+      age: age,
+      label: json['label'] as String? ?? _defaultLabel(age),
       arcana: (json['arcana'] as num?)?.toInt() ?? 0,
     );
   }
 
-  final int age;
+  /// Fallback label if the backend ever omits one — whole numbers drop the
+  /// decimal, otherwise two decimal places.
+  static String _defaultLabel(double age) {
+    if (age == age.roundToDouble()) return age.toInt().toString();
+    return age.toStringAsFixed(2);
+  }
+
+  final double age;
+  final String label;
   final int arcana;
+
+  /// True for the eight decade corner anchors (ages 0,10,...,70).
+  bool get isCorner => age % 10 == 0;
 
   @override
   List<Object?> get props => [age, arcana];
 }
 
-/// The full destiny matrix reading returned by GET /api/v1/destiny-matrix.
-/// Points holds 15 entries (9 outer + 4 inner + 2 chakras); Lines holds 4;
-/// ageLadder holds 80 rungs (ages 1..80) when the backend ships them.
+/// The full Matrix of Destiny reading returned by GET /api/v1/destiny-matrix.
 class DestinyMatrixReading extends Equatable {
   const DestinyMatrixReading({
     required this.birthDate,
@@ -120,7 +136,7 @@ class DestinyMatrixReading extends Equatable {
   final List<DestinyLine> lines;
   final List<AgeArcana> ageLadder;
 
-  /// Returns the point for [key] (e.g. "A","E","TL"), or null when absent.
+  /// Returns the point for [key] (e.g. "day","center","tl"), or null.
   DestinyPoint? pointFor(String key) {
     for (final p in points) {
       if (p.key == key) return p;
@@ -128,12 +144,8 @@ class DestinyMatrixReading extends Equatable {
     return null;
   }
 
-  /// Returns the arcana for a given age (1..80), or 0 when the ladder isn't
-  /// populated. Constant-time direct index — the ladder is always sorted.
-  int arcanaForAge(int age) {
-    if (age < 1 || age > ageLadder.length) return 0;
-    return ageLadder[age - 1].arcana;
-  }
+  /// Returns the arcana value for [key], or 0 when the point is absent.
+  int arcanaFor(String key) => pointFor(key)?.arcana ?? 0;
 
   @override
   List<Object?> get props => [birthDate, points, lines, ageLadder];

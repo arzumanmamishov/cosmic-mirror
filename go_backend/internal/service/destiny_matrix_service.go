@@ -62,6 +62,7 @@ func (s *DestinyMatrixService) GetReading(ctx context.Context, userID uuid.UUID)
 	for _, rung := range res.AgeLadder {
 		ladder = append(ladder, domain.AgeArcana{
 			Age:    rung.Age,
+			Label:  rung.Label,
 			Arcana: rung.Arcana,
 		})
 	}
