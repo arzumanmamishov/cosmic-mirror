@@ -93,6 +93,25 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
+  testWidgets('full-screen view layout (golden)', (tester) async {
+    await tester.binding.setSurfaceSize(const Size(390, 844));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: CosmicTheme.darkTheme,
+        home: debugOctagramFullScreen(referenceReading()),
+      ),
+    );
+    await tester.pump();
+
+    expect(tester.takeException(), isNull);
+    await expectLater(
+      find.byType(MaterialApp),
+      matchesGoldenFile('goldens/octagram_fullscreen.png'),
+    );
+  });
+
   testWidgets('worst-case all-22 values never overflow a node', (tester) async {
     await tester.binding.setSurfaceSize(const Size(360, 780));
     addTearDown(() => tester.binding.setSurfaceSize(null));

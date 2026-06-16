@@ -277,6 +277,9 @@ class _OctagramFullScreenState extends State<_OctagramFullScreen> {
     return Scaffold(
       backgroundColor: p.background,
       body: Stack(
+        // Expand to the full screen; otherwise a loose Stack would shrink to
+        // the height of the (short) chrome row and the board with it.
+        fit: StackFit.expand,
         children: [
           // Pinch to scale about the centre; we deliberately ignore the focal
           // pan so the graph always stays in the middle of the screen.
@@ -292,7 +295,9 @@ class _OctagramFullScreenState extends State<_OctagramFullScreen> {
               child: Center(
                 child: Transform.scale(
                   scale: _scale,
-                  // alignment defaults to center → graph stays centred.
+                  // alignment defaults to center → graph stays centred. The
+                  // Stack now fills the screen, so these constraints are the
+                  // full viewport and the board fills the shortest side.
                   child: LayoutBuilder(
                     builder: (context, constraints) {
                       final side = constraints.biggest.shortestSide;
@@ -310,42 +315,49 @@ class _OctagramFullScreenState extends State<_OctagramFullScreen> {
               ),
             ),
           ),
-          SafeArea(
-            child: Padding(
-              padding: const EdgeInsets.all(10),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Material(
-                    color: p.surface.withValues(alpha: 0.75),
-                    shape: const CircleBorder(),
-                    clipBehavior: Clip.antiAlias,
-                    child: IconButton(
-                      tooltip: 'Close',
-                      icon: Icon(Icons.close_rounded, color: p.textPrimary),
-                      onPressed: () => Navigator.of(context).pop(),
-                    ),
-                  ),
-                  // Flexible so the hint never overflows the row on narrow
-                  // screens or at large text scales; it ellipsises instead.
-                  Flexible(
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 12,
-                        vertical: 6,
-                      ),
-                      decoration: BoxDecoration(
-                        color: p.surface.withValues(alpha: 0.75),
-                        borderRadius: BorderRadius.circular(100),
-                      ),
-                      child: Text(
-                        'Pinch to resize · double-tap to reset',
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(color: p.textSecondary, fontSize: 11),
+          // Chrome pinned to the top; Positioned so it doesn't drive the
+          // Stack's size (which would shrink the board).
+          Positioned(
+            top: 0,
+            left: 0,
+            right: 0,
+            child: SafeArea(
+              child: Padding(
+                padding: const EdgeInsets.all(10),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Material(
+                      color: p.surface.withValues(alpha: 0.75),
+                      shape: const CircleBorder(),
+                      clipBehavior: Clip.antiAlias,
+                      child: IconButton(
+                        tooltip: 'Close',
+                        icon: Icon(Icons.close_rounded, color: p.textPrimary),
+                        onPressed: () => Navigator.of(context).pop(),
                       ),
                     ),
-                  ),
-                ],
+                    // Flexible so the hint never overflows the row on narrow
+                    // screens or at large text scales; it ellipsises instead.
+                    Flexible(
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 6,
+                        ),
+                        decoration: BoxDecoration(
+                          color: p.surface.withValues(alpha: 0.75),
+                          borderRadius: BorderRadius.circular(100),
+                        ),
+                        child: Text(
+                          'Pinch to resize · double-tap to reset',
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(color: p.textSecondary, fontSize: 11),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
@@ -360,6 +372,12 @@ class _OctagramFullScreenState extends State<_OctagramFullScreen> {
 @visibleForTesting
 Widget debugOctagramBoard(DestinyMatrixReading reading, Size size) =>
     _OctagramBoard(reading: reading, size: size);
+
+/// Test-only hook that renders the full-screen pinch-zoom view directly (no
+/// navigation), so a golden can verify the board fills and centres.
+@visibleForTesting
+Widget debugOctagramFullScreen(DestinyMatrixReading reading) =>
+    _OctagramFullScreen(reading: reading);
 
 /// Geometry + node layout for the full octagram. Screen-space angles: 0° =
 /// right, 90° = down, measured clockwise. The diamond cardinals sit on the
@@ -1079,10 +1097,10 @@ void _showPointSheet(BuildContext context, DestinyPoint point) {
                   ),
                 ],
               ),
-              if (point.meaning.isNotEmpty) ...[
+              if (point.bestMeaning.isNotEmpty) ...[
                 const SizedBox(height: 18),
                 Text(
-                  point.meaning,
+                  point.bestMeaning,
                   style: TextStyle(
                     color: p.textSecondary,
                     fontSize: 14.5,
