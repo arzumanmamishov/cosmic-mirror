@@ -326,16 +326,23 @@ class _OctagramFullScreenState extends State<_OctagramFullScreen> {
                       onPressed: () => Navigator.of(context).pop(),
                     ),
                   ),
-                  Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                    decoration: BoxDecoration(
-                      color: p.surface.withValues(alpha: 0.75),
-                      borderRadius: BorderRadius.circular(100),
-                    ),
-                    child: Text(
-                      'Pinch to resize · double-tap to reset',
-                      style: TextStyle(color: p.textSecondary, fontSize: 11),
+                  // Flexible so the hint never overflows the row on narrow
+                  // screens or at large text scales; it ellipsises instead.
+                  Flexible(
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 6,
+                      ),
+                      decoration: BoxDecoration(
+                        color: p.surface.withValues(alpha: 0.75),
+                        borderRadius: BorderRadius.circular(100),
+                      ),
+                      child: Text(
+                        'Pinch to resize · double-tap to reset',
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(color: p.textSecondary, fontSize: 11),
+                      ),
                     ),
                   ),
                 ],
