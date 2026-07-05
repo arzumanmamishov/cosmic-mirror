@@ -1,6 +1,8 @@
 import 'package:cosmic_mirror/features/ai_chat/presentation/screens/chat_screen.dart';
 import 'package:cosmic_mirror/features/ai_chat/presentation/screens/chat_threads_screen.dart';
+import 'package:cosmic_mirror/features/auth/presentation/providers/auth_provider.dart';
 import 'package:cosmic_mirror/features/auth/presentation/screens/auth_screen.dart';
+import 'package:cosmic_mirror/features/auth/presentation/screens/otp_screen.dart';
 import 'package:cosmic_mirror/features/chart/presentation/screens/chart_screen.dart';
 import 'package:cosmic_mirror/features/community/presentation/screens/category_detail_screen.dart';
 import 'package:cosmic_mirror/features/community/presentation/screens/community_profile_screen.dart';
@@ -39,21 +41,16 @@ import 'package:cosmic_mirror/features/vedic_chart/presentation/screens/vedic_ch
 import 'package:cosmic_mirror/features/yearly_forecast/presentation/screens/yearly_forecast_screen.dart';
 import 'package:cosmic_mirror/shared/providers/user_provider.dart';
 import 'package:cosmic_mirror/shared/widgets/error_page.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-/// Pulses GoRouter's refreshListenable on Firebase auth changes AND
-/// any time our own currentUserProvider state changes — without
-/// rebuilding the GoRouter itself. (Watching state directly inside the
+/// Pulses GoRouter's refreshListenable on any change to the
+/// currentUserProvider or authControllerProvider — without rebuilding
+/// the GoRouter itself. Watching state directly inside the
 /// `appRouterProvider` would recreate the router on every avatar/name
-/// update and wipe the navigation stack back to /home.)
+/// update and wipe the navigation stack back to /home.
 class _RouterRefreshNotifier extends ChangeNotifier {
-  _RouterRefreshNotifier() {
-    FirebaseAuth.instance.authStateChanges().listen((_) => notifyListeners());
-  }
-
   void pulse() => notifyListeners();
 }
 
@@ -63,7 +60,9 @@ final appRouterProvider = Provider<GoRouter>((ref) {
   // Listen (don't watch) so user-state mutations re-fire the redirect
   // without recreating the router. The redirect callback below reads
   // the latest state via ref.read at each evaluation.
-  ref.listen<UserState>(currentUserProvider, (_, __) => _routerRefresh.pulse());
+  ref
+    ..listen<UserState>(currentUserProvider, (_, __) => _routerRefresh.pulse())
+    ..listen(authControllerProvider, (_, __) => _routerRefresh.pulse());
 
   return GoRouter(
     initialLocation: '/',
@@ -75,9 +74,13 @@ final appRouterProvider = Provider<GoRouter>((ref) {
     errorBuilder: (context, state) => ErrorPage(error: state.error),
     redirect: (context, state) {
       final userState = ref.read(currentUserProvider);
-      final isAuthenticated =
-          FirebaseAuth.instance.currentUser != null;
-      final isOnAuthRoute = state.matchedLocation == '/auth';
+      final authState = ref.read(authControllerProvider);
+      // A signed-in user is one the AuthController currently reports as
+      // non-null. Loading = we haven't hydrated from storage yet; the
+      // redirect returns null so the current route survives the flicker.
+      final isAuthenticated = authState.valueOrNull != null;
+      final isOnAuthRoute = state.matchedLocation == '/auth' ||
+          state.matchedLocation == '/otp';
       final isOnOnboarding = state.matchedLocation == '/onboarding';
       // /welcome is the post-onboarding celebratory screen — treat it as
       // part of onboarding so users freshly arriving there aren't bounced
@@ -118,6 +121,25 @@ final appRouterProvider = Provider<GoRouter>((ref) {
           state,
           const AuthScreen(),
         ),
+      ),
+      GoRoute(
+        path: '/otp',
+        pageBuilder: (context, state) {
+          final args = state.extra;
+          if (args is! OtpRouteArgs) {
+            // Someone deep-linked /otp without payload — bounce them
+            // back to /auth rather than crashing.
+            return _fadeTransition(state, const AuthScreen());
+          }
+          return _fadeTransition(
+            state,
+            OtpScreen(
+              email: args.email,
+              purpose: args.purpose,
+              pendingRegistration: args.pending,
+            ),
+          );
+        },
       ),
       GoRoute(
         path: '/onboarding',

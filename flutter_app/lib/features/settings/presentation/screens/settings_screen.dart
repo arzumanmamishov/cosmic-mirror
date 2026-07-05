@@ -163,7 +163,7 @@ class SettingsScreen extends ConsumerWidget {
               );
 
               if (confirmed ?? false) {
-                await ref.read(authRepositoryProvider).signOut();
+                await ref.read(authControllerProvider.notifier).logout();
                 ref.read(currentUserProvider.notifier).clear();
                 if (context.mounted) context.go('/auth');
               }
@@ -201,7 +201,10 @@ class SettingsScreen extends ConsumerWidget {
               );
 
               if (confirmed ?? false) {
-                await ref.read(authRepositoryProvider).deleteAccount();
+                // Backend account-deletion isn't wired yet in the local-
+                // auth port — treat this as a client-side sign-out for
+                // now. A follow-up POST /users/me/delete will hard-delete.
+                await ref.read(authControllerProvider.notifier).logout();
                 ref.read(currentUserProvider.notifier).clear();
                 if (context.mounted) context.go('/auth');
               }

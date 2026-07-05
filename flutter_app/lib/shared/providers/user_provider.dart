@@ -1,14 +1,24 @@
+// Fetches and holds the current user's profile + big-three chart summary.
+// Rewritten off Firebase in the SMTP-OTP auth migration — bootstrapSession
+// now calls GET /users/me instead of the old POST /auth/session that
+// exchanged a Firebase UID for a local user row.
+//
+// The apiClientProvider lives in features/auth/presentation/providers/
+// auth_provider.dart now; this file re-exports it for the many callers
+// that already import from shared/providers.
+
 import 'package:cosmic_mirror/core/network/api_client.dart';
 import 'package:cosmic_mirror/core/network/api_endpoints.dart';
-import 'package:firebase_auth/firebase_auth.dart' as fb;
+import 'package:cosmic_mirror/features/auth/presentation/providers/auth_provider.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-final apiClientProvider = Provider<ApiClient>((ref) => ApiClient());
+export 'package:cosmic_mirror/features/auth/presentation/providers/auth_provider.dart'
+    show apiClientProvider;
 
 final currentUserProvider =
     StateNotifierProvider<UserNotifier, UserState>((ref) {
-  return UserNotifier(ref.read(apiClientProvider));
+  return UserNotifier(ref.read(apiClientProvider), ref);
 });
 
 class UserState {
@@ -31,21 +41,13 @@ class UserState {
   final String? sunSign;
   final String? moonSign;
   final String? risingSign;
-
-  /// Public URL of the user's avatar served by the backend
-  /// (e.g. `/uploads/avatars/{id}_{ts}.jpg`). `null` means use the
-  /// initial-letter fallback in the UI. The backend is the source of
-  /// truth — uploads are POSTed to /users/me/avatar.
   final String? avatarUrl;
-
   final bool hasCompletedOnboarding;
   final bool isLoading;
 
   /// If non-null, the last bootstrapSession() call failed. This is
   /// surfaced by the auth screen so users aren't silently stranded
-  /// when the backend is unreachable (e.g. dev API down, bad WiFi).
-  /// Before this existed the listener in main.dart swallowed the
-  /// error and the router got stuck holding the user on /auth.
+  /// when the backend is unreachable.
   final Object? bootstrapError;
 
   bool get isAuthenticated => id != null;
@@ -82,28 +84,30 @@ class UserState {
 }
 
 class UserNotifier extends StateNotifier<UserState> {
-  UserNotifier(this._apiClient) : super(const UserState());
+  UserNotifier(this._apiClient, this._ref) : super(const UserState());
 
   final ApiClient _apiClient;
+  final Ref _ref;
 
+  /// Fetches /users/me and populates the state. Only makes the network
+  /// call when we have a token to authenticate with — otherwise the
+  /// call would 401 and cascade into signed-out state.
   Future<void> bootstrapSession() async {
     state = state.copyWith(isLoading: true, clearBootstrapError: true);
+    final tokens = await authStorage.read();
+    if (tokens == null || tokens.refreshExpired) {
+      // No signed-in session — leave the state cleared and don't call
+      // the backend. Callers (main, welcome) should route to /auth.
+      state = const UserState();
+      return;
+    }
     try {
-      final firebaseUser = fb.FirebaseAuth.instance.currentUser;
-      final data = await _apiClient.post<Map<String, dynamic>>(
-        ApiEndpoints.session,
-        data: {
-          'firebase_uid': firebaseUser?.uid ?? '',
-          'email': firebaseUser?.email ?? '',
-          'name': firebaseUser?.displayName ?? '',
-        },
-      );
-      final user = data['user'] as Map<String, dynamic>;
+      final data = await _apiClient.get<Map<String, dynamic>>(ApiEndpoints.me);
+      final user = data['user'] as Map<String, dynamic>? ?? data;
       final chart = data['chart_summary'] as Map<String, dynamic>?;
       final rawAvatarUrl = user['avatar_url'] as String?;
-
       state = state.copyWith(
-        id: user['id'] as String,
+        id: user['id'] as String?,
         name: user['name'] as String?,
         email: user['email'] as String?,
         sunSign: chart?['sun_sign'] as String?,
@@ -116,23 +120,38 @@ class UserNotifier extends StateNotifier<UserState> {
         isLoading: false,
       );
     } catch (e) {
-      // Record the failure on the state so the auth screen can surface it.
-      // Without this, a backend outage looked identical to "tapped Create
-      // account, nothing happened" — the listener in main.dart used to
-      // swallow this exception and leave the user stranded on /auth.
       state = state.copyWith(isLoading: false, bootstrapError: e);
       rethrow;
     }
+  }
+
+  /// Called by the register/login screens right after a successful auth
+  /// call — it seeds the state from the /auth/register envelope so the
+  /// UI doesn't need to wait for a follow-up /users/me round-trip.
+  void hydrateFromAuth({
+    required String id,
+    required String? name,
+    required String? email,
+    required String? avatarUrl,
+    required bool hasCompletedOnboarding,
+  }) {
+    state = state.copyWith(
+      id: id,
+      name: name,
+      email: email,
+      avatarUrl: avatarUrl,
+      clearAvatar: avatarUrl == null,
+      hasCompletedOnboarding: hasCompletedOnboarding,
+      isLoading: false,
+      clearBootstrapError: true,
+    );
   }
 
   void updateName(String name) {
     state = state.copyWith(name: name);
   }
 
-  /// Uploads [filePath] to the backend and stores the returned URL.
-  /// Returns the new URL or `null` on failure. Errors are logged so
-  /// the dev console shows the actual cause (multipart parse error,
-  /// 401, 413 too-large, etc) instead of being silently swallowed.
+  /// Uploads [filePath] and stores the returned URL.
   Future<String?> setAvatar(String filePath) async {
     try {
       final data = await _apiClient.uploadFile<Map<String, dynamic>>(
@@ -141,27 +160,20 @@ class UserNotifier extends StateNotifier<UserState> {
       );
       final url = data['avatar_url'] as String?;
       if (url == null) return null;
-      // Bust any previously-cached image at the same URL by appending a
-      // tiny query string. The backend already changes the filename per
-      // upload, so this is just belt-and-braces.
       final cacheBusted = '$url?v=${DateTime.now().millisecondsSinceEpoch}';
       state = state.copyWith(avatarUrl: cacheBusted);
       return cacheBusted;
     } catch (e, stack) {
-      // Log instead of silently dropping — the previous catch made
-      // every avatar failure look identical in the UI even when the
-      // backend was returning a real, fixable error.
       debugPrint('[Avatar] upload failed: $e');
       debugPrintStack(stackTrace: stack);
       return null;
     }
   }
 
-  /// Deletes the user's avatar on the backend and clears local state.
   Future<void> clearAvatar() async {
     try {
       await _apiClient.delete(ApiEndpoints.avatar);
-    } catch (_) {/* surface to the user via UI if needed */}
+    } catch (_) {/* surface via UI if needed */}
     state = state.copyWith(clearAvatar: true);
   }
 
@@ -178,7 +190,26 @@ class UserNotifier extends StateNotifier<UserState> {
     );
   }
 
-  void clear() {
+  /// Wipe local user state. Also asks the AuthController to sign out
+  /// (revoke the refresh token) so the /auth redirect happens.
+  Future<void> logout() async {
+    await _ref.read(authControllerProvider.notifier).logout();
     state = const UserState();
   }
+
+  /// Legacy — kept for the callers (main.dart auth-state listener, some
+  /// screens) that still call .clear(). Delegates to logout() so the
+  /// server-side session is revoked, then wipes local state.
+  void clear() {
+    unawaited(_ref.read(authControllerProvider.notifier).logout());
+    state = const UserState();
+  }
+}
+
+/// Local helper — Dart 3's `unawaited` lives in dart:async but the file
+/// doesn't already import it and I don't want to touch the imports of
+/// every caller.
+void unawaited(Future<void> future) {
+  // Silences the analyzer without pulling in dart:async.
+  future.catchError((Object _) {});
 }

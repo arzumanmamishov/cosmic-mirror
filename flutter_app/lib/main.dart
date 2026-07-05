@@ -3,11 +3,9 @@ import 'dart:async';
 import 'package:cosmic_mirror/app.dart';
 import 'package:cosmic_mirror/config/api_url_override.dart';
 import 'package:cosmic_mirror/config/env.dart';
-import 'package:cosmic_mirror/firebase_options.dart';
+import 'package:cosmic_mirror/features/auth/presentation/providers/auth_provider.dart';
 import 'package:cosmic_mirror/shared/providers/user_provider.dart';
 import 'package:cosmic_mirror/shared/widgets/error_page.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -17,7 +15,7 @@ import 'package:hive_flutter/hive_flutter.dart';
 import 'package:purchases_flutter/purchases_flutter.dart';
 
 Future<void> main() async {
-  unawaited(runZonedGuarded(
+  runZonedGuarded<void>(
     () async {
       WidgetsFlutterBinding.ensureInitialized();
 
@@ -41,9 +39,6 @@ Future<void> main() async {
       // would still go to the compile-time default.
       await ApiUrlOverride.load();
 
-      await Firebase.initializeApp(
-        options: DefaultFirebaseOptions.currentPlatform,
-      );
       await Hive.initFlutter();
 
       // Skip RevenueCat init when no real API key is wired in. The default
@@ -80,18 +75,21 @@ Future<void> main() async {
 
       final container = ProviderContainer();
 
-      // Bootstrap session once when Firebase auth state changes
-      FirebaseAuth.instance.authStateChanges().listen((User? user) async {
-        if (user != null) {
-          try {
-            await container
-                .read(currentUserProvider.notifier)
-                .bootstrapSession();
-          } catch (_) {}
-        } else {
-          container.read(currentUserProvider.notifier).clear();
-        }
-      });
+      // Warm the AuthController (async build reads the stored refresh
+      // token) then, if there's a session, bootstrap the /users/me
+      // profile so the router redirect knows onboarding status. The
+      // ApiClient interceptor handles access-token refresh from there.
+      unawaited(
+        container.read(authControllerProvider.future).then((user) async {
+          if (user != null) {
+            try {
+              await container
+                  .read(currentUserProvider.notifier)
+                  .bootstrapSession();
+            } catch (_) {/* surfaced via UserState.bootstrapError */}
+          }
+        }),
+      );
 
       runApp(
         UncontrolledProviderScope(
@@ -105,5 +103,5 @@ Future<void> main() async {
       debugPrint('Stack trace: $stackTrace');
       // TODO: Send to crash reporting service
     },
-  ),);
+  );
 }

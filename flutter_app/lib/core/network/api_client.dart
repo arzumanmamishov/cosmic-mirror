@@ -1,11 +1,22 @@
 import 'package:cosmic_mirror/config/env.dart';
 import 'package:cosmic_mirror/core/error/exceptions.dart';
+import 'package:cosmic_mirror/features/auth/data/auth_storage.dart';
+import 'package:cosmic_mirror/features/auth/data/models/auth_tokens.dart';
 import 'package:dio/dio.dart';
-import 'package:firebase_auth/firebase_auth.dart' as fb;
 import 'package:flutter/foundation.dart';
 
+/// Global handle to the auth storage. The interceptor and any out-of-band
+/// caller (e.g. logout) hit the same secure keychain without threading a
+/// reference through every service.
+final AuthStorage authStorage = AuthStorage();
+
+/// Callback invoked when a refresh attempt fails terminally — refresh token
+/// expired / revoked. The AuthController hooks this to sign the user out
+/// and let the router redirect to /auth.
+typedef OnSessionExpired = void Function();
+
 class ApiClient {
-  ApiClient({Dio? dio})
+  ApiClient({Dio? dio, OnSessionExpired? onSessionExpired})
       : _dio = dio ??
             Dio(
               BaseOptions(
@@ -13,25 +24,20 @@ class ApiClient {
                 connectTimeout: const Duration(seconds: 15),
                 receiveTimeout: const Duration(seconds: 30),
                 sendTimeout: const Duration(seconds: 15),
-                // We deliberately do NOT pin Content-Type in BaseOptions:
-                // Dio auto-sets it per request — `application/json` for
-                // Map/JSON bodies, `multipart/form-data; boundary=...`
-                // for FormData. Pinning it in BaseOptions caused avatar
-                // uploads to leak the JSON Content-Type into multipart
-                // requests and the backend rejected them.
-                headers: {
-                  'Accept': 'application/json',
-                },
+                // Deliberately no pinned Content-Type: Dio auto-sets
+                // application/json for Map bodies and multipart/form-data
+                // for FormData. Pinning here leaked JSON Content-Type into
+                // multipart avatar uploads.
+                headers: {'Accept': 'application/json'},
               ),
-            ) {
-    // Order matters for onError: Dio runs error interceptors in
-    // registration order, and _ErrorInterceptor *throws* (converting the
-    // DioException into a domain exception), which terminates the chain.
-    // _RetryInterceptor must therefore run BEFORE _ErrorInterceptor so it
-    // still sees the raw status code and can retry transient 5xx; the
-    // conversion to domain exceptions happens last.
+            ),
+        _onSessionExpired = onSessionExpired {
+    // Order matters. _AuthInterceptor stamps the header and, on a 401,
+    // does a one-shot refresh + retry. _RetryInterceptor handles transient
+    // 5xx. _ErrorInterceptor is last because it *throws* domain
+    // exceptions, terminating the chain.
     _dio.interceptors.addAll([
-      _AuthInterceptor(),
+      _AuthInterceptor(_dio, _onSessionExpired),
       _RetryInterceptor(_dio),
       if (Env.isDev) _LoggingInterceptor(),
       _ErrorInterceptor(),
@@ -39,6 +45,7 @@ class ApiClient {
   }
 
   final Dio _dio;
+  final OnSessionExpired? _onSessionExpired;
 
   Future<T> get<T>(
     String path, {
@@ -82,10 +89,6 @@ class ApiClient {
     await _dio.delete<dynamic>(path);
   }
 
-  /// Upload a file as a multipart form POST. The file is sent under the
-  /// field name `file` so the backend can read `r.FormFile("file")`.
-  /// Dio sets the proper `multipart/form-data; boundary=...` header
-  /// automatically because BaseOptions no longer pins Content-Type.
   Future<T> uploadFile<T>(
     String path, {
     required String filePath,
@@ -101,37 +104,87 @@ class ApiClient {
   }
 }
 
+/// Stamps `Authorization: Bearer <access>` on every request and, on a 401,
+/// attempts exactly one refresh-then-retry. Auth endpoints themselves
+/// (register / login / refresh / password-reset) don't get the header —
+/// they're the calls that CREATE the token, so a stale one is worse than
+/// none.
 class _AuthInterceptor extends Interceptor {
+  _AuthInterceptor(this._dio, this._onSessionExpired);
+
+  final Dio _dio;
+  final OnSessionExpired? _onSessionExpired;
+
+  bool _isAuthEndpoint(String path) {
+    return path.contains('/auth/otp/request') ||
+        path.contains('/auth/register') ||
+        path.contains('/auth/login') ||
+        path.contains('/auth/password/reset') ||
+        path.contains('/auth/refresh') ||
+        path.contains('/legal/') ||
+        path.contains('/places/search');
+  }
+
   @override
   Future<void> onRequest(
     RequestOptions options,
     RequestInterceptorHandler handler,
   ) async {
-    final user = fb.FirebaseAuth.instance.currentUser;
-    if (user != null) {
-      // First try the cached token (fast path). If that fails or comes
-      // back empty, fall back to a forced refresh — this avoids the
-      // race where Firebase returns null mid-token-refresh and we end
-      // up firing unauthenticated requests in parallel (notably on the
-      // Community tab which fans out to four simultaneous calls).
-      String? token;
-      try {
-        token = await user.getIdToken();
-      } catch (e) {
-        debugPrint('[Auth] getIdToken failed (cached): $e');
-      }
-      if (token == null || token.isEmpty) {
-        try {
-          token = await user.getIdToken(true);
-        } catch (e) {
-          debugPrint('[Auth] getIdToken failed (forceRefresh): $e');
-        }
-      }
-      if (token != null && token.isNotEmpty) {
-        options.headers['Authorization'] = 'Bearer $token';
-      }
+    if (_isAuthEndpoint(options.path)) {
+      handler.next(options);
+      return;
+    }
+    final tokens = await authStorage.read();
+    if (tokens != null && tokens.accessToken.isNotEmpty) {
+      options.headers['Authorization'] = 'Bearer ${tokens.accessToken}';
     }
     handler.next(options);
+  }
+
+  @override
+  Future<void> onError(
+    DioException err,
+    ErrorInterceptorHandler handler,
+  ) async {
+    final status = err.response?.statusCode;
+    final alreadyRetried = err.requestOptions.extra['_refreshed'] == true;
+    if (status != 401 ||
+        alreadyRetried ||
+        _isAuthEndpoint(err.requestOptions.path)) {
+      handler.next(err);
+      return;
+    }
+    final tokens = await authStorage.read();
+    if (tokens == null || tokens.refreshExpired) {
+      _onSessionExpired?.call();
+      handler.next(err);
+      return;
+    }
+    try {
+      final resp = await _dio.post<dynamic>(
+        '/api/v1/auth/refresh',
+        data: {'refresh_token': tokens.refreshToken},
+      );
+      final data =
+          (resp.data as Map<String, dynamic>)['data'] as Map<String, dynamic>;
+      final newTokens = AuthTokens.fromJson(
+        data['tokens'] as Map<String, dynamic>,
+      );
+      await authStorage.write(newTokens);
+
+      err.requestOptions.extra['_refreshed'] = true;
+      err.requestOptions.headers['Authorization'] =
+          'Bearer ${newTokens.accessToken}';
+      final retryResp = await _dio.fetch<dynamic>(err.requestOptions);
+      handler.resolve(retryResp);
+    } catch (_) {
+      // Refresh failed for a reason other than a network hiccup — the
+      // refresh is dead. Wipe stored tokens, notify the app, surface the
+      // original 401 so callers can route to sign-in.
+      await authStorage.clear();
+      _onSessionExpired?.call();
+      handler.next(err);
+    }
   }
 }
 
@@ -154,7 +207,6 @@ class _ErrorInterceptor extends Interceptor {
           message = errorMap?['message'] as String?;
           code = errorMap?['code'] as String?;
         }
-
         if (statusCode == 401) {
           throw AuthException(
             message: message ?? 'Session expired. Please sign in again.',
@@ -162,9 +214,6 @@ class _ErrorInterceptor extends Interceptor {
           );
         }
         if (statusCode == 429) {
-          // Parse the structured limit payload (used / limit / reset_at)
-          // when the backend provides it — used by the AI chat cap and
-          // any future per-day quota error.
           int? used;
           int? limit;
           DateTime? resetAt;
@@ -190,10 +239,6 @@ class _ErrorInterceptor extends Interceptor {
           statusCode: statusCode,
           code: code,
         );
-      // DioExceptionType has a small but growing set of values (badResponse,
-      // connectionTimeout, connectionError, badCertificate, cancel, etc.).
-      // The default is an intentional catch-all so future enum additions
-      // still surface as a ServerException rather than going unhandled.
       // ignore: no_default_cases
       default:
         throw ServerException(
@@ -244,8 +289,7 @@ class _RetryInterceptor extends Interceptor {
     ErrorInterceptorHandler handler,
   ) async {
     final statusCode = err.response?.statusCode;
-    final retryCount =
-        err.requestOptions.extra['retryCount'] as int? ?? 0;
+    final retryCount = err.requestOptions.extra['retryCount'] as int? ?? 0;
 
     if (statusCode != null &&
         _retryableStatuses.contains(statusCode) &&
@@ -254,7 +298,6 @@ class _RetryInterceptor extends Interceptor {
         Duration(milliseconds: 500 * (retryCount + 1)),
       );
       err.requestOptions.extra['retryCount'] = retryCount + 1;
-
       try {
         final response = await _dio.fetch<dynamic>(err.requestOptions);
         handler.resolve(response);

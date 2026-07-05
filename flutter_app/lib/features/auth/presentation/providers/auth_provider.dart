@@ -1,167 +1,180 @@
-import 'package:cosmic_mirror/core/error/failures.dart';
-import 'package:cosmic_mirror/features/auth/data/datasources/auth_remote_datasource.dart';
-import 'package:cosmic_mirror/features/auth/data/repositories/auth_repository_impl.dart';
+// Local-auth Riverpod surface. Replaces the Firebase-driven providers.
+// UI screens watch [authControllerProvider] for the signed-in AppUser?
+// and call methods on the controller for every /auth/* endpoint.
+
+import 'package:cosmic_mirror/core/network/api_client.dart';
+import 'package:cosmic_mirror/features/auth/data/auth_api.dart';
+import 'package:cosmic_mirror/features/auth/data/models/auth_tokens.dart';
 import 'package:cosmic_mirror/features/auth/domain/entities/user.dart';
-import 'package:cosmic_mirror/features/auth/domain/repositories/auth_repository.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-final authRemoteDataSourceProvider = Provider<AuthRemoteDataSource>((ref) {
-  return AuthRemoteDataSource();
-});
+// Re-export so screens can reference OtpPurpose without importing the data
+// layer directly.
+export 'package:cosmic_mirror/features/auth/data/auth_api.dart'
+    show OtpPurpose;
 
-final authRepositoryProvider = Provider<AuthRepository>((ref) {
-  return AuthRepositoryImpl(
-    remoteDataSource: ref.read(authRemoteDataSourceProvider),
+/// The API client. Constructed with an `onSessionExpired` callback that
+/// asks the AuthController to flip to signed-out — the router redirect
+/// picks it up on the next frame.
+final apiClientProvider = Provider<ApiClient>((ref) {
+  return ApiClient(
+    onSessionExpired: () {
+      // Best-effort: also called from ApiClient's own catch block, so a
+      // no-op when the controller was already reset is fine.
+      ref.read(authControllerProvider.notifier).sessionExpired();
+    },
   );
 });
 
-final authStateProvider = StreamProvider<AppUser?>((ref) {
-  return ref.watch(authRepositoryProvider).authStateChanges;
+final authApiProvider = Provider<AuthApi>((ref) {
+  return AuthApi(ref.read(apiClientProvider));
 });
 
-final authActionProvider =
-    StateNotifierProvider<AuthActionNotifier, AuthActionState>((ref) {
-  return AuthActionNotifier(ref.read(authRepositoryProvider));
-});
+final authControllerProvider =
+    AsyncNotifierProvider<AuthController, AppUser?>(AuthController.new);
 
-enum AuthMethod { apple, google, email }
-
-class AuthActionState {
-  const AuthActionState({
-    this.isLoading = false,
-    this.error,
-    this.activeMethod,
-  });
-
-  final bool isLoading;
-  final String? error;
-  final AuthMethod? activeMethod;
-
-  AuthActionState copyWith({
-    bool? isLoading,
-    String? error,
-    AuthMethod? activeMethod,
-  }) {
-    return AuthActionState(
-      isLoading: isLoading ?? this.isLoading,
-      error: error,
-      activeMethod: activeMethod,
-    );
-  }
-}
-
-class AuthActionNotifier extends StateNotifier<AuthActionState> {
-  AuthActionNotifier(this._repository) : super(const AuthActionState());
-
-  final AuthRepository _repository;
-
-  Future<bool> signInWithApple() async {
-    state = const AuthActionState(
-      isLoading: true,
-      activeMethod: AuthMethod.apple,
-    );
-    final result = await _repository.signInWithApple();
-    return result.when(
-      success: (_) {
-        state = const AuthActionState();
-        return true;
-      },
-      failure: (failure) {
-        // We carry the Firebase error CODE in `error` (not the English
-        // message). The screen looks the code up via
-        // localizedFirebaseAuthError to render a properly localized
-        // string. Falling back to the raw message keeps non-Firebase
-        // server errors visible during dev.
-        state = AuthActionState(error: failure.code ?? failure.message);
-        return false;
-      },
-    );
+/// Owns the "who is signed in right now" state and every mutation of it.
+/// AsyncValue<AppUser?> lets the router treat 'loading', 'signed in',
+/// and 'signed out' as three distinct states without a separate flag.
+class AuthController extends AsyncNotifier<AppUser?> {
+  @override
+  Future<AppUser?> build() async {
+    // Cold start: if we have a non-expired refresh, the user is
+    // considered signed in until proven otherwise. The next protected
+    // fetch will refresh the access token on-demand.
+    final tokens = await authStorage.read();
+    if (tokens == null || tokens.refreshExpired) return null;
+    return _stubUserFromTokens(tokens);
   }
 
-  Future<bool> signInWithGoogle() async {
-    state = const AuthActionState(
-      isLoading: true,
-      activeMethod: AuthMethod.google,
-    );
-    final result = await _repository.signInWithGoogle();
-    return result.when(
-      success: (_) {
-        state = const AuthActionState();
-        return true;
-      },
-      failure: (failure) {
-        // We carry the Firebase error CODE in `error` (not the English
-        // message). The screen looks the code up via
-        // localizedFirebaseAuthError to render a properly localized
-        // string. Falling back to the raw message keeps non-Firebase
-        // server errors visible during dev.
-        state = AuthActionState(error: failure.code ?? failure.message);
-        return false;
-      },
-    );
+  Future<void> requestOtp(String email, OtpPurpose purpose) async {
+    await ref.read(authApiProvider).requestOtp(email, purpose);
   }
 
-  Future<bool> signInWithEmail(String email, String password) async {
-    state = const AuthActionState(
-      isLoading: true,
-      activeMethod: AuthMethod.email,
-    );
-    final result = await _repository.signInWithEmail(email, password);
-    return result.when(
-      success: (_) {
-        state = const AuthActionState();
-        return true;
-      },
-      failure: (failure) {
-        // We carry the Firebase error CODE in `error` (not the English
-        // message). The screen looks the code up via
-        // localizedFirebaseAuthError to render a properly localized
-        // string. Falling back to the raw message keeps non-Firebase
-        // server errors visible during dev.
-        state = AuthActionState(error: failure.code ?? failure.message);
-        return false;
-      },
-    );
+  Future<void> register({
+    required String email,
+    required String code,
+    required String name,
+    String? password,
+  }) async {
+    state = const AsyncValue.loading();
+    state = await AsyncValue.guard(() async {
+      final result = await ref.read(authApiProvider).register(
+            email: email,
+            code: code,
+            name: name,
+            password: password,
+          );
+      await authStorage.write(result.tokens);
+      return result.user;
+    });
+    _rethrowOnError();
   }
 
-  Future<bool> signUpWithEmail(String email, String password) async {
-    state = const AuthActionState(
-      isLoading: true,
-      activeMethod: AuthMethod.email,
-    );
-    final result = await _repository.signUpWithEmail(email, password);
-    return result.when(
-      success: (_) {
-        state = const AuthActionState();
-        return true;
-      },
-      failure: (failure) {
-        // We carry the Firebase error CODE in `error` (not the English
-        // message). The screen looks the code up via
-        // localizedFirebaseAuthError to render a properly localized
-        // string. Falling back to the raw message keeps non-Firebase
-        // server errors visible during dev.
-        state = AuthActionState(error: failure.code ?? failure.message);
-        return false;
-      },
-    );
+  Future<void> login({required String email, required String password}) async {
+    state = const AsyncValue.loading();
+    state = await AsyncValue.guard(() async {
+      final result = await ref.read(authApiProvider).login(
+            email: email,
+            password: password,
+          );
+      await authStorage.write(result.tokens);
+      return result.user;
+    });
+    _rethrowOnError();
   }
 
-  /// Sends a password-reset email via Firebase. Returns the Firebase error
-  /// code on failure (e.g. `user-not-found`, `invalid-email`,
-  /// `network-request-failed`) so the screen can localize it; returns null
-  /// on success. We surface this through a return value rather than the
-  /// AuthActionState because the dialog displays its own banner inline.
-  Future<String?> sendPasswordResetEmail(String email) async {
-    final result = await _repository.sendPasswordResetEmail(email);
-    return result.when(
-      success: (_) => null,
-      failure: (failure) =>
-          failure is AuthFailure ? (failure.code ?? 'unknown') : 'unknown',
+  Future<void> loginWithOtp({
+    required String email,
+    required String code,
+  }) async {
+    state = const AsyncValue.loading();
+    state = await AsyncValue.guard(() async {
+      final result = await ref.read(authApiProvider).loginWithOtp(
+            email: email,
+            code: code,
+          );
+      await authStorage.write(result.tokens);
+      return result.user;
+    });
+    _rethrowOnError();
+  }
+
+  Future<void> resetPassword({
+    required String email,
+    required String code,
+    required String newPassword,
+  }) async {
+    await ref.read(authApiProvider).passwordReset(
+          email: email,
+          code: code,
+          newPassword: newPassword,
+        );
+  }
+
+  Future<void> logout() async {
+    final tokens = await authStorage.read();
+    if (tokens != null) {
+      // Best-effort — a network hiccup at logout time shouldn't strand
+      // the user still "signed in" on device.
+      try {
+        await ref.read(authApiProvider).logout(tokens.refreshToken);
+      } catch (_) {
+        // Swallow.
+      }
+    }
+    await authStorage.clear();
+    state = const AsyncValue.data(null);
+  }
+
+  /// Called by the API interceptor when a refresh terminally fails.
+  void sessionExpired() {
+    state = const AsyncValue.data(null);
+  }
+
+  void _rethrowOnError() {
+    final s = state;
+    if (s is AsyncError) {
+      final err = s.error;
+      if (err != null) {
+        // ignore: only_throw_errors
+        throw err;
+      }
+    }
+  }
+
+  /// Builds a placeholder AppUser from the persisted tokens' claims. The
+  /// router only needs `id` non-empty to consider the user signed in;
+  /// the next /users/me fetch backfills the real name / avatar.
+  AppUser _stubUserFromTokens(AuthTokens tokens) {
+    try {
+      final parts = tokens.accessToken.split('.');
+      if (parts.length < 2) return const AppUser(id: '', email: '');
+      final payload = _base64UrlDecode(parts[1]);
+      final uid = _stringFromJson(payload, '"uid":"', '"');
+      final sub = _stringFromJson(payload, '"sub":"', '"');
+      return AppUser(id: uid ?? sub ?? '', email: '');
+    } catch (_) {
+      return const AppUser(id: '', email: '');
+    }
+  }
+
+  String _base64UrlDecode(String seg) {
+    final pad = 4 - seg.length % 4;
+    final padded = pad == 4 ? seg : seg + ('=' * pad);
+    final normalized = padded.replaceAll('-', '+').replaceAll('_', '/');
+    // Deliberately lax — we only read the uid string out of the JSON;
+    // the router does not trust these bytes for anything sensitive.
+    return String.fromCharCodes(
+      normalized.runes.where((c) => c > 0x1F && c < 0x7F),
     );
   }
 
-  void clearError() {
-    state = const AuthActionState();
+  String? _stringFromJson(String s, String needle, String terminator) {
+    final start = s.indexOf(needle);
+    if (start == -1) return null;
+    final end = s.indexOf(terminator, start + needle.length);
+    if (end == -1) return null;
+    return s.substring(start + needle.length, end);
   }
 }

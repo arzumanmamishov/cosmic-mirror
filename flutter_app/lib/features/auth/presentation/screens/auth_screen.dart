@@ -1,22 +1,15 @@
+// Sign-in screen for the SMTP-OTP flow. Two panes on one screen (login /
+// register) swap via a small segmented toggle so a returning user doesn't
+// have to dig for the register link.
+
 import 'package:cosmic_mirror/config/theme/app_palette.dart';
-import 'package:cosmic_mirror/config/theme/lively_type.dart';
-import 'package:cosmic_mirror/core/error/error_message.dart';
 import 'package:cosmic_mirror/features/auth/presentation/providers/auth_provider.dart';
-import 'package:cosmic_mirror/features/auth/presentation/widgets/firebase_auth_error.dart';
-import 'package:cosmic_mirror/l10n/app_localizations.dart';
+import 'package:cosmic_mirror/features/auth/presentation/screens/otp_screen.dart';
 import 'package:cosmic_mirror/shared/providers/user_provider.dart';
-import 'package:cosmic_mirror/shared/widgets/lively/gold_button.dart';
-import 'package:cosmic_mirror/shared/widgets/lively/lively_backdrop.dart';
-import 'package:cosmic_mirror/shared/widgets/lively/lively_field.dart';
-import 'package:cosmic_mirror/shared/widgets/lively_logo.dart';
-import 'package:flutter/foundation.dart'
-    show TargetPlatform, defaultTargetPlatform;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
-/// Auth — the Lively first-impression screen. Cosmic backdrop, a serif
-/// hero, and a bottom-anchored form. Toggles between sign-in and
-/// create-account modes (the latter adds a confirm-password field).
 class AuthScreen extends ConsumerStatefulWidget {
   const AuthScreen({super.key});
 
@@ -24,513 +17,285 @@ class AuthScreen extends ConsumerStatefulWidget {
   ConsumerState<AuthScreen> createState() => _AuthScreenState();
 }
 
-enum _AuthMode { signIn, signUp }
+enum _Mode { login, register }
 
 class _AuthScreenState extends ConsumerState<AuthScreen> {
-  _AuthMode _mode = _AuthMode.signIn;
-
+  _Mode _mode = _Mode.login;
   final _email = TextEditingController();
   final _password = TextEditingController();
-  final _confirm = TextEditingController();
-
-  bool _obscure = true;
-  bool _obscureConfirm = true;
-  String? _localError;
-
-  bool get _isSignUp => _mode == _AuthMode.signUp;
+  final _name = TextEditingController();
+  bool _busy = false;
+  String? _error;
 
   @override
   void dispose() {
     _email.dispose();
     _password.dispose();
-    _confirm.dispose();
+    _name.dispose();
     super.dispose();
   }
 
   Future<void> _submit() async {
     final email = _email.text.trim();
-    final password = _password.text;
-    final l10n = AppLocalizations.of(context);
-    setState(() => _localError = null);
-
-    if (email.isEmpty || password.isEmpty) {
-      setState(() => _localError = l10n.authEmailRequired);
+    if (!_looksLikeEmail(email)) {
+      setState(() => _error = 'Enter a valid email address');
       return;
     }
-    if (_isSignUp && password != _confirm.text) {
-      setState(() => _localError = l10n.authPasswordsDontMatch);
+    if (_mode == _Mode.register && _name.text.trim().isEmpty) {
+      setState(() => _error = 'Please enter your name');
       return;
     }
-    if (_isSignUp && password.length < 8) {
-      setState(() => _localError = l10n.authPasswordTooShort);
+    if (_password.text.length < 8) {
+      setState(() => _error = 'Password must be at least 8 characters');
       return;
     }
-
-    final notifier = ref.read(authActionProvider.notifier);
-    if (_isSignUp) {
-      await notifier.signUpWithEmail(email, password);
-    } else {
-      await notifier.signInWithEmail(email, password);
+    setState(() {
+      _busy = true;
+      _error = null;
+    });
+    try {
+      if (_mode == _Mode.login) {
+        await ref
+            .read(authControllerProvider.notifier)
+            .login(email: email, password: _password.text);
+        await ref.read(currentUserProvider.notifier).bootstrapSession();
+        if (mounted) context.go('/');
+      } else {
+        // Register: kick off OTP + push to /otp with the pending name +
+        // password so the OTP verify creates the account.
+        await ref
+            .read(authControllerProvider.notifier)
+            .requestOtp(email, OtpPurpose.register);
+        if (!mounted) return;
+        await context.push<void>(
+          '/otp',
+          extra: OtpRouteArgs(
+            email: email,
+            purpose: OtpPurpose.register,
+            pending: PendingRegistration(
+              name: _name.text.trim(),
+              password: _password.text,
+            ),
+          ),
+        );
+      }
+    } catch (e) {
+      setState(() => _error = _prettyError(e));
+    } finally {
+      if (mounted) setState(() => _busy = false);
     }
   }
 
-  /// Forgot-password dialog: pre-fills the email already typed, sends a
-  /// Firebase reset link, shows success as a snackbar and failure inline.
-  Future<void> _openForgotPasswordDialog() async {
-    final l10n = AppLocalizations.of(context);
-    final p = context.palette;
-    final emailController = TextEditingController(text: _email.text.trim());
-    String? inlineError;
-    var sending = false;
-
-    await showDialog<void>(
-      context: context,
-      builder: (dialogContext) {
-        return StatefulBuilder(
-          builder: (dialogContext, setDialogState) {
-            Future<void> submit() async {
-              final email = emailController.text.trim();
-              if (email.isEmpty) {
-                setDialogState(
-                    () => inlineError = l10n.authResetPasswordEmailEmpty,);
-                return;
-              }
-              setDialogState(() {
-                inlineError = null;
-                sending = true;
-              });
-              final code = await ref
-                  .read(authActionProvider.notifier)
-                  .sendPasswordResetEmail(email);
-              if (!dialogContext.mounted) return;
-              if (code == null) {
-                Navigator.of(dialogContext).pop();
-                if (!mounted) return;
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text(l10n.authResetPasswordSent(email))),
-                );
-              } else {
-                setDialogState(() {
-                  sending = false;
-                  inlineError = localizedFirebaseAuthError(l10n, code);
-                });
-              }
-            }
-
-            return AlertDialog(
-              backgroundColor: p.surface,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(20),
-                side: BorderSide(color: p.glassBorder),
-              ),
-              title: Text(
-                l10n.authResetPasswordTitle,
-                style: LivelyType.h1(p.textPrimary),
-              ),
-              content: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  Text(
-                    l10n.authResetPasswordBody,
-                    style: LivelyType.small(p.textMuted),
-                  ),
-                  const SizedBox(height: 16),
-                  LivelyField(
-                    controller: emailController,
-                    hint: l10n.authEmail,
-                    prefixIcon: Icons.mail_outline_rounded,
-                    keyboardType: TextInputType.emailAddress,
-                  ),
-                  if (inlineError != null) ...[
-                    const SizedBox(height: 12),
-                    _ErrorBanner(message: inlineError!),
-                  ],
-                ],
-              ),
-              actionsPadding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
-              actions: [
-                TextButton(
-                  onPressed:
-                      sending ? null : () => Navigator.of(dialogContext).pop(),
-                  child: Text(
-                    l10n.authCancel,
-                    style: LivelyType.button(p.textMuted, size: 14),
-                  ),
-                ),
-                GoldButton(
-                  label: l10n.authResetPasswordSend,
-                  small: true,
-                  full: false,
-                  loading: sending,
-                  onPressed: sending ? null : submit,
-                ),
-              ],
-            );
-          },
-        );
-      },
+  Future<void> _signInWithCode() async {
+    final email = _email.text.trim();
+    if (!_looksLikeEmail(email)) {
+      setState(() => _error = 'Enter your email first');
+      return;
+    }
+    await ref
+        .read(authControllerProvider.notifier)
+        .requestOtp(email, OtpPurpose.login);
+    if (!mounted) return;
+    await context.push<void>(
+      '/otp',
+      extra: OtpRouteArgs(email: email, purpose: OtpPurpose.login),
     );
-    emailController.dispose();
+  }
+
+  Future<void> _forgotPassword() async {
+    final email = _email.text.trim();
+    if (!_looksLikeEmail(email)) {
+      setState(() => _error = 'Enter your email first');
+      return;
+    }
+    await ref
+        .read(authControllerProvider.notifier)
+        .requestOtp(email, OtpPurpose.passwordReset);
+    if (!mounted) return;
+    await context.push<void>(
+      '/otp',
+      extra: OtpRouteArgs(email: email, purpose: OtpPurpose.passwordReset),
+    );
+  }
+
+  bool _looksLikeEmail(String s) {
+    final at = s.indexOf('@');
+    return s.length >= 5 && at > 0 && s.substring(at + 1).contains('.');
+  }
+
+  String _prettyError(Object e) {
+    final s = e.toString();
+    if (s.contains('invalid_credentials')) {
+      return 'Email or password is incorrect.';
+    }
+    if (s.contains('rate_limited')) {
+      return 'Too many attempts. Try again shortly.';
+    }
+    return 'Something went wrong. Please try again.';
   }
 
   @override
   Widget build(BuildContext context) {
     final p = context.palette;
-    final l10n = AppLocalizations.of(context);
-    final authState = ref.watch(authActionProvider);
-    final notifier = ref.read(authActionProvider.notifier);
-    final bootstrapError =
-        ref.watch(currentUserProvider.select((s) => s.bootstrapError));
-
-    // Error precedence: client validation → Firebase code → bootstrap.
-    var error = _localError;
-    if (error == null && authState.error != null) {
-      error = localizedFirebaseAuthError(l10n, authState.error);
-    }
-    if (error == null && bootstrapError != null) {
-      final friendly = FriendlyError.from(context, bootstrapError);
-      error = '${friendly.title} — ${friendly.body}';
-    }
-
-    final emailLoading =
-        authState.isLoading && authState.activeMethod == AuthMethod.email;
-    final bottomInset = MediaQuery.of(context).viewInsets.bottom;
-
     return Scaffold(
-      resizeToAvoidBottomInset: false,
-      body: LivelyBackdrop(
-        seed: 11,
-        child: SafeArea(
-          child: SingleChildScrollView(
-            physics: const ClampingScrollPhysics(),
-            padding: EdgeInsets.fromLTRB(24, 12, 24, 24 + bottomInset),
-            child: ConstrainedBox(
-              // Clamp to >= 0: on the very first frame MediaQuery.size
-              // can be zero, which made this go negative → "BoxConstraints
-              // has a negative minimum height" → blank screen.
-              constraints: BoxConstraints(
-                minHeight: (MediaQuery.of(context).size.height -
-                        MediaQuery.of(context).padding.vertical -
-                        36)
-                    .clamp(0.0, double.infinity),
-              ),
-              // IntrinsicHeight gives the Column a bounded height inside
-              // the scroll view so the Spacer() between hero and form
-              // has something to flex into. Without it the Spacer's
-              // Expanded hits unbounded constraints → "RenderBox was not
-              // laid out" → blank screen.
-              child: IntrinsicHeight(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                  const SizedBox(height: 8),
-                  const Center(child: LivelyLogo(size: 116)),
-                  const SizedBox(height: 28),
-
-                  // hero
-                  Text(
-                    (_isSignUp ? l10n.authCreateAccount : l10n.authWelcome)
-                        .toUpperCase(),
-                    style: LivelyType.kicker(p.primary),
-                  ),
-                  const SizedBox(height: 12),
-                  Text(
-                    _isSignUp ? l10n.authHeroSignUp : l10n.authHeroSignIn,
-                    style: LivelyType.d2(p.textPrimary),
-                  ),
-                  const SizedBox(height: 14),
-                  SizedBox(
-                    width: 290,
-                    child: Text(
-                      _isSignUp
-                          ? l10n.authSignUpSubtitle
-                          : l10n.authWelcomeSubtitle,
-                      style: LivelyType.body(p.textMuted),
-                    ),
-                  ),
-
-                  const Spacer(),
-
-                  // form
-                  const SizedBox(height: 32),
-                  LivelyField(
-                    controller: _email,
-                    label: l10n.authEmail,
-                    hint: l10n.authEmail,
-                    prefixIcon: Icons.mail_outline_rounded,
-                    keyboardType: TextInputType.emailAddress,
-                  ),
-                  const SizedBox(height: 14),
-                  LivelyField(
-                    controller: _password,
-                    label: l10n.authPassword,
-                    hint: l10n.authPassword,
-                    prefixIcon: Icons.lock_outline_rounded,
-                    obscure: _obscure,
-                    trailing: _EyeToggle(
-                      obscured: _obscure,
-                      onTap: () => setState(() => _obscure = !_obscure),
-                    ),
-                  ),
-                  if (_isSignUp) ...[
-                    const SizedBox(height: 14),
-                    LivelyField(
-                      controller: _confirm,
-                      label: l10n.authConfirmPassword,
-                      hint: l10n.authConfirmPassword,
-                      prefixIcon: Icons.lock_outline_rounded,
-                      obscure: _obscureConfirm,
-                      trailing: _EyeToggle(
-                        obscured: _obscureConfirm,
-                        onTap: () => setState(
-                            () => _obscureConfirm = !_obscureConfirm,),
-                      ),
-                    ),
-                  ] else ...[
-                    const SizedBox(height: 10),
-                    Align(
-                      alignment: Alignment.centerRight,
-                      child: GestureDetector(
-                        onTap: _openForgotPasswordDialog,
-                        child: Text(
-                          l10n.authForgotPassword,
-                          style: LivelyType.small(p.primary)
-                              .copyWith(fontWeight: FontWeight.w600),
-                        ),
-                      ),
-                    ),
-                  ],
-
-                  if (error != null) ...[
-                    const SizedBox(height: 14),
-                    _ErrorBanner(message: error),
-                  ],
-
-                  const SizedBox(height: 22),
-                  GoldButton(
-                    label: _isSignUp
-                        ? l10n.authCreateAccount
-                        : l10n.authSignIn,
-                    loading: emailLoading,
-                    onPressed: authState.isLoading ? null : _submit,
-                  ),
-
-                  // divider
-                  const SizedBox(height: 20),
-                  Row(
-                    children: [
-                      Expanded(child: Divider(color: p.line, height: 1)),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 12),
-                        child: Text(
-                          l10n.authOrContinueWith.toUpperCase(),
-                          style: LivelyType.caption(p.textMuted),
-                        ),
-                      ),
-                      Expanded(child: Divider(color: p.line, height: 1)),
-                    ],
-                  ),
-                  const SizedBox(height: 16),
-
-                  // socials
-                  Row(
-                    children: [
-                      Expanded(
-                        child: _SocialButton(
-                          label: l10n.authContinueGoogle,
-                          glyph: const _GoogleGlyph(),
-                          loading: authState.isLoading &&
-                              authState.activeMethod == AuthMethod.google,
-                          onPressed: authState.isLoading
-                              ? null
-                              : notifier.signInWithGoogle,
-                        ),
-                      ),
-                      if (defaultTargetPlatform == TargetPlatform.iOS) ...[
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: _SocialButton(
-                            label: l10n.authContinueApple,
-                            icon: Icons.apple_rounded,
-                            loading: authState.isLoading &&
-                                authState.activeMethod == AuthMethod.apple,
-                            onPressed: authState.isLoading
-                                ? null
-                                : notifier.signInWithApple,
-                          ),
-                        ),
-                      ],
-                    ],
-                  ),
-
-                  const SizedBox(height: 18),
-                  Center(
-                    child: GestureDetector(
-                      onTap: () => setState(() {
-                        _mode =
-                            _isSignUp ? _AuthMode.signIn : _AuthMode.signUp;
-                        _localError = null;
-                        notifier.clearError();
-                      }),
-                      child: RichText(
-                        text: TextSpan(
-                          style: LivelyType.small(p.textMuted),
-                          children: [
-                            TextSpan(
-                              text: _isSignUp
-                                  ? l10n.authHaveAccount
-                                  : l10n.authNoAccount,
-                            ),
-                            TextSpan(
-                              text: _isSignUp
-                                  ? l10n.authSignIn
-                                  : l10n.authRegister,
-                              style: LivelyType.small(p.primary)
-                                  .copyWith(fontWeight: FontWeight.w700),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                ],
+      backgroundColor: p.background,
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.fromLTRB(24, 40, 24, 24),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Text(
+                'Lively',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  color: p.textPrimary,
+                  fontSize: 32,
+                  fontWeight: FontWeight.w900,
+                  letterSpacing: -0.5,
                 ),
+              ),
+              const SizedBox(height: 32),
+              _ModeToggle(
+                mode: _mode,
+                onChanged: (m) => setState(() {
+                  _mode = m;
+                  _error = null;
+                }),
+              ),
+              const SizedBox(height: 24),
+              if (_mode == _Mode.register)
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 16),
+                  child: TextField(
+                    controller: _name,
+                    decoration: const InputDecoration(
+                      labelText: 'Your name',
+                      border: OutlineInputBorder(),
+                    ),
+                  ),
+                ),
+              TextField(
+                controller: _email,
+                keyboardType: TextInputType.emailAddress,
+                autofillHints: const [AutofillHints.email],
+                decoration: const InputDecoration(
+                  labelText: 'Email',
+                  border: OutlineInputBorder(),
+                ),
+              ),
+              const SizedBox(height: 16),
+              TextField(
+                controller: _password,
+                obscureText: true,
+                autofillHints: const [AutofillHints.password],
+                decoration: const InputDecoration(
+                  labelText: 'Password',
+                  border: OutlineInputBorder(),
+                ),
+              ),
+              if (_error != null) ...[
+                const SizedBox(height: 12),
+                Text(_error!, style: TextStyle(color: p.error, fontSize: 13.5)),
+              ],
+              const SizedBox(height: 20),
+              FilledButton(
+                onPressed: _busy ? null : _submit,
+                style: FilledButton.styleFrom(
+                  minimumSize: const Size.fromHeight(52),
+                ),
+                child: Text(
+                  _busy
+                      ? 'Please wait…'
+                      : (_mode == _Mode.login
+                          ? 'Sign in'
+                          : 'Create account'),
+                ),
+              ),
+              const SizedBox(height: 12),
+              OutlinedButton(
+                onPressed: _busy ? null : _signInWithCode,
+                style: OutlinedButton.styleFrom(
+                  minimumSize: const Size.fromHeight(52),
+                ),
+                child: const Text('Sign in with a code instead'),
+              ),
+              const SizedBox(height: 8),
+              if (_mode == _Mode.login)
+                TextButton(
+                  onPressed: _busy ? null : _forgotPassword,
+                  child: const Text('Forgot your password?'),
+                ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Payload passed to /otp via GoRouter's `extra`. Public so the router
+/// can unwrap it in one place.
+class OtpRouteArgs {
+  const OtpRouteArgs({
+    required this.email,
+    required this.purpose,
+    this.pending,
+  });
+  final String email;
+  final OtpPurpose purpose;
+  final PendingRegistration? pending;
+}
+
+/// Segmented pill for login / register — mirrors the density toggle from
+/// the Matrix screen so the app feels consistent.
+class _ModeToggle extends StatelessWidget {
+  const _ModeToggle({required this.mode, required this.onChanged});
+  final _Mode mode;
+  final ValueChanged<_Mode> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    final p = context.palette;
+    Widget seg(String label, {required _Mode target}) {
+      final active = mode == target;
+      return Expanded(
+        child: GestureDetector(
+          onTap: active ? null : () => onChanged(target),
+          behavior: HitTestBehavior.opaque,
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 200),
+            padding: const EdgeInsets.symmetric(vertical: 10),
+            decoration: BoxDecoration(
+              color:
+                  active ? p.gold.withValues(alpha: 0.85) : Colors.transparent,
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: Text(
+              label,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: active ? p.background : p.textSecondary,
+                fontSize: 13,
+                fontWeight: FontWeight.w700,
               ),
             ),
           ),
         ),
-      ),
-    );
-  }
-}
+      );
+    }
 
-// ───────────────────────────────────────────────────────────────
-// Pieces
-// ───────────────────────────────────────────────────────────────
-
-class _EyeToggle extends StatelessWidget {
-  const _EyeToggle({required this.obscured, required this.onTap});
-  final bool obscured;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Icon(
-        obscured
-            ? Icons.visibility_off_outlined
-            : Icons.visibility_outlined,
-        size: 19,
-        color: context.palette.textMuted,
-      ),
-    );
-  }
-}
-
-class _SocialButton extends StatelessWidget {
-  const _SocialButton({
-    required this.label,
-    required this.loading,
-    required this.onPressed,
-    this.icon,
-    this.glyph,
-  });
-
-  final String label;
-  final bool loading;
-  final VoidCallback? onPressed;
-  final IconData? icon;
-  final Widget? glyph;
-
-  @override
-  Widget build(BuildContext context) {
-    final p = context.palette;
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    return GestureDetector(
-      onTap: onPressed,
-      child: Container(
-        height: 50,
-        decoration: BoxDecoration(
-          color: isDark ? p.surfaceGlass : p.surface,
-          borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: p.line),
-        ),
-        alignment: Alignment.center,
-        child: loading
-            ? SizedBox(
-                width: 18,
-                height: 18,
-                child: CircularProgressIndicator(
-                  strokeWidth: 2.2,
-                  valueColor: AlwaysStoppedAnimation(p.textPrimary),
-                ),
-              )
-            : Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  if (icon != null)
-                    Icon(icon, color: p.textPrimary, size: 20)
-                  else if (glyph != null)
-                    glyph!,
-                  const SizedBox(width: 10),
-                  Text(label, style: LivelyType.button(p.textPrimary, size: 14)),
-                ],
-              ),
-      ),
-    );
-  }
-}
-
-class _GoogleGlyph extends StatelessWidget {
-  const _GoogleGlyph();
-
-  @override
-  Widget build(BuildContext context) {
     return Container(
-      width: 20,
-      height: 20,
+      padding: const EdgeInsets.all(3),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(5),
-      ),
-      alignment: Alignment.center,
-      child: const Text(
-        'G',
-        style: TextStyle(
-          color: Color(0xFF4285F4),
-          fontSize: 13,
-          fontWeight: FontWeight.w900,
-          height: 1,
-        ),
-      ),
-    );
-  }
-}
-
-class _ErrorBanner extends StatelessWidget {
-  const _ErrorBanner({required this.message});
-  final String message;
-
-  @override
-  Widget build(BuildContext context) {
-    final p = context.palette;
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-      decoration: BoxDecoration(
-        color: p.error.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: p.error.withValues(alpha: 0.3)),
+        color: p.surface,
+        borderRadius: BorderRadius.circular(22),
+        border: Border.all(color: p.textTertiary.withValues(alpha: 0.25)),
       ),
       child: Row(
         children: [
-          Icon(Icons.error_outline_rounded, color: p.error, size: 16),
-          const SizedBox(width: 8),
-          Expanded(
-            child: Text(message, style: LivelyType.small(p.error)),
-          ),
+          seg('Sign in', target: _Mode.login),
+          seg('Create account', target: _Mode.register),
         ],
       ),
     );
