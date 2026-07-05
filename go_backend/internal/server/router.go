@@ -46,8 +46,16 @@ func NewRouter(h *handler.Handlers, auth *middleware.Auth, rl *middleware.RateLi
 
 	// API v1
 	r.Route("/api/v1", func(r chi.Router) {
-		// Public: auth
+		// Public: auth. The old Firebase /auth/session is kept as a 410
+		// stub — new clients hit /auth/register or /auth/login instead.
 		r.Post("/auth/session", h.Auth.CreateSession)
+		r.Post("/auth/otp/request", h.Auth.RequestOTP)
+		r.Post("/auth/register", h.Auth.Register)
+		r.Post("/auth/login", h.Auth.Login)
+		r.Post("/auth/login/otp", h.Auth.LoginOTP)
+		r.Post("/auth/password/reset", h.Auth.PasswordReset)
+		r.Post("/auth/refresh", h.Auth.Refresh)
+		r.Post("/auth/logout", h.Auth.Logout)
 
 		// Public: subscription webhooks (RevenueCat legacy + Stripe).
 		// Both must stay outside the auth-protected group because the

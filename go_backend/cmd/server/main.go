@@ -13,7 +13,9 @@ import (
 	"cosmic-mirror/internal/config"
 	"cosmic-mirror/internal/handler"
 	"cosmic-mirror/internal/middleware"
-	"cosmic-mirror/internal/provider/firebase"
+	"cosmic-mirror/internal/otp"
+	"cosmic-mirror/internal/pkg/mailer"
+	"cosmic-mirror/internal/pkg/tokens"
 	"cosmic-mirror/internal/provider/openai"
 	"cosmic-mirror/internal/provider/swisseph"
 	"cosmic-mirror/internal/repository/postgres"
@@ -68,12 +70,20 @@ func main() {
 		os.Exit(1)
 	}
 
-	// Firebase
-	firebaseAuth, err := firebase.NewAuthClient(ctx, cfg.FirebaseCredentialsPath)
-	if err != nil {
-		slog.Error("failed to init firebase", "error", err)
-		os.Exit(1)
-	}
+	// Local auth: SMTP mailer + JWT signer + OTP infrastructure. Replaces
+	// the Firebase Auth flow (retired in migration 010). When SMTP_HOST is
+	// empty the mailer is a no-op that logs the OTP body so devs can copy
+	// codes from the API logs without a real SMTP account.
+	mail := mailer.New(mailer.Config{
+		Host:      cfg.SMTPHost,
+		Port:      cfg.SMTPPort,
+		Username:  cfg.SMTPUsername,
+		Password:  cfg.SMTPPassword,
+		FromEmail: cfg.SMTPFrom,
+		FromName:  cfg.SMTPFromName,
+		UseTLS:    cfg.SMTPUseTLS,
+	})
+	signer := tokens.NewSigner(cfg.JWTSecret, cfg.JWTAccessTTLMinutes, cfg.JWTRefreshTTLDays)
 
 	// Providers
 	openaiClient := openai.NewClient(cfg.OpenAIAPIKey)
@@ -89,6 +99,8 @@ func main() {
 
 	// Repositories
 	userRepo := postgres.NewUserRepository(db)
+	refreshTokenRepo := postgres.NewRefreshTokenRepository(db)
+	otpRepo := otp.NewRepository(db)
 	birthProfileRepo := postgres.NewBirthProfileRepository(db)
 	readingRepo := postgres.NewReadingRepository(db)
 	chatRepo := postgres.NewChatRepository(db)
@@ -111,6 +123,8 @@ func main() {
 	avatarStore := storage.NewAvatarStore(cfg.UploadsDir, "/uploads")
 	statsRepo := postgres.NewStatsRepository(db)
 	userSvc := service.NewUserService(userRepo, birthProfileRepo, statsRepo, avatarStore, rdb)
+	otpSvc := service.NewOTPService(otpRepo, mail)
+	authSvc := service.NewAuthService(userRepo, refreshTokenRepo, otpSvc, signer)
 	chartSvc := service.NewChartService(birthProfileRepo, chartProvider, openaiClient, rdb)
 	vedicSvc := service.NewVedicService(birthProfileRepo, chartProvider, rdb)
 	readingSvc := service.NewReadingService(readingRepo, birthProfileRepo, openaiClient, rdb)
@@ -139,12 +153,12 @@ func main() {
 	destinyMatrixSvc := service.NewDestinyMatrixService(birthProfileRepo)
 
 	// Middleware
-	authMiddleware := middleware.NewAuth(firebaseAuth, userRepo)
+	authMiddleware := middleware.NewAuth(signer, userRepo)
 	rateLimiter := middleware.NewRateLimiter(rdb, cfg.FreeTierRateLimit, cfg.PremiumRateLimit, subscriptionSvc.IsPremium)
 
 	// Handlers
 	handlers := &handler.Handlers{
-		Auth:          handler.NewAuthHandler(userSvc, subscriptionSvc),
+		Auth:          handler.NewAuthHandler(authSvc, userSvc, subscriptionSvc),
 		User:          handler.NewUserHandler(userSvc, preferencesRepo, ritualRepo),
 		Chart:         handler.NewChartHandler(chartSvc),
 		Vedic:         handler.NewVedicHandler(vedicSvc),

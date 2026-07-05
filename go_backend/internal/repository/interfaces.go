@@ -25,9 +25,25 @@ type UserRepository interface {
 	Create(ctx context.Context, user *domain.User) error
 	GetByID(ctx context.Context, id uuid.UUID) (*domain.User, error)
 	GetByFirebaseUID(ctx context.Context, uid string) (*domain.User, error)
+	GetByEmail(ctx context.Context, email string) (*domain.User, error)
 	Update(ctx context.Context, id uuid.UUID, input domain.UpdateUserInput) error
+	UpdatePasswordHash(ctx context.Context, id uuid.UUID, hash string) error
+	MarkEmailVerified(ctx context.Context, id uuid.UUID) error
+	TouchLastLogin(ctx context.Context, id uuid.UUID) error
 	SetAvatarURL(ctx context.Context, id uuid.UUID, url *string) error
 	SoftDelete(ctx context.Context, id uuid.UUID) error
+}
+
+// RefreshTokenRepository backs the local-auth refresh flow. Tokens are
+// opaque and stored server-side (their sha256 hash) so they can be
+// revoked on logout / rotation replay.
+type RefreshTokenRepository interface {
+	Insert(ctx context.Context, userID uuid.UUID, tokenHash string, expiresAt time.Time, ip, userAgent string) (uuid.UUID, error)
+	FindActiveByHash(ctx context.Context, tokenHash string) (*domain.RefreshToken, error)
+	Rotate(ctx context.Context, oldID uuid.UUID, newTokenHash string, expiresAt time.Time, ip, userAgent string) (uuid.UUID, error)
+	Revoke(ctx context.Context, id uuid.UUID) error
+	RevokeByHash(ctx context.Context, tokenHash string) error
+	RevokeAllForUser(ctx context.Context, userID uuid.UUID) error
 }
 
 type StatsRepository interface {

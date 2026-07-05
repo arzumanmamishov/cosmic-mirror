@@ -8,14 +8,17 @@ import (
 )
 
 type User struct {
-	ID          uuid.UUID  `db:"id" json:"id"`
-	FirebaseUID string     `db:"firebase_uid" json:"-"`
-	Email       string     `db:"email" json:"email"`
-	Name        string     `db:"name" json:"name"`
-	AvatarURL   *string    `db:"avatar_url" json:"avatar_url"`
-	CreatedAt   time.Time  `db:"created_at" json:"created_at"`
-	UpdatedAt   time.Time  `db:"updated_at" json:"updated_at"`
-	DeletedAt   *time.Time `db:"deleted_at" json:"-"`
+	ID              uuid.UUID  `db:"id" json:"id"`
+	FirebaseUID     string     `db:"firebase_uid" json:"-"`
+	Email           string     `db:"email" json:"email"`
+	Name            string     `db:"name" json:"name"`
+	AvatarURL       *string    `db:"avatar_url" json:"avatar_url"`
+	PasswordHash    *string    `db:"password_hash" json:"-"`
+	EmailVerifiedAt *time.Time `db:"email_verified_at" json:"-"`
+	LastLoginAt     *time.Time `db:"last_login_at" json:"-"`
+	CreatedAt       time.Time  `db:"created_at" json:"created_at"`
+	UpdatedAt       time.Time  `db:"updated_at" json:"updated_at"`
+	DeletedAt       *time.Time `db:"deleted_at" json:"-"`
 }
 
 type BirthProfile struct {
@@ -86,6 +89,21 @@ type CreateUserInput struct {
 type UpdateUserInput struct {
 	Name  *string `json:"name"`
 	Email *string `json:"email"`
+}
+
+// RefreshToken is one row of the refresh_tokens table. The plaintext is
+// never persisted — only sha256(plaintext) — so a DB dump can't be
+// replayed to forge sessions.
+type RefreshToken struct {
+	ID          uuid.UUID  `db:"id"`
+	UserID      uuid.UUID  `db:"user_id"`
+	TokenHash   string     `db:"token_hash"`
+	ExpiresAt   time.Time  `db:"expires_at"`
+	RevokedAt   *time.Time `db:"revoked_at"`
+	RotatedToID *uuid.UUID `db:"rotated_to_id"`
+	IP          *string    `db:"ip"`
+	UserAgent   *string    `db:"user_agent"`
+	CreatedAt   time.Time  `db:"created_at"`
 }
 
 // UserStats is a user-engagement snapshot used to populate the profile
