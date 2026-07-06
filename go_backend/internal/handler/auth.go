@@ -247,11 +247,21 @@ func (h *AuthHandler) CreateSession(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *AuthHandler) PrivacyPolicy(w http.ResponseWriter, r *http.Request) {
-	respondSuccess(w, map[string]string{"content": privacyPolicyText, "version": "1.0"})
+	respondSuccess(w, map[string]string{
+		"content":   privacyPolicyText,
+		"version":   legalVersion,
+		"effective": legalEffectiveDate,
+		"web_url":   "https://livelyapp.co/privacy",
+	})
 }
 
 func (h *AuthHandler) TermsOfService(w http.ResponseWriter, r *http.Request) {
-	respondSuccess(w, map[string]string{"content": termsOfServiceText, "version": "1.0"})
+	respondSuccess(w, map[string]string{
+		"content":   termsOfServiceText,
+		"version":   legalVersion,
+		"effective": legalEffectiveDate,
+		"web_url":   "https://livelyapp.co/terms",
+	})
 }
 
 // ---------------------------------------------------------------------------
@@ -327,7 +337,3 @@ func isEmail(s string) bool {
 	}
 	return strings.Contains(s[at+1:], ".")
 }
-
-// Placeholders — real legal text lives elsewhere.
-const privacyPolicyText = `Privacy Policy for Lively — see livelyapp.co/privacy for the live version.`
-const termsOfServiceText = `Terms of Service for Lively — see livelyapp.co/terms for the live version.`

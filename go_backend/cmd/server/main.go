@@ -105,6 +105,7 @@ func main() {
 	readingRepo := postgres.NewReadingRepository(db)
 	chatRepo := postgres.NewChatRepository(db)
 	compatibilityRepo := postgres.NewCompatibilityRepository(db)
+	savedPeopleRepo := postgres.NewSavedPeopleRepository(db)
 	journalRepo := postgres.NewJournalRepository(db)
 	preferencesRepo := postgres.NewPreferencesRepository(db)
 	ritualRepo := postgres.NewRitualRepository(db)
@@ -129,7 +130,7 @@ func main() {
 	vedicSvc := service.NewVedicService(birthProfileRepo, chartProvider, rdb)
 	readingSvc := service.NewReadingService(readingRepo, birthProfileRepo, openaiClient, rdb)
 	aiSvc := service.NewAIService(chatRepo, birthProfileRepo, userRepo, openaiClient, cfg.FreeTierChatLimit)
-	compatibilitySvc := service.NewCompatibilityService(compatibilityRepo, birthProfileRepo, openaiClient)
+	compatibilitySvc := service.NewCompatibilityService(compatibilityRepo, savedPeopleRepo, birthProfileRepo, openaiClient)
 	subscriptionSvc := service.NewSubscriptionService(subscriptionRepo, cfg.RevenueCatWebhookSecret)
 	stripeSvc := service.NewStripeService(
 		subscriptionRepo,

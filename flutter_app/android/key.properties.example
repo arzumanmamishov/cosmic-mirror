@@ -1,0 +1,17 @@
+# Android release signing — copy to `key.properties` (same dir) and fill in.
+# key.properties and *.jks/*.keystore are gitignored; NEVER commit real values.
+#
+# 1. Generate a keystore (keep the .jks file safe & backed up — losing it means
+#    you can never update the app on Google Play):
+#
+#      keytool -genkey -v -keystore lively-release.jks \
+#        -keyalg RSA -keysize 2048 -validity 10000 -alias lively
+#
+# 2. Fill in the values below. `storeFile` is resolved relative to the
+#    android/app directory (e.g. ../lively-release.jks if the keystore sits in
+#    android/), or use an absolute path.
+
+storePassword=CHANGE_ME
+keyPassword=CHANGE_ME
+keyAlias=lively
+storeFile=../lively-release.jks

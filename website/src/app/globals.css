@@ -58,4 +58,48 @@
   .section-y {
     @apply py-24 md:py-32;
   }
+
+  /* Long-form prose styling for the privacy / terms / support routes.
+     No @tailwindcss/typography dependency — we style the semantic tags
+     directly so the pages match the cosmic theme. */
+  .legal-prose {
+    @apply text-[15px] leading-relaxed text-cosmic-muted md:text-base;
+  }
+  .legal-prose > * + * {
+    @apply mt-4;
+  }
+  .legal-prose h2 {
+    @apply mb-4 mt-12 scroll-mt-28 font-display text-2xl font-bold tracking-tight text-cosmic-text md:text-3xl;
+  }
+  .legal-prose h3 {
+    @apply mb-3 mt-8 font-display text-lg font-semibold text-cosmic-text;
+  }
+  .legal-prose p {
+    @apply leading-relaxed;
+  }
+  .legal-prose a {
+    @apply text-gold underline-offset-2 transition-colors hover:text-gold-light hover:underline;
+  }
+  .legal-prose strong {
+    @apply font-semibold text-cosmic-text;
+  }
+  .legal-prose ul {
+    @apply list-disc space-y-2 pl-6 marker:text-gold/60;
+  }
+  .legal-prose ol {
+    @apply list-decimal space-y-2 pl-6 marker:text-gold/60;
+  }
+  .legal-prose li {
+    @apply leading-relaxed;
+  }
+  .legal-prose hr {
+    @apply my-10 border-white/10;
+  }
+  /* Callout box for disclaimers / important notices */
+  .legal-callout {
+    @apply my-6 rounded-2xl border border-gold/30 bg-gold/5 p-5 text-cosmic-muted;
+  }
+  .legal-callout > * + * {
+    @apply mt-3;
+  }
 }

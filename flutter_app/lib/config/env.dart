@@ -1,14 +1,19 @@
 import 'package:cosmic_mirror/config/api_url_override.dart';
+import 'package:flutter/foundation.dart';
 
 enum Environment { dev, staging, prod }
 
 class Env {
   Env._();
 
-  static const environment = String.fromEnvironment(
-    'ENVIRONMENT',
-    defaultValue: 'dev',
-  );
+  // Explicit --dart-define=ENVIRONMENT wins. Otherwise we default by build
+  // mode: release builds resolve to `prod` and debug/profile to `dev`, so a
+  // plain `flutter build` (no dart-define) never ships pointing at a dev LAN
+  // IP. Pass --dart-define=ENVIRONMENT=staging to target staging.
+  static const _envOverride = String.fromEnvironment('ENVIRONMENT');
+
+  static String get environment =>
+      _envOverride.isNotEmpty ? _envOverride : (kReleaseMode ? 'prod' : 'dev');
 
   static Environment get current {
     switch (environment) {

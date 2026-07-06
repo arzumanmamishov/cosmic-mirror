@@ -19,15 +19,16 @@ const groups = [
       { label: "About", href: "#" },
       { label: "Blog", href: "#" },
       { label: "Press", href: "#" },
+      { label: "Support", href: "/support" },
       { label: "Contact", href: "mailto:hello@livelyapp.co" },
     ],
   },
   {
     title: "Legal",
     links: [
-      { label: "Privacy", href: "#" },
-      { label: "Terms", href: "#" },
-      { label: "Cookies", href: "#" },
+      { label: "Privacy", href: "/privacy" },
+      { label: "Terms", href: "/terms" },
+      { label: "Cookies", href: "/privacy#cookies" },
     ],
   },
 ];
