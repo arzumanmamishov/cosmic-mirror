@@ -1,4 +1,4 @@
-.PHONY: build run test lint migrate-up migrate-down docker-build docker-up docker-down docker-dev docker-logs dev db-up db-down
+.PHONY: build run test lint migrate-up migrate-down docker-build docker-up docker-down docker-dev docker-logs dev db-up db-down smtp-test
 
 build:
 	go build -o bin/server ./cmd/server
@@ -61,3 +61,18 @@ docker-dev: docker-build
 
 docker-logs:
 	docker compose logs -f api
+
+# End-to-end smoke of the SMTP path against the running API:
+#   1. Requests a register OTP for TO=... (falls back to smtp-test@livelyapp.co)
+#   2. Prints the HTTP status + any code that landed in the log (only shows
+#      up when SMTP is still the no-op mailer; real SMTP goes to the inbox).
+# Usage: TO=you@example.com make smtp-test
+smtp-test:
+	@TO="$${TO:-smtp-test@livelyapp.co}"; \
+	  echo "→ requesting OTP for $$TO"; \
+	  curl -sS -w '\nHTTP %{http_code}\n' -X POST http://localhost:8080/api/v1/auth/otp/request \
+	    -H 'Content-Type: application/json' \
+	    -d "{\"email\":\"$$TO\",\"purpose\":\"register\"}"; \
+	  echo "→ code in API log (empty when real SMTP is wired):"; \
+	  docker compose logs --since=30s api 2>/dev/null | grep -oE 'Your code: [0-9]{6}' | tail -1 || true; \
+	  echo "→ if you configured real SMTP, check $$TO's inbox"
