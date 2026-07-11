@@ -103,6 +103,13 @@ func (h *AuthHandler) RequestOTP(w http.ResponseWriter, r *http.Request) {
 				"Too many code requests for this email. Try again in a few minutes.")
 			return
 		}
+		if errors.Is(err, service.ErrAuthUserNotFound) {
+			// login / password_reset for an unregistered address. Nudge
+			// the user to Create account instead of silently 200-ing.
+			respondError(w, http.StatusNotFound, "user_not_found",
+				"No account with that email. Please sign up.")
+			return
+		}
 		respondError(w, http.StatusInternalServerError, "otp_request_failed", err.Error())
 		return
 	}

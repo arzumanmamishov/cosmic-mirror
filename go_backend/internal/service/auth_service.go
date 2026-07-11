@@ -75,9 +75,26 @@ type Session struct {
 	RefreshExpiresAt time.Time
 }
 
-// RequestOTP is a thin passthrough — the handler calls it after basic input
-// validation and the OTP service does the rate limit + email send.
+// RequestOTP issues a code for the requested purpose. For login and
+// password_reset the caller MUST already have an account — issuing a code
+// to a random address is a UX trap (the user gets a code they can't use)
+// and a spam vector, so we refuse up-front with ErrAuthUserNotFound.
+//
+// The trade-off is a small email-enumeration surface: an attacker can now
+// tell "registered" from "unregistered" by watching for a 404 vs 200.
+// That's an acceptable price for consumer-app UX; a stricter posture
+// would keep the response silent and rely on the rate limit alone.
 func (s *AuthService) RequestOTP(ctx context.Context, email string, purpose otp.Purpose, ip string) (time.Duration, error) {
+	if purpose == otp.PurposeLogin || purpose == otp.PurposePasswordReset {
+		normalized := strings.ToLower(strings.TrimSpace(email))
+		user, err := s.userRepo.GetByEmail(ctx, normalized)
+		if err != nil {
+			return 0, err
+		}
+		if user == nil {
+			return 0, ErrAuthUserNotFound
+		}
+	}
 	return s.otp.Request(ctx, email, purpose, ip)
 }
 

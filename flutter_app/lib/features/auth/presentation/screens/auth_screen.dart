@@ -86,36 +86,51 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
     }
   }
 
-  Future<void> _signInWithCode() async {
+  Future<void> _signInWithCode() => _requestCodeAndRoute(OtpPurpose.login);
+  Future<void> _forgotPassword() =>
+      _requestCodeAndRoute(OtpPurpose.passwordReset);
+
+  /// Shared path for the two "no password, send me a code" buttons. Only
+  /// pushes to /otp when the backend confirms the address is registered —
+  /// otherwise surfaces "no account" inline so the user can switch to
+  /// Create account instead of chasing a code that will never arrive.
+  Future<void> _requestCodeAndRoute(OtpPurpose purpose) async {
     final email = _email.text.trim();
     if (!_looksLikeEmail(email)) {
       setState(() => _error = 'Enter your email first');
       return;
     }
-    await ref
-        .read(authControllerProvider.notifier)
-        .requestOtp(email, OtpPurpose.login);
-    if (!mounted) return;
-    await context.push<void>(
-      '/otp',
-      extra: OtpRouteArgs(email: email, purpose: OtpPurpose.login),
-    );
+    setState(() {
+      _busy = true;
+      _error = null;
+    });
+    try {
+      await ref
+          .read(authControllerProvider.notifier)
+          .requestOtp(email, purpose);
+      if (!mounted) return;
+      await context.push<void>(
+        '/otp',
+        extra: OtpRouteArgs(email: email, purpose: purpose),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      setState(() => _error = _prettyOtpRequestError(e));
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
   }
 
-  Future<void> _forgotPassword() async {
-    final email = _email.text.trim();
-    if (!_looksLikeEmail(email)) {
-      setState(() => _error = 'Enter your email first');
-      return;
+  String _prettyOtpRequestError(Object e) {
+    final s = e.toString();
+    if (s.contains('user_not_found') ||
+        s.contains('No account with that email')) {
+      return 'No account with that email. Tap Create account to sign up.';
     }
-    await ref
-        .read(authControllerProvider.notifier)
-        .requestOtp(email, OtpPurpose.passwordReset);
-    if (!mounted) return;
-    await context.push<void>(
-      '/otp',
-      extra: OtpRouteArgs(email: email, purpose: OtpPurpose.passwordReset),
-    );
+    if (s.contains('rate_limited')) {
+      return 'Too many code requests. Please wait a minute.';
+    }
+    return 'Something went wrong. Please try again.';
   }
 
   bool _looksLikeEmail(String s) {
