@@ -46,7 +46,20 @@ func (h *UserHandler) GetMe(w http.ResponseWriter, r *http.Request) {
 		respondError(w, http.StatusNotFound, "not_found", "User not found")
 		return
 	}
-	respondSuccess(w, user)
+	// The client's router uses has_completed_onboarding to decide
+	// /home vs /onboarding on every route change, so it MUST be
+	// included here — omitting it made the Flutter side default to
+	// false and trapped fresh-post-onboarding users in a
+	// /home → /onboarding redirect loop.
+	respondSuccess(w, map[string]any{
+		"id":                       user.ID,
+		"email":                    user.Email,
+		"name":                     user.Name,
+		"avatar_url":               user.AvatarURL,
+		"has_completed_onboarding": h.userSvc.HasCompletedOnboarding(r.Context(), user.ID),
+		"created_at":               user.CreatedAt,
+		"updated_at":               user.UpdatedAt,
+	})
 }
 
 func (h *UserHandler) UpdateMe(w http.ResponseWriter, r *http.Request) {

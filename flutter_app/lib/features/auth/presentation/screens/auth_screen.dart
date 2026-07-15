@@ -3,9 +3,14 @@
 // have to dig for the register link.
 
 import 'package:cosmic_mirror/config/theme/app_palette.dart';
+import 'package:cosmic_mirror/config/theme/lively_type.dart';
 import 'package:cosmic_mirror/features/auth/presentation/providers/auth_provider.dart';
 import 'package:cosmic_mirror/features/auth/presentation/screens/otp_screen.dart';
 import 'package:cosmic_mirror/shared/providers/user_provider.dart';
+import 'package:cosmic_mirror/shared/widgets/lively/gold_button.dart';
+import 'package:cosmic_mirror/shared/widgets/lively/lively_backdrop.dart';
+import 'package:cosmic_mirror/shared/widgets/lively/lively_field.dart';
+import 'package:cosmic_mirror/shared/widgets/lively_logo.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -41,10 +46,6 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
       setState(() => _error = 'Enter a valid email address');
       return;
     }
-    if (_mode == _Mode.register && _name.text.trim().isEmpty) {
-      setState(() => _error = 'Please enter your name');
-      return;
-    }
     if (_password.text.length < 8) {
       setState(() => _error = 'Password must be at least 8 characters');
       return;
@@ -73,7 +74,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
             email: email,
             purpose: OtpPurpose.register,
             pending: PendingRegistration(
-              name: _name.text.trim(),
+              name: '',
               password: _password.text,
             ),
           ),
@@ -152,96 +153,103 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
   @override
   Widget build(BuildContext context) {
     final p = context.palette;
+    final isLogin = _mode == _Mode.login;
+    final bottomInset = MediaQuery.of(context).viewInsets.bottom;
     return Scaffold(
       backgroundColor: p.background,
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.fromLTRB(24, 40, 24, 24),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Text(
-                'Lively',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  color: p.textPrimary,
-                  fontSize: 32,
-                  fontWeight: FontWeight.w900,
-                  letterSpacing: -0.5,
+      body: LivelyBackdrop(
+        seed: 11,
+        child: SafeArea(
+          child: SingleChildScrollView(
+            physics: const ClampingScrollPhysics(),
+            padding: EdgeInsets.fromLTRB(24, 12, 24, 24 + bottomInset),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                const SizedBox(height: 8),
+                const Center(child: LivelyLogo(size: 108)),
+                const SizedBox(height: 26),
+
+                // hero
+                Text(
+                  (isLogin ? 'Welcome back' : 'Create account').toUpperCase(),
+                  style: LivelyType.kicker(p.primary),
                 ),
-              ),
-              const SizedBox(height: 32),
-              _ModeToggle(
-                mode: _mode,
-                onChanged: (m) => setState(() {
-                  _mode = m;
-                  _error = null;
-                }),
-              ),
-              const SizedBox(height: 24),
-              if (_mode == _Mode.register)
-                Padding(
-                  padding: const EdgeInsets.only(bottom: 16),
-                  child: TextField(
-                    controller: _name,
-                    decoration: const InputDecoration(
-                      labelText: 'Your name',
-                      border: OutlineInputBorder(),
-                    ),
+                const SizedBox(height: 12),
+                Text(
+                  isLogin ? 'Sign in' : 'Begin your journey',
+                  style: LivelyType.d2(p.textPrimary),
+                ),
+                const SizedBox(height: 14),
+                SizedBox(
+                  width: 290,
+                  child: Text(
+                    isLogin
+                        ? 'Your cosmic mirror is waiting. Sign in to continue.'
+                        : 'A few details and the stars are yours to explore.',
+                    style: LivelyType.body(p.textMuted),
                   ),
                 ),
-              TextField(
-                controller: _email,
-                keyboardType: TextInputType.emailAddress,
-                autofillHints: const [AutofillHints.email],
-                decoration: const InputDecoration(
-                  labelText: 'Email',
-                  border: OutlineInputBorder(),
+                const SizedBox(height: 28),
+
+                _ModeToggle(
+                  mode: _mode,
+                  onChanged: (m) => setState(() {
+                    _mode = m;
+                    _error = null;
+                  }),
                 ),
-              ),
-              const SizedBox(height: 16),
-              TextField(
-                controller: _password,
-                obscureText: true,
-                autofillHints: const [AutofillHints.password],
-                decoration: const InputDecoration(
-                  labelText: 'Password',
-                  border: OutlineInputBorder(),
+                const SizedBox(height: 24),
+
+                // Register no longer collects a name — the user picks a
+                // display name later during onboarding.
+                LivelyField(
+                  controller: _email,
+                  label: 'Email',
+                  hint: 'you@example.com',
+                  keyboardType: TextInputType.emailAddress,
+                  autofillHints: const [AutofillHints.email],
                 ),
-              ),
-              if (_error != null) ...[
+                const SizedBox(height: 14),
+                LivelyField(
+                  controller: _password,
+                  label: 'Password',
+                  hint: '••••••••',
+                  obscure: true,
+                  autofillHints: const [AutofillHints.password],
+                ),
+
+                if (_error != null) ...[
+                  const SizedBox(height: 14),
+                  Text(_error!, style: LivelyType.small(p.error)),
+                ],
+                const SizedBox(height: 22),
+
+                GoldButton(
+                  label: isLogin ? 'Sign in' : 'Create account',
+                  loading: _busy,
+                  onPressed: _busy ? null : _submit,
+                ),
                 const SizedBox(height: 12),
-                Text(_error!, style: TextStyle(color: p.error, fontSize: 13.5)),
+                GoldButton(
+                  label: 'Sign in with a code instead',
+                  ghost: true,
+                  onPressed: _busy ? null : _signInWithCode,
+                ),
+                if (isLogin) ...[
+                  const SizedBox(height: 6),
+                  Center(
+                    child: TextButton(
+                      onPressed: _busy ? null : _forgotPassword,
+                      child: Text(
+                        'Forgot your password?',
+                        style: LivelyType.small(p.primary),
+                      ),
+                    ),
+                  ),
+                ],
               ],
-              const SizedBox(height: 20),
-              FilledButton(
-                onPressed: _busy ? null : _submit,
-                style: FilledButton.styleFrom(
-                  minimumSize: const Size.fromHeight(52),
-                ),
-                child: Text(
-                  _busy
-                      ? 'Please wait…'
-                      : (_mode == _Mode.login
-                          ? 'Sign in'
-                          : 'Create account'),
-                ),
-              ),
-              const SizedBox(height: 12),
-              OutlinedButton(
-                onPressed: _busy ? null : _signInWithCode,
-                style: OutlinedButton.styleFrom(
-                  minimumSize: const Size.fromHeight(52),
-                ),
-                child: const Text('Sign in with a code instead'),
-              ),
-              const SizedBox(height: 8),
-              if (_mode == _Mode.login)
-                TextButton(
-                  onPressed: _busy ? null : _forgotPassword,
-                  child: const Text('Forgot your password?'),
-                ),
-            ],
+            ),
           ),
         ),
       ),
