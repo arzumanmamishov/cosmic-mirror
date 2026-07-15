@@ -18,6 +18,7 @@ class LivelyField extends StatefulWidget {
     this.autofocus = false,
     this.keyboardType,
     this.textCapitalization = TextCapitalization.none,
+    this.autofillHints,
     this.onChanged,
     this.onSubmitted,
     super.key,
@@ -33,6 +34,7 @@ class LivelyField extends StatefulWidget {
   final bool autofocus;
   final TextInputType? keyboardType;
   final TextCapitalization textCapitalization;
+  final Iterable<String>? autofillHints;
   final ValueChanged<String>? onChanged;
   final ValueChanged<String>? onSubmitted;
 
@@ -108,6 +110,7 @@ class _LivelyFieldState extends State<LivelyField> {
                   obscureText: widget.obscure,
                   keyboardType: widget.keyboardType,
                   textCapitalization: widget.textCapitalization,
+                  autofillHints: widget.autofillHints,
                   onChanged: widget.onChanged,
                   onSubmitted: widget.onSubmitted,
                   cursorColor: p.primary,

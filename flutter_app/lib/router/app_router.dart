@@ -97,7 +97,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
 
       if (!isAuthenticated && !isOnAuthRoute) return '/auth';
       if (isAuthenticated && isOnAuthRoute) {
-        if (!sessionReady) return null; // wait for bootstrap to know where to go
+        if (!sessionReady) return null; // wait for bootstrap
         return userState.hasCompletedOnboarding ? '/home' : '/onboarding';
       }
       if (isAuthenticated &&
