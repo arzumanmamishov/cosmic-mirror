@@ -7,8 +7,12 @@ import 'dart:async';
 import 'dart:math' as math;
 
 import 'package:cosmic_mirror/config/theme/app_palette.dart';
+import 'package:cosmic_mirror/config/theme/lively_type.dart';
 import 'package:cosmic_mirror/features/auth/presentation/providers/auth_provider.dart';
 import 'package:cosmic_mirror/shared/providers/user_provider.dart';
+import 'package:cosmic_mirror/shared/widgets/lively/gold_button.dart';
+import 'package:cosmic_mirror/shared/widgets/lively/lively_backdrop.dart';
+import 'package:cosmic_mirror/shared/widgets/lively/lively_field.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -160,10 +164,25 @@ class _OtpScreenState extends ConsumerState<OtpScreen>
         );
         context.go('/auth');
       } else {
-        await ref.read(currentUserProvider.notifier).bootstrapSession();
-        if (mounted) context.go('/');
+        // register / login: AuthController.register/login already seeded
+        // currentUserProvider synchronously, so the router redirect fired
+        // by the state change will move us off /otp on its own. We still
+        // call context.go as a belt-and-braces so the transition is
+        // deterministic even if the router debounces its refresh pulse.
+        context.go(
+          widget.purpose == OtpPurpose.register ? '/onboarding' : '/',
+        );
+        if (widget.purpose == OtpPurpose.login) {
+          // Kick a full bootstrap for the chart summary fields, but
+          // don't block navigation on it — the router already moved.
+          unawaited(ref.read(currentUserProvider.notifier).bootstrapSession());
+        }
       }
     } catch (e) {
+      // Guard: user may have tapped Back while _verify awaited; the
+      // widget (and _shake controller) are then disposed and touching
+      // them throws.
+      if (!mounted) return;
       unawaited(HapticFeedback.heavyImpact());
       _shake.reset();
       unawaited(_shake.forward());
@@ -199,78 +218,79 @@ class _OtpScreenState extends ConsumerState<OtpScreen>
 
     return Scaffold(
       backgroundColor: p.background,
+      extendBodyBehindAppBar: true,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: const BackButton(),
       ),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.fromLTRB(24, 8, 24, 24),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                headline,
-                style: TextStyle(
-                  color: p.textPrimary,
-                  fontSize: 26,
-                  fontWeight: FontWeight.w800,
-                ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                'We sent a 6-digit code to ${widget.email}.',
-                style: TextStyle(color: p.textSecondary, fontSize: 14),
-              ),
-              const SizedBox(height: 28),
-              _CodeCells(
-                controller: _codeCtrl,
-                focus: _codeFocus,
-                shake: _shake,
-                errored: _error != null,
-              ),
-              if (widget.purpose == OtpPurpose.passwordReset) ...[
-                const SizedBox(height: 20),
-                TextField(
-                  controller: _newPasswordCtrl,
-                  obscureText: true,
-                  decoration: InputDecoration(
-                    labelText: 'New password',
-                    labelStyle: TextStyle(color: p.textSecondary),
-                    border: const OutlineInputBorder(),
-                  ),
-                ),
-              ],
-              if (_error != null) ...[
-                const SizedBox(height: 16),
+      body: LivelyBackdrop(
+        seed: 11,
+        child: SafeArea(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.fromLTRB(24, 8, 24, 24),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
                 Text(
-                  _error!,
-                  style: TextStyle(color: p.error, fontSize: 13.5),
+                  headline.toUpperCase(),
+                  style: LivelyType.kicker(p.primary),
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  'Check your email',
+                  style: LivelyType.d2(p.textPrimary),
+                ),
+                const SizedBox(height: 14),
+                Text(
+                  'We sent a 6-digit code to ${widget.email}.',
+                  style: LivelyType.body(p.textMuted),
+                ),
+                const SizedBox(height: 28),
+                _CodeCells(
+                  controller: _codeCtrl,
+                  focus: _codeFocus,
+                  shake: _shake,
+                  errored: _error != null,
+                ),
+                if (widget.purpose == OtpPurpose.passwordReset) ...[
+                  const SizedBox(height: 20),
+                  LivelyField(
+                    controller: _newPasswordCtrl,
+                    label: 'New password',
+                    hint: '••••••••',
+                    obscure: true,
+                    autofillHints: const [AutofillHints.newPassword],
+                  ),
+                ],
+                if (_error != null) ...[
+                  const SizedBox(height: 16),
+                  Text(_error!, style: LivelyType.small(p.error)),
+                ],
+                const SizedBox(height: 20),
+                if (widget.purpose == OtpPurpose.passwordReset)
+                  GoldButton(
+                    label: 'Reset password',
+                    loading: _busy,
+                    onPressed: _busy ? null : _verify,
+                  ),
+                const SizedBox(height: 12),
+                Center(
+                  child: _cooldown > 0
+                      ? Text(
+                          'Resend code in 0:${_cooldown.toString().padLeft(2, '0')}',
+                          style: LivelyType.small(p.textDim),
+                        )
+                      : TextButton(
+                          onPressed: _busy ? null : _requestCode,
+                          child: Text(
+                            'Resend code',
+                            style: LivelyType.small(p.primary),
+                          ),
+                        ),
                 ),
               ],
-              const SizedBox(height: 20),
-              if (widget.purpose == OtpPurpose.passwordReset)
-                FilledButton(
-                  onPressed: _busy ? null : _verify,
-                  style: FilledButton.styleFrom(
-                    minimumSize: const Size.fromHeight(52),
-                  ),
-                  child: Text(_busy ? 'Verifying…' : 'Reset password'),
-                ),
-              const SizedBox(height: 12),
-              Center(
-                child: _cooldown > 0
-                    ? Text(
-                        'Resend code in 0:${_cooldown.toString().padLeft(2, '0')}',
-                        style: TextStyle(color: p.textTertiary, fontSize: 13),
-                      )
-                    : TextButton(
-                        onPressed: _busy ? null : _requestCode,
-                        child: const Text('Resend code'),
-                      ),
-              ),
-            ],
+            ),
           ),
         ),
       ),

@@ -6,6 +6,7 @@ import 'package:cosmic_mirror/core/network/api_client.dart';
 import 'package:cosmic_mirror/features/auth/data/auth_api.dart';
 import 'package:cosmic_mirror/features/auth/data/models/auth_tokens.dart';
 import 'package:cosmic_mirror/features/auth/domain/entities/user.dart';
+import 'package:cosmic_mirror/shared/providers/user_provider.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 // Re-export so screens can reference OtpPurpose without importing the data
@@ -66,6 +67,7 @@ class AuthController extends AsyncNotifier<AppUser?> {
             password: password,
           );
       await authStorage.write(result.tokens);
+      _hydrateUserProvider(result.user);
       return result.user;
     });
     _rethrowOnError();
@@ -79,6 +81,7 @@ class AuthController extends AsyncNotifier<AppUser?> {
             password: password,
           );
       await authStorage.write(result.tokens);
+      _hydrateUserProvider(result.user);
       return result.user;
     });
     _rethrowOnError();
@@ -95,9 +98,27 @@ class AuthController extends AsyncNotifier<AppUser?> {
             code: code,
           );
       await authStorage.write(result.tokens);
+      _hydrateUserProvider(result.user);
       return result.user;
     });
     _rethrowOnError();
+  }
+
+  /// Populate currentUserProvider from the AuthResult synchronously so the
+  /// router's `sessionReady` check flips true the moment auth succeeds —
+  /// otherwise the redirect stays parked on /auth waiting for
+  /// bootstrapSession, and if the OTP screen unmounts (user swipes back,
+  /// hardware back, etc.) the follow-up context.go('/onboarding') never
+  /// fires. Doing the hydrate here means we don't depend on any screen
+  /// still being alive.
+  void _hydrateUserProvider(AppUser user) {
+    ref.read(currentUserProvider.notifier).hydrateFromAuth(
+          id: user.id,
+          name: user.name,
+          email: user.email,
+          avatarUrl: user.avatarUrl,
+          hasCompletedOnboarding: user.hasCompletedOnboarding,
+        );
   }
 
   Future<void> resetPassword({
