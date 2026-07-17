@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -11,6 +12,12 @@ import (
 )
 
 const apiURL = "https://api.openai.com/v1/chat/completions"
+
+// ErrNotConfigured is returned by every request path when the client
+// was constructed without an API key. Handlers can use errors.Is to
+// distinguish this from a real upstream failure and return a stub or
+// a friendly "AI features unavailable" response instead of a 500.
+var ErrNotConfigured = errors.New("openai: OPENAI_API_KEY not set")
 
 type Client struct {
 	apiKey     string
@@ -65,6 +72,9 @@ func (c *Client) ChatCompletionJSON(ctx context.Context, messages []Message) (st
 }
 
 func (c *Client) doRequest(ctx context.Context, messages []Message, temp float64, maxTokens int, jsonMode bool) (string, error) {
+	if c.apiKey == "" {
+		return "", ErrNotConfigured
+	}
 	req := chatRequest{
 		Model:       c.model,
 		Messages:    messages,

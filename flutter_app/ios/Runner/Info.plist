@@ -26,6 +26,17 @@
 	<string>$(FLUTTER_BUILD_NUMBER)</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
+	<key>NSAppTransportSecurity</key>
+	<dict>
+		<!-- Permit HTTP to LAN addresses (192.168.x.x, 10.x.x.x, etc.) so
+		     dev builds can hit the local backend on the Mac without
+		     needing to run TLS. Public HTTPS traffic still goes through
+		     the normal ATS enforcement. -->
+		<key>NSAllowsLocalNetworking</key>
+		<true/>
+	</dict>
+	<key>NSLocalNetworkUsageDescription</key>
+	<string>Lively connects to the development backend on your local network.</string>
 	<key>NSCameraUsageDescription</key>
 	<string>Lively needs your camera to take a profile photo.</string>
 	<key>NSMicrophoneUsageDescription</key>

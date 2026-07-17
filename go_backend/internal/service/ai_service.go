@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"cosmic-mirror/internal/domain"
+	"cosmic-mirror/internal/middleware"
 	"cosmic-mirror/internal/provider/openai"
 	"cosmic-mirror/internal/repository"
 
@@ -191,7 +192,7 @@ func (s *AIService) SendMessage(ctx context.Context, userID uuid.UUID, threadID 
 	}
 
 	// Build messages for OpenAI
-	systemPrompt := openai.BuildChatSystemPrompt(profile, firstName)
+	systemPrompt := openai.BuildChatSystemPrompt(profile, firstName, middleware.LangFromContext(ctx))
 	messages := []openai.Message{{Role: "system", Content: systemPrompt}}
 	for _, msg := range history {
 		messages = append(messages, openai.Message{Role: msg.Role, Content: msg.Content})

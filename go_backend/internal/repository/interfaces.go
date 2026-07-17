@@ -62,7 +62,7 @@ type PreferencesRepository interface {
 }
 
 type DailyReadingRepository interface {
-	GetByUserAndDate(ctx context.Context, userID uuid.UUID, date time.Time) (*domain.DailyReading, error)
+	GetByUserAndDate(ctx context.Context, userID uuid.UUID, date time.Time, lang string) (*domain.DailyReading, error)
 	Create(ctx context.Context, reading *domain.DailyReading) error
 	ListByUserAndDateRange(ctx context.Context, userID uuid.UUID, start, end time.Time) ([]domain.DailyReading, error)
 }

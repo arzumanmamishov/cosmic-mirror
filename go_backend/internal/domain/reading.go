@@ -23,6 +23,7 @@ type DailyReading struct {
 	Affirmation string    `db:"affirmation" json:"affirmation"`
 	LuckyColor  string    `db:"lucky_color" json:"lucky_color"`
 	LuckyNumber int       `db:"lucky_number" json:"lucky_number"`
+	Lang        string    `db:"lang" json:"lang"`
 	CreatedAt   time.Time `db:"created_at" json:"created_at"`
 }
 

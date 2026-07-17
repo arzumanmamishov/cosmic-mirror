@@ -141,7 +141,12 @@ class _Hero extends StatelessWidget {
   Widget build(BuildContext context) {
     final p = context.palette;
     return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 100, 20, 24),
+      padding: EdgeInsets.fromLTRB(
+        20,
+        MediaQuery.of(context).padding.top + kToolbarHeight + 24,
+        20,
+        24,
+      ),
       child: Column(
         children: [
           // Big three signs

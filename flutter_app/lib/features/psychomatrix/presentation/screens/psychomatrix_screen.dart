@@ -71,7 +71,12 @@ class _Body extends StatelessWidget {
     ];
 
     return ListView.builder(
-      padding: const EdgeInsets.fromLTRB(20, 100, 20, 0),
+      padding: EdgeInsets.fromLTRB(
+        20,
+        MediaQuery.of(context).padding.top + kToolbarHeight + 24,
+        20,
+        0,
+      ),
       itemCount: children.length,
       itemBuilder: (context, i) => _FadeIn(
         delayMs: 40 * i,

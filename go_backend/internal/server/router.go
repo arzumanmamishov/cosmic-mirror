@@ -21,10 +21,11 @@ func NewRouter(h *handler.Handlers, auth *middleware.Auth, rl *middleware.RateLi
 	r.Use(chimw.RealIP)
 	r.Use(middleware.Logger)
 	r.Use(chimw.Recoverer)
+	r.Use(middleware.Language)
 	r.Use(cors.Handler(cors.Options{
 		AllowOriginFunc: func(r *http.Request, origin string) bool { return true },
 		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
-		AllowedHeaders:   []string{"Accept", "Authorization", "Content-Type"},
+		AllowedHeaders:   []string{"Accept", "Accept-Language", "Authorization", "Content-Type"},
 		ExposedHeaders:   []string{"X-RateLimit-Limit", "X-RateLimit-Remaining", "X-RateLimit-Reset"},
 		AllowCredentials: true,
 		MaxAge:           300,

@@ -84,7 +84,12 @@ class _NumerologyCompatScreenState
             ),
           ),
           ListView(
-            padding: const EdgeInsets.fromLTRB(20, 100, 20, 40),
+            padding: EdgeInsets.fromLTRB(
+              20,
+              MediaQuery.of(context).padding.top + kToolbarHeight + 24,
+              20,
+              40,
+            ),
             children: [
               _field(p, 'PARTNER FULL BIRTH NAME', _name, 'e.g. Sarah Anne Chen'),
               const SizedBox(height: 14),

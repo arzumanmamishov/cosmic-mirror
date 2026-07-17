@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"cosmic-mirror/internal/domain"
+	"cosmic-mirror/internal/middleware"
 	"cosmic-mirror/internal/provider/openai"
 	"cosmic-mirror/internal/repository"
 
@@ -100,7 +101,7 @@ func (s *CompatibilityService) GenerateReport(ctx context.Context, userID, perso
 		return nil, ErrPersonNotFound
 	}
 
-	prompt := openai.BuildCompatibilityPrompt(userProfile, describePerson(person))
+	prompt := openai.BuildCompatibilityPrompt(userProfile, describePerson(person), middleware.LangFromContext(ctx))
 	response, err := s.aiClient.ChatCompletionJSON(ctx, prompt)
 	if err != nil {
 		return nil, fmt.Errorf("AI generation failed: %w", err)

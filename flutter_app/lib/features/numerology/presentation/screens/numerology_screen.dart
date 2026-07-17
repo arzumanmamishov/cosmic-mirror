@@ -81,7 +81,12 @@ class _Hero extends StatelessWidget {
     final p = context.palette;
     final lp = reading.profile.lifePath;
     return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 100, 20, 16),
+      padding: EdgeInsets.fromLTRB(
+        20,
+        MediaQuery.of(context).padding.top + kToolbarHeight + 24,
+        20,
+        16,
+      ),
       child: Container(
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(

@@ -88,13 +88,11 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
   }
 
   Future<void> _signInWithCode() => _requestCodeAndRoute(OtpPurpose.login);
-  Future<void> _forgotPassword() =>
-      _requestCodeAndRoute(OtpPurpose.passwordReset);
 
-  /// Shared path for the two "no password, send me a code" buttons. Only
-  /// pushes to /otp when the backend confirms the address is registered —
-  /// otherwise surfaces "no account" inline so the user can switch to
-  /// Create account instead of chasing a code that will never arrive.
+  /// "Send me a code instead of a password" path. Only pushes to /otp when
+  /// the backend confirms the address is registered — otherwise surfaces
+  /// "no account" inline so the user can switch to Create account instead
+  /// of chasing a code that will never arrive.
   Future<void> _requestCodeAndRoute(OtpPurpose purpose) async {
     final email = _email.text.trim();
     if (!_looksLikeEmail(email)) {
@@ -240,7 +238,8 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                   const SizedBox(height: 6),
                   Center(
                     child: TextButton(
-                      onPressed: _busy ? null : _forgotPassword,
+                      onPressed:
+                          _busy ? null : () => context.push('/forgot-password'),
                       child: Text(
                         'Forgot your password?',
                         style: LivelyType.small(p.primary),

@@ -2,6 +2,7 @@ import 'package:cosmic_mirror/features/ai_chat/presentation/screens/chat_screen.
 import 'package:cosmic_mirror/features/ai_chat/presentation/screens/chat_threads_screen.dart';
 import 'package:cosmic_mirror/features/auth/presentation/providers/auth_provider.dart';
 import 'package:cosmic_mirror/features/auth/presentation/screens/auth_screen.dart';
+import 'package:cosmic_mirror/features/auth/presentation/screens/forgot_password_screen.dart';
 import 'package:cosmic_mirror/features/auth/presentation/screens/otp_screen.dart';
 import 'package:cosmic_mirror/features/chart/presentation/screens/chart_screen.dart';
 import 'package:cosmic_mirror/features/community/presentation/screens/category_detail_screen.dart';
@@ -80,7 +81,8 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       // redirect returns null so the current route survives the flicker.
       final isAuthenticated = authState.valueOrNull != null;
       final isOnAuthRoute = state.matchedLocation == '/auth' ||
-          state.matchedLocation == '/otp';
+          state.matchedLocation == '/otp' ||
+          state.matchedLocation == '/forgot-password';
       final isOnOnboarding = state.matchedLocation == '/onboarding';
       // /welcome is the post-onboarding celebratory screen — treat it as
       // part of onboarding so users freshly arriving there aren't bounced
@@ -88,25 +90,37 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       // hasn't refreshed yet.
       final isOnWelcome = state.matchedLocation == '/welcome';
 
-      // Treat the user as "session bootstrapped" once an id has been
-      // populated by bootstrapSession(). On hot reload Firebase reports
-      // authenticated immediately, but the backend session call hasn't
-      // returned yet — without this guard we'd flash /onboarding for ~1s
-      // before the real `hasCompletedOnboarding` flag arrives.
-      final sessionReady = userState.id != null;
-
       if (!isAuthenticated && !isOnAuthRoute) return '/auth';
-      if (isAuthenticated && isOnAuthRoute) {
-        if (!sessionReady) return null; // wait for bootstrap
-        return userState.hasCompletedOnboarding ? '/home' : '/onboarding';
-      }
-      if (isAuthenticated &&
-          sessionReady &&
-          !userState.hasCompletedOnboarding &&
-          !isOnOnboarding &&
-          !isOnWelcome &&
-          state.matchedLocation != '/auth') {
-        return '/onboarding';
+
+      if (isAuthenticated) {
+        // On an auth route (/auth /otp /forgot-password) — pick a
+        // destination based on onboarding status. `sessionReady` isn't
+        // required: a fresh register hydrated currentUserProvider
+        // synchronously, and a cold-start-with-stale-token defaults to
+        // hasCompletedOnboarding=false, which is the safe answer while
+        // bootstrap runs.
+        if (isOnAuthRoute) {
+          return userState.hasCompletedOnboarding ? '/home' : '/onboarding';
+        }
+
+        // Un-onboarded users may only sit on /onboarding (or /welcome,
+        // the post-completion celebration screen). Anything else — even
+        // if the user is deep-linked or navigates manually — bounces
+        // back to /onboarding. This holds regardless of whether
+        // bootstrapSession has finished, so an app-restart mid-way
+        // through onboarding lands the user back at the onboarding
+        // flow instead of a briefly-visible /home.
+        if (!userState.hasCompletedOnboarding &&
+            !isOnOnboarding &&
+            !isOnWelcome) {
+          return '/onboarding';
+        }
+
+        // Onboarded users shouldn't be stuck on /onboarding once
+        // bootstrap catches up. Send them to /home.
+        if (userState.hasCompletedOnboarding && isOnOnboarding) {
+          return '/home';
+        }
       }
       return null;
     },
@@ -140,6 +154,13 @@ final appRouterProvider = Provider<GoRouter>((ref) {
             ),
           );
         },
+      ),
+      GoRoute(
+        path: '/forgot-password',
+        pageBuilder: (context, state) => _slideTransition(
+          state,
+          const ForgotPasswordScreen(),
+        ),
       ),
       GoRoute(
         path: '/onboarding',
@@ -268,7 +289,11 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         path: '/community',
         pageBuilder: (context, state) => _slideTransition(
           state,
-          const SpacesListScreen(),
+          // SpacesListScreen renders bare (no Scaffold) so it can also be
+          // the body of the home Community tab. When pushed as a standalone
+          // route we wrap it here — otherwise the search TextField crashes
+          // with "No Material widget found".
+          const Scaffold(body: SafeArea(child: SpacesListScreen())),
         ),
         routes: [
           GoRoute(

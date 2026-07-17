@@ -50,6 +50,11 @@ class _OnboardingFlowState extends ConsumerState<OnboardingFlow> {
 
     ref.listen<OnboardingState>(onboardingProvider, (prev, next) {
       if (prev?.currentStep != next.currentStep) {
+        // Dismiss any lingering keyboard from a previous text-input step
+        // — otherwise steps that don't need input (focus areas, chart
+        // reveal) end up with the keyboard still overlaying their layout
+        // and their Column overflows.
+        FocusManager.instance.primaryFocus?.unfocus();
         _pageController.animateToPage(
           next.currentStep,
           duration: const Duration(milliseconds: 360),
@@ -360,35 +365,43 @@ class _FocusAreasStep extends StatelessWidget {
     return _Step(
       title: l10n.onboardingFocusTitle,
       subtitle: l10n.onboardingFocusSubtitle,
-      child: Column(
-        children: [
-          GridView.builder(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 2,
-              mainAxisSpacing: 10,
-              crossAxisSpacing: 10,
-              childAspectRatio: 2.6,
+      // The child of _Step gets an Expanded box, so wrapping in a
+      // SingleChildScrollView here keeps the whole grid+counter block
+      // reachable when a residual soft-keyboard or a shorter screen
+      // eats vertical space — otherwise the last row of chips renders
+      // into a bottom-overflow debug banner.
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.only(bottom: 8),
+        physics: const ClampingScrollPhysics(),
+        child: Column(
+          children: [
+            GridView.builder(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 2,
+                mainAxisSpacing: 10,
+                crossAxisSpacing: 10,
+                childAspectRatio: 2.6,
+              ),
+              itemCount: _areaKeys.length,
+              itemBuilder: (context, i) {
+                final key = _areaKeys[i];
+                return LivelyChip(
+                  label: _label(i, l10n),
+                  icon: _areaIcons[i],
+                  selected: state.focusAreas.contains(key),
+                  onTap: () => notifier.toggleFocusArea(key),
+                );
+              },
             ),
-            itemCount: _areaKeys.length,
-            itemBuilder: (context, i) {
-              final key = _areaKeys[i];
-              return LivelyChip(
-                label: _label(i, l10n),
-                icon: _areaIcons[i],
-                selected: state.focusAreas.contains(key),
-                onTap: () => notifier.toggleFocusArea(key),
-              );
-            },
-          ),
-          const Spacer(),
-          Text(
-            l10n.onboardingFocusCount(state.focusAreas.length),
-            style: LivelyType.small(p.textMuted),
-          ),
-          const SizedBox(height: 8),
-        ],
+            const SizedBox(height: 12),
+            Text(
+              l10n.onboardingFocusCount(state.focusAreas.length),
+              style: LivelyType.small(p.textMuted),
+            ),
+          ],
+        ),
       ),
     );
   }

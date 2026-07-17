@@ -1,3 +1,4 @@
+import 'package:cosmic_mirror/core/network/app_locale.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -22,6 +23,11 @@ class LocaleNotifier extends StateNotifier<Locale?> {
     final code = prefs.getString(_kLocalePrefsKey);
     if (code != null && code.isNotEmpty) {
       state = Locale(code);
+      setCurrentLocaleCode(code);
+    } else {
+      // No override — mirror the platform locale into the module global so
+      // the Accept-Language header still tracks the user's device setting.
+      setCurrentLocaleCode(null);
     }
   }
 
@@ -35,5 +41,6 @@ class LocaleNotifier extends StateNotifier<Locale?> {
       await prefs.setString(_kLocalePrefsKey, locale.languageCode);
     }
     state = locale;
+    setCurrentLocaleCode(locale?.languageCode);
   }
 }

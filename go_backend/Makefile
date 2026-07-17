@@ -31,6 +31,7 @@ migrate-up:
 	docker compose exec -T postgres psql -U cosmic -d cosmic_mirror < migrations/008_space_join_approval.sql
 	docker compose exec -T postgres psql -U cosmic -d cosmic_mirror < migrations/009_notification_prefs.sql
 	docker compose exec -T postgres psql -U cosmic -d cosmic_mirror < migrations/010_smtp_otp_auth.sql
+	docker compose exec -T postgres psql -U cosmic -d cosmic_mirror < migrations/011_daily_reading_lang.sql
 
 migrate-down:
 	docker compose exec -T postgres psql -U cosmic -d cosmic_mirror -c "DROP SCHEMA public CASCADE; CREATE SCHEMA public;"

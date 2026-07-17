@@ -145,7 +145,12 @@ class _Hero extends ConsumerWidget {
     final sun = chart.planets.where((e) => e.name == 'Sun').firstOrNull;
     final moon = chart.planets.where((e) => e.name == 'Moon').firstOrNull;
     return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 100, 20, 24),
+      padding: EdgeInsets.fromLTRB(
+        20,
+        MediaQuery.of(context).padding.top + kToolbarHeight + 24,
+        20,
+        24,
+      ),
       child: Column(
         children: [
           Row(

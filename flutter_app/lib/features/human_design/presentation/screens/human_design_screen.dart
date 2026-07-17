@@ -59,7 +59,12 @@ class _Body extends StatelessWidget {
         headerSliverBuilder: (context, _) => [
           SliverToBoxAdapter(
             child: Padding(
-              padding: const EdgeInsets.fromLTRB(20, 100, 20, 16),
+              padding: EdgeInsets.fromLTRB(
+                20,
+                MediaQuery.of(context).padding.top + kToolbarHeight + 24,
+                20,
+                16,
+              ),
               child: TypeCard(chart: chart),
             ),
           ),

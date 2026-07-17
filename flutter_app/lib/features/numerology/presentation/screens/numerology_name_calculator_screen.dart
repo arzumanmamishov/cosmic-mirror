@@ -64,7 +64,12 @@ class _NumerologyNameCalculatorScreenState
             ),
           ),
           ListView(
-            padding: const EdgeInsets.fromLTRB(20, 100, 20, 40),
+            padding: EdgeInsets.fromLTRB(
+              20,
+              MediaQuery.of(context).padding.top + kToolbarHeight + 24,
+              20,
+              40,
+            ),
             children: [
               Text(
                 l.numerologyNameCalculatorBlurb,

@@ -3,12 +3,14 @@ package service
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"strconv"
 	"strings"
 	"time"
 
 	"cosmic-mirror/internal/domain"
+	"cosmic-mirror/internal/middleware"
 	"cosmic-mirror/internal/provider/openai"
 	"cosmic-mirror/internal/provider/swisseph"
 	"cosmic-mirror/internal/repository"
@@ -106,22 +108,23 @@ func (s *ChartService) GetChartSummary(ctx context.Context, userID uuid.UUID) (*
 		return nil, err
 	}
 
+	lang := middleware.LangFromContext(ctx)
 	summary := &domain.ChartSummary{}
 	for _, p := range chart.Planets {
 		switch p.Name {
 		case "Sun":
 			summary.SunSign = p.Sign
-			summary.SunDescription = sunDescription(p.Sign)
+			summary.SunDescription = sunDescription(p.Sign, lang)
 		case "Moon":
 			summary.MoonSign = p.Sign
-			summary.MoonDescription = moonDescription(p.Sign)
+			summary.MoonDescription = moonDescription(p.Sign, lang)
 		}
 	}
 
 	// Rising sign from first house
 	if len(chart.Houses) > 0 {
 		summary.RisingSign = chart.Houses[0].Sign
-		summary.RisingDescription = risingDescription(chart.Houses[0].Sign)
+		summary.RisingDescription = risingDescription(chart.Houses[0].Sign, lang)
 	}
 
 	return summary, nil
@@ -154,7 +157,10 @@ func (s *ChartService) GetTimeline(ctx context.Context, userID uuid.UUID, foreca
 	// Day-by-day Swiss Ephemeris pass. For the year window this is 365 daily
 	// position calculations × 11 bodies = ~4000 cgo calls — fine: takes a
 	// couple seconds on the API container, and we cache the result.
-	cacheKey := fmt.Sprintf("timeline:%s:%s:%s", userID, forecastType, now.Format("2006-01-02"))
+	// Cache key includes lang so switching languages doesn't serve stale
+	// English narrative to a Turkish caller.
+	lang := middleware.LangFromContext(ctx)
+	cacheKey := fmt.Sprintf("timeline:%s:%s:%s:%s", userID, forecastType, now.Format("2006-01-02"), lang)
 	if cached, err := s.rdb.Get(ctx, cacheKey).Bytes(); err == nil {
 		var hit domain.TimelineForecast
 		if json.Unmarshal(cached, &hit) == nil {
@@ -173,9 +179,15 @@ func (s *ChartService) GetTimeline(ctx context.Context, userID uuid.UUID, foreca
 	}
 
 	lite := transitEventsToLite(events)
-	prompt := openai.BuildTimelinePrompt(profile, forecastType, lite, now, end)
+	prompt := openai.BuildTimelinePrompt(profile, forecastType, lite, now, end, lang)
 	resp, err := s.aiClient.ChatCompletionJSON(ctx, prompt)
 	if err != nil {
+		if errors.Is(err, openai.ErrNotConfigured) {
+			// Deterministic narrative from real transits — endpoint stays
+			// fully functional without an OpenAI key. Not cached so the
+			// real LLM output takes over the moment the key is wired.
+			return BuildDeterministicTimeline(lite, forecastType, now, end, lang), nil
+		}
 		return nil, fmt.Errorf("ai timeline: %w", err)
 	}
 
@@ -209,7 +221,8 @@ func (s *ChartService) GetYearlyForecast(ctx context.Context, userID uuid.UUID, 
 		return nil, err
 	}
 
-	cacheKey := fmt.Sprintf("yearly:%s:%d", userID, year)
+	lang := middleware.LangFromContext(ctx)
+	cacheKey := fmt.Sprintf("yearly:%s:%d:%s", userID, year, lang)
 	if cached, err := s.rdb.Get(ctx, cacheKey).Bytes(); err == nil {
 		var hit domain.YearlyForecast
 		if json.Unmarshal(cached, &hit) == nil {
@@ -230,9 +243,12 @@ func (s *ChartService) GetYearlyForecast(ctx context.Context, userID uuid.UUID, 
 	}
 
 	lite := transitEventsToLite(events)
-	prompt := openai.BuildYearlyForecastPrompt(profile, year, lite)
+	prompt := openai.BuildYearlyForecastPrompt(profile, year, lite, lang)
 	resp, err := s.aiClient.ChatCompletionJSON(ctx, prompt)
 	if err != nil {
+		if errors.Is(err, openai.ErrNotConfigured) {
+			return BuildDeterministicYearly(lite, year, lang), nil
+		}
 		return nil, fmt.Errorf("ai yearly: %w", err)
 	}
 
@@ -296,8 +312,24 @@ func parseBirthTime(t string) (int, int) {
 }
 
 
-func sunDescription(sign string) string {
-	descriptions := map[string]string{
+func sunDescription(sign string, lang string) string {
+	if lang == "tr" {
+		return map[string]string{
+			"Aries":       "Cesur, öncü ve inisiyatif dolu. Cesaretle liderlik edersin.",
+			"Taurus":      "Sabit, duyusal ve kararlı. Kalıcı değer inşa edersin.",
+			"Gemini":      "Meraklı, çok yönlü ve iletişimci. Fikirleri ve insanları birbirine bağlarsın.",
+			"Cancer":      "Besleyici, sezgisel ve derinden duygusal. Değer verdiğini korursun.",
+			"Leo":         "Işıltılı, cömert ve yaratıcı. Başkalarına doğallıkla ilham verirsin.",
+			"Virgo":       "Analitik, adanmış ve pratik. Dokunduğun her şeyi inceltirsin.",
+			"Libra":       "Uyumlu, adil ve ilişki odaklı. Denge ararsın.",
+			"Scorpio":     "Yoğun, dönüştürücü ve keskin algılı. Yüzeyin altını görürsün.",
+			"Sagittarius": "Maceracı, felsefi ve iyimser. Ufukları genişletirsin.",
+			"Capricorn":   "Hırslı, disiplinli ve stratejik. Ustalığa doğru inşa edersin.",
+			"Aquarius":    "Yenilikçi, bağımsız ve insani. Geleceği hayal edersin.",
+			"Pisces":      "Empatik, yaratıcı ve ruhsal olarak uyumlu. Derinden hissedersin.",
+		}[sign]
+	}
+	return map[string]string{
 		"Aries":       "Bold, pioneering, and full of initiative. You lead with courage.",
 		"Taurus":      "Steady, sensual, and determined. You build lasting value.",
 		"Gemini":      "Curious, versatile, and communicative. You connect ideas and people.",
@@ -310,12 +342,27 @@ func sunDescription(sign string) string {
 		"Capricorn":   "Ambitious, disciplined, and strategic. You build toward mastery.",
 		"Aquarius":    "Innovative, independent, and humanitarian. You envision the future.",
 		"Pisces":      "Empathic, creative, and spiritually attuned. You feel deeply.",
-	}
-	return descriptions[sign]
+	}[sign]
 }
 
-func moonDescription(sign string) string {
-	descriptions := map[string]string{
+func moonDescription(sign string, lang string) string {
+	if lang == "tr" {
+		return map[string]string{
+			"Aries":       "Duyguların doğrudan ve ateşli. Hissetmek için harekete ihtiyacın var.",
+			"Taurus":      "Duyguların konfor ve istikrar arıyor. Rutinde huzur bulursun.",
+			"Gemini":      "Duyguların hızla değişir. Hislerini konuşarak işlersin.",
+			"Cancer":      "Duyguların derin ve besleyici. Ev senin sığınağın.",
+			"Leo":         "Duyguların sıcak ve dramatik. Takdir edilmeye ihtiyacın var.",
+			"Virgo":       "Duyguların düzen arar. Hislerini faydalı eylemle işlersin.",
+			"Libra":       "Duyguların uyum arar. Dengeli ilişkilere ihtiyacın var.",
+			"Scorpio":     "Duyguların yoğun ve özel. Her şeyi derinden hissedersin.",
+			"Sagittarius": "Duyguların iyimser ve huzursuz. Hissetmek için özgürlüğe ihtiyacın var.",
+			"Capricorn":   "Duyguların kontrollü ve dirençli. Zorluklar aracılığıyla olgunlaşırsın.",
+			"Aquarius":    "Duyguların mesafeli ama şefkatli. Fikirlerle işlersin.",
+			"Pisces":      "Duyguların sınırsız ve şefkatli. Başkalarının hislerini emersin.",
+		}[sign]
+	}
+	return map[string]string{
 		"Aries":       "Your emotions are direct and fiery. You need action to process feelings.",
 		"Taurus":      "Your emotions crave comfort and stability. You find peace in routine.",
 		"Gemini":      "Your emotions shift quickly. You process feelings through conversation.",
@@ -328,12 +375,27 @@ func moonDescription(sign string) string {
 		"Capricorn":   "Your emotions are controlled and resilient. You mature through challenges.",
 		"Aquarius":    "Your emotions are detached yet caring. You process through ideas.",
 		"Pisces":      "Your emotions are boundless and compassionate. You absorb others' feelings.",
-	}
-	return descriptions[sign]
+	}[sign]
 }
 
-func risingDescription(sign string) string {
-	descriptions := map[string]string{
+func risingDescription(sign string, lang string) string {
+	if lang == "tr" {
+		return map[string]string{
+			"Aries":       "Kendinden emin ve enerjik bir izlenim bırakırsın. İlk izlenimlerin cesurdur.",
+			"Taurus":      "Sakin ve yere sağlam basan bir izlenim bırakırsın. İlk izlenimlerin güven vericidir.",
+			"Gemini":      "Zeki ve ilgi çekici bir izlenim bırakırsın. İlk izlenimlerin canlıdır.",
+			"Cancer":      "Sıcak ve yaklaşılabilir bir izlenim bırakırsın. İlk izlenimlerin şefkatlidir.",
+			"Leo":         "Manyetik ve kendinden emin bir izlenim bırakırsın. İlk izlenimlerin akıllarda kalır.",
+			"Virgo":       "Düşünceli ve dengeli bir izlenim bırakırsın. İlk izlenimlerin özenlidir.",
+			"Libra":       "Çekici ve diplomatik bir izlenim bırakırsın. İlk izlenimlerin zariftir.",
+			"Scorpio":     "Gizemli ve yoğun bir izlenim bırakırsın. İlk izlenimlerin güçlüdür.",
+			"Sagittarius": "Coşkulu ve açık bir izlenim bırakırsın. İlk izlenimlerin ilham vericidir.",
+			"Capricorn":   "Sakin ve otoriter bir izlenim bırakırsın. İlk izlenimlerin güçlüdür.",
+			"Aquarius":    "Eşsiz ve ilerici bir izlenim bırakırsın. İlk izlenimlerin merak uyandırır.",
+			"Pisces":      "Nazik ve hayalperest bir izlenim bırakırsın. İlk izlenimlerin eterik hissettirir.",
+		}[sign]
+	}
+	return map[string]string{
 		"Aries":       "You come across as confident and energetic. First impressions are bold.",
 		"Taurus":      "You come across as calm and grounded. First impressions are reassuring.",
 		"Gemini":      "You come across as witty and engaging. First impressions are lively.",
@@ -346,6 +408,5 @@ func risingDescription(sign string) string {
 		"Capricorn":   "You come across as composed and authoritative. First impressions are strong.",
 		"Aquarius":    "You come across as unique and progressive. First impressions are intriguing.",
 		"Pisces":      "You come across as gentle and dreamy. First impressions are ethereal.",
-	}
-	return descriptions[sign]
+	}[sign]
 }

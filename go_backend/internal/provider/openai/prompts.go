@@ -8,7 +8,20 @@ import (
 	"cosmic-mirror/internal/domain"
 )
 
-func BuildDailyReadingPrompt(profile *domain.BirthProfile, date time.Time) []Message {
+// LangDirective returns the output-language instruction appended to every
+// system prompt. Keeping it in one place means adding a new UI language
+// is a single-line change.
+//
+// For unsupported codes we return the same directive as English (empty).
+func LangDirective(lang string) string {
+	switch strings.ToLower(lang) {
+	case "tr":
+		return "\n\nIMPORTANT: Respond entirely in Turkish (Türkçe). All prose, narratives, titles, descriptions, and JSON string values must be written in fluent, natural Turkish. Keep the JSON keys exactly as specified (in English)."
+	}
+	return ""
+}
+
+func BuildDailyReadingPrompt(profile *domain.BirthProfile, date time.Time, lang string) []Message {
 	birthInfo := fmt.Sprintf("Birth date: %s, Birth place: %s (lat: %.4f, lng: %.4f), Timezone: %s",
 		profile.BirthDate.Format("2006-01-02"), profile.BirthPlace, profile.Latitude, profile.Longitude, profile.Timezone)
 	if profile.BirthTime != nil {
@@ -24,7 +37,7 @@ func BuildDailyReadingPrompt(profile *domain.BirthProfile, date time.Time) []Mes
 Your tone is emotionally intelligent, practical, specific, and encouraging.
 Never make deterministic predictions or fear-based statements.
 Frame astrology as a reflective tool for self-awareness, not guaranteed truth.
-Always return valid JSON matching the exact schema requested.`,
+Always return valid JSON matching the exact schema requested.` + LangDirective(lang),
 		},
 		{
 			Role: "user",
@@ -51,7 +64,7 @@ Make the reading feel deeply personal based on the natal chart positions for thi
 	}
 }
 
-func BuildCompatibilityPrompt(userProfile *domain.BirthProfile, personDescription string) []Message {
+func BuildCompatibilityPrompt(userProfile *domain.BirthProfile, personDescription string, lang string) []Message {
 	return []Message{
 		{
 			Role: "system",
@@ -59,7 +72,7 @@ func BuildCompatibilityPrompt(userProfile *domain.BirthProfile, personDescriptio
 Be honest but compassionate. Highlight strengths and growth areas equally.
 Never make absolute statements about relationship success or failure.
 Frame challenges as opportunities for mutual growth.
-Always return valid JSON matching the exact schema requested.`,
+Always return valid JSON matching the exact schema requested.` + LangDirective(lang),
 		},
 		{
 			Role: "user",
@@ -86,7 +99,7 @@ Return a JSON object with exactly these fields:
 // honest friend-with-a-bit-of-cosmic-knowledge vibe — not a
 // fortune-cookie robot. firstName is best-effort; when empty the
 // model addresses the user generically.
-func BuildChatSystemPrompt(profile *domain.BirthProfile, firstName string) string {
+func BuildChatSystemPrompt(profile *domain.BirthProfile, firstName string, lang string) string {
 	birthInfo := "unknown birth data"
 	if profile != nil {
 		birthInfo = fmt.Sprintf("born on %s in %s", profile.BirthDate.Format("January 2, 2006"), profile.BirthPlace)
@@ -118,7 +131,7 @@ How to talk:
 - Astrology is a lens for self-reflection. Don't make deterministic claims. Never use fear-based language.
 - Be encouraging WITHOUT being a cheerleader. Real friends don't tell you everything is fine when it isn't.
 
-If you don't know something, say so. If a question doesn't really have an astrological answer, just answer it like a friend would and gesture at the chart only if it's actually relevant.`, birthInfo, nameLine)
+If you don't know something, say so. If a question doesn't really have an astrological answer, just answer it like a friend would and gesture at the chart only if it's actually relevant.`, birthInfo, nameLine) + LangDirective(lang)
 }
 
 // TransitEventLite is the subset of a Swiss-Ephemeris-computed transit that we
@@ -151,7 +164,7 @@ func formatTransitEvents(events []TransitEventLite) string {
 	return b.String()
 }
 
-func BuildTimelinePrompt(profile *domain.BirthProfile, forecastType string, events []TransitEventLite, start, end time.Time) []Message {
+func BuildTimelinePrompt(profile *domain.BirthProfile, forecastType string, events []TransitEventLite, start, end time.Time, lang string) []Message {
 	return []Message{
 		{
 			Role: "system",
@@ -163,7 +176,7 @@ CRITICAL: You will be given a list of REAL transit events computed from the Swis
 - If two events are close in time, you may group them into a single period.
 - Each period's "date_range" must use real dates from the events list.
 - If the events list is empty, return 1-2 periods describing the steady background energy of the chart, without inventing transits.
-Always return valid JSON.`,
+Always return valid JSON.` + LangDirective(lang),
 		},
 		{
 			Role: "user",
@@ -188,7 +201,7 @@ Group the events into 3-6 meaningful periods. Each period must reference real tr
 	}
 }
 
-func BuildYearlyForecastPrompt(profile *domain.BirthProfile, year int, events []TransitEventLite) []Message {
+func BuildYearlyForecastPrompt(profile *domain.BirthProfile, year int, events []TransitEventLite, lang string) []Message {
 	q1End := time.Date(year, 4, 1, 0, 0, 0, 0, time.UTC)
 	q2End := time.Date(year, 7, 1, 0, 0, 0, 0, time.UTC)
 	q3End := time.Date(year, 10, 1, 0, 0, 0, 0, time.UTC)
@@ -206,7 +219,7 @@ CRITICAL: You will receive REAL transit events computed from the Swiss Ephemeris
 - Do NOT invent dates, planets, or aspects. Each quarter description must reference the actual transits given for that quarter.
 - The theme + overview can be looser/poetic but must still be grounded in the year's overall pattern of transits.
 - If a quarter has no major transits, write a description focused on the standing chart energy without inventing transits.
-Always return valid JSON.`,
+Always return valid JSON.` + LangDirective(lang),
 		},
 		{
 			Role: "user",
@@ -271,12 +284,12 @@ func splitEventsByQuarters(events []TransitEventLite, q1End, q2End, q3End, yearE
 	return
 }
 
-func BuildNotificationPrompt(profile *domain.BirthProfile, date time.Time) []Message {
+func BuildNotificationPrompt(profile *domain.BirthProfile, date time.Time, lang string) []Message {
 	return []Message{
 		{
 			Role: "system",
 			Content: `Generate a short, personalized push notification for a daily astrology reading.
-Keep it under 100 characters. Be intriguing and warm. Never fear-based.`,
+Keep it under 100 characters. Be intriguing and warm. Never fear-based.` + LangDirective(lang),
 		},
 		{
 			Role: "user",

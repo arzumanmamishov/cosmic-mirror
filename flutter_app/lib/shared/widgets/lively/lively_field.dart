@@ -14,6 +14,7 @@ class LivelyField extends StatefulWidget {
     this.prefixIcon,
     this.trailing,
     this.obscure = false,
+    this.canReveal = true,
     this.large = false,
     this.autofocus = false,
     this.keyboardType,
@@ -30,6 +31,11 @@ class LivelyField extends StatefulWidget {
   final IconData? prefixIcon;
   final Widget? trailing;
   final bool obscure;
+
+  /// When [obscure] is true, shows a trailing eye toggle that reveals the
+  /// text. Set false to keep a field masked with no reveal affordance.
+  final bool canReveal;
+
   final bool large;
   final bool autofocus;
   final TextInputType? keyboardType;
@@ -45,6 +51,7 @@ class LivelyField extends StatefulWidget {
 class _LivelyFieldState extends State<LivelyField> {
   late final FocusNode _focus;
   bool _focused = false;
+  bool _revealed = false;
 
   @override
   void initState() {
@@ -107,7 +114,7 @@ class _LivelyFieldState extends State<LivelyField> {
                   controller: widget.controller,
                   focusNode: _focus,
                   autofocus: widget.autofocus,
-                  obscureText: widget.obscure,
+                  obscureText: widget.obscure && !_revealed,
                   keyboardType: widget.keyboardType,
                   textCapitalization: widget.textCapitalization,
                   autofillHints: widget.autofillHints,
@@ -134,6 +141,24 @@ class _LivelyFieldState extends State<LivelyField> {
                   ),
                 ),
               ),
+              if (widget.obscure && widget.canReveal) ...[
+                const SizedBox(width: 8),
+                GestureDetector(
+                  onTap: () => setState(() => _revealed = !_revealed),
+                  behavior: HitTestBehavior.opaque,
+                  child: Padding(
+                    padding: const EdgeInsets.all(4),
+                    child: Icon(
+                      _revealed
+                          ? Icons.visibility_off_outlined
+                          : Icons.visibility_outlined,
+                      color: p.textMuted,
+                      size: 20,
+                      semanticLabel: _revealed ? 'Hide password' : 'Show password',
+                    ),
+                  ),
+                ),
+              ],
               if (widget.trailing != null) ...[
                 const SizedBox(width: 8),
                 widget.trailing!,

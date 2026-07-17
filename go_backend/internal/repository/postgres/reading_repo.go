@@ -20,11 +20,14 @@ func NewReadingRepository(db *sqlx.DB) *ReadingRepository {
 	return &ReadingRepository{db: db}
 }
 
-func (r *ReadingRepository) GetByUserAndDate(ctx context.Context, userID uuid.UUID, date time.Time) (*domain.DailyReading, error) {
+func (r *ReadingRepository) GetByUserAndDate(ctx context.Context, userID uuid.UUID, date time.Time, lang string) (*domain.DailyReading, error) {
+	if lang == "" {
+		lang = "en"
+	}
 	var reading domain.DailyReading
 	err := r.db.GetContext(ctx, &reading,
-		`SELECT * FROM daily_readings WHERE user_id = $1 AND reading_date = $2`,
-		userID, date.Format("2006-01-02"),
+		`SELECT * FROM daily_readings WHERE user_id = $1 AND reading_date = $2 AND lang = $3`,
+		userID, date.Format("2006-01-02"), lang,
 	)
 	if errors.Is(err, sql.ErrNoRows) {
 		return nil, nil
@@ -35,17 +38,20 @@ func (r *ReadingRepository) GetByUserAndDate(ctx context.Context, userID uuid.UU
 func (r *ReadingRepository) Create(ctx context.Context, reading *domain.DailyReading) error {
 	reading.ID = uuid.New()
 	reading.CreatedAt = time.Now()
+	if reading.Lang == "" {
+		reading.Lang = "en"
+	}
 
 	_, err := r.db.ExecContext(ctx,
 		`INSERT INTO daily_readings (id, user_id, reading_date, sun_sign, moon_sign,
 		 rising_sign, energy_level, emotional, love, career, health, caution,
-		 action, affirmation, lucky_color, lucky_number, created_at)
-		 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17)`,
+		 action, affirmation, lucky_color, lucky_number, lang, created_at)
+		 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18)`,
 		reading.ID, reading.UserID, reading.ReadingDate, reading.SunSign,
 		reading.MoonSign, reading.RisingSign, reading.EnergyLevel,
 		reading.Emotional, reading.Love, reading.Career, reading.Health,
 		reading.Caution, reading.Action, reading.Affirmation,
-		reading.LuckyColor, reading.LuckyNumber, reading.CreatedAt,
+		reading.LuckyColor, reading.LuckyNumber, reading.Lang, reading.CreatedAt,
 	)
 	return err
 }

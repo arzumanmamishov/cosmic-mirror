@@ -1,5 +1,6 @@
 import 'package:cosmic_mirror/config/env.dart';
 import 'package:cosmic_mirror/core/error/exceptions.dart';
+import 'package:cosmic_mirror/core/network/app_locale.dart';
 import 'package:cosmic_mirror/features/auth/data/auth_storage.dart';
 import 'package:cosmic_mirror/features/auth/data/models/auth_tokens.dart';
 import 'package:dio/dio.dart';
@@ -37,6 +38,7 @@ class ApiClient {
     // 5xx. _ErrorInterceptor is last because it *throws* domain
     // exceptions, terminating the chain.
     _dio.interceptors.addAll([
+      _LocaleInterceptor(),
       _AuthInterceptor(_dio, _onSessionExpired),
       _RetryInterceptor(_dio),
       if (Env.isDev) _LoggingInterceptor(),
@@ -273,6 +275,17 @@ class _LoggingInterceptor extends Interceptor {
       '${err.message}',
     );
     handler.next(err);
+  }
+}
+
+/// Stamps `Accept-Language` on every outgoing request so the backend
+/// can tell the LLM which language to answer in, and switch its own
+/// chart-summary and deterministic-forecast templates.
+class _LocaleInterceptor extends Interceptor {
+  @override
+  void onRequest(RequestOptions options, RequestInterceptorHandler handler) {
+    options.headers['Accept-Language'] = currentLocaleCode;
+    handler.next(options);
   }
 }
 
