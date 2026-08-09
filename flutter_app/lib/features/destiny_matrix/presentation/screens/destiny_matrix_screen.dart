@@ -219,18 +219,170 @@ class _OctagramCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(24),
         border: Border.all(color: p.gold.withValues(alpha: 0.3)),
       ),
-      child: AspectRatio(
-        aspectRatio: 1,
-        child: LayoutBuilder(
-          builder: (context, constraints) {
-            final size = Size(constraints.maxWidth, constraints.maxHeight);
-            return _OctagramBoard(reading: reading, size: size);
-          },
-        ),
+      child: Stack(
+        children: [
+          AspectRatio(
+            aspectRatio: 1,
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                final size = Size(constraints.maxWidth, constraints.maxHeight);
+                return _OctagramBoard(reading: reading, size: size);
+              },
+            ),
+          ),
+          // Expand to a full-screen, pinch-to-zoom view.
+          Positioned(
+            top: 2,
+            right: 2,
+            child: Material(
+              color: p.surfaceElevated.withValues(alpha: 0.75),
+              shape: const CircleBorder(),
+              clipBehavior: Clip.antiAlias,
+              child: IconButton(
+                iconSize: 20,
+                visualDensity: VisualDensity.compact,
+                tooltip: 'Full screen',
+                icon: Icon(Icons.fullscreen_rounded, color: p.textSecondary),
+                onPressed: () => Navigator.of(context).push(
+                  MaterialPageRoute<void>(
+                    fullscreenDialog: true,
+                    builder: (_) => _OctagramFullScreen(reading: reading),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
 }
+
+/// Full-screen octagram that stays locked in the CENTER of the screen and is
+/// resized purely by a pinch gesture (it never drifts/pans off-centre). The
+/// board fills the screen at scale 1; pinch scales it about its centre.
+class _OctagramFullScreen extends StatefulWidget {
+  const _OctagramFullScreen({required this.reading});
+  final DestinyMatrixReading reading;
+
+  @override
+  State<_OctagramFullScreen> createState() => _OctagramFullScreenState();
+}
+
+class _OctagramFullScreenState extends State<_OctagramFullScreen> {
+  static const _minScale = 0.6;
+  static const _maxScale = 5.0;
+
+  double _scale = 1;
+  double _baseScale = 1;
+
+  @override
+  Widget build(BuildContext context) {
+    final p = context.palette;
+    return Scaffold(
+      backgroundColor: p.background,
+      body: Stack(
+        // Expand to the full screen; otherwise a loose Stack would shrink to
+        // the height of the (short) chrome row and the board with it.
+        fit: StackFit.expand,
+        children: [
+          // Pinch to scale about the centre; we deliberately ignore the focal
+          // pan so the graph always stays in the middle of the screen.
+          Positioned.fill(
+            child: GestureDetector(
+              onScaleStart: (_) => _baseScale = _scale,
+              onScaleUpdate: (details) {
+                final next =
+                    (_baseScale * details.scale).clamp(_minScale, _maxScale);
+                if (next != _scale) setState(() => _scale = next);
+              },
+              onDoubleTap: () => setState(() => _scale = 1),
+              child: Center(
+                child: Transform.scale(
+                  scale: _scale,
+                  // alignment defaults to center → graph stays centred. The
+                  // Stack now fills the screen, so these constraints are the
+                  // full viewport and the board fills the shortest side.
+                  child: LayoutBuilder(
+                    builder: (context, constraints) {
+                      final side = constraints.biggest.shortestSide;
+                      return SizedBox(
+                        width: side,
+                        height: side,
+                        child: _OctagramBoard(
+                          reading: widget.reading,
+                          size: Size(side, side),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+              ),
+            ),
+          ),
+          // Chrome pinned to the top; Positioned so it doesn't drive the
+          // Stack's size (which would shrink the board).
+          Positioned(
+            top: 0,
+            left: 0,
+            right: 0,
+            child: SafeArea(
+              child: Padding(
+                padding: const EdgeInsets.all(10),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Material(
+                      color: p.surface.withValues(alpha: 0.75),
+                      shape: const CircleBorder(),
+                      clipBehavior: Clip.antiAlias,
+                      child: IconButton(
+                        tooltip: 'Close',
+                        icon: Icon(Icons.close_rounded, color: p.textPrimary),
+                        onPressed: () => Navigator.of(context).pop(),
+                      ),
+                    ),
+                    // Flexible so the hint never overflows the row on narrow
+                    // screens or at large text scales; it ellipsises instead.
+                    Flexible(
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 6,
+                        ),
+                        decoration: BoxDecoration(
+                          color: p.surface.withValues(alpha: 0.75),
+                          borderRadius: BorderRadius.circular(100),
+                        ),
+                        child: Text(
+                          'Pinch to resize · double-tap to reset',
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(color: p.textSecondary, fontSize: 11),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Test-only hook that renders just the octagram board (no surrounding chrome)
+/// so a golden test can verify its geometry/colour in isolation.
+@visibleForTesting
+Widget debugOctagramBoard(DestinyMatrixReading reading, Size size) =>
+    _OctagramBoard(reading: reading, size: size);
+
+/// Test-only hook that renders the full-screen pinch-zoom view directly (no
+/// navigation), so a golden can verify the board fills and centres.
+@visibleForTesting
+Widget debugOctagramFullScreen(DestinyMatrixReading reading) =>
+    _OctagramFullScreen(reading: reading);
 
 /// Geometry + node layout for the full octagram. Screen-space angles: 0° =
 /// right, 90° = down, measured clockwise. The diamond cardinals sit on the
@@ -249,15 +401,22 @@ class _OctagramBoard extends StatelessWidget {
 
     // Radii. The outer ring (cardinals + corners) hugs the edge with room for
     // age labels; arm/diagonal nodes step inward from there to the center.
-    final outerR = shortest * 0.40;
-    final cardinalRadius = (shortest * 0.072).clamp(20.0, 34.0);
-    final cornerRadius = (shortest * 0.066).clamp(18.0, 30.0);
-    final centerRadius = (shortest * 0.078).clamp(24.0, 38.0);
-    final innerRadius = (shortest * 0.045).clamp(13.0, 20.0);
+    final outerR = shortest * 0.35;
+    final cardinalRadius = (shortest * 0.060).clamp(16.0, 42.0);
+    final cornerRadius = (shortest * 0.054).clamp(14.0, 38.0);
+    final centerRadius = (shortest * 0.066).clamp(18.0, 46.0);
+    final innerRadius = (shortest * 0.034).clamp(8.0, 24.0);
 
-    // Fractions along an edge for the 3 inner nodes, ordered [nearP, mid,
-    // nearCenter]. 0 = at the outer point, 1 = at the center.
-    const innerFractions = <double>[0.28, 0.52, 0.76];
+    // Fractions along an edge, 0 = at the outer point, 1 = at the center. The
+    // chakra arms carry three nodes spread from the cardinal toward the core;
+    // the generation diagonals carry two (mid + near-core), clustered in the
+    // outer third near each corner so the inner stretch is left for the
+    // generation-line arrows (matching the reference chart).
+    const armFractions = <double>[0.27, 0.47, 0.66];
+    const diagFractions = <double>[0.27, 0.48];
+    // Generation dots are small decorative markers, so they sit on a tighter
+    // radius than the chakra-arm nodes and never merge into a blob.
+    final diagRadius = innerRadius * 0.74;
 
     Offset polar(double r, double deg) => _polar(center, r, deg);
 
@@ -322,7 +481,7 @@ class _OctagramBoard extends StatelessWidget {
           keys: spec.$2,
           from: outerPos[spec.$1]!,
           center: center,
-          fractions: innerFractions,
+          fractions: armFractions,
           radius: innerRadius,
           chakra: true,
         ),
@@ -330,11 +489,13 @@ class _OctagramBoard extends StatelessWidget {
     }
 
     // Inner diagonal nodes (generation lines), each running corner -> center.
+    // The reference shows two dots per diagonal (mid + near-core); the near-core
+    // node is the generation-line endpoint the arrow points at.
     const diagSpecs = <(String, List<String>, Color)>[
-      ('tl', ['diag_tl_1', 'diag_tl_2', 'diag_tl_3'], _male),
-      ('tr', ['diag_tr_1', 'diag_tr_2', 'diag_tr_3'], _female),
-      ('br', ['diag_br_1', 'diag_br_2', 'diag_br_3'], _male),
-      ('bl', ['diag_bl_1', 'diag_bl_2', 'diag_bl_3'], _female),
+      ('tl', ['diag_tl_2', 'diag_tl_3'], _male),
+      ('tr', ['diag_tr_2', 'diag_tr_3'], _female),
+      ('br', ['diag_br_2', 'diag_br_3'], _male),
+      ('bl', ['diag_bl_2', 'diag_bl_3'], _female),
     ];
     for (final spec in diagSpecs) {
       children.addAll(
@@ -343,8 +504,8 @@ class _OctagramBoard extends StatelessWidget {
           keys: spec.$2,
           from: outerPos[spec.$1]!,
           center: center,
-          fractions: innerFractions,
-          radius: innerRadius,
+          fractions: diagFractions,
+          radius: diagRadius,
           chakra: false,
           diagColor: spec.$3,
         ),
@@ -426,7 +587,11 @@ class _OctagramBoard extends StatelessWidget {
     for (var i = 0; i < count; i++) {
       final t = fractions[i];
       final pos = Offset.lerp(from, center, t)!;
+      // Graduate the size: the node nearest the outer point is largest and they
+      // shrink toward the core, giving the inner web a clear hierarchy.
+      final r = radius * (1 - 0.15 * i);
       final Color color;
+      final _NodeKind kind;
       if (chakra) {
         // Map the node's fractional distance from center onto the spectrum:
         // closer to the outer cardinal = crown end, closer to center = warm.
@@ -434,15 +599,19 @@ class _OctagramBoard extends StatelessWidget {
             .round()
             .clamp(0, _chakraSpectrum.length - 1);
         color = _chakraSpectrum[idx];
+        kind = _NodeKind.inner;
       } else {
+        // Generation-line nodes read as clean outlined circles — the
+        // male/female colour lives in the arrows, not the dots (reference).
         color = diagColor ?? const Color(0xFF9E9E9E);
+        kind = _NodeKind.corner;
       }
       out.add(
         _placeNode(
           point: reading.pointFor(keys[i]),
           position: pos,
-          radius: radius,
-          kind: _NodeKind.inner,
+          radius: r,
+          kind: kind,
           innerColor: color,
         ),
       );
@@ -482,8 +651,10 @@ class _OctagramBoard extends StatelessWidget {
     // at 180°. Ages 0,10,20,... -> 180,225,270,315,0,45,90,135.
     const cornerAngles = <double>[180, 225, 270, 315, 0, 45, 90, 135];
 
-    final ringR = outerR * 1.06;
-    final labelR = outerR * 1.20;
+    // Keep the ladder clear of the big outer circles: ticks sit just beyond the
+    // circle edge (cardinal radius ≈ 0.17·outerR), corner labels a step further.
+    final ringR = outerR * 1.22;
+    final labelR = outerR * 1.36;
 
     final out = <Widget>[];
     for (final rung in ladder) {
@@ -607,27 +778,34 @@ class _OctagramPainter extends CustomPainter {
   }
 
   void _drawDiagonal(Canvas canvas, double fromDeg, double toDeg, Color color) {
-    final from = _polar(center, outerR * 0.82, fromDeg);
-    final to = _polar(center, outerR * 0.82, toDeg);
+    // The heads stop just short of the near-core generation node (diagonal
+    // fraction 0.48 from the corner ⇒ ~0.52·outerR from the centre) so the
+    // arrow points cleanly at the dot without burying it.
+    final from = _polar(center, outerR * 0.46, fromDeg);
+    final to = _polar(center, outerR * 0.46, toDeg);
+    // Arrowhead size scales with the board so it stays proportional at any size.
+    final headLen = (outerR * 0.065).clamp(7.0, 16.0);
     final paint = Paint()
       ..color = color
       ..style = PaintingStyle.stroke
-      ..strokeWidth = 1.8;
-    final fill = Paint()..color = color;
+      ..strokeWidth = (outerR * 0.013).clamp(1.6, 3.2)
+      ..strokeCap = StrokeCap.round;
+    final fill = Paint()
+      ..color = color
+      ..isAntiAlias = true;
     canvas
       ..drawLine(from, to, paint)
-      ..drawPath(_arrowhead(from, to), fill)
-      ..drawPath(_arrowhead(to, from), fill);
+      ..drawPath(_arrowhead(from, to, headLen), fill)
+      ..drawPath(_arrowhead(to, from, headLen), fill);
   }
 
-  Path _arrowhead(Offset tip, Offset from) {
+  Path _arrowhead(Offset tip, Offset from, double headLen) {
     final v = tip - from;
     final len = v.distance;
     if (len == 0) return Path();
     final dir = v / len;
     final perp = Offset(-dir.dy, dir.dx);
-    const headLen = 11.0;
-    const headWidth = 6.0;
+    final headWidth = headLen * 0.58;
     final base = tip - dir * headLen;
     return Path()
       ..moveTo(tip.dx, tip.dy)
@@ -850,7 +1028,7 @@ class _OctagramHint extends StatelessWidget {
   Widget build(BuildContext context) {
     final p = context.palette;
     return Text(
-      'Tap any node to read its arcana.',
+      'Tap any node to read its arcana · tap ⤢ for full screen & pinch-to-zoom.',
       textAlign: TextAlign.center,
       style: TextStyle(color: p.textTertiary, fontSize: 12),
     );
@@ -924,10 +1102,10 @@ void _showPointSheet(BuildContext context, DestinyPoint point) {
                   ),
                 ],
               ),
-              if (point.meaning.isNotEmpty) ...[
+              if (point.bestMeaning.isNotEmpty) ...[
                 const SizedBox(height: 18),
                 Text(
-                  point.meaning,
+                  point.bestMeaning,
                   style: TextStyle(
                     color: p.textSecondary,
                     fontSize: 14.5,

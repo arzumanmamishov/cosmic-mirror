@@ -11,6 +11,7 @@ class DestinyPoint extends Equatable {
     required this.arcana,
     required this.arcanaName,
     required this.meaning,
+    this.detailedMeaning = '',
   });
 
   factory DestinyPoint.fromJson(Map<String, dynamic> json) {
@@ -21,6 +22,7 @@ class DestinyPoint extends Equatable {
       arcana: (json['arcana'] as num?)?.toInt() ?? 0,
       arcanaName: json['arcana_name'] as String? ?? '',
       meaning: json['meaning'] as String? ?? '',
+      detailedMeaning: json['detailed_meaning'] as String? ?? '',
     );
   }
 
@@ -30,6 +32,13 @@ class DestinyPoint extends Equatable {
   final int arcana;
   final String arcanaName;
   final String meaning;
+
+  /// Long-form interpretation (server-generated, universal per arcana). Falls
+  /// back to [meaning] when empty.
+  final String detailedMeaning;
+
+  /// The richest available text for this point.
+  String get bestMeaning => detailedMeaning.isNotEmpty ? detailedMeaning : meaning;
 
   @override
   List<Object?> get props => [key, arcana];
