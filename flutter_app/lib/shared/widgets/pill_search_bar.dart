@@ -2,8 +2,6 @@ import 'package:cosmic_mirror/config/theme/app_palette.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-const _kGold = Color(0xFFD4B16A);
-
 /// Universal pill-shaped search field. Reads its colors from the active
 /// AppPalette so it renders correctly in both the dark cosmic theme and
 /// the iOS-style light theme.
@@ -48,7 +46,7 @@ class PillSearchBar extends StatelessWidget {
               onSubmitted: onSubmitted,
               onTap: onTap,
               readOnly: readOnly,
-              cursorColor: _kGold,
+              cursorColor: p.primary,
               style: GoogleFonts.poppins(
                 color: p.textPrimary,
                 fontSize: 14,

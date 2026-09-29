@@ -4,6 +4,7 @@ import 'package:cosmic_mirror/router/app_router.dart';
 import 'package:cosmic_mirror/shared/providers/locale_provider.dart';
 import 'package:cosmic_mirror/shared/providers/theme_provider.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class CosmicMirrorApp extends ConsumerWidget {
@@ -27,6 +28,19 @@ class CosmicMirrorApp extends ConsumerWidget {
       localizationsDelegates: AppLocalizations.localizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
       routerConfig: router,
+      // Status-bar icons follow the active theme: light icons on the dark
+      // cosmic ground, dark icons on the light macOS grey.
+      builder: (context, child) {
+        final dark = Theme.of(context).brightness == Brightness.dark;
+        return AnnotatedRegion<SystemUiOverlayStyle>(
+          value: dark
+              ? SystemUiOverlayStyle.light
+                  .copyWith(statusBarColor: Colors.transparent)
+              : SystemUiOverlayStyle.dark
+                  .copyWith(statusBarColor: Colors.transparent),
+          child: child!,
+        );
+      },
     );
   }
 }

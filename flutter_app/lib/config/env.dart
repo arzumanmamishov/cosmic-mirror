@@ -29,8 +29,10 @@ class Env {
   static String get apiBaseUrl {
     // A runtime override (set via Settings → Developer) beats the
     // compile-time default. This keeps a stale binary usable when the
-    // dev machine's LAN IP changes — no rebuild required.
-    final override = ApiUrlOverride.current;
+    // dev machine's LAN IP changes — no rebuild required. Dev builds only:
+    // in staging/prod a tampered prefs file must not be able to redirect
+    // traffic (and bearer tokens) to another host.
+    final override = isDev ? ApiUrlOverride.current : null;
     if (override != null && override.isNotEmpty) return override;
     switch (current) {
       case Environment.prod:

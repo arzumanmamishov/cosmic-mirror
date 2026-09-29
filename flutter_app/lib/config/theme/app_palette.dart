@@ -6,8 +6,8 @@ import 'package:flutter/material.dart';
 /// automatically switch when the theme changes.
 ///
 /// The token set follows the **Lively design system** ("Dark · Cosmic" +
-/// "Light · iOS" twins) — a warm bronze-gold accent on a near-black cosmic
-/// ground, with an iOS-warm cream light theme. Older token names
+/// "Light · macOS" twins) — a warm bronze-gold accent on a near-black cosmic
+/// ground, and a macOS system-color light theme (system blue on window grey). Older token names
 /// (`accent`, `surfaceElevated`, `textSecondary`, `textTertiary`, the
 /// gradient fields) are kept so existing screens compile unchanged; new
 /// screens should prefer the design-system names (`primaryHi`, `primaryDim`,
@@ -155,47 +155,48 @@ class AppPalette extends ThemeExtension<AppPalette> {
   );
 
   // ───────────────────────────────────────────────────────────────
-  // Light · iOS — warm cream ground, deeper gold for AA contrast.
+  // Light · macOS — system window grey, system blue accent, and the
+  // standard macOS label / separator alphas (see MacOSColors.light).
   // ───────────────────────────────────────────────────────────────
   static const light = AppPalette(
-    background: Color(0xFFFBF7EE),
-    bgDeep: Color(0xFFF4EFE2),
-    surface: Color(0xFFFFFFFF),
+    background: Color(0xFFECECEC), // windowBackground
+    bgDeep: Color(0xFFE3E3E3), // underPageBackground
+    surface: Color(0xFFFFFFFF), // controlBackground
     surfaceElevated: Color(0xFFFFFFFF),
     surfaceGlass: Color(0xB3FFFFFF), // white @ 70%
-    line: Color(0x141A1610), // ink @ 8%
-    primary: Color(0xFFA88546),
-    primaryHi: Color(0xFFC09957),
-    primaryDim: Color(0xFF7A6233),
-    onPrimary: Color(0xFFFFFBF1),
-    accent: Color(0xFFC09957),
-    gold: Color(0xFFA88546),
-    textPrimary: Color(0xFF1A1610),
-    textSecondary: Color(0xFF6B6259),
-    textTertiary: Color(0xFFA09989),
-    textMuted: Color(0xFF6B6259),
-    textDim: Color(0xFFA09989),
-    success: Color(0xFF5C8E66),
-    warning: Color(0xFFB57F3C),
-    error: Color(0xFFB85555),
-    glassBorder: Color(0x40A88546), // gold @ 25%
+    line: Color(0x1A000000), // separator
+    primary: Color(0xFF007AFF), // systemBlue
+    primaryHi: Color(0xFF3395FF),
+    primaryDim: Color(0xFF0062CC),
+    onPrimary: Color(0xFFFFFFFF),
+    accent: Color(0xFF5856D6), // systemIndigo
+    gold: Color(0xFF007AFF),
+    textPrimary: Color(0xD9000000), // label
+    textSecondary: Color(0x80000000), // secondaryLabel
+    textTertiary: Color(0x42000000), // tertiaryLabel
+    textMuted: Color(0x80000000),
+    textDim: Color(0x42000000),
+    success: Color(0xFF28CD41), // systemGreen
+    warning: Color(0xFFFF9500), // systemOrange
+    error: Color(0xFFFF3B30), // systemRed
+    glassBorder: Color(0x1F000000), // black @ 12%
     premiumGradient: LinearGradient(
-      colors: [Color(0xFFC09957), Color(0xFF7A6233)],
+      colors: [Color(0xFF007AFF), Color(0xFF5856D6)],
       begin: Alignment.topLeft,
       end: Alignment.bottomRight,
     ),
     primaryGradient: LinearGradient(
-      colors: [Color(0xFFC09957), Color(0xFFA88546)],
+      colors: [Color(0xFF3395FF), Color(0xFF007AFF)],
       begin: Alignment.topLeft,
       end: Alignment.bottomRight,
     ),
     cardGradient: LinearGradient(
-      colors: [Color(0xFFFFFFFF), Color(0xFFF8F0DD)],
+      colors: [Color(0xFFFFFFFF), Color(0xFFF5F5F7)],
       begin: Alignment.topLeft,
       end: Alignment.bottomRight,
     ),
     cosmicGlow: LinearGradient(
-      colors: [Color(0x1FA88546), Color(0x00FBF7EE)],
+      colors: [Color(0x1F007AFF), Color(0x00ECECEC)],
       begin: Alignment.topCenter,
       end: Alignment.bottomCenter,
     ),

@@ -42,6 +42,7 @@ import 'package:cosmic_mirror/features/vedic_chart/presentation/screens/vedic_ch
 import 'package:cosmic_mirror/features/yearly_forecast/presentation/screens/yearly_forecast_screen.dart';
 import 'package:cosmic_mirror/shared/providers/user_provider.dart';
 import 'package:cosmic_mirror/shared/widgets/error_page.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -512,24 +513,11 @@ CustomTransitionPage<void> _fadeTransition(
   );
 }
 
-CustomTransitionPage<void> _slideTransition(
+/// Native iOS-style push: parallax slide of the outgoing page, eased
+/// curves both ways, and edge swipe-back to pop.
+Page<void> _slideTransition(
   GoRouterState state,
   Widget child,
 ) {
-  return CustomTransitionPage(
-    key: state.pageKey,
-    child: child,
-    transitionsBuilder: (_, animation, __, child) {
-      return SlideTransition(
-        position: Tween<Offset>(
-          begin: const Offset(1, 0),
-          end: Offset.zero,
-        ).animate(CurvedAnimation(
-          parent: animation,
-          curve: Curves.easeOutCubic,
-        ),),
-        child: child,
-      );
-    },
-  );
+  return CupertinoPage<void>(key: state.pageKey, child: child);
 }

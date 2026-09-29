@@ -1,15 +1,12 @@
 import 'package:cosmic_mirror/config/theme/app_palette.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 class CosmicTheme {
   CosmicTheme._();
 
   static ThemeData get darkTheme => _build(AppPalette.dark, Brightness.dark);
   static ThemeData get lightTheme => _build(AppPalette.light, Brightness.light);
-
-  // Brand gold — used for text selection / cursor / handles so the
-  // platform's default blue/purple selection chrome never leaks through.
-  static const _gold = Color(0xFFD4B16A);
 
   static ThemeData _build(AppPalette p, Brightness brightness) {
     final baseTextTheme = brightness == Brightness.dark
@@ -24,8 +21,7 @@ class CosmicTheme {
       colorScheme: ColorScheme(
         brightness: brightness,
         primary: p.primary,
-        // primary is gold in both themes — its foreground must be the
-        // dark ink token, not white.
+        // Gold (dark) takes the ink token; system blue (light) takes white.
         onPrimary: p.onPrimary,
         secondary: p.accent,
         onSecondary: p.onPrimary,
@@ -44,6 +40,9 @@ class CosmicTheme {
         displayColor: p.textPrimary,
       ),
       appBarTheme: AppBarTheme(
+        systemOverlayStyle: brightness == Brightness.dark
+            ? SystemUiOverlayStyle.light
+            : SystemUiOverlayStyle.dark,
         backgroundColor: Colors.transparent,
         elevation: 0,
         scrolledUnderElevation: 0,
@@ -106,9 +105,9 @@ class CosmicTheme {
         ),
       ),
       textSelectionTheme: TextSelectionThemeData(
-        cursorColor: _gold,
-        selectionColor: _gold.withValues(alpha: 0.35),
-        selectionHandleColor: _gold,
+        cursorColor: p.primary,
+        selectionColor: p.primary.withValues(alpha: 0.35),
+        selectionHandleColor: p.primary,
       ),
       // Neutral InputDecorationTheme — no fill, no border, transparent
       // hover/focus tints. Each search/text-field widget styles its own

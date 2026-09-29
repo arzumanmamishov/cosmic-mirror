@@ -60,7 +60,7 @@ class _LivelyBackdropState extends State<LivelyBackdrop>
       radius: 1.5,
       colors: isDark
           ? const [Color(0xFF1F2547), Color(0xFF11132A), Color(0xFF08080F)]
-          : const [Color(0xFFF0E5CC), Color(0xFFF8F0DD), Color(0xFFFBF7EE)],
+          : const [Color(0xFFDCE7F7), Color(0xFFE6E9EF), Color(0xFFECECEC)],
       stops: const [0.0, 0.38, 0.74],
     );
 
@@ -79,9 +79,7 @@ class _LivelyBackdropState extends State<LivelyBackdrop>
                     seed: widget.seed,
                     count: count,
                     isDark: isDark,
-                    starColor: isDark
-                        ? const Color(0xFFFFF6E0)
-                        : p.primary,
+                    starColor: isDark ? const Color(0xFFFFF6E0) : p.primary,
                     auroraColor: p.primary,
                     t: _twinkle.value,
                   ),
@@ -148,14 +146,16 @@ class _StarfieldPainter extends CustomPainter {
     final out = <_Star>[];
     for (var i = 0; i < count; i++) {
       final big = rnd() < 0.08;
-      out.add(_Star(
-        rnd(),
-        rnd(),
-        big ? 1.6 + rnd() * 0.8 : 0.4 + rnd() * 0.8,
-        big ? 0.55 + rnd() * 0.35 : 0.15 + rnd() * 0.4,
-        twinkles: rnd() < 0.3,
-        phase: rnd(),
-      ),);
+      out.add(
+        _Star(
+          rnd(),
+          rnd(),
+          big ? 1.6 + rnd() * 0.8 : 0.4 + rnd() * 0.8,
+          big ? 0.55 + rnd() * 0.35 : 0.15 + rnd() * 0.4,
+          twinkles: rnd() < 0.3,
+          phase: rnd(),
+        ),
+      );
     }
     _cache[key] = out;
     return out;
