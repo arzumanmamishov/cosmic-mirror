@@ -13,6 +13,7 @@ import (
 	"cosmic-mirror/internal/repository"
 
 	"github.com/google/uuid"
+	"github.com/redis/go-redis/v9"
 )
 
 // ChatLimitError is returned by SendMessage when a free user has hit
@@ -41,6 +42,38 @@ type AIService struct {
 	userRepo      repository.UserRepository
 	aiClient      *openai.Client
 	freeChatLimit int
+	// rdb holds the per-user daily message counter. Unlike counting
+	// chat_messages rows, it can't be reset by deleting threads, and the
+	// INCR is atomic so parallel sends can't overshoot the cap.
+	rdb *redis.Client
+}
+
+// WithUsageCounter enables the Redis-backed daily message counter.
+func (s *AIService) WithUsageCounter(rdb *redis.Client) *AIService {
+	s.rdb = rdb
+	return s
+}
+
+func usageKey(userID uuid.UUID) string {
+	return fmt.Sprintf("ai:msgs:%s:%s", userID, time.Now().UTC().Format("20060102"))
+}
+
+// reserveMessage atomically counts one message against today's budget
+// and returns the new total. ok=false means Redis was unavailable and the
+// caller should fall back to the DB count.
+func (s *AIService) reserveMessage(ctx context.Context, userID uuid.UUID) (n int, ok bool) {
+	if s.rdb == nil {
+		return 0, false
+	}
+	key := usageKey(userID)
+	v, err := s.rdb.Incr(ctx, key).Result()
+	if err != nil {
+		return 0, false
+	}
+	if v == 1 {
+		s.rdb.Expire(ctx, key, 48*time.Hour)
+	}
+	return int(v), true
 }
 
 func NewAIService(
@@ -123,6 +156,14 @@ func (s *AIService) GetUsage(ctx context.Context, userID uuid.UUID, isPremium bo
 	if err != nil {
 		return nil, fmt.Errorf("count messages: %w", err)
 	}
+	if s.rdb != nil {
+		if v, err := s.rdb.Get(ctx, usageKey(userID)).Int(); err == nil && v > used {
+			used = v
+		}
+	}
+	if used > s.freeChatLimit {
+		used = s.freeChatLimit
+	}
 	return &ChatUsage{
 		Used:      used,
 		Limit:     s.freeChatLimit,
@@ -146,24 +187,33 @@ func (s *AIService) SendMessage(ctx context.Context, userID uuid.UUID, threadID 
 		return nil, err
 	}
 
+	// Validate input
+	if len(content) > 500 {
+		return nil, fmt.Errorf("message too long (max 500 characters)")
+	}
+
 	// Daily cap for free users — premium bypasses entirely.
 	if !isPremium {
-		count, err := s.chatRepo.CountUserMessagesToday(ctx, userID)
-		if err != nil {
-			return nil, fmt.Errorf("count messages: %w", err)
+		// Reserve first (atomic), compare after: the reservation is the
+		// message's own slot, so n > limit means over budget.
+		count, ok := s.reserveMessage(ctx, userID)
+		if ok {
+			count--
+		} else {
+			var err error
+			count, err = s.chatRepo.CountUserMessagesToday(ctx, userID)
+			if err != nil {
+				return nil, fmt.Errorf("count messages: %w", err)
+			}
 		}
 		if count >= s.freeChatLimit {
+			count = s.freeChatLimit
 			return nil, &ChatLimitError{
 				Used:    count,
 				Limit:   s.freeChatLimit,
 				ResetAt: nextResetAt(),
 			}
 		}
-	}
-
-	// Validate input
-	if len(content) > 500 {
-		return nil, fmt.Errorf("message too long (max 500 characters)")
 	}
 
 	// Save user message

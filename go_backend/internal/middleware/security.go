@@ -1,0 +1,183 @@
+package middleware
+
+import (
+	"fmt"
+	"log/slog"
+	"net"
+	"net/http"
+	"net/netip"
+	"os"
+	"strconv"
+	"strings"
+	"time"
+)
+
+// RealIP replaces r.RemoteAddr with the client's address, but only
+// believes X-Forwarded-For / X-Real-IP when the TCP peer is one of the
+// [trusted] proxy CIDRs. Otherwise anyone could spoof their IP (and dodge
+// per-IP rate limits) just by sending the header. From XFF it takes the
+// right-most hop that isn't itself a trusted proxy.
+func RealIP(trusted []string) func(http.Handler) http.Handler {
+	var prefixes []netip.Prefix
+	for _, c := range trusted {
+		p, err := netip.ParsePrefix(c)
+		if err != nil {
+			if a, err2 := netip.ParseAddr(c); err2 == nil {
+				p = netip.PrefixFrom(a, a.BitLen())
+			} else {
+				slog.Warn("ignoring invalid TRUSTED_PROXIES entry", "value", c)
+				continue
+			}
+		}
+		prefixes = append(prefixes, p)
+	}
+	isTrusted := func(ip string) bool {
+		a, err := netip.ParseAddr(strings.TrimSpace(ip))
+		if err != nil {
+			return false
+		}
+		a = a.Unmap()
+		for _, p := range prefixes {
+			if p.Contains(a) {
+				return true
+			}
+		}
+		return false
+	}
+
+	return func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			peer := hostOnly(r.RemoteAddr)
+			client := peer
+			if len(prefixes) > 0 && isTrusted(peer) {
+				if xff := r.Header.Get("X-Forwarded-For"); xff != "" {
+					hops := strings.Split(xff, ",")
+					for i := len(hops) - 1; i >= 0; i-- {
+						h := strings.TrimSpace(hops[i])
+						if _, err := netip.ParseAddr(h); err != nil {
+							break
+						}
+						client = h
+						if !isTrusted(h) {
+							break
+						}
+					}
+				} else if xr := strings.TrimSpace(r.Header.Get("X-Real-IP")); xr != "" {
+					if _, err := netip.ParseAddr(xr); err == nil {
+						client = xr
+					}
+				}
+			}
+			r.RemoteAddr = client
+			next.ServeHTTP(w, r)
+		})
+	}
+}
+
+// ClientIP returns the client address resolved by RealIP.
+func ClientIP(r *http.Request) string { return hostOnly(r.RemoteAddr) }
+
+func hostOnly(addr string) string {
+	if h, _, err := net.SplitHostPort(addr); err == nil {
+		return h
+	}
+	return addr
+}
+
+// SecurityHeaders sets conservative response headers. The API only
+// serves JSON and uploaded images, so nothing needs framing or scripts.
+func SecurityHeaders(hsts bool) func(http.Handler) http.Handler {
+	return func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			h := w.Header()
+			h.Set("X-Content-Type-Options", "nosniff")
+			h.Set("X-Frame-Options", "DENY")
+			h.Set("Referrer-Policy", "no-referrer")
+			h.Set("Content-Security-Policy", "default-src 'none'; img-src 'self'; frame-ancestors 'none'")
+			h.Set("Cross-Origin-Resource-Policy", "same-site")
+			if hsts {
+				h.Set("Strict-Transport-Security", "max-age=31536000; includeSubDomains")
+			}
+			next.ServeHTTP(w, r)
+		})
+	}
+}
+
+// MaxBody caps request bodies at [n] bytes so a client can't exhaust
+// memory with a huge JSON payload. Handlers that accept uploads apply
+// their own, larger MaxBytesReader and are skipped here.
+func MaxBody(n int64) func(http.Handler) http.Handler {
+	return func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			if !strings.HasPrefix(r.Header.Get("Content-Type"), "multipart/") {
+				r.Body = http.MaxBytesReader(w, r.Body, n)
+			}
+			next.ServeHTTP(w, r)
+		})
+	}
+}
+
+// LimitByIP is a fixed-window per-IP limiter for unauthenticated routes
+// (login, OTP, register, places). [bucket] namespaces the counter so each
+// route group gets its own budget.
+func (rl *RateLimiter) LimitByIP(bucket string, perMinute int) func(http.Handler) http.Handler {
+	return func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			window := time.Now().Unix() / 60
+			key := fmt.Sprintf("ratelimit:ip:%s:%s:%d", bucket, ClientIP(r), window)
+			ctx := r.Context()
+			count, err := rl.rdb.Incr(ctx, key).Result()
+			if err != nil {
+				// Redis down: fail open rather than lock everyone out.
+				next.ServeHTTP(w, r)
+				return
+			}
+			if count == 1 {
+				rl.rdb.Expire(ctx, key, 60*time.Second)
+			}
+			if int(count) > perMinute {
+				w.Header().Set("Retry-After", strconv.FormatInt((window+1)*60-time.Now().Unix(), 10))
+				respondError(w, http.StatusTooManyRequests, "rate_limit_exceeded",
+					"Too many requests. Please try again later.")
+				return
+			}
+			next.ServeHTTP(w, r)
+		})
+	}
+}
+
+// NoDirFS wraps a FileSystem so directories 404 instead of being listed
+// (a listing of /uploads/avatars/ would enumerate every user id).
+type NoDirFS struct{ FS http.FileSystem }
+
+func (n NoDirFS) Open(name string) (http.File, error) {
+	f, err := n.FS.Open(name)
+	if err != nil {
+		return nil, err
+	}
+	st, err := f.Stat()
+	if err != nil {
+		f.Close()
+		return nil, err
+	}
+	if st.IsDir() {
+		f.Close()
+		return nil, os.ErrNotExist
+	}
+	return f, nil
+}
+
+// RequirePremium rejects non-premium users with 403. Premium screens are
+// also gated in the app, but the paywall has to hold server-side too —
+// otherwise the endpoints can simply be called directly.
+func (rl *RateLimiter) RequirePremium(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		userID := UserIDFromContext(r.Context())
+		if rl.isPremium == nil || !rl.isPremium(r.Context(), userID) {
+			respondError(w, http.StatusForbidden, "premium_required",
+				"This feature requires a premium subscription.")
+			return
+		}
+		next.ServeHTTP(w, r)
+	})
+}

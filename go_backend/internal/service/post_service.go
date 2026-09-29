@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"errors"
+	"fmt"
 	"regexp"
 	"strings"
 
@@ -45,7 +46,8 @@ var (
 var hashtagRegex = regexp.MustCompile(`#(\w{1,50})`)
 
 func extractHashtags(content string) []string {
-	matches := hashtagRegex.FindAllStringSubmatch(content, -1)
+	// Capped: each tag is an upsert inside the post's transaction.
+	matches := hashtagRegex.FindAllStringSubmatch(content, domain.MaxHashtagsPerPost)
 	if len(matches) == 0 {
 		return nil
 	}
@@ -64,7 +66,10 @@ func extractHashtags(content string) []string {
 
 func (s *PostService) Create(ctx context.Context, userID, spaceID uuid.UUID, input domain.CreatePostInput) (*domain.Post, error) {
 	if strings.TrimSpace(input.Content) == "" {
-		return nil, errors.New("content is required")
+		return nil, fmt.Errorf("%w: content is required", domain.ErrInvalidInput)
+	}
+	if err := input.Validate(); err != nil {
+		return nil, err
 	}
 	// Posting requires approved membership — pending requesters can see
 	// the space header but cannot write into it.
@@ -158,6 +163,9 @@ func (s *PostService) ListBySpace(ctx context.Context, spaceID, userID uuid.UUID
 }
 
 func (s *PostService) Update(ctx context.Context, id, userID uuid.UUID, input domain.UpdatePostInput) error {
+	if err := input.Validate(); err != nil {
+		return err
+	}
 	post, err := s.postRepo.GetBareByID(ctx, id)
 	if err != nil {
 		return err

@@ -18,16 +18,21 @@ func NewRouter(h *handler.Handlers, auth *middleware.Auth, rl *middleware.RateLi
 
 	// Global middleware
 	r.Use(chimw.RequestID)
-	r.Use(chimw.RealIP)
+	// Only trusts X-Forwarded-For from TRUSTED_PROXIES (see RealIP).
+	r.Use(middleware.RealIP(cfg.TrustedProxies))
 	r.Use(middleware.Logger)
 	r.Use(chimw.Recoverer)
+	r.Use(middleware.SecurityHeaders(cfg.IsProd()))
+	r.Use(middleware.MaxBody(1 << 20))
 	r.Use(middleware.Language)
+	// Auth is a Bearer header, never a cookie, so CORS needs no
+	// credentials. Origins come from CORS_ORIGINS.
 	r.Use(cors.Handler(cors.Options{
-		AllowOriginFunc: func(r *http.Request, origin string) bool { return true },
+		AllowedOrigins:   cfg.CORSOrigins,
 		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
 		AllowedHeaders:   []string{"Accept", "Accept-Language", "Authorization", "Content-Type"},
 		ExposedHeaders:   []string{"X-RateLimit-Limit", "X-RateLimit-Remaining", "X-RateLimit-Reset"},
-		AllowCredentials: true,
+		AllowCredentials: false,
 		MaxAge:           300,
 	}))
 
@@ -41,7 +46,7 @@ func NewRouter(h *handler.Handlers, auth *middleware.Auth, rl *middleware.RateLi
 	// Files live under cfg.UploadsDir; the URL prefix is /uploads.
 	uploadsServer := http.StripPrefix(
 		"/uploads/",
-		http.FileServer(http.Dir(cfg.UploadsDir)),
+		http.FileServer(middleware.NoDirFS{FS: http.Dir(cfg.UploadsDir)}),
 	)
 	r.Get("/uploads/*", uploadsServer.ServeHTTP)
 
@@ -49,14 +54,22 @@ func NewRouter(h *handler.Handlers, auth *middleware.Auth, rl *middleware.RateLi
 	r.Route("/api/v1", func(r chi.Router) {
 		// Public: auth. The old Firebase /auth/session is kept as a 410
 		// stub — new clients hit /auth/register or /auth/login instead.
-		r.Post("/auth/session", h.Auth.CreateSession)
-		r.Post("/auth/otp/request", h.Auth.RequestOTP)
-		r.Post("/auth/register", h.Auth.Register)
-		r.Post("/auth/login", h.Auth.Login)
-		r.Post("/auth/login/otp", h.Auth.LoginOTP)
-		r.Post("/auth/password/reset", h.Auth.PasswordReset)
-		r.Post("/auth/refresh", h.Auth.Refresh)
-		r.Post("/auth/logout", h.Auth.Logout)
+		// Every public auth route is rate-limited per client IP — these
+		// are the password / OTP brute-force and mail-bombing targets.
+		r.Group(func(r chi.Router) {
+			r.Use(rl.LimitByIP("auth", 10))
+			r.Post("/auth/session", h.Auth.CreateSession)
+			r.Post("/auth/otp/request", h.Auth.RequestOTP)
+			r.Post("/auth/register", h.Auth.Register)
+			r.Post("/auth/login", h.Auth.Login)
+			r.Post("/auth/login/otp", h.Auth.LoginOTP)
+			r.Post("/auth/password/reset", h.Auth.PasswordReset)
+		})
+		r.Group(func(r chi.Router) {
+			r.Use(rl.LimitByIP("refresh", 30))
+			r.Post("/auth/refresh", h.Auth.Refresh)
+			r.Post("/auth/logout", h.Auth.Logout)
+		})
 
 		// Public: subscription webhooks (RevenueCat legacy + Stripe).
 		// Both must stay outside the auth-protected group because the
@@ -69,7 +82,7 @@ func NewRouter(h *handler.Handlers, auth *middleware.Auth, rl *middleware.RateLi
 		r.Get("/legal/terms", h.Auth.TermsOfService)
 
 		// Public: places search (geocoding)
-		r.Get("/places/search", h.Places.Search)
+		r.With(rl.LimitByIP("places", 30)).Get("/places/search", h.Places.Search)
 
 		// Protected routes
 		r.Group(func(r chi.Router) {
@@ -121,12 +134,13 @@ func NewRouter(h *handler.Handlers, auth *middleware.Auth, rl *middleware.RateLi
 			r.Post("/people/{personID}/compatibility", h.Compatibility.GenerateReport)
 
 			// Timeline & Forecast
-			r.Get("/timeline", h.Chart.GetTimeline)
-			r.Get("/forecast/yearly", h.Chart.GetYearlyForecast)
+			// Premium-only (enforced here, not just in the app).
+			r.With(rl.RequirePremium).Get("/timeline", h.Chart.GetTimeline)
+			r.With(rl.RequirePremium).Get("/forecast/yearly", h.Chart.GetYearlyForecast)
 
 			// Rituals
-			r.Get("/rituals/today", h.User.GetRitualsToday)
-			r.Post("/rituals/{type}/complete", h.User.CompleteRitual)
+			r.With(rl.RequirePremium).Get("/rituals/today", h.User.GetRitualsToday)
+			r.With(rl.RequirePremium).Post("/rituals/{type}/complete", h.User.CompleteRitual)
 
 			// Journal
 			r.Get("/journal", h.Journal.List)

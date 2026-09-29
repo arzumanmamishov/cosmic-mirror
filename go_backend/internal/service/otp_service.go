@@ -57,7 +57,10 @@ func (s *OTPService) Request(ctx context.Context, email string, purpose otp.Purp
 	// Rate limit per email (DB-backed; Redis fast path could be layered
 	// later without changing the signature).
 	n, err := s.repo.RecentCountForEmail(ctx, email, otpPerEmailWindow)
-	if err == nil && n >= otpPerEmailMax {
+	if err != nil {
+		return 0, fmt.Errorf("otp: rate-limit check: %w", err)
+	}
+	if n >= otpPerEmailMax {
 		return 0, ErrOTPRateLimited
 	}
 	code, err := generateOTPCode()
@@ -95,19 +98,26 @@ func (s *OTPService) VerifyAndConsume(ctx context.Context, email string, purpose
 	if err != nil {
 		return err
 	}
-	if time.Now().After(row.ExpiresAt) {
+	// Spend a guess atomically BEFORE comparing (see ReserveAttempt).
+	codeHash, err := s.repo.ReserveAttempt(ctx, row.ID)
+	if errors.Is(err, otp.ErrNotFound) {
 		return ErrOTPInvalid
 	}
-	if row.Attempts >= row.MaxAttempts {
-		return ErrOTPInvalid
+	if err != nil {
+		return err
 	}
-	want, _ := hex.DecodeString(row.CodeHash)
+	want, _ := hex.DecodeString(codeHash)
 	got, _ := hex.DecodeString(sha256Hex(code))
 	if subtle.ConstantTimeCompare(want, got) != 1 {
-		_ = s.repo.IncrementAttempts(ctx, row.ID)
 		return ErrOTPInvalid
 	}
-	return s.repo.Consume(ctx, row.ID, ip)
+	if err := s.repo.Consume(ctx, row.ID, ip); err != nil {
+		if errors.Is(err, otp.ErrNotFound) {
+			return ErrOTPInvalid
+		}
+		return err
+	}
+	return nil
 }
 
 func (s *OTPService) sendEmail(ctx context.Context, email string, purpose otp.Purpose, code string) error {

@@ -142,14 +142,14 @@ func (s *smtpMailer) Send(ctx context.Context, m Message) error {
 		return ctx.Err()
 	case err := <-done:
 		if err != nil {
+			// Never log the subject/body — OTP codes live there.
 			slog.Error("smtp send failed",
 				"error", err,
 				"to", m.To,
-				"subject", m.Subject,
 			)
 			return fmt.Errorf("mailer: smtp send: %w", err)
 		}
-		slog.Info("email sent", "to", m.To, "subject", m.Subject)
+		slog.Info("email sent", "to", m.To)
 		return nil
 	}
 }

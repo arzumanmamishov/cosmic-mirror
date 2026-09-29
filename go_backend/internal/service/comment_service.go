@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"errors"
+	"fmt"
 	"strings"
 
 	"cosmic-mirror/internal/domain"
@@ -48,7 +49,10 @@ var ErrCommentNotFound = errors.New("comment not found")
 
 func (s *CommentService) Create(ctx context.Context, userID, postID uuid.UUID, input domain.CreateCommentInput) (*domain.Comment, error) {
 	if strings.TrimSpace(input.Content) == "" {
-		return nil, errors.New("content is required")
+		return nil, fmt.Errorf("%w: content is required", domain.ErrInvalidInput)
+	}
+	if err := input.Validate(); err != nil {
+		return nil, err
 	}
 	post, err := s.postRepo.GetBareByID(ctx, postID)
 	if err != nil {
@@ -70,12 +74,19 @@ func (s *CommentService) Create(ctx context.Context, userID, postID uuid.UUID, i
 
 	// Pre-fetch parent author for the "comment_replied" notification path
 	// (before transaction so we can compute it in a single round-trip).
+	// The parent must be a comment on THIS post — otherwise a member could
+	// thread under (and notify the author of) a comment in a space they
+	// can't see.
 	var parentAuthorID *uuid.UUID
 	if input.ParentCommentID != nil {
 		parent, err := s.commentRepo.GetBareByID(ctx, *input.ParentCommentID)
-		if err == nil && parent != nil {
-			parentAuthorID = &parent.AuthorID
+		if err != nil {
+			return nil, err
 		}
+		if parent == nil || parent.PostID != postID {
+			return nil, ErrCommentNotFound
+		}
+		parentAuthorID = &parent.AuthorID
 	}
 
 	err = postgres.WithTx(ctx, s.db, func(tx *sqlx.Tx) error {
@@ -137,6 +148,9 @@ func (s *CommentService) ListByPost(ctx context.Context, postID, userID uuid.UUI
 }
 
 func (s *CommentService) Update(ctx context.Context, id, userID uuid.UUID, input domain.UpdateCommentInput) error {
+	if err := input.Validate(); err != nil {
+		return err
+	}
 	c, err := s.commentRepo.GetBareByID(ctx, id)
 	if err != nil {
 		return err

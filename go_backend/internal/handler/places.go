@@ -60,7 +60,7 @@ func (h *PlacesHandler) Search(w http.ResponseWriter, r *http.Request) {
 	}
 	defer resp.Body.Close()
 
-	body, err := io.ReadAll(resp.Body)
+	body, err := io.ReadAll(io.LimitReader(resp.Body, 1<<20))
 	if err != nil {
 		respondError(w, http.StatusInternalServerError, "read_error", err.Error())
 		return

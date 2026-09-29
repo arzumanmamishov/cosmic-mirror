@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"strconv"
 	"time"
+	"unicode/utf8"
 
 	"cosmic-mirror/internal/domain"
 	"cosmic-mirror/internal/middleware"
@@ -46,11 +47,19 @@ func (h *JournalHandler) List(w http.ResponseWriter, r *http.Request) {
 	respondSuccess(w, map[string]any{"entries": entries})
 }
 
+// maxJournalRunes caps a single journal entry.
+const maxJournalRunes = 10000
+
 func (h *JournalHandler) Create(w http.ResponseWriter, r *http.Request) {
 	userID := middleware.UserIDFromContext(r.Context())
 	var input domain.CreateJournalInput
 	if err := decodeBody(r, &input); err != nil {
 		respondError(w, http.StatusBadRequest, "invalid_body", "Invalid request body")
+		return
+	}
+	if utf8.RuneCountInString(input.Content) > maxJournalRunes ||
+		(input.Mood != nil && len(*input.Mood) > 32) {
+		respondError(w, http.StatusBadRequest, "invalid_body", "Journal entry is too long")
 		return
 	}
 
@@ -86,6 +95,11 @@ func (h *JournalHandler) Update(w http.ResponseWriter, r *http.Request) {
 	var input domain.UpdateJournalInput
 	if err := decodeBody(r, &input); err != nil {
 		respondError(w, http.StatusBadRequest, "invalid_body", "Invalid request body")
+		return
+	}
+	if (input.Content != nil && utf8.RuneCountInString(*input.Content) > maxJournalRunes) ||
+		(input.Mood != nil && len(*input.Mood) > 32) {
+		respondError(w, http.StatusBadRequest, "invalid_body", "Journal entry is too long")
 		return
 	}
 

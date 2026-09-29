@@ -77,6 +77,9 @@ func (s *CommunityService) GetSpace(ctx context.Context, id, userID uuid.UUID) (
 }
 
 func (s *CommunityService) CreateSpace(ctx context.Context, userID uuid.UUID, input domain.CreateSpaceInput) (*domain.Space, error) {
+	if err := input.Validate(); err != nil {
+		return nil, err
+	}
 	handle := strings.ToLower(strings.TrimSpace(input.Handle))
 	if !handleRegex.MatchString(handle) {
 		return nil, ErrInvalidHandle
@@ -117,6 +120,9 @@ func (s *CommunityService) CreateSpace(ctx context.Context, userID uuid.UUID, in
 }
 
 func (s *CommunityService) UpdateSpace(ctx context.Context, id, userID uuid.UUID, input domain.UpdateSpaceInput) error {
+	if err := input.Validate(); err != nil {
+		return err
+	}
 	if err := s.assertOwner(ctx, id, userID); err != nil {
 		return err
 	}
@@ -262,7 +268,18 @@ func (s *CommunityService) LeaveSpace(ctx context.Context, spaceID, userID uuid.
 	})
 }
 
-func (s *CommunityService) ListMembers(ctx context.Context, spaceID uuid.UUID, limit, offset int) ([]domain.SpaceMember, error) {
+// ListMembers is members-only, like the space's posts: a non-member must
+// not be able to enumerate who belongs to a private space.
+func (s *CommunityService) ListMembers(ctx context.Context, viewerID, spaceID uuid.UUID, limit, offset int) ([]domain.SpaceMember, error) {
+	ok, err := s.memberRepo.IsApprovedMember(ctx, spaceID, viewerID)
+	if err != nil {
+		return nil, err
+	}
+	if !ok {
+		if err := s.assertOwner(ctx, spaceID, viewerID); err != nil {
+			return nil, err
+		}
+	}
 	return s.memberRepo.ListBySpace(ctx, spaceID, limit, offset)
 }
 

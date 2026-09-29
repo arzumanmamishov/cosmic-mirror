@@ -16,9 +16,11 @@ package handler
 
 import (
 	"context"
+	"cosmic-mirror/internal/middleware"
 	"encoding/json"
 	"errors"
 	"net/http"
+	"net/mail"
 	"strings"
 
 	"cosmic-mirror/internal/otp"
@@ -136,6 +138,12 @@ func (h *AuthHandler) Register(w http.ResponseWriter, r *http.Request) {
 			"Password must be at least 8 characters")
 		return
 	}
+	// bcrypt only uses the first 72 bytes and errors past that.
+	if len(in.Password) > 72 {
+		respondError(w, http.StatusBadRequest, "invalid_password",
+			"Password must be at most 72 characters")
+		return
+	}
 	sess, err := h.auth.RegisterVerify(r.Context(),
 		in.Email, in.Code, strings.TrimSpace(in.Name), in.Password,
 		clientIP(r), r.UserAgent(),
@@ -154,7 +162,7 @@ func (h *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 		respondError(w, http.StatusBadRequest, "invalid_body", "Invalid request body")
 		return
 	}
-	if !isEmail(in.Email) || in.Password == "" {
+	if !isEmail(in.Email) || in.Password == "" || len(in.Password) > 72 {
 		respondError(w, http.StatusBadRequest, "invalid_body", "Email and password are required")
 		return
 	}
@@ -199,7 +207,7 @@ func (h *AuthHandler) PasswordReset(w http.ResponseWriter, r *http.Request) {
 		respondError(w, http.StatusBadRequest, "invalid_body", "Invalid request body")
 		return
 	}
-	if !isEmail(in.Email) || len(in.Code) != 6 || len(in.NewPassword) < 8 {
+	if !isEmail(in.Email) || len(in.Code) != 6 || len(in.NewPassword) < 8 || len(in.NewPassword) > 72 {
 		respondError(w, http.StatusBadRequest, "invalid_body",
 			"Email, 6-digit code, and new password (8+ chars) are required")
 		return
@@ -314,33 +322,23 @@ func (h *AuthHandler) writeAuthError(w http.ResponseWriter, err error) {
 	}
 }
 
-// clientIP walks X-Forwarded-For / X-Real-IP then falls back to RemoteAddr.
-func clientIP(r *http.Request) string {
-	if v := r.Header.Get("X-Forwarded-For"); v != "" {
-		if i := strings.IndexByte(v, ','); i >= 0 {
-			return strings.TrimSpace(v[:i])
-		}
-		return strings.TrimSpace(v)
-	}
-	if v := r.Header.Get("X-Real-IP"); v != "" {
-		return strings.TrimSpace(v)
-	}
-	if i := strings.LastIndexByte(r.RemoteAddr, ':'); i >= 0 {
-		return r.RemoteAddr[:i]
-	}
-	return r.RemoteAddr
-}
+// clientIP is the address resolved by middleware.RealIP, which only
+// honours forwarding headers from trusted proxies.
+func clientIP(r *http.Request) string { return middleware.ClientIP(r) }
 
-// isEmail is a deliberately lenient shape check — real deliverability is
-// only known after we try to send. Rejects the obvious "abc" and empty.
+// isEmail checks the address parses as a bare RFC 5322 address with a
+// dotted domain. Parsing (rather than a substring check) also rejects
+// CR/LF and spaces, which matter because the address ends up in a mail
+// header.
 func isEmail(s string) bool {
 	s = strings.TrimSpace(s)
 	if len(s) < 5 || len(s) > 254 {
 		return false
 	}
-	at := strings.IndexByte(s, '@')
-	if at <= 0 || at == len(s)-1 {
+	addr, err := mail.ParseAddress(s)
+	if err != nil || addr.Address != s || addr.Name != "" {
 		return false
 	}
-	return strings.Contains(s[at+1:], ".")
+	at := strings.LastIndexByte(s, '@')
+	return at > 0 && strings.Contains(s[at+1:], ".")
 }

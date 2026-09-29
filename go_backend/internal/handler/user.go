@@ -2,6 +2,7 @@ package handler
 
 import (
 	"net/http"
+	"unicode/utf8"
 
 	"cosmic-mirror/internal/domain"
 	"cosmic-mirror/internal/middleware"
@@ -67,6 +68,11 @@ func (h *UserHandler) UpdateMe(w http.ResponseWriter, r *http.Request) {
 	var input domain.UpdateUserInput
 	if err := decodeBody(r, &input); err != nil {
 		respondError(w, http.StatusBadRequest, "invalid_body", "Invalid request body")
+		return
+	}
+	// The display name is shown to other users and fed into AI prompts.
+	if input.Name != nil && utf8.RuneCountInString(*input.Name) > 80 {
+		respondError(w, http.StatusBadRequest, "invalid_body", "Name must be at most 80 characters")
 		return
 	}
 	if err := h.userSvc.UpdateUser(r.Context(), userID, input); err != nil {
@@ -203,6 +209,18 @@ func (h *UserHandler) UpdatePreferences(w http.ResponseWriter, r *http.Request) 
 	if err := decodeBody(r, &input); err != nil {
 		respondError(w, http.StatusBadRequest, "invalid_body", "Invalid request body")
 		return
+	}
+	if input.FocusAreas != nil {
+		if len(*input.FocusAreas) > 20 {
+			respondError(w, http.StatusBadRequest, "invalid_body", "Too many focus areas")
+			return
+		}
+		for _, f := range *input.FocusAreas {
+			if len(f) > 64 {
+				respondError(w, http.StatusBadRequest, "invalid_body", "Focus area is too long")
+				return
+			}
+		}
 	}
 	prefs, err := h.loadPrefs(r, userID)
 	if err != nil {

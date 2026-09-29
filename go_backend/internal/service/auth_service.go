@@ -19,6 +19,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log/slog"
 	"strings"
 	"time"
 
@@ -220,11 +221,19 @@ func (s *AuthService) PasswordResetVerify(ctx context.Context, email, code, newP
 // new one is issued, and a fresh access token is returned. Presenting an
 // already-rotated (or unknown) token returns ErrAuthInvalidRefresh.
 func (s *AuthService) Refresh(ctx context.Context, plainRefresh, ip, userAgent string) (*Session, error) {
-	row, err := s.rtRepo.FindActiveByHash(ctx, tokens.HashRefresh(plainRefresh))
+	hash := tokens.HashRefresh(plainRefresh)
+	row, err := s.rtRepo.FindActiveByHash(ctx, hash)
 	if err != nil {
 		return nil, err
 	}
 	if row == nil {
+		// A token that was already rotated away is being replayed — likely
+		// stolen. Kill every session for that user. The grace window lets a
+		// client's own near-simultaneous double refresh fail quietly.
+		if owner, _ := s.rtRepo.FindReusedOwner(ctx, hash, 30*time.Second); owner != uuid.Nil {
+			slog.Warn("refresh token reuse detected; revoking all sessions", "user_id", owner)
+			_ = s.rtRepo.RevokeAllForUser(ctx, owner)
+		}
 		return nil, ErrAuthInvalidRefresh
 	}
 	user, err := s.userRepo.GetByID(ctx, row.UserID)
@@ -243,8 +252,13 @@ func (s *AuthService) Refresh(ctx context.Context, plainRefresh, ip, userAgent s
 	if err != nil {
 		return nil, err
 	}
-	if _, err := s.rtRepo.Rotate(ctx, row.ID, tokens.HashRefresh(newRefresh), refreshExp, ip, userAgent); err != nil {
+	newID, err := s.rtRepo.Rotate(ctx, row.ID, tokens.HashRefresh(newRefresh), refreshExp, ip, userAgent)
+	if err != nil {
 		return nil, err
+	}
+	if newID == uuid.Nil {
+		// Lost a concurrent-rotation race for this token.
+		return nil, ErrAuthInvalidRefresh
 	}
 	return &Session{
 		User:             user,

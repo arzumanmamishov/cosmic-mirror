@@ -65,7 +65,7 @@ func (h *StripeHandler) Cancel(w http.ResponseWriter, r *http.Request) {
 // events here and signs them with our webhook secret; we verify the
 // signature and update local subscription state.
 func (h *StripeHandler) HandleWebhook(w http.ResponseWriter, r *http.Request) {
-	body, err := io.ReadAll(r.Body)
+	body, err := io.ReadAll(io.LimitReader(r.Body, 64<<10))
 	if err != nil {
 		respondError(w, http.StatusBadRequest, "read_error", "Failed to read body")
 		return

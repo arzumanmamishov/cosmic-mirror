@@ -40,7 +40,13 @@ type UserRepository interface {
 type RefreshTokenRepository interface {
 	Insert(ctx context.Context, userID uuid.UUID, tokenHash string, expiresAt time.Time, ip, userAgent string) (uuid.UUID, error)
 	FindActiveByHash(ctx context.Context, tokenHash string) (*domain.RefreshToken, error)
+	// Rotate returns (uuid.Nil, nil) when oldID was already revoked by a
+	// concurrent caller — the loser of the race gets no new token.
 	Rotate(ctx context.Context, oldID uuid.UUID, newTokenHash string, expiresAt time.Time, ip, userAgent string) (uuid.UUID, error)
+	// FindReusedOwner returns the owner of tokenHash if it is an
+	// already-rotated token that was rotated more than [grace] ago —
+	// i.e. a replay of a stolen token. Returns uuid.Nil otherwise.
+	FindReusedOwner(ctx context.Context, tokenHash string, grace time.Duration) (uuid.UUID, error)
 	Revoke(ctx context.Context, id uuid.UUID) error
 	RevokeByHash(ctx context.Context, tokenHash string) error
 	RevokeAllForUser(ctx context.Context, userID uuid.UUID) error

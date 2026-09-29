@@ -4,6 +4,7 @@ import (
 	"errors"
 	"net/http"
 	"strings"
+	"unicode/utf8"
 
 	"cosmic-mirror/internal/domain"
 	"cosmic-mirror/internal/middleware"
@@ -45,6 +46,12 @@ func (h *CompatibilityHandler) AddPerson(w http.ResponseWriter, r *http.Request)
 		strings.TrimSpace(input.BirthPlace) == "" || input.Timezone == "" {
 		respondError(w, http.StatusBadRequest, "invalid_body",
 			"name, birth_date, birth_place and timezone are required")
+		return
+	}
+	// These strings are fed into the LLM prompt — cap them.
+	if utf8.RuneCountInString(input.Name) > 80 || utf8.RuneCountInString(input.BirthPlace) > 200 ||
+		len(input.BirthDate) > 32 || len(input.Timezone) > 64 {
+		respondError(w, http.StatusBadRequest, "invalid_body", "One or more fields are too long")
 		return
 	}
 	person, err := h.compatSvc.AddPerson(r.Context(), userID, input)

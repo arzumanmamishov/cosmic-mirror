@@ -39,6 +39,12 @@ func (h *DailyReadingHandler) GetByDate(w http.ResponseWriter, r *http.Request) 
 		respondError(w, http.StatusBadRequest, "invalid_date", "Date must be in YYYY-MM-DD format")
 		return
 	}
+	// Each new date triggers a fresh LLM generation, so only allow a small
+	// window around today — otherwise one user could mint unlimited calls.
+	if d := time.Since(date); d > 8*24*time.Hour || d < -8*24*time.Hour {
+		respondError(w, http.StatusBadRequest, "invalid_date", "Date must be within 7 days of today")
+		return
+	}
 
 	reading, err := h.readingSvc.GetDailyReading(r.Context(), userID, date)
 	if err != nil {

@@ -46,14 +46,21 @@ type Config struct {
 	JWTSecret           string
 	JWTAccessTTLMinutes int
 	JWTRefreshTTLDays   int
+
+	// TrustedProxies are the CIDRs of reverse proxies / load balancers
+	// whose X-Forwarded-For / X-Real-IP headers we believe. Empty = trust
+	// nobody and use the TCP peer address.
+	TrustedProxies []string
 }
 
 func Load() (*Config, error) {
 	_ = godotenv.Load()
 
 	cfg := &Config{
-		Port:                    getEnv("PORT", "8080"),
-		Environment:             getEnv("ENVIRONMENT", "dev"),
+		Port: getEnv("PORT", "8080"),
+		// Fail safe: a deploy that forgets ENVIRONMENT runs with prod
+		// checks, never with dev fallbacks.
+		Environment:             getEnv("ENVIRONMENT", "prod"),
 		LogLevel:                getEnv("LOG_LEVEL", "info"),
 		CORSOrigins:             strings.Split(getEnv("CORS_ORIGINS", "*"), ","),
 		DatabaseURL:             getEnv("DATABASE_URL", ""),
@@ -81,6 +88,7 @@ func Load() (*Config, error) {
 		JWTSecret:               getEnv("JWT_SECRET", ""),
 		JWTAccessTTLMinutes:     getEnvInt("JWT_ACCESS_TTL_MINUTES", 15),
 		JWTRefreshTTLDays:       getEnvInt("JWT_REFRESH_TTL_DAYS", 30),
+		TrustedProxies:          splitNonEmpty(getEnv("TRUSTED_PROXIES", "")),
 	}
 
 	if cfg.DatabaseURL == "" {
@@ -95,6 +103,19 @@ func Load() (*Config, error) {
 			return nil, fmt.Errorf("JWT_SECRET is required outside dev")
 		}
 	}
+	if !cfg.IsDev() {
+		// Outside dev, refuse to boot with settings an attacker could
+		// exploit rather than silently degrading.
+		if len(cfg.JWTSecret) < 32 {
+			return nil, fmt.Errorf("JWT_SECRET must be at least 32 characters outside dev")
+		}
+		if strings.TrimSpace(cfg.SMTPHost) == "" {
+			return nil, fmt.Errorf("SMTP_HOST is required outside dev (otherwise OTP codes would only go to logs)")
+		}
+		if cfg.StripeSecretKey != "" && cfg.StripeWebhookSecret == "" {
+			return nil, fmt.Errorf("STRIPE_WEBHOOK_SECRET is required when Stripe is configured")
+		}
+	}
 
 	return cfg, nil
 }
@@ -107,6 +128,16 @@ func getEnv(key, fallback string) string {
 		return val
 	}
 	return fallback
+}
+
+func splitNonEmpty(s string) []string {
+	var out []string
+	for _, part := range strings.Split(s, ",") {
+		if p := strings.TrimSpace(part); p != "" {
+			out = append(out, p)
+		}
+	}
+	return out
 }
 
 func getEnvInt(key string, fallback int) int {

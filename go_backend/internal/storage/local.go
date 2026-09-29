@@ -8,9 +8,11 @@
 package storage
 
 import (
+	"bytes"
 	"errors"
 	"fmt"
 	"io"
+	"net/http"
 	"os"
 	"path/filepath"
 	"strings"
@@ -53,6 +55,19 @@ func (s *AvatarStore) SaveAvatar(userID uuid.UUID, originalName string, r io.Rea
 		return "", fmt.Errorf("unsupported file type %q", ext)
 	}
 
+	// Check the actual bytes, not just the filename: /uploads is served
+	// publicly, so an HTML/SVG payload named x.jpg must never land there.
+	head := make([]byte, 512)
+	n, err := io.ReadFull(r, head)
+	if err != nil && !errors.Is(err, io.ErrUnexpectedEOF) {
+		return "", fmt.Errorf("read upload: %w", err)
+	}
+	head = head[:n]
+	if !isAllowedImage(head) {
+		return "", fmt.Errorf("file is not a supported image")
+	}
+	r = io.MultiReader(bytes.NewReader(head), r)
+
 	dir := filepath.Join(s.BaseDir, "avatars")
 	if err := os.MkdirAll(dir, 0o755); err != nil {
 		return "", fmt.Errorf("create avatar dir: %w", err)
@@ -80,6 +95,22 @@ func (s *AvatarStore) SaveAvatar(userID uuid.UUID, originalName string, r io.Rea
 	}
 
 	return fmt.Sprintf("%s/avatars/%s", s.PublicPrefix, filename), nil
+}
+
+// isAllowedImage sniffs magic bytes: JPEG / PNG / WebP via the stdlib
+// sniffer, HEIC/HEIF via its ISO-BMFF "ftyp" brand.
+func isAllowedImage(head []byte) bool {
+	switch http.DetectContentType(head) {
+	case "image/jpeg", "image/png", "image/webp":
+		return true
+	}
+	if len(head) >= 12 && string(head[4:8]) == "ftyp" {
+		switch string(head[8:12]) {
+		case "heic", "heix", "hevc", "hevx", "mif1", "msf1", "heim", "heis":
+			return true
+		}
+	}
+	return false
 }
 
 // DeleteAvatar removes any avatar files belonging to userID.

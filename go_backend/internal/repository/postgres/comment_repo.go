@@ -68,7 +68,7 @@ func (r *CommentRepository) GetBareByID(ctx context.Context, id uuid.UUID) (*dom
 func (r *CommentRepository) ListByPost(ctx context.Context, postID, currentUserID uuid.UUID) ([]domain.CommentWithMeta, error) {
 	var comments []domain.CommentWithMeta
 	err := r.db.SelectContext(ctx, &comments,
-		commentWithMetaSelect+` WHERE c.post_id = $2 ORDER BY c.created_at ASC`,
+		commentWithMetaSelect+` WHERE c.post_id = $2 ORDER BY c.created_at ASC LIMIT 500`,
 		currentUserID, postID,
 	)
 	return comments, err

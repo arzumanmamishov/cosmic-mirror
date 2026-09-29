@@ -83,11 +83,18 @@ func (r *PostRepository) ListBySpace(ctx context.Context, spaceID, currentUserID
 
 // ListByAuthor returns posts authored by `authorID`, viewed by `currentUserID`
 // (the per-viewer is_liked_by_me flag is computed for the viewer, not the
-// author). Used by the user community-profile screen.
+// author). Used by the user community-profile screen. Only posts from
+// spaces the VIEWER is an approved member of are returned — spaces are
+// members-only, so a profile must not leak their content.
 func (r *PostRepository) ListByAuthor(ctx context.Context, authorID, currentUserID uuid.UUID, limit, offset int) ([]domain.PostWithMeta, error) {
 	var posts []domain.PostWithMeta
 	err := r.db.SelectContext(ctx, &posts,
-		postWithMetaSelect+` WHERE p.author_id = $2 ORDER BY p.created_at DESC LIMIT $3 OFFSET $4`,
+		postWithMetaSelect+` WHERE p.author_id = $2
+		   AND EXISTS (
+		     SELECT 1 FROM space_members vm
+		     WHERE vm.space_id = p.space_id AND vm.user_id = $1 AND vm.status = 'approved'
+		   )
+		 ORDER BY p.created_at DESC LIMIT $3 OFFSET $4`,
 		currentUserID, authorID, limit, offset,
 	)
 	return posts, err

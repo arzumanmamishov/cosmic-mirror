@@ -2,6 +2,7 @@ package handler
 
 import (
 	"encoding/json"
+	"log/slog"
 	"net/http"
 )
 
@@ -45,7 +46,15 @@ func respondJSON(w http.ResponseWriter, status int, data any) {
 	json.NewEncoder(w).Encode(data)
 }
 
+// respondError writes a JSON error. For 5xx responses the message (which
+// callers often fill with err.Error()) is logged server-side and replaced
+// with a generic one, so SQL / Stripe / library internals never reach the
+// client. The machine-readable code is kept.
 func respondError(w http.ResponseWriter, status int, code, message string) {
+	if status >= 500 {
+		slog.Error("internal error", "code", code, "status", status, "detail", message)
+		message = "Something went wrong. Please try again."
+	}
 	respondJSON(w, status, errorResponse{
 		Error: errorBody{Code: code, Message: message},
 	})

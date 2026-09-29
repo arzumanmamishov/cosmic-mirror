@@ -79,19 +79,37 @@ LIMIT 1`
 	return &out, nil
 }
 
-// IncrementAttempts is called on a bad code guess.
-func (r *Repository) IncrementAttempts(ctx context.Context, id uuid.UUID) error {
-	_, err := r.db.ExecContext(ctx, `UPDATE email_otps SET attempts = attempts + 1 WHERE id = $1`, id)
-	return err
+// ReserveAttempt atomically spends one guess on row [id] and returns its
+// code hash. The check-and-increment happens in a single UPDATE so a burst
+// of concurrent guesses can't all read attempts=0 and bypass the cap.
+// Returns ErrNotFound when the row is consumed, expired, or out of guesses.
+func (r *Repository) ReserveAttempt(ctx context.Context, id uuid.UUID) (string, error) {
+	const q = `
+UPDATE email_otps SET attempts = attempts + 1
+WHERE id = $1 AND consumed_at IS NULL AND expires_at > now() AND attempts < max_attempts
+RETURNING code_hash`
+	var hash string
+	err := r.db.QueryRowxContext(ctx, q, id).Scan(&hash)
+	if errors.Is(err, sql.ErrNoRows) {
+		return "", ErrNotFound
+	}
+	return hash, err
 }
 
 // Consume marks a row as used (single-use semantics — even a correct code
-// can't be replayed within its TTL).
+// can't be replayed within its TTL). Only one concurrent caller can win;
+// the others get ErrNotFound.
 func (r *Repository) Consume(ctx context.Context, id uuid.UUID, verifiedIP string) error {
-	_, err := r.db.ExecContext(ctx,
-		`UPDATE email_otps SET consumed_at = now(), verified_ip = NULLIF($2, '') WHERE id = $1`,
+	res, err := r.db.ExecContext(ctx,
+		`UPDATE email_otps SET consumed_at = now(), verified_ip = NULLIF($2, '') WHERE id = $1 AND consumed_at IS NULL`,
 		id, verifiedIP)
-	return err
+	if err != nil {
+		return err
+	}
+	if n, _ := res.RowsAffected(); n != 1 {
+		return ErrNotFound
+	}
+	return nil
 }
 
 // RecentCountForEmail returns how many rows we've issued for [email] in

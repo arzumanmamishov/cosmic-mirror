@@ -52,7 +52,9 @@ func (h *ChartHandler) GetYearlyForecast(w http.ResponseWriter, r *http.Request)
 	userID := middleware.UserIDFromContext(r.Context())
 	year := time.Now().UTC().Year()
 	if y := r.URL.Query().Get("year"); y != "" {
-		if parsed, err := strconv.Atoi(y); err == nil && parsed >= 1900 && parsed <= 2100 {
+		// Last / this / next year only: every year is a separate (costly)
+		// LLM generation.
+		if parsed, err := strconv.Atoi(y); err == nil && parsed >= year-1 && parsed <= year+1 {
 			year = parsed
 		}
 	}

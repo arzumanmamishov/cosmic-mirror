@@ -76,10 +76,18 @@ func (r *RefreshTokenRepository) Rotate(
 	}
 	defer func() { _ = tx.Rollback() }()
 
+	// Claim the old token first. The `revoked_at IS NULL` guard makes this
+	// single-winner: two concurrent refreshes with the same token can't
+	// both succeed and fork the session.
 	var oldUserID uuid.UUID
 	err = tx.QueryRowxContext(ctx,
-		`SELECT user_id FROM refresh_tokens WHERE id = $1`, oldID,
+		`UPDATE refresh_tokens SET revoked_at = now()
+		 WHERE id = $1 AND revoked_at IS NULL AND expires_at > now()
+		 RETURNING user_id`, oldID,
 	).Scan(&oldUserID)
+	if errors.Is(err, sql.ErrNoRows) {
+		return uuid.Nil, nil
+	}
 	if err != nil {
 		return uuid.Nil, err
 	}
@@ -97,7 +105,7 @@ func (r *RefreshTokenRepository) Rotate(
 	}
 
 	if _, err := tx.ExecContext(ctx,
-		`UPDATE refresh_tokens SET revoked_at = now(), rotated_to_id = $1 WHERE id = $2`,
+		`UPDATE refresh_tokens SET rotated_to_id = $1 WHERE id = $2`,
 		newID, oldID,
 	); err != nil {
 		return uuid.Nil, err
@@ -107,6 +115,20 @@ func (r *RefreshTokenRepository) Rotate(
 		return uuid.Nil, err
 	}
 	return newID, nil
+}
+
+func (r *RefreshTokenRepository) FindReusedOwner(ctx context.Context, tokenHash string, grace time.Duration) (uuid.UUID, error) {
+	var userID uuid.UUID
+	err := r.db.QueryRowxContext(ctx,
+		`SELECT user_id FROM refresh_tokens
+		 WHERE token_hash = $1 AND rotated_to_id IS NOT NULL
+		   AND revoked_at < now() - make_interval(secs => $2)`,
+		tokenHash, grace.Seconds(),
+	).Scan(&userID)
+	if errors.Is(err, sql.ErrNoRows) {
+		return uuid.Nil, nil
+	}
+	return userID, err
 }
 
 func (r *RefreshTokenRepository) Revoke(ctx context.Context, id uuid.UUID) error {

@@ -24,8 +24,8 @@ import (
 	"cosmic-mirror/internal/storage"
 	"cosmic-mirror/internal/worker"
 
-	"github.com/jmoiron/sqlx"
 	_ "github.com/jackc/pgx/v5/stdlib"
+	"github.com/jmoiron/sqlx"
 	"github.com/redis/go-redis/v9"
 )
 
@@ -129,7 +129,8 @@ func main() {
 	chartSvc := service.NewChartService(birthProfileRepo, chartProvider, openaiClient, rdb)
 	vedicSvc := service.NewVedicService(birthProfileRepo, chartProvider, rdb)
 	readingSvc := service.NewReadingService(readingRepo, birthProfileRepo, openaiClient, rdb)
-	aiSvc := service.NewAIService(chatRepo, birthProfileRepo, userRepo, openaiClient, cfg.FreeTierChatLimit)
+	aiSvc := service.NewAIService(chatRepo, birthProfileRepo, userRepo, openaiClient, cfg.FreeTierChatLimit).
+		WithUsageCounter(rdb)
 	compatibilitySvc := service.NewCompatibilityService(compatibilityRepo, savedPeopleRepo, birthProfileRepo, openaiClient)
 	subscriptionSvc := service.NewSubscriptionService(subscriptionRepo, cfg.RevenueCatWebhookSecret)
 	stripeSvc := service.NewStripeService(
@@ -177,8 +178,8 @@ func main() {
 		CommunityNotifications: handler.NewCommunityNotificationsHandler(communityNotifSvc),
 		Discovery:              handler.NewDiscoveryHandler(communitySvc, hashtagRepo),
 		// Numerology + Human Design
-		Numerology:   handler.NewNumerologyHandler(numerologySvc),
-		HumanDesign:  handler.NewHumanDesignHandler(humanDesignSvc),
+		Numerology:    handler.NewNumerologyHandler(numerologySvc),
+		HumanDesign:   handler.NewHumanDesignHandler(humanDesignSvc),
 		Psychomatrix:  handler.NewPsychomatrixHandler(psychomatrixSvc),
 		DestinyMatrix: handler.NewDestinyMatrixHandler(destinyMatrixSvc),
 	}

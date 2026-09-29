@@ -101,6 +101,13 @@ func (s *CompatibilityService) GenerateReport(ctx context.Context, userID, perso
 		return nil, ErrPersonNotFound
 	}
 
+	// Every generation is a paid LLM call; hand back a fresh-enough
+	// existing report instead of regenerating on each tap.
+	if existing, err := s.compatRepo.GetByUserAndPerson(ctx, userID, personID); err == nil &&
+		existing != nil && time.Since(existing.CreatedAt) < time.Hour {
+		return existing, nil
+	}
+
 	prompt := openai.BuildCompatibilityPrompt(userProfile, describePerson(person), middleware.LangFromContext(ctx))
 	response, err := s.aiClient.ChatCompletionJSON(ctx, prompt)
 	if err != nil {

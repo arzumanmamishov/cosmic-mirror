@@ -70,7 +70,7 @@ func (r *SubscriptionRepository) Upsert(ctx context.Context, sub *domain.Subscri
 func (r *SubscriptionRepository) UpdateStatus(ctx context.Context, revenueCatID string, status domain.SubscriptionStatus, expiresAt *time.Time) error {
 	_, err := r.db.ExecContext(ctx,
 		`UPDATE subscriptions SET status = $1, expires_at = $2, updated_at = $3
-		 WHERE revenuecat_id = $4`,
+		 WHERE revenuecat_id = $4 AND revenuecat_id <> ''`,
 		status, expiresAt, time.Now(), revenueCatID,
 	)
 	return err

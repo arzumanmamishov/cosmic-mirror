@@ -59,6 +59,8 @@ func (h *SpacesHandler) Create(w http.ResponseWriter, r *http.Request) {
 		switch {
 		case errors.Is(err, service.ErrInvalidHandle):
 			respondError(w, http.StatusBadRequest, "invalid_handle", err.Error())
+		case errors.Is(err, domain.ErrInvalidInput):
+			respondError(w, http.StatusBadRequest, "invalid_input", err.Error())
 		case errors.Is(err, service.ErrHandleTaken):
 			respondError(w, http.StatusConflict, "handle_taken", err.Error())
 		default:
@@ -248,9 +250,10 @@ func (h *SpacesHandler) Members(w http.ResponseWriter, r *http.Request) {
 	q := r.URL.Query()
 	limit := parseLimit(q.Get("limit"), 50, 200)
 	offset := parseOffset(q.Get("offset"))
-	members, err := h.communitySvc.ListMembers(r.Context(), id, limit, offset)
+	viewer := middleware.UserIDFromContext(r.Context())
+	members, err := h.communitySvc.ListMembers(r.Context(), viewer, id, limit, offset)
 	if err != nil {
-		respondError(w, http.StatusInternalServerError, "members_error", err.Error())
+		respondCommunityError(w, err)
 		return
 	}
 	respondSuccess(w, map[string]any{"members": members})
@@ -294,7 +297,8 @@ func respondCommunityError(w http.ResponseWriter, err error) {
 	case errors.Is(err, service.ErrForbidden):
 		respondError(w, http.StatusForbidden, "forbidden", err.Error())
 	case errors.Is(err, service.ErrInvalidHandle),
-		errors.Is(err, service.ErrInvalidTargetType):
+		errors.Is(err, service.ErrInvalidTargetType),
+		errors.Is(err, domain.ErrInvalidInput):
 		respondError(w, http.StatusBadRequest, "invalid_input", err.Error())
 	case errors.Is(err, service.ErrHandleTaken):
 		respondError(w, http.StatusConflict, "conflict", err.Error())
