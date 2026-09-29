@@ -1538,7 +1538,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get humanDesignBodyGraphLegend =>
-      'Filled centers are defined; outlined centers are open. Lines are defined channels. Red dots are Personality gates (conscious), cream dots are Design gates (unconscious).';
+      'Colored centers are defined; white centers are open. Black is Personality (conscious), red is Design (unconscious), striped is both. Pinch the chart to zoom.';
 
   @override
   String get humanDesignNoChannels =>

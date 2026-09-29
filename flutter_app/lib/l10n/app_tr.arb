@@ -571,7 +571,7 @@
   "humanDesignTabChannels": "Kanallar",
   "humanDesignTabGates": "Kapılar",
   "humanDesignTabProfile": "Profil",
-  "humanDesignBodyGraphLegend": "Dolu merkezler tanımlı, boş merkezler açıktır. Çizgiler tanımlı kanallardır. Kırmızı noktalar Kişilik kapıları (bilinçli), krem noktalar Tasarım kapılarıdır (bilinçdışı).",
+  "humanDesignBodyGraphLegend": "Renkli merkezler tanımlı, beyaz merkezler açıktır. Siyah Kişilik (bilinçli), kırmızı Tasarım (bilinçdışı), çizgili ikisidir. Yakınlaştırmak için grafiği iki parmakla açın.",
   "humanDesignNoChannels": "Tanımlı kanal yok — bir Yansıtıcı olabilirsin ya da yalnızca bireysel aktif kapıların olabilir.",
   "humanDesignProfileLabel": "PROFİL",
   "humanDesignProfileDesc": "Kişiliğin bilinçli çizgisi × Tasarımın bilinçdışı çizgisi.",

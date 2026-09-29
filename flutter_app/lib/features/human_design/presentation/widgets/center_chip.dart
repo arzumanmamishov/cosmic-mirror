@@ -23,7 +23,8 @@ class CenterCard extends StatelessWidget {
         color: p.surface,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: center.defined ? p.primary.withValues(alpha: 0.5) : p.glassBorder,
+          color:
+              center.defined ? p.primary.withValues(alpha: 0.5) : p.glassBorder,
           width: center.defined ? 1.5 : 1,
         ),
       ),

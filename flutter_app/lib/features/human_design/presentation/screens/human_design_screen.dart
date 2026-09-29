@@ -127,30 +127,26 @@ class _BodyGraphTab extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final p = context.palette;
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        // Use the full available width (minus the ListView padding) so the
-        // chart scales up on wider screens. Cap at 480 so it stays
-        // proportional on tablets/web.
-        final available = constraints.maxWidth - 40;
-        final size = available.clamp(280.0, 480.0);
-        return ListView(
-          padding: const EdgeInsets.fromLTRB(20, 12, 20, 40),
-          children: [
-            Center(child: BodyGraph(chart: chart, size: size)),
-            const SizedBox(height: 16),
-            Text(
-              AppLocalizations.of(context).humanDesignBodyGraphLegend,
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                color: p.textSecondary,
-                fontSize: 12,
-                height: 1.5,
-              ),
-            ),
-          ],
-        );
-      },
+    return ListView(
+      padding: const EdgeInsets.fromLTRB(16, 12, 16, 40),
+      children: [
+        Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 520),
+            child: BodyGraph(chart: chart),
+          ),
+        ),
+        const SizedBox(height: 16),
+        Text(
+          AppLocalizations.of(context).humanDesignBodyGraphLegend,
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            color: p.textSecondary,
+            fontSize: 12,
+            height: 1.5,
+          ),
+        ),
+      ],
     );
   }
 }

@@ -571,7 +571,7 @@
   "humanDesignTabChannels": "Channels",
   "humanDesignTabGates": "Gates",
   "humanDesignTabProfile": "Profile",
-  "humanDesignBodyGraphLegend": "Filled centers are defined; outlined centers are open. Lines are defined channels. Red dots are Personality gates (conscious), cream dots are Design gates (unconscious).",
+  "humanDesignBodyGraphLegend": "Colored centers are defined; white centers are open. Black is Personality (conscious), red is Design (unconscious), striped is both. Pinch the chart to zoom.",
   "humanDesignNoChannels": "No defined channels — you may be a Reflector or have only individual active gates.",
   "humanDesignProfileLabel": "PROFILE",
   "humanDesignProfileDesc": "Personality conscious line × Design unconscious line.",

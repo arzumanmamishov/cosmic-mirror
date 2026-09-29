@@ -1537,7 +1537,7 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get humanDesignBodyGraphLegend =>
-      'Dolu merkezler tanımlı, boş merkezler açıktır. Çizgiler tanımlı kanallardır. Kırmızı noktalar Kişilik kapıları (bilinçli), krem noktalar Tasarım kapılarıdır (bilinçdışı).';
+      'Renkli merkezler tanımlı, beyaz merkezler açıktır. Siyah Kişilik (bilinçli), kırmızı Tasarım (bilinçdışı), çizgili ikisidir. Yakınlaştırmak için grafiği iki parmakla açın.';
 
   @override
   String get humanDesignNoChannels =>

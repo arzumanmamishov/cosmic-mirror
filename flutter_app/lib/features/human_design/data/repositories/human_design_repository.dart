@@ -9,8 +9,7 @@ class HumanDesignRepository {
   Future<HumanDesignChart> getChart() async {
     return _client.get<HumanDesignChart>(
       ApiEndpoints.humanDesign,
-      fromJson: (raw) =>
-          HumanDesignChart.fromJson(raw as Map<String, dynamic>),
+      fromJson: (raw) => HumanDesignChart.fromJson(raw as Map<String, dynamic>),
     );
   }
 }

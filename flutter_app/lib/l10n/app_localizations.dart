@@ -2933,7 +2933,7 @@ abstract class AppLocalizations {
   /// No description provided for @humanDesignBodyGraphLegend.
   ///
   /// In en, this message translates to:
-  /// **'Filled centers are defined; outlined centers are open. Lines are defined channels. Red dots are Personality gates (conscious), cream dots are Design gates (unconscious).'**
+  /// **'Colored centers are defined; white centers are open. Black is Personality (conscious), red is Design (unconscious), striped is both. Pinch the chart to zoom.'**
   String get humanDesignBodyGraphLegend;
 
   /// No description provided for @humanDesignNoChannels.

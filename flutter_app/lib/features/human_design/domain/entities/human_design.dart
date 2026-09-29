@@ -129,8 +129,7 @@ class HDVariables extends Equatable {
   final String perspective;
 
   @override
-  List<Object?> get props =>
-      [digestion, environment, awareness, perspective];
+  List<Object?> get props => [digestion, environment, awareness, perspective];
 }
 
 class HumanDesignChart extends Equatable {
