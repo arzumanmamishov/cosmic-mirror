@@ -51,6 +51,9 @@ type Config struct {
 	// whose X-Forwarded-For / X-Real-IP headers we believe. Empty = trust
 	// nobody and use the TCP peer address.
 	TrustedProxies []string
+
+	// MigrateOnStart applies pending SQL migrations at boot.
+	MigrateOnStart bool
 }
 
 func Load() (*Config, error) {
@@ -89,6 +92,7 @@ func Load() (*Config, error) {
 		JWTAccessTTLMinutes:     getEnvInt("JWT_ACCESS_TTL_MINUTES", 15),
 		JWTRefreshTTLDays:       getEnvInt("JWT_REFRESH_TTL_DAYS", 30),
 		TrustedProxies:          splitNonEmpty(getEnv("TRUSTED_PROXIES", "")),
+		MigrateOnStart:          getEnvBool("MIGRATE_ON_START", true),
 	}
 
 	if cfg.DatabaseURL == "" {

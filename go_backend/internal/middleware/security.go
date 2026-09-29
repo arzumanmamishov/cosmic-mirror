@@ -1,7 +1,10 @@
 package middleware
 
 import (
+	"bytes"
+	"encoding/json"
 	"fmt"
+	"io"
 	"log/slog"
 	"net"
 	"net/http"
@@ -180,4 +183,57 @@ func (rl *RateLimiter) RequirePremium(next http.Handler) http.Handler {
 		}
 		next.ServeHTTP(w, r)
 	})
+}
+
+// LoginLockout stops password guessing against a single account from many
+// IPs (which per-IP limits alone can't): after [maxFailures] failed logins
+// for an email within [window], that email is locked for the rest of the
+// window. A successful login clears the counter.
+func (rl *RateLimiter) LoginLockout(maxFailures int, window time.Duration) func(http.Handler) http.Handler {
+	return func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			body, err := io.ReadAll(r.Body)
+			if err != nil {
+				respondError(w, http.StatusBadRequest, "invalid_body", "Invalid request body")
+				return
+			}
+			r.Body = io.NopCloser(bytes.NewReader(body))
+			var in struct {
+				Email string `json:"email"`
+			}
+			_ = json.Unmarshal(body, &in)
+			email := strings.ToLower(strings.TrimSpace(in.Email))
+			if email == "" {
+				next.ServeHTTP(w, r)
+				return
+			}
+			key := "loginfail:" + email
+			ctx := r.Context()
+			if n, err := rl.rdb.Get(ctx, key).Int(); err == nil && n >= maxFailures {
+				respondError(w, http.StatusTooManyRequests, "account_locked",
+					"Too many failed attempts. Try again later or sign in with a code.")
+				return
+			}
+			rec := &statusRecorder{ResponseWriter: w, status: http.StatusOK}
+			next.ServeHTTP(rec, r)
+			switch {
+			case rec.status == http.StatusUnauthorized:
+				if n, err := rl.rdb.Incr(ctx, key).Result(); err == nil && n == 1 {
+					rl.rdb.Expire(ctx, key, window)
+				}
+			case rec.status < 300:
+				rl.rdb.Del(ctx, key)
+			}
+		})
+	}
+}
+
+type statusRecorder struct {
+	http.ResponseWriter
+	status int
+}
+
+func (s *statusRecorder) WriteHeader(code int) {
+	s.status = code
+	s.ResponseWriter.WriteHeader(code)
 }

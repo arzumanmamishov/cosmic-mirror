@@ -1,8 +1,11 @@
 package server
 
 import (
+	"context"
 	"encoding/json"
+	"log/slog"
 	"net/http"
+	"time"
 
 	"cosmic-mirror/internal/config"
 	"cosmic-mirror/internal/handler"
@@ -13,8 +16,19 @@ import (
 	"github.com/go-chi/cors"
 )
 
-func NewRouter(h *handler.Handlers, auth *middleware.Auth, rl *middleware.RateLimiter, cfg *config.Config) http.Handler {
+// ReadyCheck reports whether the API's dependencies (DB, Redis) are up.
+type ReadyCheck func(ctx context.Context) error
+
+func NewRouter(h *handler.Handlers, auth *middleware.Auth, rl *middleware.RateLimiter, cfg *config.Config, ready ReadyCheck) http.Handler {
 	r := chi.NewRouter()
+
+	// Premium-only routes. Dev builds of the app unlock everything for
+	// testing, so dev servers skip the check to match; every other
+	// environment enforces it.
+	premium := rl.RequirePremium
+	if cfg.IsDev() {
+		premium = func(next http.Handler) http.Handler { return next }
+	}
 
 	// Global middleware
 	r.Use(chimw.RequestID)
@@ -42,6 +56,23 @@ func NewRouter(h *handler.Handlers, auth *middleware.Auth, rl *middleware.RateLi
 		json.NewEncoder(w).Encode(map[string]string{"status": "ok"})
 	})
 
+	// Readiness: 503 until Postgres and Redis both answer. /health stays a
+	// pure liveness probe so a DB blip doesn't get the container killed.
+	r.Get("/ready", func(w http.ResponseWriter, r *http.Request) {
+		ctx, cancel := context.WithTimeout(r.Context(), 2*time.Second)
+		defer cancel()
+		w.Header().Set("Content-Type", "application/json")
+		if ready != nil {
+			if err := ready(ctx); err != nil {
+				slog.Warn("readiness check failed", "error", err)
+				w.WriteHeader(http.StatusServiceUnavailable)
+				json.NewEncoder(w).Encode(map[string]string{"status": "unavailable"})
+				return
+			}
+		}
+		json.NewEncoder(w).Encode(map[string]string{"status": "ready"})
+	})
+
 	// Public static-file serve for user-uploaded assets (avatars, etc.).
 	// Files live under cfg.UploadsDir; the URL prefix is /uploads.
 	uploadsServer := http.StripPrefix(
@@ -61,7 +92,7 @@ func NewRouter(h *handler.Handlers, auth *middleware.Auth, rl *middleware.RateLi
 			r.Post("/auth/session", h.Auth.CreateSession)
 			r.Post("/auth/otp/request", h.Auth.RequestOTP)
 			r.Post("/auth/register", h.Auth.Register)
-			r.Post("/auth/login", h.Auth.Login)
+			r.With(rl.LoginLockout(10, 15*time.Minute)).Post("/auth/login", h.Auth.Login)
 			r.Post("/auth/login/otp", h.Auth.LoginOTP)
 			r.Post("/auth/password/reset", h.Auth.PasswordReset)
 		})
@@ -135,12 +166,12 @@ func NewRouter(h *handler.Handlers, auth *middleware.Auth, rl *middleware.RateLi
 
 			// Timeline & Forecast
 			// Premium-only (enforced here, not just in the app).
-			r.With(rl.RequirePremium).Get("/timeline", h.Chart.GetTimeline)
-			r.With(rl.RequirePremium).Get("/forecast/yearly", h.Chart.GetYearlyForecast)
+			r.With(premium).Get("/timeline", h.Chart.GetTimeline)
+			r.With(premium).Get("/forecast/yearly", h.Chart.GetYearlyForecast)
 
 			// Rituals
-			r.With(rl.RequirePremium).Get("/rituals/today", h.User.GetRitualsToday)
-			r.With(rl.RequirePremium).Post("/rituals/{type}/complete", h.User.CompleteRitual)
+			r.With(premium).Get("/rituals/today", h.User.GetRitualsToday)
+			r.With(premium).Post("/rituals/{type}/complete", h.User.CompleteRitual)
 
 			// Journal
 			r.Get("/journal", h.Journal.List)

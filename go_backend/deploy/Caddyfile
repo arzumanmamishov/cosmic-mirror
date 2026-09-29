@@ -1,0 +1,26 @@
+{
+	email {$ACME_EMAIL}
+}
+
+{$API_DOMAIN} {
+	encode zstd gzip
+
+	# Avatars are the largest uploads (8 MB cap in the API).
+	request_body {
+		max_size 10MB
+	}
+
+	reverse_proxy api:8080 {
+		health_uri /ready
+		health_interval 15s
+	}
+
+	header {
+		-Server
+	}
+
+	log {
+		output stdout
+		format json
+	}
+}

@@ -1,4 +1,4 @@
-.PHONY: build run test lint migrate-up migrate-down docker-build docker-up docker-down docker-dev docker-logs dev db-up db-down smtp-test
+.PHONY: prod-up prod-down prod-logs prod-backup build run test lint migrate-up migrate-down docker-build docker-up docker-down docker-dev docker-logs dev db-up db-down smtp-test
 
 build:
 	go build -o bin/server ./cmd/server
@@ -77,3 +77,18 @@ smtp-test:
 	  echo "→ code in API log (empty when real SMTP is wired):"; \
 	  docker compose logs --since=30s api 2>/dev/null | grep -oE 'Your code: [0-9]{6}' | tail -1 || true; \
 	  echo "→ if you configured real SMTP, check $$TO's inbox"
+
+# ----- Production (docker-compose.prod.yml + .env.production) -----
+PROD = docker compose -f docker-compose.prod.yml --env-file .env.production
+
+prod-up:
+	$(PROD) up -d --build
+
+prod-down:
+	$(PROD) down
+
+prod-logs:
+	$(PROD) logs -f --tail 200 api caddy
+
+prod-backup:
+	deploy/backup.sh

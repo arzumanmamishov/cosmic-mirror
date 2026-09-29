@@ -18,7 +18,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 # Build Swiss Ephemeris C library (libswe.so)
 # -----------------------------------------------------------------------------
 WORKDIR /tmp
-RUN git clone --depth 1 https://github.com/aloistr/swisseph.git swisseph-src
+# Pinned release so every build compiles the same ephemeris code.
+ARG SWISSEPH_REF=v2.10.3final
+RUN git clone --depth 1 --branch ${SWISSEPH_REF} https://github.com/aloistr/swisseph.git swisseph-src
 
 WORKDIR /tmp/swisseph-src
 # The upstream Makefile builds executables; we build a shared library.
@@ -54,6 +56,7 @@ FROM debian:bookworm-slim
 RUN apt-get update && apt-get install -y --no-install-recommends \
     ca-certificates \
     tzdata \
+    wget \
     && rm -rf /var/lib/apt/lists/* \
     && useradd -r -u 1000 -g root appuser
 
@@ -84,5 +87,8 @@ ENV EPHEMERIS_PATH=/app/ephemeris
 USER appuser
 
 EXPOSE 8080
+
+HEALTHCHECK --interval=15s --timeout=3s --start-period=20s --retries=3 \
+    CMD wget -qO- http://127.0.0.1:8080/health >/dev/null || exit 1
 
 ENTRYPOINT ["/app/server"]

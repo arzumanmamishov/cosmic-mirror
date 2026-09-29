@@ -2,6 +2,8 @@ package main
 
 import (
 	"context"
+	"cosmic-mirror/internal/migrate"
+	"cosmic-mirror/migrations"
 	"fmt"
 	"log/slog"
 	"net/http"
@@ -54,6 +56,15 @@ func main() {
 	db.SetMaxOpenConns(25)
 	db.SetMaxIdleConns(10)
 	db.SetConnMaxLifetime(5 * time.Minute)
+
+	// Schema migrations (embedded in the binary). On by default; set
+	// MIGRATE_ON_START=false to run them as a separate deploy step.
+	if cfg.MigrateOnStart {
+		if err := migrate.Up(context.Background(), db, migrations.FS); err != nil {
+			slog.Error("database migration failed", "error", err)
+			os.Exit(1)
+		}
+	}
 
 	// Redis
 	redisOpts, err := redis.ParseURL(cfg.RedisURL)
@@ -197,7 +208,16 @@ func main() {
 	scheduleWorker(workerCtx, "cleanup", 24*time.Hour, cleanupWorker.Run)
 
 	// Router
-	router := server.NewRouter(handlers, authMiddleware, rateLimiter, cfg)
+	router := server.NewRouter(handlers, authMiddleware, rateLimiter, cfg,
+		func(ctx context.Context) error {
+			if err := db.PingContext(ctx); err != nil {
+				return fmt.Errorf("postgres: %w", err)
+			}
+			if err := rdb.Ping(ctx).Err(); err != nil {
+				return fmt.Errorf("redis: %w", err)
+			}
+			return nil
+		})
 
 	// Server
 	srv := &http.Server{

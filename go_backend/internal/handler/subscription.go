@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"cosmic-mirror/internal/domain"
 	"io"
 	"log/slog"
 	"net/http"
@@ -24,7 +25,12 @@ func (h *SubscriptionHandler) GetStatus(w http.ResponseWriter, r *http.Request) 
 		respondError(w, http.StatusInternalServerError, "subscription_error", err.Error())
 		return
 	}
-	respondSuccess(w, sub)
+	// is_premium is computed with the same rule the server enforces
+	// (RequirePremium), so the app never disagrees with the API.
+	respondSuccess(w, struct {
+		*domain.Subscription
+		IsPremium bool `json:"is_premium"`
+	}{sub, sub.IsPremium()})
 }
 
 func (h *SubscriptionHandler) HandleWebhook(w http.ResponseWriter, r *http.Request) {

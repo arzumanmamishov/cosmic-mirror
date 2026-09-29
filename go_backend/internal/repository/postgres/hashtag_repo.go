@@ -104,10 +104,21 @@ func (r *HashtagRepository) UnlinkPost(ctx context.Context, tx *sqlx.Tx, postID 
 	return nil
 }
 
-func (r *HashtagRepository) ListPopular(ctx context.Context, limit int) ([]domain.Hashtag, error) {
+// ListPopular ranks hashtags by use in the spaces [viewerID] is an
+// approved member of. Spaces are members-only, so a global ranking would
+// leak what private spaces talk about.
+func (r *HashtagRepository) ListPopular(ctx context.Context, viewerID uuid.UUID, limit int) ([]domain.Hashtag, error) {
 	var tags []domain.Hashtag
 	err := r.db.SelectContext(ctx, &tags,
-		`SELECT * FROM hashtags WHERE use_count > 0 ORDER BY use_count DESC, name ASC LIMIT $1`, limit,
+		`SELECT h.id, h.name, COUNT(*)::int AS use_count, h.created_at
+		 FROM hashtags h
+		 JOIN post_hashtags ph ON ph.hashtag_id = h.id
+		 JOIN posts p ON p.id = ph.post_id
+		 JOIN space_members m ON m.space_id = p.space_id
+		   AND m.user_id = $1 AND m.status = 'approved'
+		 GROUP BY h.id
+		 ORDER BY use_count DESC, h.name ASC
+		 LIMIT $2`, viewerID, limit,
 	)
 	return tags, err
 }
