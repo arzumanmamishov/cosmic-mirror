@@ -253,8 +253,8 @@ List<_ChartFeature> _allChartFeatures(AppLocalizations l10n) => [
       ),
       _ChartFeature(
         icon: Icons.grid_3x3_rounded,
-        title: 'Pythagoras Square',
-        subtitle: 'Your psychomatrix by birth date',
+        title: l10n.homeChartPsychomatrix,
+        subtitle: l10n.homeChartPsychomatrixSubtitle,
         route: '/psychomatrix',
         gradientBuilder: (p) => LinearGradient(colors: [p.primary, p.gold]),
         category: 'Esoteric',
@@ -262,8 +262,8 @@ List<_ChartFeature> _allChartFeatures(AppLocalizations l10n) => [
       ),
       _ChartFeature(
         icon: Icons.auto_awesome_motion_rounded,
-        title: 'Matrix of Destiny',
-        subtitle: 'Your 22-arcana octagram',
+        title: l10n.homeChartDestinyMatrix,
+        subtitle: l10n.homeChartDestinyMatrixSubtitle,
         route: '/destiny-matrix',
         gradientBuilder: (p) => LinearGradient(colors: [p.accent, p.primary]),
         category: 'Esoteric',

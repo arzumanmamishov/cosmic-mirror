@@ -1,5 +1,7 @@
 import 'package:cosmic_mirror/config/theme/app_palette.dart';
 import 'package:cosmic_mirror/config/theme/lively_type.dart';
+import 'package:cosmic_mirror/core/utils/string_utils.dart';
+import 'package:cosmic_mirror/features/chart/presentation/astro_labels.dart';
 import 'package:cosmic_mirror/features/onboarding/presentation/providers/onboarding_provider.dart';
 import 'package:cosmic_mirror/l10n/app_localizations.dart';
 import 'package:cosmic_mirror/shared/providers/user_provider.dart';
@@ -11,6 +13,7 @@ import 'package:cosmic_mirror/shared/widgets/staggered_fade_in.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:intl/intl.dart';
 
 /// Post-onboarding payoff — the chart reveal. The whole screen builds
 /// itself in front of the user: kicker, title, the spinning-up mini
@@ -41,6 +44,7 @@ class _WelcomeScreenState extends ConsumerState<WelcomeScreen> {
   Widget build(BuildContext context) {
     final p = context.palette;
     final l10n = AppLocalizations.of(context);
+    final locale = Localizations.localeOf(context);
     final user = ref.watch(currentUserProvider);
     final onb = ref.watch(onboardingProvider);
 
@@ -52,7 +56,7 @@ class _WelcomeScreenState extends ConsumerState<WelcomeScreen> {
     final moon = user.moonSign;
     final rising = user.risingSign;
 
-    final dateLine = _dateLine(onb);
+    final dateLine = _dateLine(onb, locale);
 
     return Scaffold(
       body: LivelyBackdrop(
@@ -73,7 +77,8 @@ class _WelcomeScreenState extends ConsumerState<WelcomeScreen> {
                       const LivelyLogo(size: 64),
                       const SizedBox(height: 14),
                       Text(
-                        '✨  ${l10n.welcomeKicker(name)}'.toUpperCase(),
+                        '✨  ${l10n.welcomeKicker(name)}'
+                            .toUpperCaseLocale(locale.languageCode),
                         style: LivelyType.kicker(p.primary)
                             .copyWith(letterSpacing: 2.4),
                       ),
@@ -196,28 +201,26 @@ class _WelcomeScreenState extends ConsumerState<WelcomeScreen> {
     );
   }
 
-  /// "JULY 28, 1996 · 10:31 AM · ISTANBUL" — pieces are omitted when the
-  /// onboarding state doesn't have them.
-  String? _dateLine(OnboardingState onb) {
+  /// "JULY 28, 1996 · 10:31 AM · ISTANBUL" (en) / "28 TEMMUZ 1996 · 10:31
+  /// · İSTANBUL" (tr) — pieces are omitted when the onboarding state
+  /// doesn't have them.
+  String? _dateLine(OnboardingState onb, Locale locale) {
+    final lang = locale.languageCode;
+    final localeTag = locale.toString();
     final parts = <String>[];
     final d = onb.birthDate;
     if (d != null) {
-      const months = [
-        'JANUARY', 'FEBRUARY', 'MARCH', 'APRIL', 'MAY', 'JUNE',
-        'JULY', 'AUGUST', 'SEPTEMBER', 'OCTOBER', 'NOVEMBER', 'DECEMBER',
-      ];
-      parts.add('${months[d.month - 1]} ${d.day}, ${d.year}');
+      parts.add(
+        DateFormat.yMMMMd(localeTag).format(d).toUpperCaseLocale(lang),
+      );
     }
     final t = onb.birthTime;
     if (t != null && onb.birthTimeKnown) {
-      final h = t.hour % 12 == 0 ? 12 : t.hour % 12;
-      final m = t.minute.toString().padLeft(2, '0');
-      final ap = t.hour < 12 ? 'AM' : 'PM';
-      parts.add('$h:$m $ap');
+      parts.add(DateFormat.jm(localeTag).format(t).toUpperCaseLocale(lang));
     }
     final place = onb.birthPlace;
     if (place != null && place.trim().isNotEmpty) {
-      parts.add(place.split(',').first.trim().toUpperCase());
+      parts.add(place.split(',').first.trim().toUpperCaseLocale(lang));
     }
     return parts.isEmpty ? null : parts.join('  ·  ');
   }
@@ -238,8 +241,15 @@ class _LuminaryCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final p = context.palette;
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final lang = Localizations.localeOf(context).languageCode;
+    // Backend sends the sign as an English identifier in any casing;
+    // normalise to "Leo" then map to the localized display name.
     final signLabel = (sign != null && sign!.trim().isNotEmpty)
-        ? '${sign![0].toUpperCase()}${sign!.substring(1).toLowerCase()}'
+        ? chartSignName(
+            AppLocalizations.of(context),
+            '${sign!.trim()[0].toUpperCase()}'
+            '${sign!.trim().substring(1).toLowerCase()}',
+          )
         : '—';
     return FadeSlideIn(
       delay: Duration(milliseconds: delayMs),
@@ -253,7 +263,7 @@ class _LuminaryCard extends StatelessWidget {
         child: Column(
           children: [
             Text(
-              kind.toUpperCase(),
+              kind.toUpperCaseLocale(lang),
               style: LivelyType.caption(p.textMuted)
                   .copyWith(fontSize: 9, letterSpacing: 1.3),
             ),

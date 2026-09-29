@@ -1,5 +1,7 @@
 import 'package:cosmic_mirror/config/theme/app_palette.dart';
 import 'package:cosmic_mirror/core/network/api_endpoints.dart';
+import 'package:cosmic_mirror/features/chart/presentation/astro_labels.dart';
+import 'package:cosmic_mirror/features/compatibility/presentation/relationship_labels.dart';
 import 'package:cosmic_mirror/l10n/app_localizations.dart';
 import 'package:cosmic_mirror/shared/providers/user_provider.dart';
 import 'package:cosmic_mirror/shared/widgets/error_view.dart';
@@ -191,8 +193,10 @@ class _PersonCard extends StatelessWidget {
                   const SizedBox(height: 2),
                   Text(
                     [
-                      if (relation.isNotEmpty) relation,
-                      if (sign.isNotEmpty) sign,
+                      if (relation.isNotEmpty)
+                        relationshipLabel(AppLocalizations.of(context), relation),
+                      if (sign.isNotEmpty)
+                        chartSignName(AppLocalizations.of(context), sign),
                     ].join(' · '),
                     style: TextStyle(color: p.textSecondary, fontSize: 12),
                   ),

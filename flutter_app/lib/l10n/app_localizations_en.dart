@@ -1817,4 +1817,1626 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get lifeTimelineWhatSky => 'WHAT THE SKY WAS DOING';
+
+  @override
+  String get commonJustNow => 'Just now';
+
+  @override
+  String commonMinutesAgo(int count) {
+    return '${count}m ago';
+  }
+
+  @override
+  String commonHoursAgo(int count) {
+    return '${count}h ago';
+  }
+
+  @override
+  String commonDaysAgo(int count) {
+    return '${count}d ago';
+  }
+
+  @override
+  String get commonGoodMorning => 'Good morning';
+
+  @override
+  String get commonGoodAfternoon => 'Good afternoon';
+
+  @override
+  String get commonGoodEvening => 'Good evening';
+
+  @override
+  String get commonSomethingWentWrong =>
+      'Something went wrong. Please try again.';
+
+  @override
+  String get commonShowPassword => 'Show password';
+
+  @override
+  String get commonHidePassword => 'Hide password';
+
+  @override
+  String get validationNameRequired => 'Please enter your name';
+
+  @override
+  String get validationNameTooShort => 'Name must be at least 2 characters';
+
+  @override
+  String get validationNameTooLong => 'Name must be less than 50 characters';
+
+  @override
+  String get validationEmailRequired => 'Please enter your email';
+
+  @override
+  String get validationEmailInvalid => 'Please enter a valid email';
+
+  @override
+  String get validationPasswordRequired => 'Please enter a password';
+
+  @override
+  String get validationBirthDateRequired => 'Please select your birth date';
+
+  @override
+  String get validationBirthDateFuture => 'Birth date cannot be in the future';
+
+  @override
+  String get validationMinAge => 'You must be at least 13 years old';
+
+  @override
+  String get validationBirthDateInvalid => 'Please enter a valid birth date';
+
+  @override
+  String get validationBirthPlaceRequired => 'Please select your birthplace';
+
+  @override
+  String get validationMessageRequired => 'Please enter a message';
+
+  @override
+  String get validationMessageTooLong =>
+      'Message must be less than 500 characters';
+
+  @override
+  String get authInvalidEmail => 'Enter a valid email address';
+
+  @override
+  String get authNoAccountTapCreate =>
+      'No account with that email. Tap Create account to sign up.';
+
+  @override
+  String get authNoAccountCheckAddress =>
+      'No account with that email. Check the address or create one.';
+
+  @override
+  String get authTooManyCodeRequests =>
+      'Too many code requests. Please wait a minute.';
+
+  @override
+  String get authTooManyAttemptsShort =>
+      'Too many attempts. Try again shortly.';
+
+  @override
+  String get authTooManyAttemptsWait =>
+      'Too many attempts. Please wait a minute.';
+
+  @override
+  String get authKickerWelcomeBack => 'WELCOME BACK';
+
+  @override
+  String get authKickerCreateAccount => 'CREATE ACCOUNT';
+
+  @override
+  String get authBeginJourney => 'Begin your journey';
+
+  @override
+  String get authSignInSubtitle =>
+      'Your cosmic mirror is waiting. Sign in to continue.';
+
+  @override
+  String get authRegisterSubtitle =>
+      'A few details and the stars are yours to explore.';
+
+  @override
+  String get authSignInWithCode => 'Sign in with a code instead';
+
+  @override
+  String get authForgotYourPassword => 'Forgot your password?';
+
+  @override
+  String get authResetPasswordKicker => 'RESET PASSWORD';
+
+  @override
+  String get authForgotPasswordBody =>
+      'Enter your email and we\'ll send you a code to set a new password.';
+
+  @override
+  String get authSendResetCode => 'Send reset code';
+
+  @override
+  String get authBackToSignIn => 'Back to sign in';
+
+  @override
+  String get authPasswordUpdated => 'Password updated. Please sign in.';
+
+  @override
+  String get authOtpInvalidCode =>
+      'That code didn\'t work. Try again or resend.';
+
+  @override
+  String get authOtpKickerConfirmEmail => 'CONFIRM YOUR EMAIL';
+
+  @override
+  String get authOtpKickerSignIn => 'SIGN IN';
+
+  @override
+  String get authOtpKickerResetPassword => 'RESET YOUR PASSWORD';
+
+  @override
+  String get authOtpCheckEmail => 'Check your email';
+
+  @override
+  String authOtpSentTo(String email) {
+    return 'We sent a 6-digit code to $email.';
+  }
+
+  @override
+  String get authNewPassword => 'New password';
+
+  @override
+  String get authResetPasswordButton => 'Reset password';
+
+  @override
+  String authOtpResendIn(String time) {
+    return 'Resend code in $time';
+  }
+
+  @override
+  String get authOtpResend => 'Resend code';
+
+  @override
+  String get onboardingRevealTitle => 'Your cosmic blueprint';
+
+  @override
+  String get onboardingRevealSubtitle => 'Here are your Big Three.';
+
+  @override
+  String get onboardingRevealSunSign => 'Sun Sign';
+
+  @override
+  String get onboardingRevealMoonSign => 'Moon Sign';
+
+  @override
+  String get onboardingRevealRisingSign => 'Rising Sign';
+
+  @override
+  String get onboardingSignUnknown => 'Unknown';
+
+  @override
+  String premiumUnlockFeature(String feature) {
+    return 'Unlock $feature';
+  }
+
+  @override
+  String get premiumUnlockThisFeature => 'Unlock this feature';
+
+  @override
+  String get premiumUpgradeBody =>
+      'Upgrade to Premium for full access to personalized insights.';
+
+  @override
+  String get premiumViewPlans => 'View Plans';
+
+  @override
+  String paywallPricePerMonth(String price) {
+    return '$price/mo';
+  }
+
+  @override
+  String paywallPricePerYear(String price) {
+    return '$price/yr';
+  }
+
+  @override
+  String get chartSignAries => 'Aries';
+
+  @override
+  String get chartSignTaurus => 'Taurus';
+
+  @override
+  String get chartSignGemini => 'Gemini';
+
+  @override
+  String get chartSignCancer => 'Cancer';
+
+  @override
+  String get chartSignLeo => 'Leo';
+
+  @override
+  String get chartSignVirgo => 'Virgo';
+
+  @override
+  String get chartSignLibra => 'Libra';
+
+  @override
+  String get chartSignScorpio => 'Scorpio';
+
+  @override
+  String get chartSignSagittarius => 'Sagittarius';
+
+  @override
+  String get chartSignCapricorn => 'Capricorn';
+
+  @override
+  String get chartSignAquarius => 'Aquarius';
+
+  @override
+  String get chartSignPisces => 'Pisces';
+
+  @override
+  String get chartSignAbbrAries => 'Ar';
+
+  @override
+  String get chartSignAbbrTaurus => 'Ta';
+
+  @override
+  String get chartSignAbbrGemini => 'Ge';
+
+  @override
+  String get chartSignAbbrCancer => 'Cn';
+
+  @override
+  String get chartSignAbbrLeo => 'Le';
+
+  @override
+  String get chartSignAbbrVirgo => 'Vi';
+
+  @override
+  String get chartSignAbbrLibra => 'Li';
+
+  @override
+  String get chartSignAbbrScorpio => 'Sc';
+
+  @override
+  String get chartSignAbbrSagittarius => 'Sg';
+
+  @override
+  String get chartSignAbbrCapricorn => 'Cp';
+
+  @override
+  String get chartSignAbbrAquarius => 'Aq';
+
+  @override
+  String get chartSignAbbrPisces => 'Pi';
+
+  @override
+  String get chartPlanetSun => 'Sun';
+
+  @override
+  String get chartPlanetMoon => 'Moon';
+
+  @override
+  String get chartPlanetMercury => 'Mercury';
+
+  @override
+  String get chartPlanetVenus => 'Venus';
+
+  @override
+  String get chartPlanetMars => 'Mars';
+
+  @override
+  String get chartPlanetJupiter => 'Jupiter';
+
+  @override
+  String get chartPlanetSaturn => 'Saturn';
+
+  @override
+  String get chartPlanetUranus => 'Uranus';
+
+  @override
+  String get chartPlanetNeptune => 'Neptune';
+
+  @override
+  String get chartPlanetPluto => 'Pluto';
+
+  @override
+  String get chartPlanetNorthNode => 'North Node';
+
+  @override
+  String get chartPlanetSouthNode => 'South Node';
+
+  @override
+  String get chartPlanetChiron => 'Chiron';
+
+  @override
+  String get chartAspectQuincunx => 'Quincunx';
+
+  @override
+  String chartAspectTitle(String planet1, String aspect, String planet2) {
+    return '$planet1 $aspect $planet2';
+  }
+
+  @override
+  String get chartElementFire => 'Fire';
+
+  @override
+  String get chartElementEarth => 'Earth';
+
+  @override
+  String get chartElementAir => 'Air';
+
+  @override
+  String get chartElementWater => 'Water';
+
+  @override
+  String chartPercent(String value) {
+    return '$value%';
+  }
+
+  @override
+  String get vedicLagnaLabel => 'LAGNA';
+
+  @override
+  String get vedicChandraLabel => 'CHANDRA';
+
+  @override
+  String get vedicSuryaLabel => 'SURYA';
+
+  @override
+  String get vedicLagna => 'Lagna';
+
+  @override
+  String vedicPlanetPosition(
+      String sign, String sanskrit, String degree, int house) {
+    return '$sign ($sanskrit) · $degree° · House $house';
+  }
+
+  @override
+  String vedicNakshatraPada(String nakshatra, int pada) {
+    return '$nakshatra pada $pada';
+  }
+
+  @override
+  String get vedicDignityExalted => 'Exalted';
+
+  @override
+  String get vedicDignityDebilitated => 'Debilitated';
+
+  @override
+  String get vedicDignityMooltrikona => 'Mooltrikona';
+
+  @override
+  String get vedicDignityOwn => 'Own';
+
+  @override
+  String get vedicDignityFriend => 'Friend';
+
+  @override
+  String get vedicDignityEnemy => 'Enemy';
+
+  @override
+  String get vedicDignityNeutral => 'Neutral';
+
+  @override
+  String vedicAspectOrdinal(String n) {
+    String _temp0 = intl.Intl.selectLogic(
+      n,
+      {
+        '1': '1st',
+        '2': '2nd',
+        '3': '3rd',
+        'other': '${n}th',
+      },
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get vedicMahadashasHeader => 'Mahadashas (120-year cycle)';
+
+  @override
+  String get vedicCurrentDasha => 'CURRENT DASHA';
+
+  @override
+  String get vedicDashaLevels => 'Maha · Antar · Pratyantar';
+
+  @override
+  String get vedicDashaNow => 'NOW';
+
+  @override
+  String get vedicYogaStrength => 'STRENGTH';
+
+  @override
+  String get vedicYogaCategoryPanchaMahapurusha => 'Pancha Mahapurusha';
+
+  @override
+  String get vedicYogaCategoryLunar => 'Lunar';
+
+  @override
+  String get vedicYogaCategorySolar => 'Solar';
+
+  @override
+  String get vedicYogaCategoryWealth => 'Wealth';
+
+  @override
+  String get vedicYogaCategoryPower => 'Power';
+
+  @override
+  String get vedicYogaCategoryWisdom => 'Wisdom';
+
+  @override
+  String get vedicYogaCategoryNodal => 'Nodal';
+
+  @override
+  String vedicNakshatraPadaRuler(int pada, String ruler) {
+    return 'Pada $pada · Ruler $ruler';
+  }
+
+  @override
+  String get vedicNakshatraDeity => 'Deity';
+
+  @override
+  String get vedicNakshatraSymbol => 'Symbol';
+
+  @override
+  String get vedicNakshatraGana => 'Gana';
+
+  @override
+  String get vedicNakshatraNadi => 'Nadi';
+
+  @override
+  String get vedicNakshatraVarna => 'Varna';
+
+  @override
+  String get vedicNakshatraCaste => 'Caste';
+
+  @override
+  String get vedicNakshatraAnimal => 'Animal';
+
+  @override
+  String get vedicNakshatraGender => 'Gender';
+
+  @override
+  String vedicShadbalaSummary(String total, String required, String verdict) {
+    return '$total / $required Virupas — $verdict';
+  }
+
+  @override
+  String get vedicShadbalaStrong => 'STRONG';
+
+  @override
+  String get vedicShadbalaWeak => 'WEAK';
+
+  @override
+  String get vedicShadbalaChesta => 'Chesta';
+
+  @override
+  String get vedicAshtakavargaSarva => 'Sarva';
+
+  @override
+  String vedicAshtakavargaSarvaNote(int max) {
+    return 'Sarva Ashtakavarga — total benefic points each sign receives from all seven grahas (max $max per sign).';
+  }
+
+  @override
+  String vedicAshtakavargaBhinnNote(String planet, int max) {
+    return 'Bhinn Ashtakavarga of $planet — bindus contributed to each sign by $planet (max $max per sign).';
+  }
+
+  @override
+  String communityMembersCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count members',
+      one: '1 member',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get communityCategoryFallback => 'Category';
+
+  @override
+  String get communityCategoryEmpty => 'No spaces in this category yet.';
+
+  @override
+  String postInSpace(String handle) {
+    return 'in @$handle';
+  }
+
+  @override
+  String get postCommentsHeader => 'Comments';
+
+  @override
+  String get postNoComments => 'No comments yet.';
+
+  @override
+  String postReplyingTo(String name) {
+    return 'Replying to $name';
+  }
+
+  @override
+  String get postWriteCommentHint => 'Write a comment';
+
+  @override
+  String get spaceCreateAction => 'Create';
+
+  @override
+  String get spaceNameHint => 'e.g. Stargazers Club';
+
+  @override
+  String get spaceHandleHint => 'stargazers';
+
+  @override
+  String get spaceDescriptionHint => 'What is this space about?';
+
+  @override
+  String get spaceCategoryLabel => 'CATEGORY';
+
+  @override
+  String get spaceSpicyLabel => 'Spicy';
+
+  @override
+  String get spaceSpicyDescription =>
+      'Mature topics — shown with a Spicy badge.';
+
+  @override
+  String get communityHashtagComingSoon => 'Posts by hashtag are coming soon.';
+
+  @override
+  String get communityHashtagComingSoonBody =>
+      'For now, browse spaces and discover hashtags inside posts.';
+
+  @override
+  String get postTimeNow => 'now';
+
+  @override
+  String postTimeMinutesShort(int n) {
+    return '${n}m';
+  }
+
+  @override
+  String postTimeHoursShort(int n) {
+    return '${n}h';
+  }
+
+  @override
+  String postTimeDaysShort(int n) {
+    return '${n}d';
+  }
+
+  @override
+  String postTimeWeeksShort(int n) {
+    return '${n}w';
+  }
+
+  @override
+  String get notificationTimeJustNow => 'just now';
+
+  @override
+  String notificationTimeMinutesAgo(int n) {
+    return '$n min ago';
+  }
+
+  @override
+  String notificationTimeHoursAgo(int n) {
+    return '${n}h ago';
+  }
+
+  @override
+  String notificationTimeDaysAgo(int n) {
+    return '${n}d ago';
+  }
+
+  @override
+  String notificationTimeWeeksAgo(int n) {
+    return '${n}w ago';
+  }
+
+  @override
+  String get notificationPostLiked => 'liked your post';
+
+  @override
+  String get notificationCommentLiked => 'liked your comment';
+
+  @override
+  String get notificationPostCommented => 'commented on your post';
+
+  @override
+  String get notificationCommentReplied => 'replied to your comment';
+
+  @override
+  String get notificationSpaceMemberJoined => 'joined your space';
+
+  @override
+  String get notificationSpaceFollowed => 'followed your space';
+
+  @override
+  String get notificationSpaceJoinRequested => 'requested to join your space';
+
+  @override
+  String get notificationSpaceJoinApproved => 'accepted your request to join';
+
+  @override
+  String get notificationSpaceJoinDeclined => 'declined your request to join';
+
+  @override
+  String get notificationPostInSpace => 'posted in a space you follow';
+
+  @override
+  String get notificationMentioned => 'mentioned you';
+
+  @override
+  String get notificationGeneric => 'sent you a notification';
+
+  @override
+  String communityProfileJoinedSpaces(int count) {
+    return 'JOINED SPACES ($count)';
+  }
+
+  @override
+  String get communityProfileNoSpaces => 'Not in any spaces yet.';
+
+  @override
+  String communityProfileRecentPosts(int count) {
+    return 'RECENT POSTS ($count)';
+  }
+
+  @override
+  String get communityProfileNoPosts => 'No posts yet.';
+
+  @override
+  String get communityUnknownUser => 'Unknown user';
+
+  @override
+  String get communityUnknownMember => 'Unknown';
+
+  @override
+  String get spaceRoleOwner => 'OWNER';
+
+  @override
+  String get spaceRoleMod => 'MOD';
+
+  @override
+  String get spaceRoleMember => 'MEMBER';
+
+  @override
+  String get spaceJoinPending => 'Pending';
+
+  @override
+  String communityMembersCountCompact(String count) {
+    return '$count members';
+  }
+
+  @override
+  String get aiChatSuggestedQuestionsCaps => 'TRY ASKING…';
+
+  @override
+  String chatThreadsDeleteBody(String title) {
+    return '\"$title\" and all its messages will be removed. This cannot be undone.';
+  }
+
+  @override
+  String get chatThreadsHeaderTitle => 'Cosmic Conversations';
+
+  @override
+  String chatThreadsHeaderSubtitle(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count conversations',
+      one: '1 conversation',
+    );
+    return '$_temp0 · powered by your chart';
+  }
+
+  @override
+  String get chatThreadsTapToContinue => 'Tap to continue your reading';
+
+  @override
+  String get chatThreadsEmptyTitle => 'Begin a Cosmic Dialogue';
+
+  @override
+  String get chatThreadsEmptyBody =>
+      'Ask anything about your chart, transits,\nor a moment you want to understand.';
+
+  @override
+  String get aiMemoryTitle => 'Cosmic Memory';
+
+  @override
+  String get aiMemorySubtitle => 'What I remember about you';
+
+  @override
+  String get aiMemoryLive => 'live';
+
+  @override
+  String get aiMemorySaturnReturnLabel => 'Saturn return (1st pass)';
+
+  @override
+  String get aiMemorySaturnReturnDetail =>
+      'You\'ve asked about this 4 times since February.';
+
+  @override
+  String get aiMemoryCareerLabel => 'Career transition';
+
+  @override
+  String get aiMemoryCareerDetail =>
+      'You\'re weighing a move into product design.';
+
+  @override
+  String get aiMemoryPartnerLabel => 'Theo, Pisces';
+
+  @override
+  String get aiMemoryPartnerDetail =>
+      'Compatibility synastry saved · Oct 2024.';
+
+  @override
+  String get aiMemorySelfTrustLabel => 'Self-trust theme';
+
+  @override
+  String get aiMemorySelfTrustDetail =>
+      'A recurring question across 6 conversations.';
+
+  @override
+  String get compatSomeone => 'Someone';
+
+  @override
+  String compatShareText(String name, int score) {
+    return 'My cosmic compatibility with $name is $score%! Check yours on Lively.';
+  }
+
+  @override
+  String get compatYou => 'You';
+
+  @override
+  String compatYouAnd(String name) {
+    return 'You & $name';
+  }
+
+  @override
+  String get compatRelPartner => 'Partner';
+
+  @override
+  String get compatRelFriend => 'Friend';
+
+  @override
+  String get compatRelFamily => 'Family';
+
+  @override
+  String get compatRelCoworker => 'Coworker';
+
+  @override
+  String get compatRelCrush => 'Crush';
+
+  @override
+  String get compatRelOther => 'Other';
+
+  @override
+  String get timelineFeatureName => 'Timeline Forecasts';
+
+  @override
+  String get lifeTimelineCatCareer => 'Career';
+
+  @override
+  String get lifeTimelineCatLove => 'Love';
+
+  @override
+  String get lifeTimelineCatGrowth => 'Growth';
+
+  @override
+  String get lifeTimelineCatLoss => 'Loss';
+
+  @override
+  String get lifeTimelineCatTravel => 'Travel';
+
+  @override
+  String get lifeTimelineCatFamily => 'Family';
+
+  @override
+  String get lifeTimelineCatReflection => 'Reflection';
+
+  @override
+  String get lifeTimelineMoodElated => 'Elated';
+
+  @override
+  String get lifeTimelineMoodGrounded => 'Grounded';
+
+  @override
+  String get lifeTimelineMoodOpen => 'Open';
+
+  @override
+  String get lifeTimelineMoodPressured => 'Pressured';
+
+  @override
+  String get lifeTimelineMoodFree => 'Free';
+
+  @override
+  String get lifeTimelineMoodCleansed => 'Cleansed';
+
+  @override
+  String get lifeTimelineMoodTender => 'Tender';
+
+  @override
+  String get lifeTimelineMoodResolved => 'Resolved';
+
+  @override
+  String get lifeTimelineAddTitle => 'Add a Moment';
+
+  @override
+  String get lifeTimelineAddSubtitle => 'A turning point worth remembering.';
+
+  @override
+  String get lifeTimelineFieldTitle => 'Title';
+
+  @override
+  String get lifeTimelineFieldTitleHint => 'e.g. Got the offer';
+
+  @override
+  String get lifeTimelineFieldWhen => 'When';
+
+  @override
+  String get lifeTimelineFieldCategory => 'Category';
+
+  @override
+  String get lifeTimelineFieldMood => 'How did it feel?';
+
+  @override
+  String get lifeTimelineFieldNotes => 'Notes';
+
+  @override
+  String get lifeTimelineFieldNotesHint =>
+      'What was happening, what shifted...';
+
+  @override
+  String get lifeTimelineSaveMoment => 'Save Moment';
+
+  @override
+  String get lifeTimelineTransitPending => 'Transit calculation pending';
+
+  @override
+  String get lifeTimelineMock1Title => 'Got the offer';
+
+  @override
+  String get lifeTimelineMock1Desc =>
+      'Accepted the senior role at the design studio. Felt like everything I\'ve worked toward suddenly clicked into place.';
+
+  @override
+  String get lifeTimelineMock1Transit1 => 'Jupiter trine natal MC';
+
+  @override
+  String get lifeTimelineMock1Transit2 => 'Venus in 10th house';
+
+  @override
+  String get lifeTimelineMock2Title => 'Cancer New Moon retreat';
+
+  @override
+  String get lifeTimelineMock2Desc =>
+      'Three days off-grid in Joshua Tree. Wrote 40 pages of journal. Came back with clarity about what I actually want.';
+
+  @override
+  String get lifeTimelineMock2Transit1 => 'New Moon conjunct natal Moon';
+
+  @override
+  String get lifeTimelineMock2Transit2 => 'Mercury retrograde in 4th';
+
+  @override
+  String get lifeTimelineMock3Title => 'Met Theo';
+
+  @override
+  String get lifeTimelineMock3Desc =>
+      'Coffee at 4pm became dinner became a long walk. Felt the kind of recognition you can\'t fake.';
+
+  @override
+  String get lifeTimelineMock3Transit1 => 'Venus trine natal Sun';
+
+  @override
+  String get lifeTimelineMock3Transit2 => 'Sun in 7th house';
+
+  @override
+  String get lifeTimelineMock4Title => 'Saturn return begins';
+
+  @override
+  String get lifeTimelineMock4Desc =>
+      'The first wave hit. Re-evaluating every commitment. Starting to feel which structures need to come down.';
+
+  @override
+  String get lifeTimelineMock4Transit1 =>
+      'Saturn conjunct natal Saturn (1st pass)';
+
+  @override
+  String get lifeTimelineMock5Title => 'Trip to Lisbon';
+
+  @override
+  String get lifeTimelineMock5Desc =>
+      'Two weeks alone with my notebook. Realised how much of my anxiety was just being too plugged in.';
+
+  @override
+  String get lifeTimelineMock5Transit1 => 'Jupiter in 9th house';
+
+  @override
+  String get lifeTimelineMock5Transit2 => 'Mars trine Mercury';
+
+  @override
+  String get lifeTimelineMock6Title => 'Ended the lease';
+
+  @override
+  String get lifeTimelineMock6Desc =>
+      'Moved out of the apartment. Decided I needed less space and fewer attachments. Saturn was right.';
+
+  @override
+  String get lifeTimelineMock6Transit1 => 'Saturn square natal Moon';
+
+  @override
+  String get lifeTimelineMock6Transit2 => 'Pluto opposite natal Venus';
+
+  @override
+  String get destinyMatrixTitle => 'Matrix of Destiny';
+
+  @override
+  String get destinyYourOctagram => 'Your Octagram';
+
+  @override
+  String get destinyPurpose => 'Purpose';
+
+  @override
+  String get destinyTheLines => 'The Lines';
+
+  @override
+  String get destinyYourCoreArcana => 'YOUR CORE ARCANA';
+
+  @override
+  String destinyBirthDate(String date) {
+    return 'Birth date $date';
+  }
+
+  @override
+  String get destinyComfortCore => 'Comfort / Core';
+
+  @override
+  String get destinyMaleGenerationLine => 'male generation line';
+
+  @override
+  String get destinyFemaleGenerationLine => 'female generation line';
+
+  @override
+  String get destinyTapNodeHint => 'Tap any node to read its arcana.';
+
+  @override
+  String destinyArcanaNumber(int n) {
+    return 'Arcana $n';
+  }
+
+  @override
+  String get destinySkyPurpose => 'Sky Purpose';
+
+  @override
+  String get destinyEarthPurpose => 'Earth Purpose';
+
+  @override
+  String get destinyPersonalPurpose => 'Personal Purpose';
+
+  @override
+  String get psychoTitle => 'Pythagoras Square';
+
+  @override
+  String get psychoYourMatrix => 'Your Matrix';
+
+  @override
+  String get psychoLinesStrengths => 'Lines & Strengths';
+
+  @override
+  String get psychoWorkingNumbers => 'WORKING NUMBERS';
+
+  @override
+  String psychoBirthDate(String date) {
+    return 'Birth date $date';
+  }
+
+  @override
+  String psychoWorkingShort(int n) {
+    return 'W$n';
+  }
+
+  @override
+  String get psychoTapCellHint => 'Tap any cell to read its meaning.';
+
+  @override
+  String get psychoAbsent => 'Absent';
+
+  @override
+  String psychoCellCount(String digits, int count) {
+    return '$digits  ·  ${count}x';
+  }
+
+  @override
+  String psychoCellsList(String cells) {
+    return 'Cells $cells';
+  }
+
+  @override
+  String get numerologyCompatPartnerNameLabel => 'PARTNER FULL BIRTH NAME';
+
+  @override
+  String get numerologyCompatPartnerNameHint => 'e.g. Sarah Anne Chen';
+
+  @override
+  String get numerologyCompatPartnerBirthDateLabel => 'PARTNER BIRTH DATE';
+
+  @override
+  String get numerologyCompatTapToPick => 'Tap to pick';
+
+  @override
+  String get numerologyCompatCalculating => 'Calculating…';
+
+  @override
+  String get numerologyCompatCompute => 'Compute compatibility';
+
+  @override
+  String get numerologyCompatMatch => 'Match';
+
+  @override
+  String get numerologyKarmicLessonsHeader => 'KARMIC LESSONS';
+
+  @override
+  String get numerologyKarmicNoneMissing =>
+      'Your name carries every digit — no missing lessons.';
+
+  @override
+  String get numerologyKarmicMissingBlurb =>
+      'Numbers missing from your name show areas you came to learn.';
+
+  @override
+  String get numerologyHiddenPassionHeader => 'HIDDEN PASSION';
+
+  @override
+  String get numerologyHiddenPassionNone =>
+      'No dominant digit — your name is balanced across the spectrum.';
+
+  @override
+  String numerologyHiddenPassionBlurb(int number) {
+    return 'Your strongest gift is the energy of $number — the digit that appears most often in your name.';
+  }
+
+  @override
+  String get numerologyTodayHeader => 'TODAY';
+
+  @override
+  String get numerologyPersonalYear => 'Personal Year';
+
+  @override
+  String get numerologyPersonalMonth => 'Personal Month';
+
+  @override
+  String get numerologyPersonalDay => 'Personal Day';
+
+  @override
+  String get numerologyPinnaclesHeader => 'PINNACLES — life\'s themes';
+
+  @override
+  String numerologyPinnacleN(int n) {
+    return 'Pinnacle $n';
+  }
+
+  @override
+  String get numerologyChallengesHeader => 'CHALLENGES — areas to grow';
+
+  @override
+  String numerologyChallengeN(int n) {
+    return 'Challenge $n';
+  }
+
+  @override
+  String numerologyCurrentAgeNote(int age) {
+    return 'You are $age — active cycle is highlighted.';
+  }
+
+  @override
+  String numerologyAgeFrom(int start) {
+    return 'age $start+';
+  }
+
+  @override
+  String numerologyAgeRange(int start, int end) {
+    return 'ages $start–$end';
+  }
+
+  @override
+  String get numerologyNowBadge => 'NOW';
+
+  @override
+  String get numerologyMasterChip => 'Master';
+
+  @override
+  String numerologyKarmicChip(int number) {
+    return 'Karmic $number';
+  }
+
+  @override
+  String get hdYouAre => 'YOU ARE';
+
+  @override
+  String get hdStrategy => 'Strategy';
+
+  @override
+  String get hdAuthority => 'Authority';
+
+  @override
+  String get hdDefinition => 'Definition';
+
+  @override
+  String hdNotSelfTheme(String theme) {
+    return 'Not-self theme: $theme';
+  }
+
+  @override
+  String get hdVariablesHeader => 'VARIABLES (PRA)';
+
+  @override
+  String get hdVarDigestion => 'Digestion';
+
+  @override
+  String get hdVarEnvironment => 'Environment';
+
+  @override
+  String get hdVarAwareness => 'Awareness';
+
+  @override
+  String get hdVarPerspective => 'Perspective';
+
+  @override
+  String get hdDirectionLeft => 'Left';
+
+  @override
+  String get hdDirectionRight => 'Right';
+
+  @override
+  String get hdCenterDefinedBadge => 'DEFINED';
+
+  @override
+  String get hdCenterOpenBadge => 'OPEN';
+
+  @override
+  String hdGateN(int n) {
+    return 'Gate $n';
+  }
+
+  @override
+  String get hdIncarnationCross => 'INCARNATION CROSS';
+
+  @override
+  String hdQuarterOf(String quarter) {
+    return 'Quarter of $quarter';
+  }
+
+  @override
+  String hdCrossOf(String gates) {
+    return 'Cross of $gates';
+  }
+
+  @override
+  String get hdCrossPersonalitySun => 'P-Sun';
+
+  @override
+  String get hdCrossPersonalityEarth => 'P-Earth';
+
+  @override
+  String get hdCrossDesignSun => 'D-Sun';
+
+  @override
+  String get hdCrossDesignEarth => 'D-Earth';
+
+  @override
+  String get hdPersonalityHeader => 'PERSONALITY';
+
+  @override
+  String get hdDesignHeader => 'DESIGN';
+
+  @override
+  String get hdTypeManifestor => 'Manifestor';
+
+  @override
+  String get hdTypeGenerator => 'Generator';
+
+  @override
+  String get hdTypeManifestingGenerator => 'Manifesting Generator';
+
+  @override
+  String get hdTypeProjector => 'Projector';
+
+  @override
+  String get hdTypeReflector => 'Reflector';
+
+  @override
+  String get hdStrategyInform => 'Inform before acting';
+
+  @override
+  String get hdStrategyRespond => 'Wait to respond';
+
+  @override
+  String get hdStrategyRespondInform => 'Wait to respond, then inform';
+
+  @override
+  String get hdStrategyInvitation => 'Wait for the invitation';
+
+  @override
+  String get hdStrategyLunarCycle => 'Wait a lunar cycle (28 days)';
+
+  @override
+  String get hdAuthorityEmotional => 'Emotional';
+
+  @override
+  String get hdAuthoritySacral => 'Sacral';
+
+  @override
+  String get hdAuthoritySplenic => 'Splenic';
+
+  @override
+  String get hdAuthorityEgo => 'Ego';
+
+  @override
+  String get hdAuthoritySelfProjected => 'Self-Projected';
+
+  @override
+  String get hdAuthorityMental => 'Mental';
+
+  @override
+  String get hdAuthorityLunar => 'Lunar';
+
+  @override
+  String get hdDefinitionNone => 'None';
+
+  @override
+  String get hdDefinitionSingle => 'Single';
+
+  @override
+  String get hdDefinitionSplit => 'Split';
+
+  @override
+  String get hdDefinitionTripleSplit => 'Triple Split';
+
+  @override
+  String get hdDefinitionQuadrupleSplit => 'Quadruple Split';
+
+  @override
+  String get hdNotSelfAnger => 'Anger';
+
+  @override
+  String get hdNotSelfFrustration => 'Frustration';
+
+  @override
+  String get hdNotSelfFrustrationAnger => 'Frustration & Anger';
+
+  @override
+  String get hdNotSelfBitterness => 'Bitterness';
+
+  @override
+  String get hdNotSelfDisappointment => 'Disappointment';
+
+  @override
+  String get hdCenterHead => 'Head';
+
+  @override
+  String get hdCenterAjna => 'Ajna';
+
+  @override
+  String get hdCenterThroat => 'Throat';
+
+  @override
+  String get hdCenterG => 'G';
+
+  @override
+  String get hdCenterHeart => 'Heart';
+
+  @override
+  String get hdCenterSacral => 'Sacral';
+
+  @override
+  String get hdCenterSolarPlexus => 'Solar Plexus';
+
+  @override
+  String get hdCenterSpleen => 'Spleen';
+
+  @override
+  String get hdCenterRoot => 'Root';
+
+  @override
+  String get hdCenterThemeHead => 'Inspiration · pressure to know';
+
+  @override
+  String get hdCenterThemeAjna => 'Conceptualization · certainty vs doubt';
+
+  @override
+  String get hdCenterThemeThroat => 'Manifestation · expression';
+
+  @override
+  String get hdCenterThemeG => 'Identity · love · direction';
+
+  @override
+  String get hdCenterThemeHeart => 'Willpower · ego · resources';
+
+  @override
+  String get hdCenterThemeSacral => 'Life force · sustainable work · sexuality';
+
+  @override
+  String get hdCenterThemeSolarPlexus => 'Emotional wave · feelings · clarity';
+
+  @override
+  String get hdCenterThemeSpleen => 'Intuition · health · survival';
+
+  @override
+  String get hdCenterThemeRoot => 'Pressure · adrenaline · drive';
+
+  @override
+  String get hdQuarterInitiation => 'Initiation';
+
+  @override
+  String get hdQuarterCivilization => 'Civilization';
+
+  @override
+  String get hdQuarterDuality => 'Duality';
+
+  @override
+  String get hdQuarterMutation => 'Mutation';
+
+  @override
+  String get hdBodySun => 'Sun';
+
+  @override
+  String get hdBodyEarth => 'Earth';
+
+  @override
+  String get hdBodyNorthNode => 'North Node';
+
+  @override
+  String get hdBodySouthNode => 'South Node';
+
+  @override
+  String get hdBodyMoon => 'Moon';
+
+  @override
+  String get hdBodyMercury => 'Mercury';
+
+  @override
+  String get hdBodyVenus => 'Venus';
+
+  @override
+  String get hdBodyMars => 'Mars';
+
+  @override
+  String get hdBodyJupiter => 'Jupiter';
+
+  @override
+  String get hdBodySaturn => 'Saturn';
+
+  @override
+  String get hdBodyUranus => 'Uranus';
+
+  @override
+  String get hdBodyNeptune => 'Neptune';
+
+  @override
+  String get hdBodyPluto => 'Pluto';
+
+  @override
+  String get hdChannelInspiration => 'Inspiration';
+
+  @override
+  String get hdChannelTheBeat => 'The Beat';
+
+  @override
+  String get hdChannelMutation => 'Mutation';
+
+  @override
+  String get hdChannelLogic => 'Logic';
+
+  @override
+  String get hdChannelRhythm => 'Rhythm';
+
+  @override
+  String get hdChannelMating => 'Mating';
+
+  @override
+  String get hdChannelAlpha => 'Alpha (Leadership)';
+
+  @override
+  String get hdChannelConcentration => 'Concentration';
+
+  @override
+  String get hdChannelAwakening => 'Awakening';
+
+  @override
+  String get hdChannelExploration => 'Exploration';
+
+  @override
+  String get hdChannelPerfectedForm => 'Perfected Form';
+
+  @override
+  String get hdChannelCuriosity => 'Curiosity';
+
+  @override
+  String get hdChannelOpenness => 'Openness';
+
+  @override
+  String get hdChannelTheProdigal => 'The Prodigal';
+
+  @override
+  String get hdChannelTheWavelength => 'The Wavelength';
+
+  @override
+  String get hdChannelAcceptance => 'Acceptance';
+
+  @override
+  String get hdChannelJudgement => 'Judgement';
+
+  @override
+  String get hdChannelSynthesis => 'Synthesis';
+
+  @override
+  String get hdChannelCharisma => 'Charisma';
+
+  @override
+  String get hdChannelTheBrainWave => 'The Brain Wave';
+
+  @override
+  String get hdChannelMoneyLine => 'Money Line';
+
+  @override
+  String get hdChannelStructuring => 'Structuring';
+
+  @override
+  String get hdChannelAwareness => 'Awareness';
+
+  @override
+  String get hdChannelInitiation => 'Initiation';
+
+  @override
+  String get hdChannelSurrender => 'Surrender';
+
+  @override
+  String get hdChannelPreservation => 'Preservation';
+
+  @override
+  String get hdChannelStruggle => 'Struggle';
+
+  @override
+  String get hdChannelDiscovery => 'Discovery';
+
+  @override
+  String get hdChannelRecognition => 'Recognition';
+
+  @override
+  String get hdChannelTransformation => 'Transformation';
+
+  @override
+  String get hdChannelPower => 'Power';
+
+  @override
+  String get hdChannelTransitoriness => 'Transitoriness';
+
+  @override
+  String get hdChannelCommunity => 'Community';
+
+  @override
+  String get hdChannelEmoting => 'Emoting';
+
+  @override
+  String get hdChannelMaturation => 'Maturation';
+
+  @override
+  String get hdChannelAbstraction => 'Abstraction';
+
+  @override
+  String get homeChartPsychomatrix => 'Pythagoras Square';
+
+  @override
+  String get homeChartPsychomatrixSubtitle => 'Your psychomatrix by birth date';
+
+  @override
+  String get homeChartDestinyMatrix => 'Matrix of Destiny';
+
+  @override
+  String get homeChartDestinyMatrixSubtitle => 'Your 22-arcana octagram';
+
+  @override
+  String get homePremiumPlanTitle => 'Premium Plan';
+
+  @override
+  String get homePremiumPlanBody =>
+      'Get unlimited AI insights, priority\nbooking, and exclusive content.';
+
+  @override
+  String get homePremiumPlanCta => 'Upgrade Plan';
+
+  @override
+  String get homePopularAstrologers => 'Popular Astrologers';
+
+  @override
+  String get homeTodaysEnergyLabel => 'TODAY\'S ENERGY';
+
+  @override
+  String get homeDailyEnergyHeadline =>
+      'A day for inner reflection and creative expression';
+
+  @override
+  String get homeDailyEnergyBody =>
+      'The Moon in Pisces heightens your intuition. Trust your instincts today, especially in conversations that matter.';
+
+  @override
+  String get homeModerateEnergy => 'Moderate Energy';
+
+  @override
+  String get homeQuickAiChat => 'AI Chat';
+
+  @override
+  String get homeQuickFullChart => 'Full Chart';
+
+  @override
+  String get homeKeepItUp => 'Keep it up!';
+
+  @override
+  String get homeWeekdayInitialMon => 'M';
+
+  @override
+  String get homeWeekdayInitialTue => 'T';
+
+  @override
+  String get homeWeekdayInitialWed => 'W';
+
+  @override
+  String get homeWeekdayInitialThu => 'T';
+
+  @override
+  String get homeWeekdayInitialFri => 'F';
+
+  @override
+  String get homeWeekdayInitialSat => 'S';
+
+  @override
+  String get homeWeekdayInitialSun => 'S';
+
+  @override
+  String get homeSampleAffirmation =>
+      'I trust the timing of my life. What is meant for me will find me.';
+
+  @override
+  String get homeDailyAffirmationLabel => 'DAILY AFFIRMATION';
+
+  @override
+  String get skyMoonNew => 'New Moon';
+
+  @override
+  String get skyMoonWaxingCrescent => 'Waxing Crescent';
+
+  @override
+  String get skyMoonFirstQuarter => 'First Quarter';
+
+  @override
+  String get skyMoonWaxingGibbous => 'Waxing Gibbous';
+
+  @override
+  String get skyMoonFull => 'Full Moon';
+
+  @override
+  String get skyMoonWaningGibbous => 'Waning Gibbous';
+
+  @override
+  String get skyMoonLastQuarter => 'Last Quarter';
+
+  @override
+  String get skyMoonWaningCrescent => 'Waning Crescent';
+
+  @override
+  String get dailyEnergyRingLabel => 'energy';
+
+  @override
+  String profileBirthDataLoadError(String error) {
+    return 'Couldn\'t load your birth data: $error';
+  }
+
+  @override
+  String get ritualsDailyRitualsFeature => 'Daily Rituals';
+
+  @override
+  String dailyShareText(String affirmation, String color) {
+    return '\"$affirmation\"\n\nMy lucky color today: $color\n\n~ Lively';
+  }
 }

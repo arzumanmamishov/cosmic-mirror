@@ -1,5 +1,7 @@
 import 'package:cosmic_mirror/config/theme/app_palette.dart';
+import 'package:cosmic_mirror/features/chart/presentation/astro_labels.dart';
 import 'package:cosmic_mirror/features/vedic_chart/domain/entities/vedic_chart.dart';
+import 'package:cosmic_mirror/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 
 /// Detailed nakshatra card with deity, symbol, ruler, and traditional
@@ -20,6 +22,7 @@ class NakshatraCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final p = context.palette;
+    final l = AppLocalizations.of(context);
     return Container(
       margin: const EdgeInsets.symmetric(vertical: 6),
       decoration: BoxDecoration(
@@ -66,7 +69,10 @@ class NakshatraCard extends StatelessWidget {
                   ),
                   const SizedBox(height: 2),
                   Text(
-                    'Pada $pada · Ruler ${nakshatra.ruler}',
+                    l.vedicNakshatraPadaRuler(
+                      pada,
+                      chartPlanetName(l, nakshatra.ruler),
+                    ),
                     style: TextStyle(color: p.textSecondary, fontSize: 12),
                   ),
                 ],
@@ -75,14 +81,14 @@ class NakshatraCard extends StatelessWidget {
           ],
         ),
         children: [
-          _kv(p, 'Deity', nakshatra.deity),
-          _kv(p, 'Symbol', nakshatra.symbol),
-          _kv(p, 'Gana', nakshatra.gana),
-          _kv(p, 'Nadi', nakshatra.nadi),
-          _kv(p, 'Varna', nakshatra.varna),
-          _kv(p, 'Caste', nakshatra.caste),
-          _kv(p, 'Animal', nakshatra.animal),
-          _kv(p, 'Gender', nakshatra.gender),
+          _kv(p, l.vedicNakshatraDeity, nakshatra.deity),
+          _kv(p, l.vedicNakshatraSymbol, nakshatra.symbol),
+          _kv(p, l.vedicNakshatraGana, nakshatra.gana),
+          _kv(p, l.vedicNakshatraNadi, nakshatra.nadi),
+          _kv(p, l.vedicNakshatraVarna, nakshatra.varna),
+          _kv(p, l.vedicNakshatraCaste, nakshatra.caste),
+          _kv(p, l.vedicNakshatraAnimal, nakshatra.animal),
+          _kv(p, l.vedicNakshatraGender, nakshatra.gender),
         ],
       ),
     );

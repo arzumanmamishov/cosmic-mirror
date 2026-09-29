@@ -1,4 +1,5 @@
 import 'package:cosmic_mirror/config/theme/app_palette.dart';
+import 'package:cosmic_mirror/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
@@ -8,6 +9,7 @@ class PremiumUpgradeCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final p = context.palette;
+    final l = AppLocalizations.of(context);
 
     return Container(
       padding: const EdgeInsets.fromLTRB(20, 20, 20, 20),
@@ -40,9 +42,9 @@ class PremiumUpgradeCard extends StatelessWidget {
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
-                'Premium Plan',
-                style: TextStyle(
+              Text(
+                l.homePremiumPlanTitle,
+                style: const TextStyle(
                   color: Colors.white,
                   fontSize: 22,
                   fontWeight: FontWeight.w700,
@@ -50,7 +52,7 @@ class PremiumUpgradeCard extends StatelessWidget {
               ),
               const SizedBox(height: 6),
               Text(
-                'Get unlimited AI insights, priority\nbooking, and exclusive content.',
+                l.homePremiumPlanBody,
                 style: TextStyle(
                   color: Colors.white.withValues(alpha: 0.85),
                   fontSize: 13,
@@ -69,9 +71,9 @@ class PremiumUpgradeCard extends StatelessWidget {
                     color: Colors.black.withValues(alpha: 0.35),
                     borderRadius: BorderRadius.circular(14),
                   ),
-                  child: const Text(
-                    'Upgrade Plan',
-                    style: TextStyle(
+                  child: Text(
+                    l.homePremiumPlanCta,
+                    style: const TextStyle(
                       color: Colors.white,
                       fontSize: 13,
                       fontWeight: FontWeight.w600,

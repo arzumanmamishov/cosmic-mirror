@@ -1,5 +1,7 @@
 import 'package:cosmic_mirror/config/theme/app_palette.dart';
 import 'package:cosmic_mirror/features/human_design/domain/entities/human_design.dart';
+import 'package:cosmic_mirror/features/human_design/presentation/hd_labels.dart';
+import 'package:cosmic_mirror/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 
 /// Card describing one of the 9 centers — defined or undefined, gates active.
@@ -8,21 +10,11 @@ class CenterCard extends StatelessWidget {
 
   final HDCenter center;
 
-  static const Map<String, String> _centerThemes = {
-    'Head': 'Inspiration · pressure to know',
-    'Ajna': 'Conceptualization · certainty vs doubt',
-    'Throat': 'Manifestation · expression',
-    'G': 'Identity · love · direction',
-    'Heart': 'Willpower · ego · resources',
-    'Sacral': 'Life force · sustainable work · sexuality',
-    'SolarPlexus': 'Emotional wave · feelings · clarity',
-    'Spleen': 'Intuition · health · survival',
-    'Root': 'Pressure · adrenaline · drive',
-  };
-
   @override
   Widget build(BuildContext context) {
     final p = context.palette;
+    final l = AppLocalizations.of(context);
+    final hd = HDLabels(l);
     final accent = center.defined ? p.primary : p.textTertiary;
     return Container(
       margin: const EdgeInsets.symmetric(vertical: 4),
@@ -50,7 +42,7 @@ class CenterCard extends StatelessWidget {
               ),
               const SizedBox(width: 8),
               Text(
-                center.name == 'SolarPlexus' ? 'Solar Plexus' : center.name,
+                hd.center(center.name),
                 style: TextStyle(
                   color: p.textPrimary,
                   fontSize: 14,
@@ -68,7 +60,7 @@ class CenterCard extends StatelessWidget {
                   borderRadius: BorderRadius.circular(4),
                 ),
                 child: Text(
-                  center.defined ? 'DEFINED' : 'OPEN',
+                  center.defined ? l.hdCenterDefinedBadge : l.hdCenterOpenBadge,
                   style: TextStyle(
                     color: accent,
                     fontSize: 9,
@@ -81,7 +73,7 @@ class CenterCard extends StatelessWidget {
           ),
           const SizedBox(height: 6),
           Text(
-            _centerThemes[center.name] ?? '',
+            hd.centerTheme(center.name),
             style: TextStyle(
               color: p.textSecondary,
               fontSize: 12,
@@ -105,7 +97,7 @@ class CenterCard extends StatelessWidget {
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Text(
-                      'Gate $g',
+                      l.hdGateN(g),
                       style: TextStyle(
                         color: p.textSecondary,
                         fontSize: 11,

@@ -7,8 +7,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-const _kGold = Color(0xFFD4B16A);
-
 /// Featured Discussions on the home Discover tab — pulls real Community
 /// spaces from the backend and shows the top few as glass cards. Tapping
 /// a card opens that space; tapping "See all" jumps to the Spaces list.
@@ -45,7 +43,7 @@ class DiscussionsSection extends ConsumerWidget {
                 child: Text(
                   l10n.homeSeeAll,
                   style: GoogleFonts.poppins(
-                    color: _kGold,
+                    color: p.primary,
                     fontSize: 13,
                     fontWeight: FontWeight.w600,
                   ),
@@ -116,13 +114,13 @@ class _SpaceCard extends StatelessWidget {
                         vertical: 4,
                       ),
                       decoration: BoxDecoration(
-                        color: _kGold.withValues(alpha: 0.14),
+                        color: p.primary.withValues(alpha: 0.14),
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: Text(
                         item.categoryName!,
                         style: GoogleFonts.poppins(
-                          color: _kGold,
+                          color: p.primary,
                           fontSize: 10,
                           fontWeight: FontWeight.w700,
                           letterSpacing: 0.4,
@@ -134,7 +132,7 @@ class _SpaceCard extends StatelessWidget {
                     Icon(
                       Icons.verified_rounded,
                       size: 14,
-                      color: _kGold.withValues(alpha: 0.85),
+                      color: p.primary.withValues(alpha: 0.85),
                     ),
                   ],
                   const Spacer(),

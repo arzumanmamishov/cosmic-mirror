@@ -1817,4 +1817,1609 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get lifeTimelineWhatSky => 'GÖKYÜZÜ NE YAPIYORDU';
+
+  @override
+  String get commonJustNow => 'Az önce';
+
+  @override
+  String commonMinutesAgo(int count) {
+    return '$count dk önce';
+  }
+
+  @override
+  String commonHoursAgo(int count) {
+    return '$count sa önce';
+  }
+
+  @override
+  String commonDaysAgo(int count) {
+    return '$count gün önce';
+  }
+
+  @override
+  String get commonGoodMorning => 'Günaydın';
+
+  @override
+  String get commonGoodAfternoon => 'İyi günler';
+
+  @override
+  String get commonGoodEvening => 'İyi akşamlar';
+
+  @override
+  String get commonSomethingWentWrong =>
+      'Bir şeyler ters gitti. Lütfen tekrar dene.';
+
+  @override
+  String get commonShowPassword => 'Şifreyi göster';
+
+  @override
+  String get commonHidePassword => 'Şifreyi gizle';
+
+  @override
+  String get validationNameRequired => 'Lütfen adını gir';
+
+  @override
+  String get validationNameTooShort => 'Ad en az 2 karakter olmalı';
+
+  @override
+  String get validationNameTooLong => 'Ad 50 karakterden kısa olmalı';
+
+  @override
+  String get validationEmailRequired => 'Lütfen e-posta adresini gir';
+
+  @override
+  String get validationEmailInvalid => 'Lütfen geçerli bir e-posta adresi gir';
+
+  @override
+  String get validationPasswordRequired => 'Lütfen bir şifre gir';
+
+  @override
+  String get validationBirthDateRequired => 'Lütfen doğum tarihini seç';
+
+  @override
+  String get validationBirthDateFuture => 'Doğum tarihi gelecekte olamaz';
+
+  @override
+  String get validationMinAge => 'En az 13 yaşında olmalısın';
+
+  @override
+  String get validationBirthDateInvalid =>
+      'Lütfen geçerli bir doğum tarihi gir';
+
+  @override
+  String get validationBirthPlaceRequired => 'Lütfen doğum yerini seç';
+
+  @override
+  String get validationMessageRequired => 'Lütfen bir mesaj yaz';
+
+  @override
+  String get validationMessageTooLong => 'Mesaj 500 karakterden kısa olmalı';
+
+  @override
+  String get authInvalidEmail => 'Geçerli bir e-posta adresi gir';
+
+  @override
+  String get authNoAccountTapCreate =>
+      'Bu e-postayla kayıtlı bir hesap yok. Kaydolmak için Hesap oluştur\'a dokun.';
+
+  @override
+  String get authNoAccountCheckAddress =>
+      'Bu e-postayla kayıtlı bir hesap yok. Adresi kontrol et ya da yeni bir hesap oluştur.';
+
+  @override
+  String get authTooManyCodeRequests =>
+      'Çok fazla kod istedin. Lütfen bir dakika bekle.';
+
+  @override
+  String get authTooManyAttemptsShort =>
+      'Çok fazla deneme yapıldı. Birazdan tekrar dene.';
+
+  @override
+  String get authTooManyAttemptsWait =>
+      'Çok fazla deneme yapıldı. Lütfen bir dakika bekle.';
+
+  @override
+  String get authKickerWelcomeBack => 'TEKRAR HOŞ GELDİN';
+
+  @override
+  String get authKickerCreateAccount => 'HESAP OLUŞTUR';
+
+  @override
+  String get authBeginJourney => 'Yolculuğuna başla';
+
+  @override
+  String get authSignInSubtitle =>
+      'Kozmik aynan seni bekliyor. Devam etmek için giriş yap.';
+
+  @override
+  String get authRegisterSubtitle =>
+      'Birkaç küçük bilgi ve yıldızlar keşfetmen için senin.';
+
+  @override
+  String get authSignInWithCode => 'Bunun yerine kodla giriş yap';
+
+  @override
+  String get authForgotYourPassword => 'Şifreni mi unuttun?';
+
+  @override
+  String get authResetPasswordKicker => 'ŞİFRE SIFIRLAMA';
+
+  @override
+  String get authForgotPasswordBody =>
+      'E-posta adresini gir, yeni bir şifre belirlemen için sana bir kod gönderelim.';
+
+  @override
+  String get authSendResetCode => 'Sıfırlama kodu gönder';
+
+  @override
+  String get authBackToSignIn => 'Girişe dön';
+
+  @override
+  String get authPasswordUpdated => 'Şifren güncellendi. Lütfen giriş yap.';
+
+  @override
+  String get authOtpInvalidCode =>
+      'Bu kod işe yaramadı. Tekrar dene ya da yeniden gönder.';
+
+  @override
+  String get authOtpKickerConfirmEmail => 'E-POSTANI DOĞRULA';
+
+  @override
+  String get authOtpKickerSignIn => 'GİRİŞ YAP';
+
+  @override
+  String get authOtpKickerResetPassword => 'ŞİFRENİ SIFIRLA';
+
+  @override
+  String get authOtpCheckEmail => 'E-postanı kontrol et';
+
+  @override
+  String authOtpSentTo(String email) {
+    return '$email adresine 6 haneli bir kod gönderdik.';
+  }
+
+  @override
+  String get authNewPassword => 'Yeni şifre';
+
+  @override
+  String get authResetPasswordButton => 'Şifreyi sıfırla';
+
+  @override
+  String authOtpResendIn(String time) {
+    return '$time sonra kodu yeniden gönder';
+  }
+
+  @override
+  String get authOtpResend => 'Kodu yeniden gönder';
+
+  @override
+  String get onboardingRevealTitle => 'Kozmik planın';
+
+  @override
+  String get onboardingRevealSubtitle => 'İşte Büyük Üçlün.';
+
+  @override
+  String get onboardingRevealSunSign => 'Güneş Burcu';
+
+  @override
+  String get onboardingRevealMoonSign => 'Ay Burcu';
+
+  @override
+  String get onboardingRevealRisingSign => 'Yükselen Burç';
+
+  @override
+  String get onboardingSignUnknown => 'Bilinmiyor';
+
+  @override
+  String premiumUnlockFeature(String feature) {
+    return '$feature kilidini aç';
+  }
+
+  @override
+  String get premiumUnlockThisFeature => 'Bu özelliğin kilidini aç';
+
+  @override
+  String get premiumUpgradeBody =>
+      'Sana özel öngörülere tam erişim için Premium\'a yükselt.';
+
+  @override
+  String get premiumViewPlans => 'Planları gör';
+
+  @override
+  String paywallPricePerMonth(String price) {
+    return '$price/ay';
+  }
+
+  @override
+  String paywallPricePerYear(String price) {
+    return '$price/yıl';
+  }
+
+  @override
+  String get chartSignAries => 'Koç';
+
+  @override
+  String get chartSignTaurus => 'Boğa';
+
+  @override
+  String get chartSignGemini => 'İkizler';
+
+  @override
+  String get chartSignCancer => 'Yengeç';
+
+  @override
+  String get chartSignLeo => 'Aslan';
+
+  @override
+  String get chartSignVirgo => 'Başak';
+
+  @override
+  String get chartSignLibra => 'Terazi';
+
+  @override
+  String get chartSignScorpio => 'Akrep';
+
+  @override
+  String get chartSignSagittarius => 'Yay';
+
+  @override
+  String get chartSignCapricorn => 'Oğlak';
+
+  @override
+  String get chartSignAquarius => 'Kova';
+
+  @override
+  String get chartSignPisces => 'Balık';
+
+  @override
+  String get chartSignAbbrAries => 'Koç';
+
+  @override
+  String get chartSignAbbrTaurus => 'Boğ';
+
+  @override
+  String get chartSignAbbrGemini => 'İki';
+
+  @override
+  String get chartSignAbbrCancer => 'Yen';
+
+  @override
+  String get chartSignAbbrLeo => 'Asl';
+
+  @override
+  String get chartSignAbbrVirgo => 'Baş';
+
+  @override
+  String get chartSignAbbrLibra => 'Ter';
+
+  @override
+  String get chartSignAbbrScorpio => 'Akr';
+
+  @override
+  String get chartSignAbbrSagittarius => 'Yay';
+
+  @override
+  String get chartSignAbbrCapricorn => 'Oğl';
+
+  @override
+  String get chartSignAbbrAquarius => 'Kov';
+
+  @override
+  String get chartSignAbbrPisces => 'Bal';
+
+  @override
+  String get chartPlanetSun => 'Güneş';
+
+  @override
+  String get chartPlanetMoon => 'Ay';
+
+  @override
+  String get chartPlanetMercury => 'Merkür';
+
+  @override
+  String get chartPlanetVenus => 'Venüs';
+
+  @override
+  String get chartPlanetMars => 'Mars';
+
+  @override
+  String get chartPlanetJupiter => 'Jüpiter';
+
+  @override
+  String get chartPlanetSaturn => 'Satürn';
+
+  @override
+  String get chartPlanetUranus => 'Uranüs';
+
+  @override
+  String get chartPlanetNeptune => 'Neptün';
+
+  @override
+  String get chartPlanetPluto => 'Plüton';
+
+  @override
+  String get chartPlanetNorthNode => 'Kuzey Ay Düğümü';
+
+  @override
+  String get chartPlanetSouthNode => 'Güney Ay Düğümü';
+
+  @override
+  String get chartPlanetChiron => 'Kiron';
+
+  @override
+  String get chartAspectQuincunx => 'Yüzellilik';
+
+  @override
+  String chartAspectTitle(String planet1, String aspect, String planet2) {
+    return '$planet1 $aspect $planet2';
+  }
+
+  @override
+  String get chartElementFire => 'Ateş';
+
+  @override
+  String get chartElementEarth => 'Toprak';
+
+  @override
+  String get chartElementAir => 'Hava';
+
+  @override
+  String get chartElementWater => 'Su';
+
+  @override
+  String chartPercent(String value) {
+    return '%$value';
+  }
+
+  @override
+  String get vedicLagnaLabel => 'LAGNA';
+
+  @override
+  String get vedicChandraLabel => 'ÇANDRA';
+
+  @override
+  String get vedicSuryaLabel => 'SURYA';
+
+  @override
+  String get vedicLagna => 'Lagna';
+
+  @override
+  String vedicPlanetPosition(
+      String sign, String sanskrit, String degree, int house) {
+    return '$sign ($sanskrit) · $degree° · $house. Ev';
+  }
+
+  @override
+  String vedicNakshatraPada(String nakshatra, int pada) {
+    return '$nakshatra · $pada. pada';
+  }
+
+  @override
+  String get vedicDignityExalted => 'Yücelmiş';
+
+  @override
+  String get vedicDignityDebilitated => 'Düşüşte';
+
+  @override
+  String get vedicDignityMooltrikona => 'Mulatrikona';
+
+  @override
+  String get vedicDignityOwn => 'Kendi burcunda';
+
+  @override
+  String get vedicDignityFriend => 'Dost burçta';
+
+  @override
+  String get vedicDignityEnemy => 'Düşman burçta';
+
+  @override
+  String get vedicDignityNeutral => 'Nötr';
+
+  @override
+  String vedicAspectOrdinal(String n) {
+    return '$n.';
+  }
+
+  @override
+  String get vedicMahadashasHeader => 'Mahadaşalar (120 yıllık döngü)';
+
+  @override
+  String get vedicCurrentDasha => 'ŞU ANKİ DAŞA';
+
+  @override
+  String get vedicDashaLevels => 'Maha · Antar · Pratyantar';
+
+  @override
+  String get vedicDashaNow => 'ŞİMDİ';
+
+  @override
+  String get vedicYogaStrength => 'GÜÇ';
+
+  @override
+  String get vedicYogaCategoryPanchaMahapurusha => 'Pança Mahapuruşa';
+
+  @override
+  String get vedicYogaCategoryLunar => 'Ay';
+
+  @override
+  String get vedicYogaCategorySolar => 'Güneş';
+
+  @override
+  String get vedicYogaCategoryWealth => 'Bolluk';
+
+  @override
+  String get vedicYogaCategoryPower => 'Güç';
+
+  @override
+  String get vedicYogaCategoryWisdom => 'Bilgelik';
+
+  @override
+  String get vedicYogaCategoryNodal => 'Ay Düğümü';
+
+  @override
+  String vedicNakshatraPadaRuler(int pada, String ruler) {
+    return '$pada. pada · Yöneticisi $ruler';
+  }
+
+  @override
+  String get vedicNakshatraDeity => 'Tanrı';
+
+  @override
+  String get vedicNakshatraSymbol => 'Sembol';
+
+  @override
+  String get vedicNakshatraGana => 'Gana';
+
+  @override
+  String get vedicNakshatraNadi => 'Nadi';
+
+  @override
+  String get vedicNakshatraVarna => 'Varna';
+
+  @override
+  String get vedicNakshatraCaste => 'Kast';
+
+  @override
+  String get vedicNakshatraAnimal => 'Hayvan';
+
+  @override
+  String get vedicNakshatraGender => 'Cinsiyet';
+
+  @override
+  String vedicShadbalaSummary(String total, String required, String verdict) {
+    return '$total / $required Virupa — $verdict';
+  }
+
+  @override
+  String get vedicShadbalaStrong => 'GÜÇLÜ';
+
+  @override
+  String get vedicShadbalaWeak => 'ZAYIF';
+
+  @override
+  String get vedicShadbalaChesta => 'Çeşta';
+
+  @override
+  String get vedicAshtakavargaSarva => 'Sarva';
+
+  @override
+  String vedicAshtakavargaSarvaNote(int max) {
+    return 'Sarva Aştakavarga — her burcun yedi grahanın tamamından aldığı toplam hayırlı puan (burç başına en fazla $max).';
+  }
+
+  @override
+  String vedicAshtakavargaBhinnNote(String planet, int max) {
+    return '$planet için Bhinn Aştakavarga — $planet tarafından her burca verilen bindular (burç başına en fazla $max).';
+  }
+
+  @override
+  String communityMembersCount(int count) {
+    return '$count üye';
+  }
+
+  @override
+  String get communityCategoryFallback => 'Kategori';
+
+  @override
+  String get communityCategoryEmpty => 'Bu kategoride henüz alan yok.';
+
+  @override
+  String postInSpace(String handle) {
+    return '@$handle içinde';
+  }
+
+  @override
+  String get postCommentsHeader => 'Yorumlar';
+
+  @override
+  String get postNoComments => 'Henüz yorum yok.';
+
+  @override
+  String postReplyingTo(String name) {
+    return '$name kişisine yanıt veriyorsun';
+  }
+
+  @override
+  String get postWriteCommentHint => 'Bir yorum yaz';
+
+  @override
+  String get spaceCreateAction => 'Oluştur';
+
+  @override
+  String get spaceNameHint => 'ör. Yıldız Gözlemcileri Kulübü';
+
+  @override
+  String get spaceHandleHint => 'yildizgozlemcileri';
+
+  @override
+  String get spaceDescriptionHint => 'Bu alan ne hakkında?';
+
+  @override
+  String get spaceCategoryLabel => 'KATEGORİ';
+
+  @override
+  String get spaceSpicyLabel => 'Cesur';
+
+  @override
+  String get spaceSpicyDescription =>
+      'Yetişkin konular — Cesur rozetiyle gösterilir.';
+
+  @override
+  String get communityHashtagComingSoon =>
+      'Etikete göre gönderiler çok yakında.';
+
+  @override
+  String get communityHashtagComingSoonBody =>
+      'Şimdilik alanlara göz at ve gönderilerin içindeki etiketleri keşfet.';
+
+  @override
+  String get postTimeNow => 'şimdi';
+
+  @override
+  String postTimeMinutesShort(int n) {
+    return '$n dk';
+  }
+
+  @override
+  String postTimeHoursShort(int n) {
+    return '$n sa';
+  }
+
+  @override
+  String postTimeDaysShort(int n) {
+    return '$n g';
+  }
+
+  @override
+  String postTimeWeeksShort(int n) {
+    return '$n hf';
+  }
+
+  @override
+  String get notificationTimeJustNow => 'az önce';
+
+  @override
+  String notificationTimeMinutesAgo(int n) {
+    return '$n dk önce';
+  }
+
+  @override
+  String notificationTimeHoursAgo(int n) {
+    return '$n sa önce';
+  }
+
+  @override
+  String notificationTimeDaysAgo(int n) {
+    return '$n gün önce';
+  }
+
+  @override
+  String notificationTimeWeeksAgo(int n) {
+    return '$n hafta önce';
+  }
+
+  @override
+  String get notificationPostLiked => 'gönderini beğendi';
+
+  @override
+  String get notificationCommentLiked => 'yorumunu beğendi';
+
+  @override
+  String get notificationPostCommented => 'gönderine yorum yaptı';
+
+  @override
+  String get notificationCommentReplied => 'yorumuna yanıt verdi';
+
+  @override
+  String get notificationSpaceMemberJoined => 'alanına katıldı';
+
+  @override
+  String get notificationSpaceFollowed => 'alanını takip etmeye başladı';
+
+  @override
+  String get notificationSpaceJoinRequested =>
+      'alanına katılmak için talep gönderdi';
+
+  @override
+  String get notificationSpaceJoinApproved => 'katılım talebini kabul etti';
+
+  @override
+  String get notificationSpaceJoinDeclined => 'katılım talebini reddetti';
+
+  @override
+  String get notificationPostInSpace =>
+      'takip ettiğin bir alanda paylaşım yaptı';
+
+  @override
+  String get notificationMentioned => 'senden bahsetti';
+
+  @override
+  String get notificationGeneric => 'sana bir bildirim gönderdi';
+
+  @override
+  String communityProfileJoinedSpaces(int count) {
+    return 'KATILDIĞI ALANLAR ($count)';
+  }
+
+  @override
+  String get communityProfileNoSpaces => 'Henüz hiçbir alanda değil.';
+
+  @override
+  String communityProfileRecentPosts(int count) {
+    return 'SON GÖNDERİLER ($count)';
+  }
+
+  @override
+  String get communityProfileNoPosts => 'Henüz gönderi yok.';
+
+  @override
+  String get communityUnknownUser => 'Bilinmeyen kullanıcı';
+
+  @override
+  String get communityUnknownMember => 'Bilinmiyor';
+
+  @override
+  String get spaceRoleOwner => 'SAHİP';
+
+  @override
+  String get spaceRoleMod => 'MODERATÖR';
+
+  @override
+  String get spaceRoleMember => 'ÜYE';
+
+  @override
+  String get spaceJoinPending => 'Beklemede';
+
+  @override
+  String communityMembersCountCompact(String count) {
+    return '$count üye';
+  }
+
+  @override
+  String get aiChatSuggestedQuestionsCaps => 'ŞUNLARI SORABİLİRSİN…';
+
+  @override
+  String chatThreadsDeleteBody(String title) {
+    return '\"$title\" ve tüm mesajları silinecek. Bu işlem geri alınamaz.';
+  }
+
+  @override
+  String get chatThreadsHeaderTitle => 'Kozmik Sohbetler';
+
+  @override
+  String chatThreadsHeaderSubtitle(int count) {
+    return '$count sohbet · haritandan besleniyor';
+  }
+
+  @override
+  String get chatThreadsTapToContinue => 'Okumana devam etmek için dokun';
+
+  @override
+  String get chatThreadsEmptyTitle => 'Kozmik Bir Diyalog Başlat';
+
+  @override
+  String get chatThreadsEmptyBody =>
+      'Haritan, transitler ya da anlamak istediğin\nbir an hakkında dilediğini sor.';
+
+  @override
+  String get aiMemoryTitle => 'Kozmik Hafıza';
+
+  @override
+  String get aiMemorySubtitle => 'Senin hakkında hatırladıklarım';
+
+  @override
+  String get aiMemoryLive => 'canlı';
+
+  @override
+  String get aiMemorySaturnReturnLabel => 'Satürn dönüşü (1. geçiş)';
+
+  @override
+  String get aiMemorySaturnReturnDetail => 'Şubat\'tan beri bunu 4 kez sordun.';
+
+  @override
+  String get aiMemoryCareerLabel => 'Kariyer geçişi';
+
+  @override
+  String get aiMemoryCareerDetail => 'Ürün tasarımına geçmeyi tartıyorsun.';
+
+  @override
+  String get aiMemoryPartnerLabel => 'Theo, Balık';
+
+  @override
+  String get aiMemoryPartnerDetail => 'Uyum sinastrisi kaydedildi · Eki 2024.';
+
+  @override
+  String get aiMemorySelfTrustLabel => 'Kendine güven teması';
+
+  @override
+  String get aiMemorySelfTrustDetail => '6 sohbette tekrar eden bir soru.';
+
+  @override
+  String get compatSomeone => 'Biri';
+
+  @override
+  String compatShareText(String name, int score) {
+    return '$name ile kozmik uyumum %$score! Seninkini Lively\'de keşfet.';
+  }
+
+  @override
+  String get compatYou => 'Sen';
+
+  @override
+  String compatYouAnd(String name) {
+    return 'Sen & $name';
+  }
+
+  @override
+  String get compatRelPartner => 'Partner';
+
+  @override
+  String get compatRelFriend => 'Arkadaş';
+
+  @override
+  String get compatRelFamily => 'Aile';
+
+  @override
+  String get compatRelCoworker => 'İş arkadaşı';
+
+  @override
+  String get compatRelCrush => 'Hoşlandığın kişi';
+
+  @override
+  String get compatRelOther => 'Diğer';
+
+  @override
+  String get timelineFeatureName => 'Zaman Çizelgesi Öngörüleri';
+
+  @override
+  String get lifeTimelineCatCareer => 'Kariyer';
+
+  @override
+  String get lifeTimelineCatLove => 'Aşk';
+
+  @override
+  String get lifeTimelineCatGrowth => 'Gelişim';
+
+  @override
+  String get lifeTimelineCatLoss => 'Kayıp';
+
+  @override
+  String get lifeTimelineCatTravel => 'Seyahat';
+
+  @override
+  String get lifeTimelineCatFamily => 'Aile';
+
+  @override
+  String get lifeTimelineCatReflection => 'İçe Bakış';
+
+  @override
+  String get lifeTimelineMoodElated => 'Coşkulu';
+
+  @override
+  String get lifeTimelineMoodGrounded => 'Dengede';
+
+  @override
+  String get lifeTimelineMoodOpen => 'Açık';
+
+  @override
+  String get lifeTimelineMoodPressured => 'Baskı altında';
+
+  @override
+  String get lifeTimelineMoodFree => 'Özgür';
+
+  @override
+  String get lifeTimelineMoodCleansed => 'Arınmış';
+
+  @override
+  String get lifeTimelineMoodTender => 'Hassas';
+
+  @override
+  String get lifeTimelineMoodResolved => 'Kararlı';
+
+  @override
+  String get lifeTimelineAddTitle => 'Bir An Ekle';
+
+  @override
+  String get lifeTimelineAddSubtitle => 'Hatırlamaya değer bir dönüm noktası.';
+
+  @override
+  String get lifeTimelineFieldTitle => 'Başlık';
+
+  @override
+  String get lifeTimelineFieldTitleHint => 'ör. Teklifi aldım';
+
+  @override
+  String get lifeTimelineFieldWhen => 'Ne zaman';
+
+  @override
+  String get lifeTimelineFieldCategory => 'Kategori';
+
+  @override
+  String get lifeTimelineFieldMood => 'Nasıl hissettirdi?';
+
+  @override
+  String get lifeTimelineFieldNotes => 'Notlar';
+
+  @override
+  String get lifeTimelineFieldNotesHint => 'Neler oluyordu, ne değişti...';
+
+  @override
+  String get lifeTimelineSaveMoment => 'Anı Kaydet';
+
+  @override
+  String get lifeTimelineTransitPending => 'Transit hesaplaması bekleniyor';
+
+  @override
+  String get lifeTimelineMock1Title => 'Teklifi aldım';
+
+  @override
+  String get lifeTimelineMock1Desc =>
+      'Tasarım stüdyosundaki kıdemli pozisyonu kabul ettim. Uğruna çalıştığım her şey birden yerine oturmuş gibi hissettim.';
+
+  @override
+  String get lifeTimelineMock1Transit1 => 'Jüpiter, natal MC ile üçgen';
+
+  @override
+  String get lifeTimelineMock1Transit2 => 'Venüs 10. evde';
+
+  @override
+  String get lifeTimelineMock2Title => 'Yengeç Yeni Ayı inzivası';
+
+  @override
+  String get lifeTimelineMock2Desc =>
+      'Joshua Tree\'de şebekeden uzak üç gün. 40 sayfa günlük yazdım. Gerçekten ne istediğime dair berrak bir netlikle döndüm.';
+
+  @override
+  String get lifeTimelineMock2Transit1 => 'Yeni Ay, natal Ay ile kavuşumda';
+
+  @override
+  String get lifeTimelineMock2Transit2 => 'Merkür 4. evde retro';
+
+  @override
+  String get lifeTimelineMock3Title => 'Theo ile tanıştım';
+
+  @override
+  String get lifeTimelineMock3Desc =>
+      'Saat 4\'teki kahve akşam yemeğine, akşam yemeği uzun bir yürüyüşe dönüştü. Taklit edilemeyecek türden bir tanışıklık hissettim.';
+
+  @override
+  String get lifeTimelineMock3Transit1 => 'Venüs, natal Güneş ile üçgen';
+
+  @override
+  String get lifeTimelineMock3Transit2 => 'Güneş 7. evde';
+
+  @override
+  String get lifeTimelineMock4Title => 'Satürn dönüşü başlıyor';
+
+  @override
+  String get lifeTimelineMock4Desc =>
+      'İlk dalga vurdu. Her bağlılığımı yeniden değerlendiriyorum. Hangi yapıların yıkılması gerektiğini hissetmeye başlıyorum.';
+
+  @override
+  String get lifeTimelineMock4Transit1 =>
+      'Satürn, natal Satürn ile kavuşumda (1. geçiş)';
+
+  @override
+  String get lifeTimelineMock5Title => 'Lizbon yolculuğu';
+
+  @override
+  String get lifeTimelineMock5Desc =>
+      'Defterimle baş başa iki hafta. Kaygımın ne kadarının sadece sürekli bağlı olmaktan geldiğini fark ettim.';
+
+  @override
+  String get lifeTimelineMock5Transit1 => 'Jüpiter 9. evde';
+
+  @override
+  String get lifeTimelineMock5Transit2 => 'Mars, Merkür ile üçgen';
+
+  @override
+  String get lifeTimelineMock6Title => 'Kira sözleşmesini bitirdim';
+
+  @override
+  String get lifeTimelineMock6Desc =>
+      'Daireden taşındım. Daha az alana ve daha az bağlılığa ihtiyacım olduğuna karar verdim. Satürn haklıydı.';
+
+  @override
+  String get lifeTimelineMock6Transit1 => 'Satürn, natal Ay ile kare';
+
+  @override
+  String get lifeTimelineMock6Transit2 => 'Plüton, natal Venüs ile karşıt';
+
+  @override
+  String get destinyMatrixTitle => 'Kader Matrisi';
+
+  @override
+  String get destinyYourOctagram => 'Oktagramın';
+
+  @override
+  String get destinyPurpose => 'Amaç';
+
+  @override
+  String get destinyTheLines => 'Çizgiler';
+
+  @override
+  String get destinyYourCoreArcana => 'ÇEKİRDEK ARKANAN';
+
+  @override
+  String destinyBirthDate(String date) {
+    return 'Doğum tarihi $date';
+  }
+
+  @override
+  String get destinyComfortCore => 'Konfor / Çekirdek';
+
+  @override
+  String get destinyMaleGenerationLine => 'erkek soy hattı';
+
+  @override
+  String get destinyFemaleGenerationLine => 'kadın soy hattı';
+
+  @override
+  String get destinyTapNodeHint =>
+      'Arkanasını okumak için herhangi bir noktaya dokun.';
+
+  @override
+  String destinyArcanaNumber(int n) {
+    return 'Arkana $n';
+  }
+
+  @override
+  String get destinySkyPurpose => 'Gökyüzü Amacı';
+
+  @override
+  String get destinyEarthPurpose => 'Dünya Amacı';
+
+  @override
+  String get destinyPersonalPurpose => 'Kişisel Amaç';
+
+  @override
+  String get psychoTitle => 'Pisagor Karesi';
+
+  @override
+  String get psychoYourMatrix => 'Matrisin';
+
+  @override
+  String get psychoLinesStrengths => 'Çizgiler ve Güçler';
+
+  @override
+  String get psychoWorkingNumbers => 'ÇALIŞMA SAYILARI';
+
+  @override
+  String psychoBirthDate(String date) {
+    return 'Doğum tarihi $date';
+  }
+
+  @override
+  String psychoWorkingShort(int n) {
+    return 'Ç$n';
+  }
+
+  @override
+  String get psychoTapCellHint =>
+      'Anlamını okumak için herhangi bir hücreye dokun.';
+
+  @override
+  String get psychoAbsent => 'Yok';
+
+  @override
+  String psychoCellCount(String digits, int count) {
+    return '$digits  ·  $count kez';
+  }
+
+  @override
+  String psychoCellsList(String cells) {
+    return 'Hücreler $cells';
+  }
+
+  @override
+  String get numerologyCompatPartnerNameLabel => 'PARTNERİNİN TAM DOĞUM ADI';
+
+  @override
+  String get numerologyCompatPartnerNameHint => 'ör. Ayşe Nur Yılmaz';
+
+  @override
+  String get numerologyCompatPartnerBirthDateLabel =>
+      'PARTNERİNİN DOĞUM TARİHİ';
+
+  @override
+  String get numerologyCompatTapToPick => 'Seçmek için dokun';
+
+  @override
+  String get numerologyCompatCalculating => 'Hesaplanıyor…';
+
+  @override
+  String get numerologyCompatCompute => 'Uyumu hesapla';
+
+  @override
+  String get numerologyCompatMatch => 'Uyum';
+
+  @override
+  String get numerologyKarmicLessonsHeader => 'KARMİK DERSLER';
+
+  @override
+  String get numerologyKarmicNoneMissing =>
+      'İsmin her rakamı taşıyor — eksik ders yok.';
+
+  @override
+  String get numerologyKarmicMissingBlurb =>
+      'İsminde eksik olan sayılar, bu hayatta öğrenmeye geldiğin alanları gösterir.';
+
+  @override
+  String get numerologyHiddenPassionHeader => 'GİZLİ TUTKU';
+
+  @override
+  String get numerologyHiddenPassionNone =>
+      'Baskın bir rakam yok — ismin tüm yelpazede dengeli.';
+
+  @override
+  String numerologyHiddenPassionBlurb(int number) {
+    return 'En güçlü armağanın $number enerjisi — isminde en sık görünen rakam.';
+  }
+
+  @override
+  String get numerologyTodayHeader => 'BUGÜN';
+
+  @override
+  String get numerologyPersonalYear => 'Kişisel Yıl';
+
+  @override
+  String get numerologyPersonalMonth => 'Kişisel Ay';
+
+  @override
+  String get numerologyPersonalDay => 'Kişisel Gün';
+
+  @override
+  String get numerologyPinnaclesHeader => 'ZİRVELER — hayatının temaları';
+
+  @override
+  String numerologyPinnacleN(int n) {
+    return 'Zirve $n';
+  }
+
+  @override
+  String get numerologyChallengesHeader => 'ZORLUKLAR — büyüme alanların';
+
+  @override
+  String numerologyChallengeN(int n) {
+    return 'Zorluk $n';
+  }
+
+  @override
+  String numerologyCurrentAgeNote(int age) {
+    return '$age yaşındasın — aktif döngü vurgulandı.';
+  }
+
+  @override
+  String numerologyAgeFrom(int start) {
+    return '$start+ yaş';
+  }
+
+  @override
+  String numerologyAgeRange(int start, int end) {
+    return '$start–$end yaş';
+  }
+
+  @override
+  String get numerologyNowBadge => 'ŞİMDİ';
+
+  @override
+  String get numerologyMasterChip => 'Usta';
+
+  @override
+  String numerologyKarmicChip(int number) {
+    return 'Karmik $number';
+  }
+
+  @override
+  String get hdYouAre => 'SENİN TİPİN';
+
+  @override
+  String get hdStrategy => 'Strateji';
+
+  @override
+  String get hdAuthority => 'Otorite';
+
+  @override
+  String get hdDefinition => 'Tanım';
+
+  @override
+  String hdNotSelfTheme(String theme) {
+    return 'Öz-olmayan teması: $theme';
+  }
+
+  @override
+  String get hdVariablesHeader => 'DEĞİŞKENLER (PRA)';
+
+  @override
+  String get hdVarDigestion => 'Sindirim';
+
+  @override
+  String get hdVarEnvironment => 'Çevre';
+
+  @override
+  String get hdVarAwareness => 'Farkındalık';
+
+  @override
+  String get hdVarPerspective => 'Perspektif';
+
+  @override
+  String get hdDirectionLeft => 'Sol';
+
+  @override
+  String get hdDirectionRight => 'Sağ';
+
+  @override
+  String get hdCenterDefinedBadge => 'TANIMLI';
+
+  @override
+  String get hdCenterOpenBadge => 'AÇIK';
+
+  @override
+  String hdGateN(int n) {
+    return 'Kapı $n';
+  }
+
+  @override
+  String get hdIncarnationCross => 'ENKARNASYON HAÇI';
+
+  @override
+  String hdQuarterOf(String quarter) {
+    return '$quarter Çeyreği';
+  }
+
+  @override
+  String hdCrossOf(String gates) {
+    return '$gates Haçı';
+  }
+
+  @override
+  String get hdCrossPersonalitySun => 'K-Güneş';
+
+  @override
+  String get hdCrossPersonalityEarth => 'K-Dünya';
+
+  @override
+  String get hdCrossDesignSun => 'T-Güneş';
+
+  @override
+  String get hdCrossDesignEarth => 'T-Dünya';
+
+  @override
+  String get hdPersonalityHeader => 'KİŞİLİK';
+
+  @override
+  String get hdDesignHeader => 'TASARIM';
+
+  @override
+  String get hdTypeManifestor => 'Manifestör';
+
+  @override
+  String get hdTypeGenerator => 'Jeneratör';
+
+  @override
+  String get hdTypeManifestingGenerator => 'Manifeste Eden Jeneratör';
+
+  @override
+  String get hdTypeProjector => 'Projektör';
+
+  @override
+  String get hdTypeReflector => 'Yansıtıcı';
+
+  @override
+  String get hdStrategyInform => 'Harekete geçmeden önce bilgilendir';
+
+  @override
+  String get hdStrategyRespond => 'Yanıt vermeyi bekle';
+
+  @override
+  String get hdStrategyRespondInform =>
+      'Yanıt vermeyi bekle, sonra bilgilendir';
+
+  @override
+  String get hdStrategyInvitation => 'Davet edilmeyi bekle';
+
+  @override
+  String get hdStrategyLunarCycle => 'Bir ay döngüsü bekle (28 gün)';
+
+  @override
+  String get hdAuthorityEmotional => 'Duygusal';
+
+  @override
+  String get hdAuthoritySacral => 'Sakral';
+
+  @override
+  String get hdAuthoritySplenic => 'Dalak';
+
+  @override
+  String get hdAuthorityEgo => 'Ego';
+
+  @override
+  String get hdAuthoritySelfProjected => 'Kendinden Yansıtılan';
+
+  @override
+  String get hdAuthorityMental => 'Zihinsel';
+
+  @override
+  String get hdAuthorityLunar => 'Ay';
+
+  @override
+  String get hdDefinitionNone => 'Yok';
+
+  @override
+  String get hdDefinitionSingle => 'Tekli';
+
+  @override
+  String get hdDefinitionSplit => 'Bölünmüş';
+
+  @override
+  String get hdDefinitionTripleSplit => 'Üçlü Bölünmüş';
+
+  @override
+  String get hdDefinitionQuadrupleSplit => 'Dörtlü Bölünmüş';
+
+  @override
+  String get hdNotSelfAnger => 'Öfke';
+
+  @override
+  String get hdNotSelfFrustration => 'Hüsran';
+
+  @override
+  String get hdNotSelfFrustrationAnger => 'Hüsran ve Öfke';
+
+  @override
+  String get hdNotSelfBitterness => 'Burukluk';
+
+  @override
+  String get hdNotSelfDisappointment => 'Hayal kırıklığı';
+
+  @override
+  String get hdCenterHead => 'Baş';
+
+  @override
+  String get hdCenterAjna => 'Ajna';
+
+  @override
+  String get hdCenterThroat => 'Boğaz';
+
+  @override
+  String get hdCenterG => 'G/Kimlik';
+
+  @override
+  String get hdCenterHeart => 'Kalp/Ego';
+
+  @override
+  String get hdCenterSacral => 'Sakral';
+
+  @override
+  String get hdCenterSolarPlexus => 'Solar Pleksus';
+
+  @override
+  String get hdCenterSpleen => 'Dalak';
+
+  @override
+  String get hdCenterRoot => 'Kök';
+
+  @override
+  String get hdCenterThemeHead => 'İlham · bilme baskısı';
+
+  @override
+  String get hdCenterThemeAjna => 'Kavramsallaştırma · kesinlik ve şüphe';
+
+  @override
+  String get hdCenterThemeThroat => 'Tezahür · ifade';
+
+  @override
+  String get hdCenterThemeG => 'Kimlik · sevgi · yön';
+
+  @override
+  String get hdCenterThemeHeart => 'İrade gücü · ego · kaynaklar';
+
+  @override
+  String get hdCenterThemeSacral =>
+      'Yaşam gücü · sürdürülebilir emek · cinsellik';
+
+  @override
+  String get hdCenterThemeSolarPlexus => 'Duygusal dalga · hisler · berraklık';
+
+  @override
+  String get hdCenterThemeSpleen => 'Sezgi · sağlık · hayatta kalma';
+
+  @override
+  String get hdCenterThemeRoot => 'Baskı · adrenalin · itici güç';
+
+  @override
+  String get hdQuarterInitiation => 'İnisiyasyon';
+
+  @override
+  String get hdQuarterCivilization => 'Medeniyet';
+
+  @override
+  String get hdQuarterDuality => 'Dualite';
+
+  @override
+  String get hdQuarterMutation => 'Mutasyon';
+
+  @override
+  String get hdBodySun => 'Güneş';
+
+  @override
+  String get hdBodyEarth => 'Dünya';
+
+  @override
+  String get hdBodyNorthNode => 'Kuzey Ay Düğümü';
+
+  @override
+  String get hdBodySouthNode => 'Güney Ay Düğümü';
+
+  @override
+  String get hdBodyMoon => 'Ay';
+
+  @override
+  String get hdBodyMercury => 'Merkür';
+
+  @override
+  String get hdBodyVenus => 'Venüs';
+
+  @override
+  String get hdBodyMars => 'Mars';
+
+  @override
+  String get hdBodyJupiter => 'Jüpiter';
+
+  @override
+  String get hdBodySaturn => 'Satürn';
+
+  @override
+  String get hdBodyUranus => 'Uranüs';
+
+  @override
+  String get hdBodyNeptune => 'Neptün';
+
+  @override
+  String get hdBodyPluto => 'Plüton';
+
+  @override
+  String get hdChannelInspiration => 'İlham';
+
+  @override
+  String get hdChannelTheBeat => 'Nabız';
+
+  @override
+  String get hdChannelMutation => 'Mutasyon';
+
+  @override
+  String get hdChannelLogic => 'Mantık';
+
+  @override
+  String get hdChannelRhythm => 'Ritim';
+
+  @override
+  String get hdChannelMating => 'Çiftleşme';
+
+  @override
+  String get hdChannelAlpha => 'Alfa (Liderlik)';
+
+  @override
+  String get hdChannelConcentration => 'Konsantrasyon';
+
+  @override
+  String get hdChannelAwakening => 'Uyanış';
+
+  @override
+  String get hdChannelExploration => 'Keşif';
+
+  @override
+  String get hdChannelPerfectedForm => 'Kusursuz Form';
+
+  @override
+  String get hdChannelCuriosity => 'Merak';
+
+  @override
+  String get hdChannelOpenness => 'Açıklık';
+
+  @override
+  String get hdChannelTheProdigal => 'Müsrif Evlat';
+
+  @override
+  String get hdChannelTheWavelength => 'Dalga Boyu';
+
+  @override
+  String get hdChannelAcceptance => 'Kabul';
+
+  @override
+  String get hdChannelJudgement => 'Yargı';
+
+  @override
+  String get hdChannelSynthesis => 'Sentez';
+
+  @override
+  String get hdChannelCharisma => 'Karizma';
+
+  @override
+  String get hdChannelTheBrainWave => 'Beyin Dalgası';
+
+  @override
+  String get hdChannelMoneyLine => 'Para Hattı';
+
+  @override
+  String get hdChannelStructuring => 'Yapılandırma';
+
+  @override
+  String get hdChannelAwareness => 'Farkındalık';
+
+  @override
+  String get hdChannelInitiation => 'İnisiyasyon';
+
+  @override
+  String get hdChannelSurrender => 'Teslimiyet';
+
+  @override
+  String get hdChannelPreservation => 'Koruma';
+
+  @override
+  String get hdChannelStruggle => 'Mücadele';
+
+  @override
+  String get hdChannelDiscovery => 'Buluş';
+
+  @override
+  String get hdChannelRecognition => 'Tanınma';
+
+  @override
+  String get hdChannelTransformation => 'Dönüşüm';
+
+  @override
+  String get hdChannelPower => 'Güç';
+
+  @override
+  String get hdChannelTransitoriness => 'Geçicilik';
+
+  @override
+  String get hdChannelCommunity => 'Topluluk';
+
+  @override
+  String get hdChannelEmoting => 'Duygulanım';
+
+  @override
+  String get hdChannelMaturation => 'Olgunlaşma';
+
+  @override
+  String get hdChannelAbstraction => 'Soyutlama';
+
+  @override
+  String get homeChartPsychomatrix => 'Pisagor Karesi';
+
+  @override
+  String get homeChartPsychomatrixSubtitle =>
+      'Doğum tarihine göre psikomatriksin';
+
+  @override
+  String get homeChartDestinyMatrix => 'Kader Matrisi';
+
+  @override
+  String get homeChartDestinyMatrixSubtitle => '22 arkanalı oktagramın';
+
+  @override
+  String get homePremiumPlanTitle => 'Premium Plan';
+
+  @override
+  String get homePremiumPlanBody =>
+      'Sınırsız AI öngörüleri, öncelikli\nrezervasyon ve özel içeriklerin kilidini aç.';
+
+  @override
+  String get homePremiumPlanCta => 'Planı Yükselt';
+
+  @override
+  String get homePopularAstrologers => 'Popüler Astrologlar';
+
+  @override
+  String get homeTodaysEnergyLabel => 'BUGÜNÜN ENERJİSİ';
+
+  @override
+  String get homeDailyEnergyHeadline =>
+      'İçsel yansıma ve yaratıcı ifade için bir gün';
+
+  @override
+  String get homeDailyEnergyBody =>
+      'Balık burcundaki Ay sezgilerini güçlendiriyor. Bugün içgüdülerine güven, özellikle de önemli konuşmalarda.';
+
+  @override
+  String get homeModerateEnergy => 'Orta Enerji';
+
+  @override
+  String get homeQuickAiChat => 'AI Sohbet';
+
+  @override
+  String get homeQuickFullChart => 'Tam Harita';
+
+  @override
+  String get homeKeepItUp => 'Böyle devam!';
+
+  @override
+  String get homeWeekdayInitialMon => 'P';
+
+  @override
+  String get homeWeekdayInitialTue => 'S';
+
+  @override
+  String get homeWeekdayInitialWed => 'Ç';
+
+  @override
+  String get homeWeekdayInitialThu => 'P';
+
+  @override
+  String get homeWeekdayInitialFri => 'C';
+
+  @override
+  String get homeWeekdayInitialSat => 'C';
+
+  @override
+  String get homeWeekdayInitialSun => 'P';
+
+  @override
+  String get homeSampleAffirmation =>
+      'Hayatımın zamanlamasına güveniyorum. Bana ait olan beni bulacak.';
+
+  @override
+  String get homeDailyAffirmationLabel => 'GÜNLÜK OLUMLAMA';
+
+  @override
+  String get skyMoonNew => 'Yeni Ay';
+
+  @override
+  String get skyMoonWaxingCrescent => 'Büyüyen Hilal';
+
+  @override
+  String get skyMoonFirstQuarter => 'İlk Dördün';
+
+  @override
+  String get skyMoonWaxingGibbous => 'Büyüyen Şişkin Ay';
+
+  @override
+  String get skyMoonFull => 'Dolunay';
+
+  @override
+  String get skyMoonWaningGibbous => 'Küçülen Şişkin Ay';
+
+  @override
+  String get skyMoonLastQuarter => 'Son Dördün';
+
+  @override
+  String get skyMoonWaningCrescent => 'Küçülen Hilal';
+
+  @override
+  String get dailyEnergyRingLabel => 'enerji';
+
+  @override
+  String profileBirthDataLoadError(String error) {
+    return 'Doğum bilgilerin yüklenemedi: $error';
+  }
+
+  @override
+  String get ritualsDailyRitualsFeature => 'Günlük Ritüeller';
+
+  @override
+  String dailyShareText(String affirmation, String color) {
+    return '\"$affirmation\"\n\nBugünkü şans rengim: $color\n\n~ Lively';
+  }
 }

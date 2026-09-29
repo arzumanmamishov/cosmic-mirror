@@ -1,4 +1,5 @@
 import 'package:cosmic_mirror/config/theme/app_palette.dart';
+import 'package:cosmic_mirror/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 
 /// CosmicMemoryPanel surfaces what the AI astrologer remembers about the user
@@ -9,36 +10,37 @@ class CosmicMemoryPanel extends StatelessWidget {
 
   // Mock memory items. In production these are extracted server-side
   // from the user's chat history + current transits.
-  static const _memories = [
-    _Memory(
-      icon: Icons.swap_vert_rounded,
-      label: 'Saturn return (1st pass)',
-      detail: "You've asked about this 4 times since February.",
-      color: Color(0xFF7B61FF),
-    ),
-    _Memory(
-      icon: Icons.work_rounded,
-      label: 'Career transition',
-      detail: "You're weighing a move into product design.",
-      color: Color(0xFFB8860B),
-    ),
-    _Memory(
-      icon: Icons.favorite_rounded,
-      label: 'Theo, Pisces',
-      detail: 'Compatibility synastry saved · Oct 2024.',
-      color: Color(0xFFE14B8A),
-    ),
-    _Memory(
-      icon: Icons.spa_rounded,
-      label: 'Self-trust theme',
-      detail: 'A recurring question across 6 conversations.',
-      color: Color(0xFF5ED39A),
-    ),
-  ];
+  static List<_Memory> _memories(AppLocalizations l) => [
+        _Memory(
+          icon: Icons.swap_vert_rounded,
+          label: l.aiMemorySaturnReturnLabel,
+          detail: l.aiMemorySaturnReturnDetail,
+          color: const Color(0xFF7B61FF),
+        ),
+        _Memory(
+          icon: Icons.work_rounded,
+          label: l.aiMemoryCareerLabel,
+          detail: l.aiMemoryCareerDetail,
+          color: const Color(0xFFB8860B),
+        ),
+        _Memory(
+          icon: Icons.favorite_rounded,
+          label: l.aiMemoryPartnerLabel,
+          detail: l.aiMemoryPartnerDetail,
+          color: const Color(0xFFE14B8A),
+        ),
+        _Memory(
+          icon: Icons.spa_rounded,
+          label: l.aiMemorySelfTrustLabel,
+          detail: l.aiMemorySelfTrustDetail,
+          color: const Color(0xFF5ED39A),
+        ),
+      ];
 
   @override
   Widget build(BuildContext context) {
     final p = context.palette;
+    final l = AppLocalizations.of(context);
 
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
@@ -78,7 +80,7 @@ class CosmicMemoryPanel extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Cosmic Memory',
+                      l.aiMemoryTitle,
                       style: TextStyle(
                         color: p.textPrimary,
                         fontSize: 14,
@@ -86,7 +88,7 @@ class CosmicMemoryPanel extends StatelessWidget {
                       ),
                     ),
                     Text(
-                      'What I remember about you',
+                      l.aiMemorySubtitle,
                       style: TextStyle(
                         color: p.textSecondary,
                         fontSize: 11,
@@ -111,7 +113,7 @@ class CosmicMemoryPanel extends StatelessWidget {
               ),
               const SizedBox(width: 4),
               Text(
-                'live',
+                l.aiMemoryLive,
                 style: TextStyle(
                   color: p.success,
                   fontSize: 10,
@@ -122,7 +124,7 @@ class CosmicMemoryPanel extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 14),
-          ..._memories.map((m) => _MemoryRow(memory: m)),
+          ..._memories(l).map((m) => _MemoryRow(memory: m)),
         ],
       ),
     );

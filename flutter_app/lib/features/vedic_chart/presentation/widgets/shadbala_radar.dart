@@ -2,6 +2,7 @@ import 'dart:math' as math;
 
 import 'package:cosmic_mirror/config/theme/app_palette.dart';
 import 'package:cosmic_mirror/features/vedic_chart/domain/entities/yoga.dart';
+import 'package:cosmic_mirror/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 
 /// Six-axis radar chart showing the breakdown of a planet's Shadbala.
@@ -31,6 +32,7 @@ class ShadbalaRadar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final p = context.palette;
+    final l = AppLocalizations.of(context);
     return Column(
       children: [
         Text(
@@ -43,8 +45,11 @@ class ShadbalaRadar extends StatelessWidget {
         ),
         const SizedBox(height: 4),
         Text(
-          '${bala.total.toStringAsFixed(0)} / ${bala.required.toStringAsFixed(0)} Virupas — '
-          '${bala.sufficient ? "STRONG" : "WEAK"}',
+          l.vedicShadbalaSummary(
+            bala.total.toStringAsFixed(0),
+            bala.required.toStringAsFixed(0),
+            bala.sufficient ? l.vedicShadbalaStrong : l.vedicShadbalaWeak,
+          ),
           style: TextStyle(
             color: bala.sufficient ? p.success : p.warning,
             fontSize: 11,
@@ -59,11 +64,11 @@ class ShadbalaRadar extends StatelessWidget {
           child: CustomPaint(
             painter: _RadarPainter(
               values: _components,
-              labels: const [
+              labels: [
                 'Sthana',
                 'Dig',
                 'Kala',
-                'Chesta',
+                l.vedicShadbalaChesta,
                 'Naisargika',
                 'Drik',
               ],

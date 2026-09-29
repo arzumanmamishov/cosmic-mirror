@@ -1,20 +1,29 @@
+import 'package:cosmic_mirror/core/network/app_locale.dart';
+import 'package:cosmic_mirror/l10n/app_localizations.dart';
+import 'package:flutter/widgets.dart';
 import 'package:intl/intl.dart';
 
 class CosmicDateUtils {
   CosmicDateUtils._();
 
-  static final _dayMonthYear = DateFormat('d MMMM yyyy');
-  static final _shortDate = DateFormat('d MMM');
-  static final _monthYear = DateFormat('MMMM yyyy');
-  static final _time = DateFormat('HH:mm');
-  static final _dayName = DateFormat('EEEE');
+  // Display formatters are built per call so month/day names follow the
+  // user's current app language (see [currentLocaleCode]). The API format
+  // is locale-independent and stays cached.
+  static DateFormat _fmt(String pattern) =>
+      DateFormat(pattern, currentLocaleCode);
   static final _apiDate = DateFormat('yyyy-MM-dd');
 
-  static String formatFull(DateTime date) => _dayMonthYear.format(date);
-  static String formatShort(DateTime date) => _shortDate.format(date);
-  static String formatMonthYear(DateTime date) => _monthYear.format(date);
-  static String formatTime(DateTime date) => _time.format(date);
-  static String formatDayName(DateTime date) => _dayName.format(date);
+  /// Localized strings for context-free callers. Pass [l] explicitly from a
+  /// widget when available; otherwise we resolve from the current app locale.
+  static AppLocalizations _l10n(AppLocalizations? l) =>
+      l ?? lookupAppLocalizations(Locale(currentLocaleCode));
+
+  static String formatFull(DateTime date) => _fmt('d MMMM yyyy').format(date);
+  static String formatShort(DateTime date) => _fmt('d MMM').format(date);
+  static String formatMonthYear(DateTime date) =>
+      _fmt('MMMM yyyy').format(date);
+  static String formatTime(DateTime date) => _fmt('HH:mm').format(date);
+  static String formatDayName(DateTime date) => _fmt('EEEE').format(date);
   static String formatApi(DateTime date) => _apiDate.format(date);
 
   static DateTime? parseApi(String? date) {
@@ -36,22 +45,24 @@ class CosmicDateUtils {
     return age;
   }
 
-  static String timeAgo(DateTime dateTime) {
+  static String timeAgo(DateTime dateTime, [AppLocalizations? l]) {
+    final l10n = _l10n(l);
     final now = DateTime.now();
     final diff = now.difference(dateTime);
 
-    if (diff.inSeconds < 60) return 'Just now';
-    if (diff.inMinutes < 60) return '${diff.inMinutes}m ago';
-    if (diff.inHours < 24) return '${diff.inHours}h ago';
-    if (diff.inDays < 7) return '${diff.inDays}d ago';
+    if (diff.inSeconds < 60) return l10n.commonJustNow;
+    if (diff.inMinutes < 60) return l10n.commonMinutesAgo(diff.inMinutes);
+    if (diff.inHours < 24) return l10n.commonHoursAgo(diff.inHours);
+    if (diff.inDays < 7) return l10n.commonDaysAgo(diff.inDays);
     return formatShort(dateTime);
   }
 
-  static String greeting() {
+  static String greeting([AppLocalizations? l]) {
+    final l10n = _l10n(l);
     final hour = DateTime.now().hour;
-    if (hour < 12) return 'Good morning';
-    if (hour < 17) return 'Good afternoon';
-    return 'Good evening';
+    if (hour < 12) return l10n.commonGoodMorning;
+    if (hour < 17) return l10n.commonGoodAfternoon;
+    return l10n.commonGoodEvening;
   }
 
   static bool isToday(DateTime date) {

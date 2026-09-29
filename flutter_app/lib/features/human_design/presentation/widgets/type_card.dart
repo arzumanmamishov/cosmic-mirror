@@ -1,5 +1,7 @@
 import 'package:cosmic_mirror/config/theme/app_palette.dart';
 import 'package:cosmic_mirror/features/human_design/domain/entities/human_design.dart';
+import 'package:cosmic_mirror/features/human_design/presentation/hd_labels.dart';
+import 'package:cosmic_mirror/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 
 /// Hero card showing Type, Strategy, Authority, Profile, Definition, and the
@@ -12,6 +14,8 @@ class TypeCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final p = context.palette;
+    final l = AppLocalizations.of(context);
+    final hd = HDLabels(l);
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -21,9 +25,9 @@ class TypeCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            'YOU ARE',
-            style: TextStyle(
+          Text(
+            l.hdYouAre,
+            style: const TextStyle(
               color: Colors.white70,
               fontSize: 11,
               letterSpacing: 1.6,
@@ -32,7 +36,7 @@ class TypeCard extends StatelessWidget {
           ),
           const SizedBox(height: 6),
           Text(
-            chart.type,
+            hd.type(chart.type),
             style: const TextStyle(
               color: Colors.white,
               fontSize: 28,
@@ -41,13 +45,13 @@ class TypeCard extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 14),
-          _row('Strategy', chart.strategy),
+          _row(l.hdStrategy, hd.strategy(chart.strategy)),
           const SizedBox(height: 10),
-          _row('Authority', chart.authority),
+          _row(l.hdAuthority, hd.authority(chart.authority)),
           const SizedBox(height: 10),
-          _row('Profile', chart.profile),
+          _row(l.humanDesignTabProfile, chart.profile),
           const SizedBox(height: 10),
-          _row('Definition', chart.definition),
+          _row(l.hdDefinition, hd.definition(chart.definition)),
           const SizedBox(height: 14),
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
@@ -56,7 +60,7 @@ class TypeCard extends StatelessWidget {
               borderRadius: BorderRadius.circular(8),
             ),
             child: Text(
-              'Not-self theme: ${chart.notSelfTheme}',
+              l.hdNotSelfTheme(hd.notSelf(chart.notSelfTheme)),
               style: const TextStyle(
                 color: Colors.white,
                 fontSize: 11,

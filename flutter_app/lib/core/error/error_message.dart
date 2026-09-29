@@ -67,7 +67,14 @@ class FriendlyError {
       // if it's safe, fall back to a generic line.
       return FriendlyError(
         title: l.errGenericTitle,
-        body: error.message.isNotEmpty ? error.message : l.errGenericBody,
+        // Only trust messages that came from an HTTP response (the backend
+        // localizes these via Accept-Language); transport-level messages
+        // from Dio and our English placeholder fall back to localized copy.
+        body: error.statusCode != null &&
+                error.message.isNotEmpty &&
+                error.message != ServerException.fallbackMessage
+            ? error.message
+            : l.errGenericBody,
         icon: Icons.error_outline_rounded,
       );
     }

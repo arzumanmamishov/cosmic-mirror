@@ -3451,6 +3451,2923 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'WHAT THE SKY WAS DOING'**
   String get lifeTimelineWhatSky;
+
+  /// No description provided for @commonJustNow.
+  ///
+  /// In en, this message translates to:
+  /// **'Just now'**
+  String get commonJustNow;
+
+  /// No description provided for @commonMinutesAgo.
+  ///
+  /// In en, this message translates to:
+  /// **'{count}m ago'**
+  String commonMinutesAgo(int count);
+
+  /// No description provided for @commonHoursAgo.
+  ///
+  /// In en, this message translates to:
+  /// **'{count}h ago'**
+  String commonHoursAgo(int count);
+
+  /// No description provided for @commonDaysAgo.
+  ///
+  /// In en, this message translates to:
+  /// **'{count}d ago'**
+  String commonDaysAgo(int count);
+
+  /// No description provided for @commonGoodMorning.
+  ///
+  /// In en, this message translates to:
+  /// **'Good morning'**
+  String get commonGoodMorning;
+
+  /// No description provided for @commonGoodAfternoon.
+  ///
+  /// In en, this message translates to:
+  /// **'Good afternoon'**
+  String get commonGoodAfternoon;
+
+  /// No description provided for @commonGoodEvening.
+  ///
+  /// In en, this message translates to:
+  /// **'Good evening'**
+  String get commonGoodEvening;
+
+  /// No description provided for @commonSomethingWentWrong.
+  ///
+  /// In en, this message translates to:
+  /// **'Something went wrong. Please try again.'**
+  String get commonSomethingWentWrong;
+
+  /// No description provided for @commonShowPassword.
+  ///
+  /// In en, this message translates to:
+  /// **'Show password'**
+  String get commonShowPassword;
+
+  /// No description provided for @commonHidePassword.
+  ///
+  /// In en, this message translates to:
+  /// **'Hide password'**
+  String get commonHidePassword;
+
+  /// No description provided for @validationNameRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter your name'**
+  String get validationNameRequired;
+
+  /// No description provided for @validationNameTooShort.
+  ///
+  /// In en, this message translates to:
+  /// **'Name must be at least 2 characters'**
+  String get validationNameTooShort;
+
+  /// No description provided for @validationNameTooLong.
+  ///
+  /// In en, this message translates to:
+  /// **'Name must be less than 50 characters'**
+  String get validationNameTooLong;
+
+  /// No description provided for @validationEmailRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter your email'**
+  String get validationEmailRequired;
+
+  /// No description provided for @validationEmailInvalid.
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter a valid email'**
+  String get validationEmailInvalid;
+
+  /// No description provided for @validationPasswordRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter a password'**
+  String get validationPasswordRequired;
+
+  /// No description provided for @validationBirthDateRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Please select your birth date'**
+  String get validationBirthDateRequired;
+
+  /// No description provided for @validationBirthDateFuture.
+  ///
+  /// In en, this message translates to:
+  /// **'Birth date cannot be in the future'**
+  String get validationBirthDateFuture;
+
+  /// No description provided for @validationMinAge.
+  ///
+  /// In en, this message translates to:
+  /// **'You must be at least 13 years old'**
+  String get validationMinAge;
+
+  /// No description provided for @validationBirthDateInvalid.
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter a valid birth date'**
+  String get validationBirthDateInvalid;
+
+  /// No description provided for @validationBirthPlaceRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Please select your birthplace'**
+  String get validationBirthPlaceRequired;
+
+  /// No description provided for @validationMessageRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter a message'**
+  String get validationMessageRequired;
+
+  /// No description provided for @validationMessageTooLong.
+  ///
+  /// In en, this message translates to:
+  /// **'Message must be less than 500 characters'**
+  String get validationMessageTooLong;
+
+  /// No description provided for @authInvalidEmail.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a valid email address'**
+  String get authInvalidEmail;
+
+  /// No description provided for @authNoAccountTapCreate.
+  ///
+  /// In en, this message translates to:
+  /// **'No account with that email. Tap Create account to sign up.'**
+  String get authNoAccountTapCreate;
+
+  /// No description provided for @authNoAccountCheckAddress.
+  ///
+  /// In en, this message translates to:
+  /// **'No account with that email. Check the address or create one.'**
+  String get authNoAccountCheckAddress;
+
+  /// No description provided for @authTooManyCodeRequests.
+  ///
+  /// In en, this message translates to:
+  /// **'Too many code requests. Please wait a minute.'**
+  String get authTooManyCodeRequests;
+
+  /// No description provided for @authTooManyAttemptsShort.
+  ///
+  /// In en, this message translates to:
+  /// **'Too many attempts. Try again shortly.'**
+  String get authTooManyAttemptsShort;
+
+  /// No description provided for @authTooManyAttemptsWait.
+  ///
+  /// In en, this message translates to:
+  /// **'Too many attempts. Please wait a minute.'**
+  String get authTooManyAttemptsWait;
+
+  /// No description provided for @authKickerWelcomeBack.
+  ///
+  /// In en, this message translates to:
+  /// **'WELCOME BACK'**
+  String get authKickerWelcomeBack;
+
+  /// No description provided for @authKickerCreateAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'CREATE ACCOUNT'**
+  String get authKickerCreateAccount;
+
+  /// No description provided for @authBeginJourney.
+  ///
+  /// In en, this message translates to:
+  /// **'Begin your journey'**
+  String get authBeginJourney;
+
+  /// No description provided for @authSignInSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Your cosmic mirror is waiting. Sign in to continue.'**
+  String get authSignInSubtitle;
+
+  /// No description provided for @authRegisterSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'A few details and the stars are yours to explore.'**
+  String get authRegisterSubtitle;
+
+  /// No description provided for @authSignInWithCode.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in with a code instead'**
+  String get authSignInWithCode;
+
+  /// No description provided for @authForgotYourPassword.
+  ///
+  /// In en, this message translates to:
+  /// **'Forgot your password?'**
+  String get authForgotYourPassword;
+
+  /// No description provided for @authResetPasswordKicker.
+  ///
+  /// In en, this message translates to:
+  /// **'RESET PASSWORD'**
+  String get authResetPasswordKicker;
+
+  /// No description provided for @authForgotPasswordBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter your email and we\'ll send you a code to set a new password.'**
+  String get authForgotPasswordBody;
+
+  /// No description provided for @authSendResetCode.
+  ///
+  /// In en, this message translates to:
+  /// **'Send reset code'**
+  String get authSendResetCode;
+
+  /// No description provided for @authBackToSignIn.
+  ///
+  /// In en, this message translates to:
+  /// **'Back to sign in'**
+  String get authBackToSignIn;
+
+  /// No description provided for @authPasswordUpdated.
+  ///
+  /// In en, this message translates to:
+  /// **'Password updated. Please sign in.'**
+  String get authPasswordUpdated;
+
+  /// No description provided for @authOtpInvalidCode.
+  ///
+  /// In en, this message translates to:
+  /// **'That code didn\'t work. Try again or resend.'**
+  String get authOtpInvalidCode;
+
+  /// No description provided for @authOtpKickerConfirmEmail.
+  ///
+  /// In en, this message translates to:
+  /// **'CONFIRM YOUR EMAIL'**
+  String get authOtpKickerConfirmEmail;
+
+  /// No description provided for @authOtpKickerSignIn.
+  ///
+  /// In en, this message translates to:
+  /// **'SIGN IN'**
+  String get authOtpKickerSignIn;
+
+  /// No description provided for @authOtpKickerResetPassword.
+  ///
+  /// In en, this message translates to:
+  /// **'RESET YOUR PASSWORD'**
+  String get authOtpKickerResetPassword;
+
+  /// No description provided for @authOtpCheckEmail.
+  ///
+  /// In en, this message translates to:
+  /// **'Check your email'**
+  String get authOtpCheckEmail;
+
+  /// No description provided for @authOtpSentTo.
+  ///
+  /// In en, this message translates to:
+  /// **'We sent a 6-digit code to {email}.'**
+  String authOtpSentTo(String email);
+
+  /// No description provided for @authNewPassword.
+  ///
+  /// In en, this message translates to:
+  /// **'New password'**
+  String get authNewPassword;
+
+  /// No description provided for @authResetPasswordButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Reset password'**
+  String get authResetPasswordButton;
+
+  /// No description provided for @authOtpResendIn.
+  ///
+  /// In en, this message translates to:
+  /// **'Resend code in {time}'**
+  String authOtpResendIn(String time);
+
+  /// No description provided for @authOtpResend.
+  ///
+  /// In en, this message translates to:
+  /// **'Resend code'**
+  String get authOtpResend;
+
+  /// No description provided for @onboardingRevealTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Your cosmic blueprint'**
+  String get onboardingRevealTitle;
+
+  /// No description provided for @onboardingRevealSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Here are your Big Three.'**
+  String get onboardingRevealSubtitle;
+
+  /// No description provided for @onboardingRevealSunSign.
+  ///
+  /// In en, this message translates to:
+  /// **'Sun Sign'**
+  String get onboardingRevealSunSign;
+
+  /// No description provided for @onboardingRevealMoonSign.
+  ///
+  /// In en, this message translates to:
+  /// **'Moon Sign'**
+  String get onboardingRevealMoonSign;
+
+  /// No description provided for @onboardingRevealRisingSign.
+  ///
+  /// In en, this message translates to:
+  /// **'Rising Sign'**
+  String get onboardingRevealRisingSign;
+
+  /// No description provided for @onboardingSignUnknown.
+  ///
+  /// In en, this message translates to:
+  /// **'Unknown'**
+  String get onboardingSignUnknown;
+
+  /// No description provided for @premiumUnlockFeature.
+  ///
+  /// In en, this message translates to:
+  /// **'Unlock {feature}'**
+  String premiumUnlockFeature(String feature);
+
+  /// No description provided for @premiumUnlockThisFeature.
+  ///
+  /// In en, this message translates to:
+  /// **'Unlock this feature'**
+  String get premiumUnlockThisFeature;
+
+  /// No description provided for @premiumUpgradeBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Upgrade to Premium for full access to personalized insights.'**
+  String get premiumUpgradeBody;
+
+  /// No description provided for @premiumViewPlans.
+  ///
+  /// In en, this message translates to:
+  /// **'View Plans'**
+  String get premiumViewPlans;
+
+  /// No description provided for @paywallPricePerMonth.
+  ///
+  /// In en, this message translates to:
+  /// **'{price}/mo'**
+  String paywallPricePerMonth(String price);
+
+  /// No description provided for @paywallPricePerYear.
+  ///
+  /// In en, this message translates to:
+  /// **'{price}/yr'**
+  String paywallPricePerYear(String price);
+
+  /// No description provided for @chartSignAries.
+  ///
+  /// In en, this message translates to:
+  /// **'Aries'**
+  String get chartSignAries;
+
+  /// No description provided for @chartSignTaurus.
+  ///
+  /// In en, this message translates to:
+  /// **'Taurus'**
+  String get chartSignTaurus;
+
+  /// No description provided for @chartSignGemini.
+  ///
+  /// In en, this message translates to:
+  /// **'Gemini'**
+  String get chartSignGemini;
+
+  /// No description provided for @chartSignCancer.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancer'**
+  String get chartSignCancer;
+
+  /// No description provided for @chartSignLeo.
+  ///
+  /// In en, this message translates to:
+  /// **'Leo'**
+  String get chartSignLeo;
+
+  /// No description provided for @chartSignVirgo.
+  ///
+  /// In en, this message translates to:
+  /// **'Virgo'**
+  String get chartSignVirgo;
+
+  /// No description provided for @chartSignLibra.
+  ///
+  /// In en, this message translates to:
+  /// **'Libra'**
+  String get chartSignLibra;
+
+  /// No description provided for @chartSignScorpio.
+  ///
+  /// In en, this message translates to:
+  /// **'Scorpio'**
+  String get chartSignScorpio;
+
+  /// No description provided for @chartSignSagittarius.
+  ///
+  /// In en, this message translates to:
+  /// **'Sagittarius'**
+  String get chartSignSagittarius;
+
+  /// No description provided for @chartSignCapricorn.
+  ///
+  /// In en, this message translates to:
+  /// **'Capricorn'**
+  String get chartSignCapricorn;
+
+  /// No description provided for @chartSignAquarius.
+  ///
+  /// In en, this message translates to:
+  /// **'Aquarius'**
+  String get chartSignAquarius;
+
+  /// No description provided for @chartSignPisces.
+  ///
+  /// In en, this message translates to:
+  /// **'Pisces'**
+  String get chartSignPisces;
+
+  /// No description provided for @chartSignAbbrAries.
+  ///
+  /// In en, this message translates to:
+  /// **'Ar'**
+  String get chartSignAbbrAries;
+
+  /// No description provided for @chartSignAbbrTaurus.
+  ///
+  /// In en, this message translates to:
+  /// **'Ta'**
+  String get chartSignAbbrTaurus;
+
+  /// No description provided for @chartSignAbbrGemini.
+  ///
+  /// In en, this message translates to:
+  /// **'Ge'**
+  String get chartSignAbbrGemini;
+
+  /// No description provided for @chartSignAbbrCancer.
+  ///
+  /// In en, this message translates to:
+  /// **'Cn'**
+  String get chartSignAbbrCancer;
+
+  /// No description provided for @chartSignAbbrLeo.
+  ///
+  /// In en, this message translates to:
+  /// **'Le'**
+  String get chartSignAbbrLeo;
+
+  /// No description provided for @chartSignAbbrVirgo.
+  ///
+  /// In en, this message translates to:
+  /// **'Vi'**
+  String get chartSignAbbrVirgo;
+
+  /// No description provided for @chartSignAbbrLibra.
+  ///
+  /// In en, this message translates to:
+  /// **'Li'**
+  String get chartSignAbbrLibra;
+
+  /// No description provided for @chartSignAbbrScorpio.
+  ///
+  /// In en, this message translates to:
+  /// **'Sc'**
+  String get chartSignAbbrScorpio;
+
+  /// No description provided for @chartSignAbbrSagittarius.
+  ///
+  /// In en, this message translates to:
+  /// **'Sg'**
+  String get chartSignAbbrSagittarius;
+
+  /// No description provided for @chartSignAbbrCapricorn.
+  ///
+  /// In en, this message translates to:
+  /// **'Cp'**
+  String get chartSignAbbrCapricorn;
+
+  /// No description provided for @chartSignAbbrAquarius.
+  ///
+  /// In en, this message translates to:
+  /// **'Aq'**
+  String get chartSignAbbrAquarius;
+
+  /// No description provided for @chartSignAbbrPisces.
+  ///
+  /// In en, this message translates to:
+  /// **'Pi'**
+  String get chartSignAbbrPisces;
+
+  /// No description provided for @chartPlanetSun.
+  ///
+  /// In en, this message translates to:
+  /// **'Sun'**
+  String get chartPlanetSun;
+
+  /// No description provided for @chartPlanetMoon.
+  ///
+  /// In en, this message translates to:
+  /// **'Moon'**
+  String get chartPlanetMoon;
+
+  /// No description provided for @chartPlanetMercury.
+  ///
+  /// In en, this message translates to:
+  /// **'Mercury'**
+  String get chartPlanetMercury;
+
+  /// No description provided for @chartPlanetVenus.
+  ///
+  /// In en, this message translates to:
+  /// **'Venus'**
+  String get chartPlanetVenus;
+
+  /// No description provided for @chartPlanetMars.
+  ///
+  /// In en, this message translates to:
+  /// **'Mars'**
+  String get chartPlanetMars;
+
+  /// No description provided for @chartPlanetJupiter.
+  ///
+  /// In en, this message translates to:
+  /// **'Jupiter'**
+  String get chartPlanetJupiter;
+
+  /// No description provided for @chartPlanetSaturn.
+  ///
+  /// In en, this message translates to:
+  /// **'Saturn'**
+  String get chartPlanetSaturn;
+
+  /// No description provided for @chartPlanetUranus.
+  ///
+  /// In en, this message translates to:
+  /// **'Uranus'**
+  String get chartPlanetUranus;
+
+  /// No description provided for @chartPlanetNeptune.
+  ///
+  /// In en, this message translates to:
+  /// **'Neptune'**
+  String get chartPlanetNeptune;
+
+  /// No description provided for @chartPlanetPluto.
+  ///
+  /// In en, this message translates to:
+  /// **'Pluto'**
+  String get chartPlanetPluto;
+
+  /// No description provided for @chartPlanetNorthNode.
+  ///
+  /// In en, this message translates to:
+  /// **'North Node'**
+  String get chartPlanetNorthNode;
+
+  /// No description provided for @chartPlanetSouthNode.
+  ///
+  /// In en, this message translates to:
+  /// **'South Node'**
+  String get chartPlanetSouthNode;
+
+  /// No description provided for @chartPlanetChiron.
+  ///
+  /// In en, this message translates to:
+  /// **'Chiron'**
+  String get chartPlanetChiron;
+
+  /// No description provided for @chartAspectQuincunx.
+  ///
+  /// In en, this message translates to:
+  /// **'Quincunx'**
+  String get chartAspectQuincunx;
+
+  /// No description provided for @chartAspectTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'{planet1} {aspect} {planet2}'**
+  String chartAspectTitle(String planet1, String aspect, String planet2);
+
+  /// No description provided for @chartElementFire.
+  ///
+  /// In en, this message translates to:
+  /// **'Fire'**
+  String get chartElementFire;
+
+  /// No description provided for @chartElementEarth.
+  ///
+  /// In en, this message translates to:
+  /// **'Earth'**
+  String get chartElementEarth;
+
+  /// No description provided for @chartElementAir.
+  ///
+  /// In en, this message translates to:
+  /// **'Air'**
+  String get chartElementAir;
+
+  /// No description provided for @chartElementWater.
+  ///
+  /// In en, this message translates to:
+  /// **'Water'**
+  String get chartElementWater;
+
+  /// No description provided for @chartPercent.
+  ///
+  /// In en, this message translates to:
+  /// **'{value}%'**
+  String chartPercent(String value);
+
+  /// No description provided for @vedicLagnaLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'LAGNA'**
+  String get vedicLagnaLabel;
+
+  /// No description provided for @vedicChandraLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'CHANDRA'**
+  String get vedicChandraLabel;
+
+  /// No description provided for @vedicSuryaLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'SURYA'**
+  String get vedicSuryaLabel;
+
+  /// No description provided for @vedicLagna.
+  ///
+  /// In en, this message translates to:
+  /// **'Lagna'**
+  String get vedicLagna;
+
+  /// No description provided for @vedicPlanetPosition.
+  ///
+  /// In en, this message translates to:
+  /// **'{sign} ({sanskrit}) · {degree}° · House {house}'**
+  String vedicPlanetPosition(
+      String sign, String sanskrit, String degree, int house);
+
+  /// No description provided for @vedicNakshatraPada.
+  ///
+  /// In en, this message translates to:
+  /// **'{nakshatra} pada {pada}'**
+  String vedicNakshatraPada(String nakshatra, int pada);
+
+  /// No description provided for @vedicDignityExalted.
+  ///
+  /// In en, this message translates to:
+  /// **'Exalted'**
+  String get vedicDignityExalted;
+
+  /// No description provided for @vedicDignityDebilitated.
+  ///
+  /// In en, this message translates to:
+  /// **'Debilitated'**
+  String get vedicDignityDebilitated;
+
+  /// No description provided for @vedicDignityMooltrikona.
+  ///
+  /// In en, this message translates to:
+  /// **'Mooltrikona'**
+  String get vedicDignityMooltrikona;
+
+  /// No description provided for @vedicDignityOwn.
+  ///
+  /// In en, this message translates to:
+  /// **'Own'**
+  String get vedicDignityOwn;
+
+  /// No description provided for @vedicDignityFriend.
+  ///
+  /// In en, this message translates to:
+  /// **'Friend'**
+  String get vedicDignityFriend;
+
+  /// No description provided for @vedicDignityEnemy.
+  ///
+  /// In en, this message translates to:
+  /// **'Enemy'**
+  String get vedicDignityEnemy;
+
+  /// No description provided for @vedicDignityNeutral.
+  ///
+  /// In en, this message translates to:
+  /// **'Neutral'**
+  String get vedicDignityNeutral;
+
+  /// No description provided for @vedicAspectOrdinal.
+  ///
+  /// In en, this message translates to:
+  /// **'{n, select, 1{1st} 2{2nd} 3{3rd} other{{n}th}}'**
+  String vedicAspectOrdinal(String n);
+
+  /// No description provided for @vedicMahadashasHeader.
+  ///
+  /// In en, this message translates to:
+  /// **'Mahadashas (120-year cycle)'**
+  String get vedicMahadashasHeader;
+
+  /// No description provided for @vedicCurrentDasha.
+  ///
+  /// In en, this message translates to:
+  /// **'CURRENT DASHA'**
+  String get vedicCurrentDasha;
+
+  /// No description provided for @vedicDashaLevels.
+  ///
+  /// In en, this message translates to:
+  /// **'Maha · Antar · Pratyantar'**
+  String get vedicDashaLevels;
+
+  /// No description provided for @vedicDashaNow.
+  ///
+  /// In en, this message translates to:
+  /// **'NOW'**
+  String get vedicDashaNow;
+
+  /// No description provided for @vedicYogaStrength.
+  ///
+  /// In en, this message translates to:
+  /// **'STRENGTH'**
+  String get vedicYogaStrength;
+
+  /// No description provided for @vedicYogaCategoryPanchaMahapurusha.
+  ///
+  /// In en, this message translates to:
+  /// **'Pancha Mahapurusha'**
+  String get vedicYogaCategoryPanchaMahapurusha;
+
+  /// No description provided for @vedicYogaCategoryLunar.
+  ///
+  /// In en, this message translates to:
+  /// **'Lunar'**
+  String get vedicYogaCategoryLunar;
+
+  /// No description provided for @vedicYogaCategorySolar.
+  ///
+  /// In en, this message translates to:
+  /// **'Solar'**
+  String get vedicYogaCategorySolar;
+
+  /// No description provided for @vedicYogaCategoryWealth.
+  ///
+  /// In en, this message translates to:
+  /// **'Wealth'**
+  String get vedicYogaCategoryWealth;
+
+  /// No description provided for @vedicYogaCategoryPower.
+  ///
+  /// In en, this message translates to:
+  /// **'Power'**
+  String get vedicYogaCategoryPower;
+
+  /// No description provided for @vedicYogaCategoryWisdom.
+  ///
+  /// In en, this message translates to:
+  /// **'Wisdom'**
+  String get vedicYogaCategoryWisdom;
+
+  /// No description provided for @vedicYogaCategoryNodal.
+  ///
+  /// In en, this message translates to:
+  /// **'Nodal'**
+  String get vedicYogaCategoryNodal;
+
+  /// No description provided for @vedicNakshatraPadaRuler.
+  ///
+  /// In en, this message translates to:
+  /// **'Pada {pada} · Ruler {ruler}'**
+  String vedicNakshatraPadaRuler(int pada, String ruler);
+
+  /// No description provided for @vedicNakshatraDeity.
+  ///
+  /// In en, this message translates to:
+  /// **'Deity'**
+  String get vedicNakshatraDeity;
+
+  /// No description provided for @vedicNakshatraSymbol.
+  ///
+  /// In en, this message translates to:
+  /// **'Symbol'**
+  String get vedicNakshatraSymbol;
+
+  /// No description provided for @vedicNakshatraGana.
+  ///
+  /// In en, this message translates to:
+  /// **'Gana'**
+  String get vedicNakshatraGana;
+
+  /// No description provided for @vedicNakshatraNadi.
+  ///
+  /// In en, this message translates to:
+  /// **'Nadi'**
+  String get vedicNakshatraNadi;
+
+  /// No description provided for @vedicNakshatraVarna.
+  ///
+  /// In en, this message translates to:
+  /// **'Varna'**
+  String get vedicNakshatraVarna;
+
+  /// No description provided for @vedicNakshatraCaste.
+  ///
+  /// In en, this message translates to:
+  /// **'Caste'**
+  String get vedicNakshatraCaste;
+
+  /// No description provided for @vedicNakshatraAnimal.
+  ///
+  /// In en, this message translates to:
+  /// **'Animal'**
+  String get vedicNakshatraAnimal;
+
+  /// No description provided for @vedicNakshatraGender.
+  ///
+  /// In en, this message translates to:
+  /// **'Gender'**
+  String get vedicNakshatraGender;
+
+  /// No description provided for @vedicShadbalaSummary.
+  ///
+  /// In en, this message translates to:
+  /// **'{total} / {required} Virupas — {verdict}'**
+  String vedicShadbalaSummary(String total, String required, String verdict);
+
+  /// No description provided for @vedicShadbalaStrong.
+  ///
+  /// In en, this message translates to:
+  /// **'STRONG'**
+  String get vedicShadbalaStrong;
+
+  /// No description provided for @vedicShadbalaWeak.
+  ///
+  /// In en, this message translates to:
+  /// **'WEAK'**
+  String get vedicShadbalaWeak;
+
+  /// No description provided for @vedicShadbalaChesta.
+  ///
+  /// In en, this message translates to:
+  /// **'Chesta'**
+  String get vedicShadbalaChesta;
+
+  /// No description provided for @vedicAshtakavargaSarva.
+  ///
+  /// In en, this message translates to:
+  /// **'Sarva'**
+  String get vedicAshtakavargaSarva;
+
+  /// No description provided for @vedicAshtakavargaSarvaNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Sarva Ashtakavarga — total benefic points each sign receives from all seven grahas (max {max} per sign).'**
+  String vedicAshtakavargaSarvaNote(int max);
+
+  /// No description provided for @vedicAshtakavargaBhinnNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Bhinn Ashtakavarga of {planet} — bindus contributed to each sign by {planet} (max {max} per sign).'**
+  String vedicAshtakavargaBhinnNote(String planet, int max);
+
+  /// No description provided for @communityMembersCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 member} other{{count} members}}'**
+  String communityMembersCount(int count);
+
+  /// No description provided for @communityCategoryFallback.
+  ///
+  /// In en, this message translates to:
+  /// **'Category'**
+  String get communityCategoryFallback;
+
+  /// No description provided for @communityCategoryEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No spaces in this category yet.'**
+  String get communityCategoryEmpty;
+
+  /// No description provided for @postInSpace.
+  ///
+  /// In en, this message translates to:
+  /// **'in @{handle}'**
+  String postInSpace(String handle);
+
+  /// No description provided for @postCommentsHeader.
+  ///
+  /// In en, this message translates to:
+  /// **'Comments'**
+  String get postCommentsHeader;
+
+  /// No description provided for @postNoComments.
+  ///
+  /// In en, this message translates to:
+  /// **'No comments yet.'**
+  String get postNoComments;
+
+  /// No description provided for @postReplyingTo.
+  ///
+  /// In en, this message translates to:
+  /// **'Replying to {name}'**
+  String postReplyingTo(String name);
+
+  /// No description provided for @postWriteCommentHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Write a comment'**
+  String get postWriteCommentHint;
+
+  /// No description provided for @spaceCreateAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Create'**
+  String get spaceCreateAction;
+
+  /// No description provided for @spaceNameHint.
+  ///
+  /// In en, this message translates to:
+  /// **'e.g. Stargazers Club'**
+  String get spaceNameHint;
+
+  /// No description provided for @spaceHandleHint.
+  ///
+  /// In en, this message translates to:
+  /// **'stargazers'**
+  String get spaceHandleHint;
+
+  /// No description provided for @spaceDescriptionHint.
+  ///
+  /// In en, this message translates to:
+  /// **'What is this space about?'**
+  String get spaceDescriptionHint;
+
+  /// No description provided for @spaceCategoryLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'CATEGORY'**
+  String get spaceCategoryLabel;
+
+  /// No description provided for @spaceSpicyLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Spicy'**
+  String get spaceSpicyLabel;
+
+  /// No description provided for @spaceSpicyDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Mature topics — shown with a Spicy badge.'**
+  String get spaceSpicyDescription;
+
+  /// No description provided for @communityHashtagComingSoon.
+  ///
+  /// In en, this message translates to:
+  /// **'Posts by hashtag are coming soon.'**
+  String get communityHashtagComingSoon;
+
+  /// No description provided for @communityHashtagComingSoonBody.
+  ///
+  /// In en, this message translates to:
+  /// **'For now, browse spaces and discover hashtags inside posts.'**
+  String get communityHashtagComingSoonBody;
+
+  /// No description provided for @postTimeNow.
+  ///
+  /// In en, this message translates to:
+  /// **'now'**
+  String get postTimeNow;
+
+  /// No description provided for @postTimeMinutesShort.
+  ///
+  /// In en, this message translates to:
+  /// **'{n}m'**
+  String postTimeMinutesShort(int n);
+
+  /// No description provided for @postTimeHoursShort.
+  ///
+  /// In en, this message translates to:
+  /// **'{n}h'**
+  String postTimeHoursShort(int n);
+
+  /// No description provided for @postTimeDaysShort.
+  ///
+  /// In en, this message translates to:
+  /// **'{n}d'**
+  String postTimeDaysShort(int n);
+
+  /// No description provided for @postTimeWeeksShort.
+  ///
+  /// In en, this message translates to:
+  /// **'{n}w'**
+  String postTimeWeeksShort(int n);
+
+  /// No description provided for @notificationTimeJustNow.
+  ///
+  /// In en, this message translates to:
+  /// **'just now'**
+  String get notificationTimeJustNow;
+
+  /// No description provided for @notificationTimeMinutesAgo.
+  ///
+  /// In en, this message translates to:
+  /// **'{n} min ago'**
+  String notificationTimeMinutesAgo(int n);
+
+  /// No description provided for @notificationTimeHoursAgo.
+  ///
+  /// In en, this message translates to:
+  /// **'{n}h ago'**
+  String notificationTimeHoursAgo(int n);
+
+  /// No description provided for @notificationTimeDaysAgo.
+  ///
+  /// In en, this message translates to:
+  /// **'{n}d ago'**
+  String notificationTimeDaysAgo(int n);
+
+  /// No description provided for @notificationTimeWeeksAgo.
+  ///
+  /// In en, this message translates to:
+  /// **'{n}w ago'**
+  String notificationTimeWeeksAgo(int n);
+
+  /// No description provided for @notificationPostLiked.
+  ///
+  /// In en, this message translates to:
+  /// **'liked your post'**
+  String get notificationPostLiked;
+
+  /// No description provided for @notificationCommentLiked.
+  ///
+  /// In en, this message translates to:
+  /// **'liked your comment'**
+  String get notificationCommentLiked;
+
+  /// No description provided for @notificationPostCommented.
+  ///
+  /// In en, this message translates to:
+  /// **'commented on your post'**
+  String get notificationPostCommented;
+
+  /// No description provided for @notificationCommentReplied.
+  ///
+  /// In en, this message translates to:
+  /// **'replied to your comment'**
+  String get notificationCommentReplied;
+
+  /// No description provided for @notificationSpaceMemberJoined.
+  ///
+  /// In en, this message translates to:
+  /// **'joined your space'**
+  String get notificationSpaceMemberJoined;
+
+  /// No description provided for @notificationSpaceFollowed.
+  ///
+  /// In en, this message translates to:
+  /// **'followed your space'**
+  String get notificationSpaceFollowed;
+
+  /// No description provided for @notificationSpaceJoinRequested.
+  ///
+  /// In en, this message translates to:
+  /// **'requested to join your space'**
+  String get notificationSpaceJoinRequested;
+
+  /// No description provided for @notificationSpaceJoinApproved.
+  ///
+  /// In en, this message translates to:
+  /// **'accepted your request to join'**
+  String get notificationSpaceJoinApproved;
+
+  /// No description provided for @notificationSpaceJoinDeclined.
+  ///
+  /// In en, this message translates to:
+  /// **'declined your request to join'**
+  String get notificationSpaceJoinDeclined;
+
+  /// No description provided for @notificationPostInSpace.
+  ///
+  /// In en, this message translates to:
+  /// **'posted in a space you follow'**
+  String get notificationPostInSpace;
+
+  /// No description provided for @notificationMentioned.
+  ///
+  /// In en, this message translates to:
+  /// **'mentioned you'**
+  String get notificationMentioned;
+
+  /// No description provided for @notificationGeneric.
+  ///
+  /// In en, this message translates to:
+  /// **'sent you a notification'**
+  String get notificationGeneric;
+
+  /// No description provided for @communityProfileJoinedSpaces.
+  ///
+  /// In en, this message translates to:
+  /// **'JOINED SPACES ({count})'**
+  String communityProfileJoinedSpaces(int count);
+
+  /// No description provided for @communityProfileNoSpaces.
+  ///
+  /// In en, this message translates to:
+  /// **'Not in any spaces yet.'**
+  String get communityProfileNoSpaces;
+
+  /// No description provided for @communityProfileRecentPosts.
+  ///
+  /// In en, this message translates to:
+  /// **'RECENT POSTS ({count})'**
+  String communityProfileRecentPosts(int count);
+
+  /// No description provided for @communityProfileNoPosts.
+  ///
+  /// In en, this message translates to:
+  /// **'No posts yet.'**
+  String get communityProfileNoPosts;
+
+  /// No description provided for @communityUnknownUser.
+  ///
+  /// In en, this message translates to:
+  /// **'Unknown user'**
+  String get communityUnknownUser;
+
+  /// No description provided for @communityUnknownMember.
+  ///
+  /// In en, this message translates to:
+  /// **'Unknown'**
+  String get communityUnknownMember;
+
+  /// No description provided for @spaceRoleOwner.
+  ///
+  /// In en, this message translates to:
+  /// **'OWNER'**
+  String get spaceRoleOwner;
+
+  /// No description provided for @spaceRoleMod.
+  ///
+  /// In en, this message translates to:
+  /// **'MOD'**
+  String get spaceRoleMod;
+
+  /// No description provided for @spaceRoleMember.
+  ///
+  /// In en, this message translates to:
+  /// **'MEMBER'**
+  String get spaceRoleMember;
+
+  /// No description provided for @spaceJoinPending.
+  ///
+  /// In en, this message translates to:
+  /// **'Pending'**
+  String get spaceJoinPending;
+
+  /// No description provided for @communityMembersCountCompact.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} members'**
+  String communityMembersCountCompact(String count);
+
+  /// No description provided for @aiChatSuggestedQuestionsCaps.
+  ///
+  /// In en, this message translates to:
+  /// **'TRY ASKING…'**
+  String get aiChatSuggestedQuestionsCaps;
+
+  /// No description provided for @chatThreadsDeleteBody.
+  ///
+  /// In en, this message translates to:
+  /// **'\"{title}\" and all its messages will be removed. This cannot be undone.'**
+  String chatThreadsDeleteBody(String title);
+
+  /// No description provided for @chatThreadsHeaderTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Cosmic Conversations'**
+  String get chatThreadsHeaderTitle;
+
+  /// No description provided for @chatThreadsHeaderSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 conversation} other{{count} conversations}} · powered by your chart'**
+  String chatThreadsHeaderSubtitle(int count);
+
+  /// No description provided for @chatThreadsTapToContinue.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap to continue your reading'**
+  String get chatThreadsTapToContinue;
+
+  /// No description provided for @chatThreadsEmptyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Begin a Cosmic Dialogue'**
+  String get chatThreadsEmptyTitle;
+
+  /// No description provided for @chatThreadsEmptyBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Ask anything about your chart, transits,\nor a moment you want to understand.'**
+  String get chatThreadsEmptyBody;
+
+  /// No description provided for @aiMemoryTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Cosmic Memory'**
+  String get aiMemoryTitle;
+
+  /// No description provided for @aiMemorySubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'What I remember about you'**
+  String get aiMemorySubtitle;
+
+  /// No description provided for @aiMemoryLive.
+  ///
+  /// In en, this message translates to:
+  /// **'live'**
+  String get aiMemoryLive;
+
+  /// No description provided for @aiMemorySaturnReturnLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Saturn return (1st pass)'**
+  String get aiMemorySaturnReturnLabel;
+
+  /// No description provided for @aiMemorySaturnReturnDetail.
+  ///
+  /// In en, this message translates to:
+  /// **'You\'ve asked about this 4 times since February.'**
+  String get aiMemorySaturnReturnDetail;
+
+  /// No description provided for @aiMemoryCareerLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Career transition'**
+  String get aiMemoryCareerLabel;
+
+  /// No description provided for @aiMemoryCareerDetail.
+  ///
+  /// In en, this message translates to:
+  /// **'You\'re weighing a move into product design.'**
+  String get aiMemoryCareerDetail;
+
+  /// No description provided for @aiMemoryPartnerLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Theo, Pisces'**
+  String get aiMemoryPartnerLabel;
+
+  /// No description provided for @aiMemoryPartnerDetail.
+  ///
+  /// In en, this message translates to:
+  /// **'Compatibility synastry saved · Oct 2024.'**
+  String get aiMemoryPartnerDetail;
+
+  /// No description provided for @aiMemorySelfTrustLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Self-trust theme'**
+  String get aiMemorySelfTrustLabel;
+
+  /// No description provided for @aiMemorySelfTrustDetail.
+  ///
+  /// In en, this message translates to:
+  /// **'A recurring question across 6 conversations.'**
+  String get aiMemorySelfTrustDetail;
+
+  /// No description provided for @compatSomeone.
+  ///
+  /// In en, this message translates to:
+  /// **'Someone'**
+  String get compatSomeone;
+
+  /// No description provided for @compatShareText.
+  ///
+  /// In en, this message translates to:
+  /// **'My cosmic compatibility with {name} is {score}%! Check yours on Lively.'**
+  String compatShareText(String name, int score);
+
+  /// No description provided for @compatYou.
+  ///
+  /// In en, this message translates to:
+  /// **'You'**
+  String get compatYou;
+
+  /// No description provided for @compatYouAnd.
+  ///
+  /// In en, this message translates to:
+  /// **'You & {name}'**
+  String compatYouAnd(String name);
+
+  /// No description provided for @compatRelPartner.
+  ///
+  /// In en, this message translates to:
+  /// **'Partner'**
+  String get compatRelPartner;
+
+  /// No description provided for @compatRelFriend.
+  ///
+  /// In en, this message translates to:
+  /// **'Friend'**
+  String get compatRelFriend;
+
+  /// No description provided for @compatRelFamily.
+  ///
+  /// In en, this message translates to:
+  /// **'Family'**
+  String get compatRelFamily;
+
+  /// No description provided for @compatRelCoworker.
+  ///
+  /// In en, this message translates to:
+  /// **'Coworker'**
+  String get compatRelCoworker;
+
+  /// No description provided for @compatRelCrush.
+  ///
+  /// In en, this message translates to:
+  /// **'Crush'**
+  String get compatRelCrush;
+
+  /// No description provided for @compatRelOther.
+  ///
+  /// In en, this message translates to:
+  /// **'Other'**
+  String get compatRelOther;
+
+  /// No description provided for @timelineFeatureName.
+  ///
+  /// In en, this message translates to:
+  /// **'Timeline Forecasts'**
+  String get timelineFeatureName;
+
+  /// No description provided for @lifeTimelineCatCareer.
+  ///
+  /// In en, this message translates to:
+  /// **'Career'**
+  String get lifeTimelineCatCareer;
+
+  /// No description provided for @lifeTimelineCatLove.
+  ///
+  /// In en, this message translates to:
+  /// **'Love'**
+  String get lifeTimelineCatLove;
+
+  /// No description provided for @lifeTimelineCatGrowth.
+  ///
+  /// In en, this message translates to:
+  /// **'Growth'**
+  String get lifeTimelineCatGrowth;
+
+  /// No description provided for @lifeTimelineCatLoss.
+  ///
+  /// In en, this message translates to:
+  /// **'Loss'**
+  String get lifeTimelineCatLoss;
+
+  /// No description provided for @lifeTimelineCatTravel.
+  ///
+  /// In en, this message translates to:
+  /// **'Travel'**
+  String get lifeTimelineCatTravel;
+
+  /// No description provided for @lifeTimelineCatFamily.
+  ///
+  /// In en, this message translates to:
+  /// **'Family'**
+  String get lifeTimelineCatFamily;
+
+  /// No description provided for @lifeTimelineCatReflection.
+  ///
+  /// In en, this message translates to:
+  /// **'Reflection'**
+  String get lifeTimelineCatReflection;
+
+  /// No description provided for @lifeTimelineMoodElated.
+  ///
+  /// In en, this message translates to:
+  /// **'Elated'**
+  String get lifeTimelineMoodElated;
+
+  /// No description provided for @lifeTimelineMoodGrounded.
+  ///
+  /// In en, this message translates to:
+  /// **'Grounded'**
+  String get lifeTimelineMoodGrounded;
+
+  /// No description provided for @lifeTimelineMoodOpen.
+  ///
+  /// In en, this message translates to:
+  /// **'Open'**
+  String get lifeTimelineMoodOpen;
+
+  /// No description provided for @lifeTimelineMoodPressured.
+  ///
+  /// In en, this message translates to:
+  /// **'Pressured'**
+  String get lifeTimelineMoodPressured;
+
+  /// No description provided for @lifeTimelineMoodFree.
+  ///
+  /// In en, this message translates to:
+  /// **'Free'**
+  String get lifeTimelineMoodFree;
+
+  /// No description provided for @lifeTimelineMoodCleansed.
+  ///
+  /// In en, this message translates to:
+  /// **'Cleansed'**
+  String get lifeTimelineMoodCleansed;
+
+  /// No description provided for @lifeTimelineMoodTender.
+  ///
+  /// In en, this message translates to:
+  /// **'Tender'**
+  String get lifeTimelineMoodTender;
+
+  /// No description provided for @lifeTimelineMoodResolved.
+  ///
+  /// In en, this message translates to:
+  /// **'Resolved'**
+  String get lifeTimelineMoodResolved;
+
+  /// No description provided for @lifeTimelineAddTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Add a Moment'**
+  String get lifeTimelineAddTitle;
+
+  /// No description provided for @lifeTimelineAddSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'A turning point worth remembering.'**
+  String get lifeTimelineAddSubtitle;
+
+  /// No description provided for @lifeTimelineFieldTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Title'**
+  String get lifeTimelineFieldTitle;
+
+  /// No description provided for @lifeTimelineFieldTitleHint.
+  ///
+  /// In en, this message translates to:
+  /// **'e.g. Got the offer'**
+  String get lifeTimelineFieldTitleHint;
+
+  /// No description provided for @lifeTimelineFieldWhen.
+  ///
+  /// In en, this message translates to:
+  /// **'When'**
+  String get lifeTimelineFieldWhen;
+
+  /// No description provided for @lifeTimelineFieldCategory.
+  ///
+  /// In en, this message translates to:
+  /// **'Category'**
+  String get lifeTimelineFieldCategory;
+
+  /// No description provided for @lifeTimelineFieldMood.
+  ///
+  /// In en, this message translates to:
+  /// **'How did it feel?'**
+  String get lifeTimelineFieldMood;
+
+  /// No description provided for @lifeTimelineFieldNotes.
+  ///
+  /// In en, this message translates to:
+  /// **'Notes'**
+  String get lifeTimelineFieldNotes;
+
+  /// No description provided for @lifeTimelineFieldNotesHint.
+  ///
+  /// In en, this message translates to:
+  /// **'What was happening, what shifted...'**
+  String get lifeTimelineFieldNotesHint;
+
+  /// No description provided for @lifeTimelineSaveMoment.
+  ///
+  /// In en, this message translates to:
+  /// **'Save Moment'**
+  String get lifeTimelineSaveMoment;
+
+  /// No description provided for @lifeTimelineTransitPending.
+  ///
+  /// In en, this message translates to:
+  /// **'Transit calculation pending'**
+  String get lifeTimelineTransitPending;
+
+  /// No description provided for @lifeTimelineMock1Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Got the offer'**
+  String get lifeTimelineMock1Title;
+
+  /// No description provided for @lifeTimelineMock1Desc.
+  ///
+  /// In en, this message translates to:
+  /// **'Accepted the senior role at the design studio. Felt like everything I\'ve worked toward suddenly clicked into place.'**
+  String get lifeTimelineMock1Desc;
+
+  /// No description provided for @lifeTimelineMock1Transit1.
+  ///
+  /// In en, this message translates to:
+  /// **'Jupiter trine natal MC'**
+  String get lifeTimelineMock1Transit1;
+
+  /// No description provided for @lifeTimelineMock1Transit2.
+  ///
+  /// In en, this message translates to:
+  /// **'Venus in 10th house'**
+  String get lifeTimelineMock1Transit2;
+
+  /// No description provided for @lifeTimelineMock2Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancer New Moon retreat'**
+  String get lifeTimelineMock2Title;
+
+  /// No description provided for @lifeTimelineMock2Desc.
+  ///
+  /// In en, this message translates to:
+  /// **'Three days off-grid in Joshua Tree. Wrote 40 pages of journal. Came back with clarity about what I actually want.'**
+  String get lifeTimelineMock2Desc;
+
+  /// No description provided for @lifeTimelineMock2Transit1.
+  ///
+  /// In en, this message translates to:
+  /// **'New Moon conjunct natal Moon'**
+  String get lifeTimelineMock2Transit1;
+
+  /// No description provided for @lifeTimelineMock2Transit2.
+  ///
+  /// In en, this message translates to:
+  /// **'Mercury retrograde in 4th'**
+  String get lifeTimelineMock2Transit2;
+
+  /// No description provided for @lifeTimelineMock3Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Met Theo'**
+  String get lifeTimelineMock3Title;
+
+  /// No description provided for @lifeTimelineMock3Desc.
+  ///
+  /// In en, this message translates to:
+  /// **'Coffee at 4pm became dinner became a long walk. Felt the kind of recognition you can\'t fake.'**
+  String get lifeTimelineMock3Desc;
+
+  /// No description provided for @lifeTimelineMock3Transit1.
+  ///
+  /// In en, this message translates to:
+  /// **'Venus trine natal Sun'**
+  String get lifeTimelineMock3Transit1;
+
+  /// No description provided for @lifeTimelineMock3Transit2.
+  ///
+  /// In en, this message translates to:
+  /// **'Sun in 7th house'**
+  String get lifeTimelineMock3Transit2;
+
+  /// No description provided for @lifeTimelineMock4Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Saturn return begins'**
+  String get lifeTimelineMock4Title;
+
+  /// No description provided for @lifeTimelineMock4Desc.
+  ///
+  /// In en, this message translates to:
+  /// **'The first wave hit. Re-evaluating every commitment. Starting to feel which structures need to come down.'**
+  String get lifeTimelineMock4Desc;
+
+  /// No description provided for @lifeTimelineMock4Transit1.
+  ///
+  /// In en, this message translates to:
+  /// **'Saturn conjunct natal Saturn (1st pass)'**
+  String get lifeTimelineMock4Transit1;
+
+  /// No description provided for @lifeTimelineMock5Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Trip to Lisbon'**
+  String get lifeTimelineMock5Title;
+
+  /// No description provided for @lifeTimelineMock5Desc.
+  ///
+  /// In en, this message translates to:
+  /// **'Two weeks alone with my notebook. Realised how much of my anxiety was just being too plugged in.'**
+  String get lifeTimelineMock5Desc;
+
+  /// No description provided for @lifeTimelineMock5Transit1.
+  ///
+  /// In en, this message translates to:
+  /// **'Jupiter in 9th house'**
+  String get lifeTimelineMock5Transit1;
+
+  /// No description provided for @lifeTimelineMock5Transit2.
+  ///
+  /// In en, this message translates to:
+  /// **'Mars trine Mercury'**
+  String get lifeTimelineMock5Transit2;
+
+  /// No description provided for @lifeTimelineMock6Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Ended the lease'**
+  String get lifeTimelineMock6Title;
+
+  /// No description provided for @lifeTimelineMock6Desc.
+  ///
+  /// In en, this message translates to:
+  /// **'Moved out of the apartment. Decided I needed less space and fewer attachments. Saturn was right.'**
+  String get lifeTimelineMock6Desc;
+
+  /// No description provided for @lifeTimelineMock6Transit1.
+  ///
+  /// In en, this message translates to:
+  /// **'Saturn square natal Moon'**
+  String get lifeTimelineMock6Transit1;
+
+  /// No description provided for @lifeTimelineMock6Transit2.
+  ///
+  /// In en, this message translates to:
+  /// **'Pluto opposite natal Venus'**
+  String get lifeTimelineMock6Transit2;
+
+  /// No description provided for @destinyMatrixTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Matrix of Destiny'**
+  String get destinyMatrixTitle;
+
+  /// No description provided for @destinyYourOctagram.
+  ///
+  /// In en, this message translates to:
+  /// **'Your Octagram'**
+  String get destinyYourOctagram;
+
+  /// No description provided for @destinyPurpose.
+  ///
+  /// In en, this message translates to:
+  /// **'Purpose'**
+  String get destinyPurpose;
+
+  /// No description provided for @destinyTheLines.
+  ///
+  /// In en, this message translates to:
+  /// **'The Lines'**
+  String get destinyTheLines;
+
+  /// No description provided for @destinyYourCoreArcana.
+  ///
+  /// In en, this message translates to:
+  /// **'YOUR CORE ARCANA'**
+  String get destinyYourCoreArcana;
+
+  /// No description provided for @destinyBirthDate.
+  ///
+  /// In en, this message translates to:
+  /// **'Birth date {date}'**
+  String destinyBirthDate(String date);
+
+  /// No description provided for @destinyComfortCore.
+  ///
+  /// In en, this message translates to:
+  /// **'Comfort / Core'**
+  String get destinyComfortCore;
+
+  /// No description provided for @destinyMaleGenerationLine.
+  ///
+  /// In en, this message translates to:
+  /// **'male generation line'**
+  String get destinyMaleGenerationLine;
+
+  /// No description provided for @destinyFemaleGenerationLine.
+  ///
+  /// In en, this message translates to:
+  /// **'female generation line'**
+  String get destinyFemaleGenerationLine;
+
+  /// No description provided for @destinyTapNodeHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap any node to read its arcana.'**
+  String get destinyTapNodeHint;
+
+  /// No description provided for @destinyArcanaNumber.
+  ///
+  /// In en, this message translates to:
+  /// **'Arcana {n}'**
+  String destinyArcanaNumber(int n);
+
+  /// No description provided for @destinySkyPurpose.
+  ///
+  /// In en, this message translates to:
+  /// **'Sky Purpose'**
+  String get destinySkyPurpose;
+
+  /// No description provided for @destinyEarthPurpose.
+  ///
+  /// In en, this message translates to:
+  /// **'Earth Purpose'**
+  String get destinyEarthPurpose;
+
+  /// No description provided for @destinyPersonalPurpose.
+  ///
+  /// In en, this message translates to:
+  /// **'Personal Purpose'**
+  String get destinyPersonalPurpose;
+
+  /// No description provided for @psychoTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Pythagoras Square'**
+  String get psychoTitle;
+
+  /// No description provided for @psychoYourMatrix.
+  ///
+  /// In en, this message translates to:
+  /// **'Your Matrix'**
+  String get psychoYourMatrix;
+
+  /// No description provided for @psychoLinesStrengths.
+  ///
+  /// In en, this message translates to:
+  /// **'Lines & Strengths'**
+  String get psychoLinesStrengths;
+
+  /// No description provided for @psychoWorkingNumbers.
+  ///
+  /// In en, this message translates to:
+  /// **'WORKING NUMBERS'**
+  String get psychoWorkingNumbers;
+
+  /// No description provided for @psychoBirthDate.
+  ///
+  /// In en, this message translates to:
+  /// **'Birth date {date}'**
+  String psychoBirthDate(String date);
+
+  /// No description provided for @psychoWorkingShort.
+  ///
+  /// In en, this message translates to:
+  /// **'W{n}'**
+  String psychoWorkingShort(int n);
+
+  /// No description provided for @psychoTapCellHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap any cell to read its meaning.'**
+  String get psychoTapCellHint;
+
+  /// No description provided for @psychoAbsent.
+  ///
+  /// In en, this message translates to:
+  /// **'Absent'**
+  String get psychoAbsent;
+
+  /// No description provided for @psychoCellCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{digits}  ·  {count}x'**
+  String psychoCellCount(String digits, int count);
+
+  /// No description provided for @psychoCellsList.
+  ///
+  /// In en, this message translates to:
+  /// **'Cells {cells}'**
+  String psychoCellsList(String cells);
+
+  /// No description provided for @numerologyCompatPartnerNameLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'PARTNER FULL BIRTH NAME'**
+  String get numerologyCompatPartnerNameLabel;
+
+  /// No description provided for @numerologyCompatPartnerNameHint.
+  ///
+  /// In en, this message translates to:
+  /// **'e.g. Sarah Anne Chen'**
+  String get numerologyCompatPartnerNameHint;
+
+  /// No description provided for @numerologyCompatPartnerBirthDateLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'PARTNER BIRTH DATE'**
+  String get numerologyCompatPartnerBirthDateLabel;
+
+  /// No description provided for @numerologyCompatTapToPick.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap to pick'**
+  String get numerologyCompatTapToPick;
+
+  /// No description provided for @numerologyCompatCalculating.
+  ///
+  /// In en, this message translates to:
+  /// **'Calculating…'**
+  String get numerologyCompatCalculating;
+
+  /// No description provided for @numerologyCompatCompute.
+  ///
+  /// In en, this message translates to:
+  /// **'Compute compatibility'**
+  String get numerologyCompatCompute;
+
+  /// No description provided for @numerologyCompatMatch.
+  ///
+  /// In en, this message translates to:
+  /// **'Match'**
+  String get numerologyCompatMatch;
+
+  /// No description provided for @numerologyKarmicLessonsHeader.
+  ///
+  /// In en, this message translates to:
+  /// **'KARMIC LESSONS'**
+  String get numerologyKarmicLessonsHeader;
+
+  /// No description provided for @numerologyKarmicNoneMissing.
+  ///
+  /// In en, this message translates to:
+  /// **'Your name carries every digit — no missing lessons.'**
+  String get numerologyKarmicNoneMissing;
+
+  /// No description provided for @numerologyKarmicMissingBlurb.
+  ///
+  /// In en, this message translates to:
+  /// **'Numbers missing from your name show areas you came to learn.'**
+  String get numerologyKarmicMissingBlurb;
+
+  /// No description provided for @numerologyHiddenPassionHeader.
+  ///
+  /// In en, this message translates to:
+  /// **'HIDDEN PASSION'**
+  String get numerologyHiddenPassionHeader;
+
+  /// No description provided for @numerologyHiddenPassionNone.
+  ///
+  /// In en, this message translates to:
+  /// **'No dominant digit — your name is balanced across the spectrum.'**
+  String get numerologyHiddenPassionNone;
+
+  /// No description provided for @numerologyHiddenPassionBlurb.
+  ///
+  /// In en, this message translates to:
+  /// **'Your strongest gift is the energy of {number} — the digit that appears most often in your name.'**
+  String numerologyHiddenPassionBlurb(int number);
+
+  /// No description provided for @numerologyTodayHeader.
+  ///
+  /// In en, this message translates to:
+  /// **'TODAY'**
+  String get numerologyTodayHeader;
+
+  /// No description provided for @numerologyPersonalYear.
+  ///
+  /// In en, this message translates to:
+  /// **'Personal Year'**
+  String get numerologyPersonalYear;
+
+  /// No description provided for @numerologyPersonalMonth.
+  ///
+  /// In en, this message translates to:
+  /// **'Personal Month'**
+  String get numerologyPersonalMonth;
+
+  /// No description provided for @numerologyPersonalDay.
+  ///
+  /// In en, this message translates to:
+  /// **'Personal Day'**
+  String get numerologyPersonalDay;
+
+  /// No description provided for @numerologyPinnaclesHeader.
+  ///
+  /// In en, this message translates to:
+  /// **'PINNACLES — life\'s themes'**
+  String get numerologyPinnaclesHeader;
+
+  /// No description provided for @numerologyPinnacleN.
+  ///
+  /// In en, this message translates to:
+  /// **'Pinnacle {n}'**
+  String numerologyPinnacleN(int n);
+
+  /// No description provided for @numerologyChallengesHeader.
+  ///
+  /// In en, this message translates to:
+  /// **'CHALLENGES — areas to grow'**
+  String get numerologyChallengesHeader;
+
+  /// No description provided for @numerologyChallengeN.
+  ///
+  /// In en, this message translates to:
+  /// **'Challenge {n}'**
+  String numerologyChallengeN(int n);
+
+  /// No description provided for @numerologyCurrentAgeNote.
+  ///
+  /// In en, this message translates to:
+  /// **'You are {age} — active cycle is highlighted.'**
+  String numerologyCurrentAgeNote(int age);
+
+  /// No description provided for @numerologyAgeFrom.
+  ///
+  /// In en, this message translates to:
+  /// **'age {start}+'**
+  String numerologyAgeFrom(int start);
+
+  /// No description provided for @numerologyAgeRange.
+  ///
+  /// In en, this message translates to:
+  /// **'ages {start}–{end}'**
+  String numerologyAgeRange(int start, int end);
+
+  /// No description provided for @numerologyNowBadge.
+  ///
+  /// In en, this message translates to:
+  /// **'NOW'**
+  String get numerologyNowBadge;
+
+  /// No description provided for @numerologyMasterChip.
+  ///
+  /// In en, this message translates to:
+  /// **'Master'**
+  String get numerologyMasterChip;
+
+  /// No description provided for @numerologyKarmicChip.
+  ///
+  /// In en, this message translates to:
+  /// **'Karmic {number}'**
+  String numerologyKarmicChip(int number);
+
+  /// No description provided for @hdYouAre.
+  ///
+  /// In en, this message translates to:
+  /// **'YOU ARE'**
+  String get hdYouAre;
+
+  /// No description provided for @hdStrategy.
+  ///
+  /// In en, this message translates to:
+  /// **'Strategy'**
+  String get hdStrategy;
+
+  /// No description provided for @hdAuthority.
+  ///
+  /// In en, this message translates to:
+  /// **'Authority'**
+  String get hdAuthority;
+
+  /// No description provided for @hdDefinition.
+  ///
+  /// In en, this message translates to:
+  /// **'Definition'**
+  String get hdDefinition;
+
+  /// No description provided for @hdNotSelfTheme.
+  ///
+  /// In en, this message translates to:
+  /// **'Not-self theme: {theme}'**
+  String hdNotSelfTheme(String theme);
+
+  /// No description provided for @hdVariablesHeader.
+  ///
+  /// In en, this message translates to:
+  /// **'VARIABLES (PRA)'**
+  String get hdVariablesHeader;
+
+  /// No description provided for @hdVarDigestion.
+  ///
+  /// In en, this message translates to:
+  /// **'Digestion'**
+  String get hdVarDigestion;
+
+  /// No description provided for @hdVarEnvironment.
+  ///
+  /// In en, this message translates to:
+  /// **'Environment'**
+  String get hdVarEnvironment;
+
+  /// No description provided for @hdVarAwareness.
+  ///
+  /// In en, this message translates to:
+  /// **'Awareness'**
+  String get hdVarAwareness;
+
+  /// No description provided for @hdVarPerspective.
+  ///
+  /// In en, this message translates to:
+  /// **'Perspective'**
+  String get hdVarPerspective;
+
+  /// No description provided for @hdDirectionLeft.
+  ///
+  /// In en, this message translates to:
+  /// **'Left'**
+  String get hdDirectionLeft;
+
+  /// No description provided for @hdDirectionRight.
+  ///
+  /// In en, this message translates to:
+  /// **'Right'**
+  String get hdDirectionRight;
+
+  /// No description provided for @hdCenterDefinedBadge.
+  ///
+  /// In en, this message translates to:
+  /// **'DEFINED'**
+  String get hdCenterDefinedBadge;
+
+  /// No description provided for @hdCenterOpenBadge.
+  ///
+  /// In en, this message translates to:
+  /// **'OPEN'**
+  String get hdCenterOpenBadge;
+
+  /// No description provided for @hdGateN.
+  ///
+  /// In en, this message translates to:
+  /// **'Gate {n}'**
+  String hdGateN(int n);
+
+  /// No description provided for @hdIncarnationCross.
+  ///
+  /// In en, this message translates to:
+  /// **'INCARNATION CROSS'**
+  String get hdIncarnationCross;
+
+  /// No description provided for @hdQuarterOf.
+  ///
+  /// In en, this message translates to:
+  /// **'Quarter of {quarter}'**
+  String hdQuarterOf(String quarter);
+
+  /// No description provided for @hdCrossOf.
+  ///
+  /// In en, this message translates to:
+  /// **'Cross of {gates}'**
+  String hdCrossOf(String gates);
+
+  /// No description provided for @hdCrossPersonalitySun.
+  ///
+  /// In en, this message translates to:
+  /// **'P-Sun'**
+  String get hdCrossPersonalitySun;
+
+  /// No description provided for @hdCrossPersonalityEarth.
+  ///
+  /// In en, this message translates to:
+  /// **'P-Earth'**
+  String get hdCrossPersonalityEarth;
+
+  /// No description provided for @hdCrossDesignSun.
+  ///
+  /// In en, this message translates to:
+  /// **'D-Sun'**
+  String get hdCrossDesignSun;
+
+  /// No description provided for @hdCrossDesignEarth.
+  ///
+  /// In en, this message translates to:
+  /// **'D-Earth'**
+  String get hdCrossDesignEarth;
+
+  /// No description provided for @hdPersonalityHeader.
+  ///
+  /// In en, this message translates to:
+  /// **'PERSONALITY'**
+  String get hdPersonalityHeader;
+
+  /// No description provided for @hdDesignHeader.
+  ///
+  /// In en, this message translates to:
+  /// **'DESIGN'**
+  String get hdDesignHeader;
+
+  /// No description provided for @hdTypeManifestor.
+  ///
+  /// In en, this message translates to:
+  /// **'Manifestor'**
+  String get hdTypeManifestor;
+
+  /// No description provided for @hdTypeGenerator.
+  ///
+  /// In en, this message translates to:
+  /// **'Generator'**
+  String get hdTypeGenerator;
+
+  /// No description provided for @hdTypeManifestingGenerator.
+  ///
+  /// In en, this message translates to:
+  /// **'Manifesting Generator'**
+  String get hdTypeManifestingGenerator;
+
+  /// No description provided for @hdTypeProjector.
+  ///
+  /// In en, this message translates to:
+  /// **'Projector'**
+  String get hdTypeProjector;
+
+  /// No description provided for @hdTypeReflector.
+  ///
+  /// In en, this message translates to:
+  /// **'Reflector'**
+  String get hdTypeReflector;
+
+  /// No description provided for @hdStrategyInform.
+  ///
+  /// In en, this message translates to:
+  /// **'Inform before acting'**
+  String get hdStrategyInform;
+
+  /// No description provided for @hdStrategyRespond.
+  ///
+  /// In en, this message translates to:
+  /// **'Wait to respond'**
+  String get hdStrategyRespond;
+
+  /// No description provided for @hdStrategyRespondInform.
+  ///
+  /// In en, this message translates to:
+  /// **'Wait to respond, then inform'**
+  String get hdStrategyRespondInform;
+
+  /// No description provided for @hdStrategyInvitation.
+  ///
+  /// In en, this message translates to:
+  /// **'Wait for the invitation'**
+  String get hdStrategyInvitation;
+
+  /// No description provided for @hdStrategyLunarCycle.
+  ///
+  /// In en, this message translates to:
+  /// **'Wait a lunar cycle (28 days)'**
+  String get hdStrategyLunarCycle;
+
+  /// No description provided for @hdAuthorityEmotional.
+  ///
+  /// In en, this message translates to:
+  /// **'Emotional'**
+  String get hdAuthorityEmotional;
+
+  /// No description provided for @hdAuthoritySacral.
+  ///
+  /// In en, this message translates to:
+  /// **'Sacral'**
+  String get hdAuthoritySacral;
+
+  /// No description provided for @hdAuthoritySplenic.
+  ///
+  /// In en, this message translates to:
+  /// **'Splenic'**
+  String get hdAuthoritySplenic;
+
+  /// No description provided for @hdAuthorityEgo.
+  ///
+  /// In en, this message translates to:
+  /// **'Ego'**
+  String get hdAuthorityEgo;
+
+  /// No description provided for @hdAuthoritySelfProjected.
+  ///
+  /// In en, this message translates to:
+  /// **'Self-Projected'**
+  String get hdAuthoritySelfProjected;
+
+  /// No description provided for @hdAuthorityMental.
+  ///
+  /// In en, this message translates to:
+  /// **'Mental'**
+  String get hdAuthorityMental;
+
+  /// No description provided for @hdAuthorityLunar.
+  ///
+  /// In en, this message translates to:
+  /// **'Lunar'**
+  String get hdAuthorityLunar;
+
+  /// No description provided for @hdDefinitionNone.
+  ///
+  /// In en, this message translates to:
+  /// **'None'**
+  String get hdDefinitionNone;
+
+  /// No description provided for @hdDefinitionSingle.
+  ///
+  /// In en, this message translates to:
+  /// **'Single'**
+  String get hdDefinitionSingle;
+
+  /// No description provided for @hdDefinitionSplit.
+  ///
+  /// In en, this message translates to:
+  /// **'Split'**
+  String get hdDefinitionSplit;
+
+  /// No description provided for @hdDefinitionTripleSplit.
+  ///
+  /// In en, this message translates to:
+  /// **'Triple Split'**
+  String get hdDefinitionTripleSplit;
+
+  /// No description provided for @hdDefinitionQuadrupleSplit.
+  ///
+  /// In en, this message translates to:
+  /// **'Quadruple Split'**
+  String get hdDefinitionQuadrupleSplit;
+
+  /// No description provided for @hdNotSelfAnger.
+  ///
+  /// In en, this message translates to:
+  /// **'Anger'**
+  String get hdNotSelfAnger;
+
+  /// No description provided for @hdNotSelfFrustration.
+  ///
+  /// In en, this message translates to:
+  /// **'Frustration'**
+  String get hdNotSelfFrustration;
+
+  /// No description provided for @hdNotSelfFrustrationAnger.
+  ///
+  /// In en, this message translates to:
+  /// **'Frustration & Anger'**
+  String get hdNotSelfFrustrationAnger;
+
+  /// No description provided for @hdNotSelfBitterness.
+  ///
+  /// In en, this message translates to:
+  /// **'Bitterness'**
+  String get hdNotSelfBitterness;
+
+  /// No description provided for @hdNotSelfDisappointment.
+  ///
+  /// In en, this message translates to:
+  /// **'Disappointment'**
+  String get hdNotSelfDisappointment;
+
+  /// No description provided for @hdCenterHead.
+  ///
+  /// In en, this message translates to:
+  /// **'Head'**
+  String get hdCenterHead;
+
+  /// No description provided for @hdCenterAjna.
+  ///
+  /// In en, this message translates to:
+  /// **'Ajna'**
+  String get hdCenterAjna;
+
+  /// No description provided for @hdCenterThroat.
+  ///
+  /// In en, this message translates to:
+  /// **'Throat'**
+  String get hdCenterThroat;
+
+  /// No description provided for @hdCenterG.
+  ///
+  /// In en, this message translates to:
+  /// **'G'**
+  String get hdCenterG;
+
+  /// No description provided for @hdCenterHeart.
+  ///
+  /// In en, this message translates to:
+  /// **'Heart'**
+  String get hdCenterHeart;
+
+  /// No description provided for @hdCenterSacral.
+  ///
+  /// In en, this message translates to:
+  /// **'Sacral'**
+  String get hdCenterSacral;
+
+  /// No description provided for @hdCenterSolarPlexus.
+  ///
+  /// In en, this message translates to:
+  /// **'Solar Plexus'**
+  String get hdCenterSolarPlexus;
+
+  /// No description provided for @hdCenterSpleen.
+  ///
+  /// In en, this message translates to:
+  /// **'Spleen'**
+  String get hdCenterSpleen;
+
+  /// No description provided for @hdCenterRoot.
+  ///
+  /// In en, this message translates to:
+  /// **'Root'**
+  String get hdCenterRoot;
+
+  /// No description provided for @hdCenterThemeHead.
+  ///
+  /// In en, this message translates to:
+  /// **'Inspiration · pressure to know'**
+  String get hdCenterThemeHead;
+
+  /// No description provided for @hdCenterThemeAjna.
+  ///
+  /// In en, this message translates to:
+  /// **'Conceptualization · certainty vs doubt'**
+  String get hdCenterThemeAjna;
+
+  /// No description provided for @hdCenterThemeThroat.
+  ///
+  /// In en, this message translates to:
+  /// **'Manifestation · expression'**
+  String get hdCenterThemeThroat;
+
+  /// No description provided for @hdCenterThemeG.
+  ///
+  /// In en, this message translates to:
+  /// **'Identity · love · direction'**
+  String get hdCenterThemeG;
+
+  /// No description provided for @hdCenterThemeHeart.
+  ///
+  /// In en, this message translates to:
+  /// **'Willpower · ego · resources'**
+  String get hdCenterThemeHeart;
+
+  /// No description provided for @hdCenterThemeSacral.
+  ///
+  /// In en, this message translates to:
+  /// **'Life force · sustainable work · sexuality'**
+  String get hdCenterThemeSacral;
+
+  /// No description provided for @hdCenterThemeSolarPlexus.
+  ///
+  /// In en, this message translates to:
+  /// **'Emotional wave · feelings · clarity'**
+  String get hdCenterThemeSolarPlexus;
+
+  /// No description provided for @hdCenterThemeSpleen.
+  ///
+  /// In en, this message translates to:
+  /// **'Intuition · health · survival'**
+  String get hdCenterThemeSpleen;
+
+  /// No description provided for @hdCenterThemeRoot.
+  ///
+  /// In en, this message translates to:
+  /// **'Pressure · adrenaline · drive'**
+  String get hdCenterThemeRoot;
+
+  /// No description provided for @hdQuarterInitiation.
+  ///
+  /// In en, this message translates to:
+  /// **'Initiation'**
+  String get hdQuarterInitiation;
+
+  /// No description provided for @hdQuarterCivilization.
+  ///
+  /// In en, this message translates to:
+  /// **'Civilization'**
+  String get hdQuarterCivilization;
+
+  /// No description provided for @hdQuarterDuality.
+  ///
+  /// In en, this message translates to:
+  /// **'Duality'**
+  String get hdQuarterDuality;
+
+  /// No description provided for @hdQuarterMutation.
+  ///
+  /// In en, this message translates to:
+  /// **'Mutation'**
+  String get hdQuarterMutation;
+
+  /// No description provided for @hdBodySun.
+  ///
+  /// In en, this message translates to:
+  /// **'Sun'**
+  String get hdBodySun;
+
+  /// No description provided for @hdBodyEarth.
+  ///
+  /// In en, this message translates to:
+  /// **'Earth'**
+  String get hdBodyEarth;
+
+  /// No description provided for @hdBodyNorthNode.
+  ///
+  /// In en, this message translates to:
+  /// **'North Node'**
+  String get hdBodyNorthNode;
+
+  /// No description provided for @hdBodySouthNode.
+  ///
+  /// In en, this message translates to:
+  /// **'South Node'**
+  String get hdBodySouthNode;
+
+  /// No description provided for @hdBodyMoon.
+  ///
+  /// In en, this message translates to:
+  /// **'Moon'**
+  String get hdBodyMoon;
+
+  /// No description provided for @hdBodyMercury.
+  ///
+  /// In en, this message translates to:
+  /// **'Mercury'**
+  String get hdBodyMercury;
+
+  /// No description provided for @hdBodyVenus.
+  ///
+  /// In en, this message translates to:
+  /// **'Venus'**
+  String get hdBodyVenus;
+
+  /// No description provided for @hdBodyMars.
+  ///
+  /// In en, this message translates to:
+  /// **'Mars'**
+  String get hdBodyMars;
+
+  /// No description provided for @hdBodyJupiter.
+  ///
+  /// In en, this message translates to:
+  /// **'Jupiter'**
+  String get hdBodyJupiter;
+
+  /// No description provided for @hdBodySaturn.
+  ///
+  /// In en, this message translates to:
+  /// **'Saturn'**
+  String get hdBodySaturn;
+
+  /// No description provided for @hdBodyUranus.
+  ///
+  /// In en, this message translates to:
+  /// **'Uranus'**
+  String get hdBodyUranus;
+
+  /// No description provided for @hdBodyNeptune.
+  ///
+  /// In en, this message translates to:
+  /// **'Neptune'**
+  String get hdBodyNeptune;
+
+  /// No description provided for @hdBodyPluto.
+  ///
+  /// In en, this message translates to:
+  /// **'Pluto'**
+  String get hdBodyPluto;
+
+  /// No description provided for @hdChannelInspiration.
+  ///
+  /// In en, this message translates to:
+  /// **'Inspiration'**
+  String get hdChannelInspiration;
+
+  /// No description provided for @hdChannelTheBeat.
+  ///
+  /// In en, this message translates to:
+  /// **'The Beat'**
+  String get hdChannelTheBeat;
+
+  /// No description provided for @hdChannelMutation.
+  ///
+  /// In en, this message translates to:
+  /// **'Mutation'**
+  String get hdChannelMutation;
+
+  /// No description provided for @hdChannelLogic.
+  ///
+  /// In en, this message translates to:
+  /// **'Logic'**
+  String get hdChannelLogic;
+
+  /// No description provided for @hdChannelRhythm.
+  ///
+  /// In en, this message translates to:
+  /// **'Rhythm'**
+  String get hdChannelRhythm;
+
+  /// No description provided for @hdChannelMating.
+  ///
+  /// In en, this message translates to:
+  /// **'Mating'**
+  String get hdChannelMating;
+
+  /// No description provided for @hdChannelAlpha.
+  ///
+  /// In en, this message translates to:
+  /// **'Alpha (Leadership)'**
+  String get hdChannelAlpha;
+
+  /// No description provided for @hdChannelConcentration.
+  ///
+  /// In en, this message translates to:
+  /// **'Concentration'**
+  String get hdChannelConcentration;
+
+  /// No description provided for @hdChannelAwakening.
+  ///
+  /// In en, this message translates to:
+  /// **'Awakening'**
+  String get hdChannelAwakening;
+
+  /// No description provided for @hdChannelExploration.
+  ///
+  /// In en, this message translates to:
+  /// **'Exploration'**
+  String get hdChannelExploration;
+
+  /// No description provided for @hdChannelPerfectedForm.
+  ///
+  /// In en, this message translates to:
+  /// **'Perfected Form'**
+  String get hdChannelPerfectedForm;
+
+  /// No description provided for @hdChannelCuriosity.
+  ///
+  /// In en, this message translates to:
+  /// **'Curiosity'**
+  String get hdChannelCuriosity;
+
+  /// No description provided for @hdChannelOpenness.
+  ///
+  /// In en, this message translates to:
+  /// **'Openness'**
+  String get hdChannelOpenness;
+
+  /// No description provided for @hdChannelTheProdigal.
+  ///
+  /// In en, this message translates to:
+  /// **'The Prodigal'**
+  String get hdChannelTheProdigal;
+
+  /// No description provided for @hdChannelTheWavelength.
+  ///
+  /// In en, this message translates to:
+  /// **'The Wavelength'**
+  String get hdChannelTheWavelength;
+
+  /// No description provided for @hdChannelAcceptance.
+  ///
+  /// In en, this message translates to:
+  /// **'Acceptance'**
+  String get hdChannelAcceptance;
+
+  /// No description provided for @hdChannelJudgement.
+  ///
+  /// In en, this message translates to:
+  /// **'Judgement'**
+  String get hdChannelJudgement;
+
+  /// No description provided for @hdChannelSynthesis.
+  ///
+  /// In en, this message translates to:
+  /// **'Synthesis'**
+  String get hdChannelSynthesis;
+
+  /// No description provided for @hdChannelCharisma.
+  ///
+  /// In en, this message translates to:
+  /// **'Charisma'**
+  String get hdChannelCharisma;
+
+  /// No description provided for @hdChannelTheBrainWave.
+  ///
+  /// In en, this message translates to:
+  /// **'The Brain Wave'**
+  String get hdChannelTheBrainWave;
+
+  /// No description provided for @hdChannelMoneyLine.
+  ///
+  /// In en, this message translates to:
+  /// **'Money Line'**
+  String get hdChannelMoneyLine;
+
+  /// No description provided for @hdChannelStructuring.
+  ///
+  /// In en, this message translates to:
+  /// **'Structuring'**
+  String get hdChannelStructuring;
+
+  /// No description provided for @hdChannelAwareness.
+  ///
+  /// In en, this message translates to:
+  /// **'Awareness'**
+  String get hdChannelAwareness;
+
+  /// No description provided for @hdChannelInitiation.
+  ///
+  /// In en, this message translates to:
+  /// **'Initiation'**
+  String get hdChannelInitiation;
+
+  /// No description provided for @hdChannelSurrender.
+  ///
+  /// In en, this message translates to:
+  /// **'Surrender'**
+  String get hdChannelSurrender;
+
+  /// No description provided for @hdChannelPreservation.
+  ///
+  /// In en, this message translates to:
+  /// **'Preservation'**
+  String get hdChannelPreservation;
+
+  /// No description provided for @hdChannelStruggle.
+  ///
+  /// In en, this message translates to:
+  /// **'Struggle'**
+  String get hdChannelStruggle;
+
+  /// No description provided for @hdChannelDiscovery.
+  ///
+  /// In en, this message translates to:
+  /// **'Discovery'**
+  String get hdChannelDiscovery;
+
+  /// No description provided for @hdChannelRecognition.
+  ///
+  /// In en, this message translates to:
+  /// **'Recognition'**
+  String get hdChannelRecognition;
+
+  /// No description provided for @hdChannelTransformation.
+  ///
+  /// In en, this message translates to:
+  /// **'Transformation'**
+  String get hdChannelTransformation;
+
+  /// No description provided for @hdChannelPower.
+  ///
+  /// In en, this message translates to:
+  /// **'Power'**
+  String get hdChannelPower;
+
+  /// No description provided for @hdChannelTransitoriness.
+  ///
+  /// In en, this message translates to:
+  /// **'Transitoriness'**
+  String get hdChannelTransitoriness;
+
+  /// No description provided for @hdChannelCommunity.
+  ///
+  /// In en, this message translates to:
+  /// **'Community'**
+  String get hdChannelCommunity;
+
+  /// No description provided for @hdChannelEmoting.
+  ///
+  /// In en, this message translates to:
+  /// **'Emoting'**
+  String get hdChannelEmoting;
+
+  /// No description provided for @hdChannelMaturation.
+  ///
+  /// In en, this message translates to:
+  /// **'Maturation'**
+  String get hdChannelMaturation;
+
+  /// No description provided for @hdChannelAbstraction.
+  ///
+  /// In en, this message translates to:
+  /// **'Abstraction'**
+  String get hdChannelAbstraction;
+
+  /// No description provided for @homeChartPsychomatrix.
+  ///
+  /// In en, this message translates to:
+  /// **'Pythagoras Square'**
+  String get homeChartPsychomatrix;
+
+  /// No description provided for @homeChartPsychomatrixSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Your psychomatrix by birth date'**
+  String get homeChartPsychomatrixSubtitle;
+
+  /// No description provided for @homeChartDestinyMatrix.
+  ///
+  /// In en, this message translates to:
+  /// **'Matrix of Destiny'**
+  String get homeChartDestinyMatrix;
+
+  /// No description provided for @homeChartDestinyMatrixSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Your 22-arcana octagram'**
+  String get homeChartDestinyMatrixSubtitle;
+
+  /// No description provided for @homePremiumPlanTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Premium Plan'**
+  String get homePremiumPlanTitle;
+
+  /// No description provided for @homePremiumPlanBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Get unlimited AI insights, priority\nbooking, and exclusive content.'**
+  String get homePremiumPlanBody;
+
+  /// No description provided for @homePremiumPlanCta.
+  ///
+  /// In en, this message translates to:
+  /// **'Upgrade Plan'**
+  String get homePremiumPlanCta;
+
+  /// No description provided for @homePopularAstrologers.
+  ///
+  /// In en, this message translates to:
+  /// **'Popular Astrologers'**
+  String get homePopularAstrologers;
+
+  /// No description provided for @homeTodaysEnergyLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'TODAY\'S ENERGY'**
+  String get homeTodaysEnergyLabel;
+
+  /// No description provided for @homeDailyEnergyHeadline.
+  ///
+  /// In en, this message translates to:
+  /// **'A day for inner reflection and creative expression'**
+  String get homeDailyEnergyHeadline;
+
+  /// No description provided for @homeDailyEnergyBody.
+  ///
+  /// In en, this message translates to:
+  /// **'The Moon in Pisces heightens your intuition. Trust your instincts today, especially in conversations that matter.'**
+  String get homeDailyEnergyBody;
+
+  /// No description provided for @homeModerateEnergy.
+  ///
+  /// In en, this message translates to:
+  /// **'Moderate Energy'**
+  String get homeModerateEnergy;
+
+  /// No description provided for @homeQuickAiChat.
+  ///
+  /// In en, this message translates to:
+  /// **'AI Chat'**
+  String get homeQuickAiChat;
+
+  /// No description provided for @homeQuickFullChart.
+  ///
+  /// In en, this message translates to:
+  /// **'Full Chart'**
+  String get homeQuickFullChart;
+
+  /// No description provided for @homeKeepItUp.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep it up!'**
+  String get homeKeepItUp;
+
+  /// No description provided for @homeWeekdayInitialMon.
+  ///
+  /// In en, this message translates to:
+  /// **'M'**
+  String get homeWeekdayInitialMon;
+
+  /// No description provided for @homeWeekdayInitialTue.
+  ///
+  /// In en, this message translates to:
+  /// **'T'**
+  String get homeWeekdayInitialTue;
+
+  /// No description provided for @homeWeekdayInitialWed.
+  ///
+  /// In en, this message translates to:
+  /// **'W'**
+  String get homeWeekdayInitialWed;
+
+  /// No description provided for @homeWeekdayInitialThu.
+  ///
+  /// In en, this message translates to:
+  /// **'T'**
+  String get homeWeekdayInitialThu;
+
+  /// No description provided for @homeWeekdayInitialFri.
+  ///
+  /// In en, this message translates to:
+  /// **'F'**
+  String get homeWeekdayInitialFri;
+
+  /// No description provided for @homeWeekdayInitialSat.
+  ///
+  /// In en, this message translates to:
+  /// **'S'**
+  String get homeWeekdayInitialSat;
+
+  /// No description provided for @homeWeekdayInitialSun.
+  ///
+  /// In en, this message translates to:
+  /// **'S'**
+  String get homeWeekdayInitialSun;
+
+  /// No description provided for @homeSampleAffirmation.
+  ///
+  /// In en, this message translates to:
+  /// **'I trust the timing of my life. What is meant for me will find me.'**
+  String get homeSampleAffirmation;
+
+  /// No description provided for @homeDailyAffirmationLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'DAILY AFFIRMATION'**
+  String get homeDailyAffirmationLabel;
+
+  /// No description provided for @skyMoonNew.
+  ///
+  /// In en, this message translates to:
+  /// **'New Moon'**
+  String get skyMoonNew;
+
+  /// No description provided for @skyMoonWaxingCrescent.
+  ///
+  /// In en, this message translates to:
+  /// **'Waxing Crescent'**
+  String get skyMoonWaxingCrescent;
+
+  /// No description provided for @skyMoonFirstQuarter.
+  ///
+  /// In en, this message translates to:
+  /// **'First Quarter'**
+  String get skyMoonFirstQuarter;
+
+  /// No description provided for @skyMoonWaxingGibbous.
+  ///
+  /// In en, this message translates to:
+  /// **'Waxing Gibbous'**
+  String get skyMoonWaxingGibbous;
+
+  /// No description provided for @skyMoonFull.
+  ///
+  /// In en, this message translates to:
+  /// **'Full Moon'**
+  String get skyMoonFull;
+
+  /// No description provided for @skyMoonWaningGibbous.
+  ///
+  /// In en, this message translates to:
+  /// **'Waning Gibbous'**
+  String get skyMoonWaningGibbous;
+
+  /// No description provided for @skyMoonLastQuarter.
+  ///
+  /// In en, this message translates to:
+  /// **'Last Quarter'**
+  String get skyMoonLastQuarter;
+
+  /// No description provided for @skyMoonWaningCrescent.
+  ///
+  /// In en, this message translates to:
+  /// **'Waning Crescent'**
+  String get skyMoonWaningCrescent;
+
+  /// No description provided for @dailyEnergyRingLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'energy'**
+  String get dailyEnergyRingLabel;
+
+  /// No description provided for @profileBirthDataLoadError.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t load your birth data: {error}'**
+  String profileBirthDataLoadError(String error);
+
+  /// No description provided for @ritualsDailyRitualsFeature.
+  ///
+  /// In en, this message translates to:
+  /// **'Daily Rituals'**
+  String get ritualsDailyRitualsFeature;
+
+  /// No description provided for @dailyShareText.
+  ///
+  /// In en, this message translates to:
+  /// **'\"{affirmation}\"\n\nMy lucky color today: {color}\n\n~ Lively'**
+  String dailyShareText(String affirmation, String color);
 }
 
 class _AppLocalizationsDelegate

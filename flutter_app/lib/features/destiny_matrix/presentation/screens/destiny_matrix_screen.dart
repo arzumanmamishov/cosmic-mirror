@@ -3,11 +3,13 @@ import 'dart:math' as math;
 import 'package:cosmic_mirror/config/theme/app_palette.dart';
 import 'package:cosmic_mirror/features/destiny_matrix/domain/entities/destiny_matrix.dart';
 import 'package:cosmic_mirror/features/destiny_matrix/presentation/providers/destiny_matrix_providers.dart';
+import 'package:cosmic_mirror/l10n/app_localizations.dart';
 import 'package:cosmic_mirror/shared/widgets/error_view.dart';
 import 'package:cosmic_mirror/shared/widgets/lively/lively_backdrop.dart';
 import 'package:cosmic_mirror/shared/widgets/loading_shimmer.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:intl/intl.dart';
 
 // ---------------------------------------------------------------------------
 // Palette constants for the octagram (independent of the gold app theme so the
@@ -48,7 +50,7 @@ class DestinyMatrixScreen extends ConsumerWidget {
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: const BackButton(),
-        title: const Text('Matrix of Destiny'),
+        title: Text(AppLocalizations.of(context).destinyMatrixTitle),
       ),
       body: LivelyBackdrop(
         seed: 53,
@@ -72,20 +74,21 @@ class _Body extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context);
     final children = <Widget>[
       _Hero(reading: reading),
       const SizedBox(height: 20),
-      const _SectionLabel('Your Octagram'),
+      _SectionLabel(l.destinyYourOctagram),
       const SizedBox(height: 12),
       _OctagramCard(reading: reading),
       const SizedBox(height: 8),
       const _OctagramHint(),
       const SizedBox(height: 24),
-      const _SectionLabel('Purpose'),
+      _SectionLabel(l.destinyPurpose),
       const SizedBox(height: 12),
       _PurposeCard(reading: reading),
       const SizedBox(height: 24),
-      const _SectionLabel('The Lines'),
+      _SectionLabel(l.destinyTheLines),
       const SizedBox(height: 12),
       ...reading.lines.map((l) => _LineCard(line: l, reading: reading)),
       const SizedBox(height: 40),
@@ -118,7 +121,13 @@ class _Hero extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final p = context.palette;
+    final l = AppLocalizations.of(context);
     final core = reading.pointFor('center');
+    final parsedBirth = DateTime.tryParse(reading.birthDate);
+    final birthLabel = parsedBirth == null
+        ? reading.birthDate
+        : DateFormat.yMMMd(Localizations.localeOf(context).toString())
+            .format(parsedBirth);
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -128,9 +137,9 @@ class _Hero extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            'YOUR CORE ARCANA',
-            style: TextStyle(
+          Text(
+            l.destinyYourCoreArcana,
+            style: const TextStyle(
               color: Colors.white70,
               fontSize: 11,
               letterSpacing: 1.6,
@@ -140,7 +149,7 @@ class _Hero extends StatelessWidget {
           if (reading.birthDate.isNotEmpty) ...[
             const SizedBox(height: 4),
             Text(
-              'Birth date ${reading.birthDate}',
+              l.destinyBirthDate(birthLabel),
               style: TextStyle(
                 color: Colors.white.withValues(alpha: 0.8),
                 fontSize: 12,
@@ -183,7 +192,7 @@ class _Hero extends StatelessWidget {
                     ),
                     const SizedBox(height: 2),
                     Text(
-                      core?.title ?? 'Comfort / Core',
+                      core?.title ?? l.destinyComfortCore,
                       style: TextStyle(
                         color: Colors.white.withValues(alpha: 0.85),
                         fontSize: 13,
@@ -290,14 +299,14 @@ class _OctagramBoard extends StatelessWidget {
 
       // Generation-line labels.
       _DiagonalLabel(
-        text: 'male generation line',
+        text: AppLocalizations.of(context).destinyMaleGenerationLine,
         center: center,
         radius: outerR * 0.62,
         angleDeg: 225,
         color: _male,
       ),
       _DiagonalLabel(
-        text: 'female generation line',
+        text: AppLocalizations.of(context).destinyFemaleGenerationLine,
         center: center,
         radius: outerR * 0.62,
         angleDeg: 315,
@@ -850,7 +859,7 @@ class _OctagramHint extends StatelessWidget {
   Widget build(BuildContext context) {
     final p = context.palette;
     return Text(
-      'Tap any node to read its arcana.',
+      AppLocalizations.of(context).destinyTapNodeHint,
       textAlign: TextAlign.center,
       style: TextStyle(color: p.textTertiary, fontSize: 12),
     );
@@ -901,7 +910,10 @@ void _showPointSheet(BuildContext context, DestinyPoint point) {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          hasName ? point.arcanaName : 'Arcana ${point.arcana}',
+                          hasName
+                              ? point.arcanaName
+                              : AppLocalizations.of(context)
+                                  .destinyArcanaNumber(point.arcana),
                           style: TextStyle(
                             color: p.textPrimary,
                             fontSize: 18,
@@ -954,10 +966,11 @@ class _PurposeCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final p = context.palette;
+    final l = AppLocalizations.of(context);
     final rows = <(String, String)>[
-      ('Sky', 'heaven'),
-      ('Earth', 'earth'),
-      ('Personal', 'personal'),
+      (l.destinySkyPurpose, 'heaven'),
+      (l.destinyEarthPurpose, 'earth'),
+      (l.destinyPersonalPurpose, 'personal'),
     ];
     return Container(
       padding: const EdgeInsets.all(16),
@@ -1018,7 +1031,7 @@ class _PurposeCard extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    '$label Purpose',
+                    label,
                     style: TextStyle(
                       color: p.textPrimary,
                       fontSize: 14,

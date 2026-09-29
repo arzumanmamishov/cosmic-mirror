@@ -23,6 +23,7 @@ class CommunityProfileScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final p = context.palette;
+    final l = AppLocalizations.of(context);
     final profileAsync =
         ref.watch(userCommunityProfileProvider(userIdOrMe));
     return Scaffold(
@@ -32,7 +33,7 @@ class CommunityProfileScreen extends ConsumerWidget {
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: const BackButton(),
-        title: Text(AppLocalizations.of(context).communityProfile),
+        title: Text(l.communityProfile),
       ),
       body: Stack(
         children: [
@@ -60,13 +61,13 @@ class CommunityProfileScreen extends ConsumerWidget {
                   _ProfileHero(name: profile.name, palette: p),
                   const SizedBox(height: 24),
                   _SectionHeader(
-                    label: 'JOINED SPACES (${profile.joinedSpaces.length})',
+                    label: l.communityProfileJoinedSpaces(profile.joinedSpaces.length),
                     palette: p,
                   ),
                   const SizedBox(height: 8),
                   if (profile.joinedSpaces.isEmpty)
                     _EmptyHint(
-                      message: 'Not in any spaces yet.',
+                      message: l.communityProfileNoSpaces,
                       palette: p,
                     )
                   else ...[
@@ -77,12 +78,12 @@ class CommunityProfileScreen extends ConsumerWidget {
                   ],
                   const SizedBox(height: 24),
                   _SectionHeader(
-                    label: 'RECENT POSTS (${profile.recentPosts.length})',
+                    label: l.communityProfileRecentPosts(profile.recentPosts.length),
                     palette: p,
                   ),
                   const SizedBox(height: 8),
                   if (profile.recentPosts.isEmpty)
-                    _EmptyHint(message: 'No posts yet.', palette: p)
+                    _EmptyHint(message: l.communityProfileNoPosts, palette: p)
                   else ...[
                     for (final post in profile.recentPosts) ...[
                       PostCard(post: post),
@@ -128,7 +129,7 @@ class _ProfileHero extends StatelessWidget {
         ),
         const SizedBox(height: 14),
         Text(
-          name.isEmpty ? 'Unknown user' : name,
+          name.isEmpty ? AppLocalizations.of(context).communityUnknownUser : name,
           style: TextStyle(
             color: palette.textPrimary,
             fontSize: 22,

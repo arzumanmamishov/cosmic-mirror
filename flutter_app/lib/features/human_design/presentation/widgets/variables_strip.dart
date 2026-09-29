@@ -1,5 +1,7 @@
 import 'package:cosmic_mirror/config/theme/app_palette.dart';
 import 'package:cosmic_mirror/features/human_design/domain/entities/human_design.dart';
+import 'package:cosmic_mirror/features/human_design/presentation/hd_labels.dart';
+import 'package:cosmic_mirror/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 
 /// Four-arrow PRA strip — Digestion / Environment / Awareness / Perspective.
@@ -12,6 +14,7 @@ class VariablesStrip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final p = context.palette;
+    final l = AppLocalizations.of(context);
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -23,7 +26,7 @@ class VariablesStrip extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'VARIABLES (PRA)',
+            l.hdVariablesHeader,
             style: TextStyle(
               color: p.textSecondary,
               fontSize: 11,
@@ -34,18 +37,26 @@ class VariablesStrip extends StatelessWidget {
           const SizedBox(height: 12),
           Row(
             children: [
-              _Arrow(label: 'Digestion', dir: variables.digestion, palette: p),
+              _Arrow(
+                label: l.hdVarDigestion,
+                dir: variables.digestion,
+                palette: p,
+              ),
               const SizedBox(width: 8),
               _Arrow(
-                label: 'Environment',
+                label: l.hdVarEnvironment,
                 dir: variables.environment,
                 palette: p,
               ),
               const SizedBox(width: 8),
-              _Arrow(label: 'Awareness', dir: variables.awareness, palette: p),
+              _Arrow(
+                label: l.hdVarAwareness,
+                dir: variables.awareness,
+                palette: p,
+              ),
               const SizedBox(width: 8),
               _Arrow(
-                label: 'Perspective',
+                label: l.hdVarPerspective,
                 dir: variables.perspective,
                 palette: p,
               ),
@@ -101,7 +112,7 @@ class _Arrow extends StatelessWidget {
             ),
           ),
           Text(
-            dir,
+            HDLabels(AppLocalizations.of(context)).direction(dir),
             style: TextStyle(
               color: color,
               fontSize: 11,

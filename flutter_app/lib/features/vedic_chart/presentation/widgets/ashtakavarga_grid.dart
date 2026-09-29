@@ -1,5 +1,7 @@
 import 'package:cosmic_mirror/config/theme/app_palette.dart';
+import 'package:cosmic_mirror/features/chart/presentation/astro_labels.dart';
 import 'package:cosmic_mirror/features/vedic_chart/domain/entities/yoga.dart';
+import 'package:cosmic_mirror/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 
 /// 12-cell bindu grid for Ashtakavarga. Toggle between Sarva (sum of seven
@@ -19,6 +21,8 @@ class _AshtakavargaGridState extends State<AshtakavargaGrid> {
   @override
   Widget build(BuildContext context) {
     final p = context.palette;
+    final l = AppLocalizations.of(context);
+    final signAbbrs = chartSignAbbrs(l);
     final isSarva = _selectedPlanet == null;
     final values = isSarva
         ? widget.av.sarva
@@ -28,7 +32,7 @@ class _AshtakavargaGridState extends State<AshtakavargaGrid> {
     return ListView(
       padding: const EdgeInsets.fromLTRB(20, 12, 20, 40),
       children: [
-        _selector(p),
+        _selector(p, l),
         const SizedBox(height: 16),
         GridView.builder(
           shrinkWrap: true,
@@ -53,7 +57,7 @@ class _AshtakavargaGridState extends State<AshtakavargaGrid> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Text(
-                    _signAbbr[i],
+                    signAbbrs[i],
                     style: TextStyle(
                       color: p.textSecondary,
                       fontSize: 10,
@@ -78,18 +82,27 @@ class _AshtakavargaGridState extends State<AshtakavargaGrid> {
         const SizedBox(height: 16),
         Text(
           isSarva
-              ? 'Sarva Ashtakavarga — total benefic points each sign receives '
-                  'from all seven grahas (max $maxVal per sign).'
-              : 'Bhinn Ashtakavarga of $_selectedPlanet — bindus contributed '
-                  'to each sign by $_selectedPlanet (max $maxVal per sign).',
+              ? l.vedicAshtakavargaSarvaNote(maxVal)
+              : l.vedicAshtakavargaBhinnNote(
+                  chartPlanetName(l, _selectedPlanet!),
+                  maxVal,
+                ),
           style: TextStyle(color: p.textSecondary, fontSize: 12, height: 1.45),
         ),
       ],
     );
   }
 
-  Widget _selector(AppPalette p) {
-    final planets = ['Sun', 'Moon', 'Mars', 'Mercury', 'Jupiter', 'Venus', 'Saturn'];
+  Widget _selector(AppPalette p, AppLocalizations l) {
+    final planets = [
+      'Sun',
+      'Moon',
+      'Mars',
+      'Mercury',
+      'Jupiter',
+      'Venus',
+      'Saturn',
+    ];
     return SizedBox(
       height: 36,
       child: ListView(
@@ -97,14 +110,14 @@ class _AshtakavargaGridState extends State<AshtakavargaGrid> {
         children: [
           _chip(
             p,
-            label: 'Sarva',
+            label: l.vedicAshtakavargaSarva,
             selected: _selectedPlanet == null,
             onTap: () => setState(() => _selectedPlanet = null),
           ),
           for (final pl in planets)
             _chip(
               p,
-              label: pl,
+              label: chartPlanetName(l, pl),
               selected: _selectedPlanet == pl,
               onTap: () => setState(() => _selectedPlanet = pl),
             ),
@@ -145,8 +158,3 @@ class _AshtakavargaGridState extends State<AshtakavargaGrid> {
     );
   }
 }
-
-const _signAbbr = [
-  'Ar', 'Ta', 'Ge', 'Cn', 'Le', 'Vi',
-  'Li', 'Sc', 'Sg', 'Cp', 'Aq', 'Pi',
-];

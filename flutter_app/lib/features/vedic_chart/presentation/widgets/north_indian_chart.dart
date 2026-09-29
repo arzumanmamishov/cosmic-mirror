@@ -1,6 +1,7 @@
 import 'package:cosmic_mirror/config/theme/app_palette.dart';
-import 'package:cosmic_mirror/core/utils/string_utils.dart';
+import 'package:cosmic_mirror/features/chart/presentation/astro_labels.dart';
 import 'package:cosmic_mirror/features/vedic_chart/domain/entities/vedic_chart.dart';
+import 'package:cosmic_mirror/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 
 /// North Indian-style Vedic Kundli chart.
@@ -41,6 +42,7 @@ class NorthIndianChart extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final p = context.palette;
+    final l = AppLocalizations.of(context);
     return SizedBox(
       width: size,
       height: size,
@@ -58,6 +60,8 @@ class NorthIndianChart extends StatelessWidget {
           size: Size(size, size),
           painter: _NorthIndianPainter(
             chart: chart,
+            signAbbrevs: chartSignAbbrs(l),
+            planetAbbrev: (name) => chartPlanetAbbr(l, name),
             frameColor: p.glassBorder,
             lineColor: p.textTertiary,
             primary: p.primary,
@@ -86,8 +90,7 @@ class NorthIndianChart extends StatelessWidget {
       final pi = poly[i];
       final pj = poly[j];
       if (((pi.dy > p.dy) != (pj.dy > p.dy)) &&
-          (p.dx <
-              (pj.dx - pi.dx) * (p.dy - pi.dy) / (pj.dy - pi.dy) + pi.dx)) {
+          (p.dx < (pj.dx - pi.dx) * (p.dy - pi.dy) / (pj.dy - pi.dy) + pi.dx)) {
         inside = !inside;
       }
     }
@@ -98,6 +101,8 @@ class NorthIndianChart extends StatelessWidget {
 class _NorthIndianPainter extends CustomPainter {
   _NorthIndianPainter({
     required this.chart,
+    required this.signAbbrevs,
+    required this.planetAbbrev,
     required this.frameColor,
     required this.lineColor,
     required this.primary,
@@ -108,6 +113,12 @@ class _NorthIndianPainter extends CustomPainter {
   });
 
   final VedicChart chart;
+
+  /// Localized 12 sign abbreviations in zodiac order.
+  final List<String> signAbbrevs;
+
+  /// Maps a graha identifier ("Sun") to its localized short label.
+  final String Function(String name) planetAbbrev;
   final Color frameColor;
   final Color lineColor;
   final Color primary;
@@ -160,7 +171,7 @@ class _NorthIndianPainter extends CustomPainter {
     final ascSignIdx = _signIndexOf(chart.lagna.sign);
     for (var h = 1; h <= 12; h++) {
       final signIdx = (ascSignIdx + h - 1) % 12;
-      final signAbbr = _signAbbrev[signIdx];
+      final signAbbr = signAbbrevs[signIdx];
       final pos = _labelAnchors[h]!;
       _paintText(
         canvas,
@@ -188,10 +199,9 @@ class _NorthIndianPainter extends CustomPainter {
       if (center == null) continue;
       var dy = -(planets.length - 1) * 7;
       for (final p in planets) {
-        final glyph = _planetAbbrev[p.name] ?? p.name.abbrev();
-        final color = p.combust
-            ? textSecondary
-            : (p.retrograde ? accent : textPrimary);
+        final glyph = planetAbbrev(p.name);
+        final color =
+            p.combust ? textSecondary : (p.retrograde ? accent : textPrimary);
         final label = p.retrograde ? '$glyph(R)' : glyph;
         _paintText(
           canvas,
@@ -222,12 +232,16 @@ class _NorthIndianPainter extends CustomPainter {
       textAlign: TextAlign.center,
       textDirection: TextDirection.ltr,
     )..layout();
-    tp.paint(canvas, Offset(center.dx - tp.width / 2, center.dy - tp.height / 2));
+    tp.paint(
+      canvas,
+      Offset(center.dx - tp.width / 2, center.dy - tp.height / 2),
+    );
   }
 
   @override
   bool shouldRepaint(covariant _NorthIndianPainter old) =>
       old.chart != chart ||
+      old.signAbbrevs.join() != signAbbrevs.join() ||
       old.primary != primary ||
       old.textPrimary != textPrimary;
 }
@@ -307,40 +321,7 @@ const Map<int, Offset> _labelAnchors = {
   12: Offset(0.84, 0.045),
 };
 
-const _signOrder = [
-  'Aries',
-  'Taurus',
-  'Gemini',
-  'Cancer',
-  'Leo',
-  'Virgo',
-  'Libra',
-  'Scorpio',
-  'Sagittarius',
-  'Capricorn',
-  'Aquarius',
-  'Pisces',
-];
-
-const _signAbbrev = [
-  'Ar', 'Ta', 'Ge', 'Cn',
-  'Le', 'Vi', 'Li', 'Sc',
-  'Sg', 'Cp', 'Aq', 'Pi',
-];
-
 int _signIndexOf(String name) {
-  final i = _signOrder.indexOf(name);
+  final i = chartSignOrder.indexOf(name);
   return i < 0 ? 0 : i;
 }
-
-const _planetAbbrev = {
-  'Sun': 'Su',
-  'Moon': 'Mo',
-  'Mars': 'Ma',
-  'Mercury': 'Me',
-  'Jupiter': 'Ju',
-  'Venus': 'Ve',
-  'Saturn': 'Sa',
-  'Rahu': 'Ra',
-  'Ketu': 'Ke',
-};

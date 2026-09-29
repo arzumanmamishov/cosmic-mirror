@@ -1,4 +1,5 @@
 import 'package:cosmic_mirror/config/theme/app_palette.dart';
+import 'package:cosmic_mirror/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 
 /// 1..9 grid showing which numbers are missing from the user's name
@@ -16,12 +17,13 @@ class KarmicGrid extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final p = context.palette;
+    final l = AppLocalizations.of(context);
     final missing = karmicLessons.toSet();
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'KARMIC LESSONS',
+          l.numerologyKarmicLessonsHeader,
           style: TextStyle(
             color: p.textSecondary,
             fontSize: 11,
@@ -32,8 +34,8 @@ class KarmicGrid extends StatelessWidget {
         const SizedBox(height: 6),
         Text(
           missing.isEmpty
-              ? 'Your name carries every digit — no missing lessons.'
-              : 'Numbers missing from your name show areas you came to learn.',
+              ? l.numerologyKarmicNoneMissing
+              : l.numerologyKarmicMissingBlurb,
           style: TextStyle(color: p.textSecondary, fontSize: 12, height: 1.4),
         ),
         const SizedBox(height: 12),
@@ -55,7 +57,7 @@ class KarmicGrid extends StatelessWidget {
         ),
         const SizedBox(height: 16),
         Text(
-          'HIDDEN PASSION',
+          l.numerologyHiddenPassionHeader,
           style: TextStyle(
             color: p.textSecondary,
             fontSize: 11,
@@ -66,9 +68,8 @@ class KarmicGrid extends StatelessWidget {
         const SizedBox(height: 6),
         Text(
           hiddenPassion == 0
-              ? 'No dominant digit — your name is balanced across the spectrum.'
-              : 'Your strongest gift is the energy of $hiddenPassion — '
-                  'the digit that appears most often in your name.',
+              ? l.numerologyHiddenPassionNone
+              : l.numerologyHiddenPassionBlurb(hiddenPassion),
           style: TextStyle(color: p.textPrimary, fontSize: 13, height: 1.5),
         ),
       ],

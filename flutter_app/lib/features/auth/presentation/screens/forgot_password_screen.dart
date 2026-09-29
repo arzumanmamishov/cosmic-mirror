@@ -7,6 +7,7 @@ import 'package:cosmic_mirror/config/theme/app_palette.dart';
 import 'package:cosmic_mirror/config/theme/lively_type.dart';
 import 'package:cosmic_mirror/features/auth/presentation/providers/auth_provider.dart';
 import 'package:cosmic_mirror/features/auth/presentation/screens/auth_screen.dart';
+import 'package:cosmic_mirror/l10n/app_localizations.dart';
 import 'package:cosmic_mirror/shared/widgets/lively/gold_button.dart';
 import 'package:cosmic_mirror/shared/widgets/lively/lively_backdrop.dart';
 import 'package:cosmic_mirror/shared/widgets/lively/lively_field.dart';
@@ -44,7 +45,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
   Future<void> _submit() async {
     final email = _email.text.trim();
     if (!_looksLikeEmail(email)) {
-      setState(() => _error = 'Enter a valid email address');
+      setState(() => _error = AppLocalizations.of(context).authInvalidEmail);
       return;
     }
     setState(() {
@@ -69,20 +70,22 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
   }
 
   String _prettyError(Object e) {
+    final l = AppLocalizations.of(context);
     final s = e.toString();
     if (s.contains('user_not_found') ||
         s.contains('No account with that email')) {
-      return 'No account with that email. Check the address or create one.';
+      return l.authNoAccountCheckAddress;
     }
     if (s.contains('rate_limited')) {
-      return 'Too many code requests. Please wait a minute.';
+      return l.authTooManyCodeRequests;
     }
-    return 'Something went wrong. Please try again.';
+    return l.commonSomethingWentWrong;
   }
 
   @override
   Widget build(BuildContext context) {
     final p = context.palette;
+    final l = AppLocalizations.of(context);
     return Scaffold(
       backgroundColor: p.background,
       extendBodyBehindAppBar: true,
@@ -100,27 +103,26 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'RESET PASSWORD',
+                  l.authResetPasswordKicker,
                   style: LivelyType.kicker(p.primary),
                 ),
                 const SizedBox(height: 12),
                 Text(
-                  'Forgot your password?',
+                  l.authForgotYourPassword,
                   style: LivelyType.d2(p.textPrimary),
                 ),
                 const SizedBox(height: 14),
                 SizedBox(
                   width: 300,
                   child: Text(
-                    "Enter your email and we'll send you a code to set a new "
-                    'password.',
+                    l.authForgotPasswordBody,
                     style: LivelyType.body(p.textMuted),
                   ),
                 ),
                 const SizedBox(height: 28),
                 LivelyField(
                   controller: _email,
-                  label: 'Email',
+                  label: l.authEmail,
                   hint: 'you@example.com',
                   keyboardType: TextInputType.emailAddress,
                   autofillHints: const [AutofillHints.email],
@@ -132,7 +134,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
                 ],
                 const SizedBox(height: 22),
                 GoldButton(
-                  label: 'Send reset code',
+                  label: l.authSendResetCode,
                   loading: _busy,
                   onPressed: _busy ? null : _submit,
                 ),
@@ -141,7 +143,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
                   child: TextButton(
                     onPressed: _busy ? null : () => context.pop(),
                     child: Text(
-                      'Back to sign in',
+                      l.authBackToSignIn,
                       style: LivelyType.small(p.primary),
                     ),
                   ),

@@ -1,4 +1,5 @@
 import 'package:cosmic_mirror/config/theme/app_palette.dart';
+import 'package:cosmic_mirror/core/error/error_message.dart';
 import 'package:cosmic_mirror/features/community/presentation/providers/community_providers.dart';
 import 'package:cosmic_mirror/l10n/app_localizations.dart';
 import 'package:cosmic_mirror/shared/widgets/cosmic_starfield.dart';
@@ -47,7 +48,8 @@ class _EditSpaceScreenState extends ConsumerState<EditSpaceScreen> {
         ..invalidate(spacesProvider);
       if (mounted) context.pop();
     } catch (e) {
-      setState(() => _error = e.toString());
+      if (!mounted) return;
+      setState(() => _error = FriendlyError.from(context, e).body);
     } finally {
       if (mounted) setState(() => _busy = false);
     }
@@ -85,8 +87,9 @@ class _EditSpaceScreenState extends ConsumerState<EditSpaceScreen> {
           ..pop();
       }
     } catch (e) {
+      if (!mounted) return;
       setState(() {
-        _error = e.toString();
+        _error = FriendlyError.from(context, e).body;
         _busy = false;
       });
     }

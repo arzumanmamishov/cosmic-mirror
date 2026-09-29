@@ -25,8 +25,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-const _kGold = Color(0xFFD4B16A);
-
 /// Targeted birth-data editor — pre-populates with the user's existing
 /// profile and PUTs only this slice, instead of forcing them through
 /// the full onboarding flow. Returns to the previous screen on save.
@@ -119,7 +117,7 @@ class _EditBirthDataScreenState extends ConsumerState<EditBirthDataScreen> {
     } catch (e) {
       if (mounted) {
         setState(() {
-          _error = e.toString();
+          _error = AppLocalizations.of(context).profileSaveError('$e');
           _saving = false;
         });
       }
@@ -154,12 +152,12 @@ class _EditBirthDataScreenState extends ConsumerState<EditBirthDataScreen> {
       ),
       body: profileAsync.when(
         loading: () =>
-            const Center(child: CircularProgressIndicator(color: _kGold)),
+            Center(child: CircularProgressIndicator(color: p.primary)),
         error: (e, _) => Center(
           child: Padding(
             padding: const EdgeInsets.all(24),
             child: Text(
-              "Couldn't load your birth data: $e",
+              AppLocalizations.of(context).profileBirthDataLoadError('$e'),
               style: TextStyle(color: p.error),
               textAlign: TextAlign.center,
             ),
@@ -167,7 +165,7 @@ class _EditBirthDataScreenState extends ConsumerState<EditBirthDataScreen> {
         ),
         data: (_) {
           if (!_initialized) {
-            return const Center(child: CircularProgressIndicator(color: _kGold));
+            return Center(child: CircularProgressIndicator(color: p.primary));
           }
           return ListView(
             padding: const EdgeInsets.fromLTRB(20, 8, 20, 32),
@@ -196,8 +194,7 @@ class _EditBirthDataScreenState extends ConsumerState<EditBirthDataScreen> {
                   selectedTime: _birthTime,
                   birthTimeKnown: _birthTimeKnown,
                   onTimeChanged: (t) => setState(() => _birthTime = t),
-                  onKnownChanged: (k) =>
-                      setState(() => _birthTimeKnown = k),
+                  onKnownChanged: (k) => setState(() => _birthTimeKnown = k),
                 ),
               ),
               const SizedBox(height: 24),
@@ -280,6 +277,7 @@ class _SaveButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final p = context.palette;
     return Material(
       color: Colors.transparent,
       child: InkWell(
@@ -288,7 +286,7 @@ class _SaveButton extends StatelessWidget {
         child: Ink(
           height: 54,
           decoration: BoxDecoration(
-            color: enabled ? _kGold : _kGold.withValues(alpha: 0.4),
+            color: enabled ? p.primary : p.primary.withValues(alpha: 0.4),
             borderRadius: BorderRadius.circular(16),
           ),
           child: Center(

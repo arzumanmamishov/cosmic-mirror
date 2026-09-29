@@ -1,5 +1,7 @@
 import 'package:cosmic_mirror/config/theme/app_palette.dart';
 import 'package:cosmic_mirror/features/human_design/domain/entities/human_design.dart';
+import 'package:cosmic_mirror/features/human_design/presentation/hd_labels.dart';
+import 'package:cosmic_mirror/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 
 /// Two columns of gate activations: Personality (red dot) on the left,
@@ -13,6 +15,7 @@ class GateList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final p = context.palette;
+    final l = AppLocalizations.of(context);
     final personality = gates.where((g) => g.isPersonality).toList();
     final design = gates.where((g) => !g.isPersonality).toList();
     return Row(
@@ -20,7 +23,7 @@ class GateList extends StatelessWidget {
       children: [
         Expanded(
           child: _Column(
-            label: 'PERSONALITY',
+            label: l.hdPersonalityHeader,
             dotColor: p.error,
             items: personality,
           ),
@@ -28,7 +31,7 @@ class GateList extends StatelessWidget {
         const SizedBox(width: 12),
         Expanded(
           child: _Column(
-            label: 'DESIGN',
+            label: l.hdDesignHeader,
             dotColor: p.textPrimary,
             items: design,
           ),
@@ -52,6 +55,7 @@ class _Column extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final p = context.palette;
+    final hd = HDLabels(AppLocalizations.of(context));
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -83,7 +87,7 @@ class _Column extends StatelessWidget {
                 SizedBox(
                   width: 70,
                   child: Text(
-                    g.body,
+                    hd.body(g.body),
                     style: TextStyle(
                       color: p.textTertiary,
                       fontSize: 11,

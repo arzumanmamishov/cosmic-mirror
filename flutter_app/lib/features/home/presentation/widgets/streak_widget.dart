@@ -1,5 +1,6 @@
 import 'package:cosmic_mirror/config/theme/colors.dart';
 import 'package:cosmic_mirror/config/theme/typography.dart';
+import 'package:cosmic_mirror/l10n/app_localizations.dart';
 import 'package:cosmic_mirror/shared/widgets/cosmic_card.dart';
 import 'package:flutter/material.dart';
 
@@ -11,6 +12,16 @@ class StreakWidget extends StatelessWidget {
     // In production, streak count comes from ritual/journal provider
     const streakDays = 7;
     final today = DateTime.now().weekday;
+    final l = AppLocalizations.of(context);
+    final dayLabels = [
+      l.homeWeekdayInitialMon,
+      l.homeWeekdayInitialTue,
+      l.homeWeekdayInitialWed,
+      l.homeWeekdayInitialThu,
+      l.homeWeekdayInitialFri,
+      l.homeWeekdayInitialSat,
+      l.homeWeekdayInitialSun,
+    ];
 
     return CosmicCard(
       child: Column(
@@ -21,8 +32,8 @@ class StreakWidget extends StatelessWidget {
               const Icon(Icons.local_fire_department,
                   color: CosmicColors.gold, size: 22,),
               const SizedBox(width: 8),
-              const Text(
-                '$streakDays Day Streak',
+              Text(
+                l.ritualsStreak(streakDays),
                 style: CosmicTypography.titleLarge,
               ),
               const Spacer(),
@@ -34,7 +45,7 @@ class StreakWidget extends StatelessWidget {
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Text(
-                  'Keep it up!',
+                  l.homeKeepItUp,
                   style: CosmicTypography.caption.copyWith(
                     color: CosmicColors.gold,
                   ),
@@ -47,7 +58,6 @@ class StreakWidget extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: List.generate(7, (index) {
               final dayNum = index + 1;
-              final dayLabels = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
               final isCompleted = dayNum < today;
               final isToday = dayNum == today;
 

@@ -1,5 +1,6 @@
 import 'package:cosmic_mirror/config/theme/colors.dart';
 import 'package:cosmic_mirror/config/theme/typography.dart';
+import 'package:cosmic_mirror/core/error/error_message.dart';
 import 'package:cosmic_mirror/features/paywall/presentation/providers/subscription_provider.dart';
 import 'package:cosmic_mirror/l10n/app_localizations.dart';
 import 'package:cosmic_mirror/shared/widgets/cosmic_button.dart';
@@ -133,7 +134,7 @@ class PaywallScreen extends ConsumerWidget {
                               // Real price comes from the Stripe Price ID
                               // shown in the Payment Sheet — this string
                               // is just a hint above the toggle.
-                              price: r'$6.99/mo',
+                              price: l10n.paywallPricePerMonth(r'$6.99'),
                               isSelected: !state.isYearly,
                               onTap: () {
                                 if (state.isYearly) notifier.togglePlan();
@@ -141,7 +142,7 @@ class PaywallScreen extends ConsumerWidget {
                             ),
                             _PlanTab(
                               label: l10n.paywallYearly,
-                              price: r'$39.99/yr',
+                              price: l10n.paywallPricePerYear(r'$39.99'),
                               badge: l10n.paywallSaveBadge,
                               isSelected: state.isYearly,
                               onTap: () {
@@ -173,10 +174,13 @@ class PaywallScreen extends ConsumerWidget {
                         ),
                       ],
 
-                      if (state.error != null) ...[
+                      if (state.error != null ||
+                          state.errorObject != null) ...[
                         const SizedBox(height: 12),
                         Text(
-                          state.error!,
+                          state.error ??
+                              FriendlyError.from(context, state.errorObject)
+                                  .body,
                           style: CosmicTypography.caption.copyWith(
                             color: CosmicColors.error,
                           ),

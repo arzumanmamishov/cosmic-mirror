@@ -93,7 +93,10 @@ class _JournalEntryScreenState extends ConsumerState<JournalEntryScreen> {
     final l = AppLocalizations.of(context);
     final moods = _moods(l);
     final prompts = _prompts(l);
-    final dateLabel = DateFormat('EEEE, MMMM d').format(DateTime.now());
+    final dateLabel = DateFormat(
+      'EEEE, MMMM d',
+      Localizations.localeOf(context).toString(),
+    ).format(DateTime.now());
     final canSave = _contentController.text.trim().isNotEmpty;
 
     return Scaffold(

@@ -1,5 +1,6 @@
 import 'package:cosmic_mirror/config/theme/app_palette.dart';
 import 'package:cosmic_mirror/features/community/domain/entities/notification.dart';
+import 'package:cosmic_mirror/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 
 class NotificationTile extends StatelessWidget {
@@ -15,6 +16,7 @@ class NotificationTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final p = context.palette;
+    final l = AppLocalizations.of(context);
     final n = entry.notification;
     return InkWell(
       onTap: onTap,
@@ -22,12 +24,11 @@ class NotificationTile extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          color: n.isUnread
-              ? p.primary.withValues(alpha: 0.08)
-              : p.surface,
+          color: n.isUnread ? p.primary.withValues(alpha: 0.08) : p.surface,
           borderRadius: BorderRadius.circular(14),
           border: Border.all(
-            color: n.isUnread ? p.primary.withValues(alpha: 0.4) : p.glassBorder,
+            color:
+                n.isUnread ? p.primary.withValues(alpha: 0.4) : p.glassBorder,
           ),
         ),
         child: Row(
@@ -54,7 +55,7 @@ class NotificationTile extends StatelessWidget {
                               fontWeight: FontWeight.w700,
                             ),
                           ),
-                        TextSpan(text: _actionLabel(n.type)),
+                        TextSpan(text: _actionLabel(l, n.type)),
                       ],
                     ),
                   ),
@@ -73,7 +74,7 @@ class NotificationTile extends StatelessWidget {
                   ],
                   const SizedBox(height: 4),
                   Text(
-                    _relative(n.createdAt),
+                    _relative(l, n.createdAt),
                     style: TextStyle(color: p.textTertiary, fontSize: 10),
                   ),
                 ],
@@ -150,40 +151,40 @@ class _ActionIcon extends StatelessWidget {
   }
 }
 
-String _actionLabel(String type) {
+String _actionLabel(AppLocalizations l, String type) {
   switch (type) {
     case 'post_liked':
-      return 'liked your post';
+      return l.notificationPostLiked;
     case 'comment_liked':
-      return 'liked your comment';
+      return l.notificationCommentLiked;
     case 'post_commented':
-      return 'commented on your post';
+      return l.notificationPostCommented;
     case 'comment_replied':
-      return 'replied to your comment';
+      return l.notificationCommentReplied;
     case 'space_member_joined':
-      return 'joined your space';
+      return l.notificationSpaceMemberJoined;
     case 'space_followed':
-      return 'followed your space';
+      return l.notificationSpaceFollowed;
     case 'space_join_requested':
-      return 'requested to join your space';
+      return l.notificationSpaceJoinRequested;
     case 'space_join_approved':
-      return 'accepted your request to join';
+      return l.notificationSpaceJoinApproved;
     case 'space_join_declined':
-      return 'declined your request to join';
+      return l.notificationSpaceJoinDeclined;
     case 'post_in_space':
-      return 'posted in a space you follow';
+      return l.notificationPostInSpace;
     case 'mentioned':
-      return 'mentioned you';
+      return l.notificationMentioned;
     default:
-      return type;
+      return l.notificationGeneric;
   }
 }
 
-String _relative(DateTime t) {
+String _relative(AppLocalizations l, DateTime t) {
   final diff = DateTime.now().difference(t);
-  if (diff.inMinutes < 1) return 'just now';
-  if (diff.inMinutes < 60) return '${diff.inMinutes} min ago';
-  if (diff.inHours < 24) return '${diff.inHours}h ago';
-  if (diff.inDays < 7) return '${diff.inDays}d ago';
-  return '${(diff.inDays / 7).floor()}w ago';
+  if (diff.inMinutes < 1) return l.notificationTimeJustNow;
+  if (diff.inMinutes < 60) return l.notificationTimeMinutesAgo(diff.inMinutes);
+  if (diff.inHours < 24) return l.notificationTimeHoursAgo(diff.inHours);
+  if (diff.inDays < 7) return l.notificationTimeDaysAgo(diff.inDays);
+  return l.notificationTimeWeeksAgo((diff.inDays / 7).floor());
 }

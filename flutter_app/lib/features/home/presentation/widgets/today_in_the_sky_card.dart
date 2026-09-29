@@ -1,11 +1,11 @@
 import 'dart:math' as math;
 
+import 'package:cosmic_mirror/config/theme/app_palette.dart';
 import 'package:cosmic_mirror/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:intl/intl.dart';
 
-const _kGold = Color(0xFFD4B16A);
-const _kGoldLight = Color(0xFFE9D49A);
 const _kSurface = Color(0xFF1A1F2E);
 const _kSurfaceElevated = Color(0xFF1F2436);
 const _kBorder = Color(0xFF2A2F3E);
@@ -25,10 +25,12 @@ class TodayInTheSkyCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final now = DateTime.now();
-    final phase = _moonPhase(now);
-    final sun = _sunSign(now);
     final l10n = AppLocalizations.of(context);
+    final phase = _moonPhase(now, l10n);
+    final sun = _sunSign(now, l10n);
+    final locale = Localizations.localeOf(context).toString();
     final highlights = _highlightsFor(now, l10n);
+    final p = context.palette;
 
     return Container(
       padding: const EdgeInsets.all(18),
@@ -52,7 +54,7 @@ class TodayInTheSkyCard extends StatelessWidget {
               ),
               const Spacer(),
               Text(
-                _shortDate(now),
+                _shortDate(now, locale),
                 style: GoogleFonts.poppins(
                   color: _kTextTertiary,
                   fontSize: 11,
@@ -65,7 +67,10 @@ class TodayInTheSkyCard extends StatelessWidget {
           const SizedBox(height: 16),
           Row(
             children: [
-              _MoonGlyph(illumination: phase.illumination, waxing: phase.waxing),
+              _MoonGlyph(
+                illumination: phase.illumination,
+                waxing: phase.waxing,
+              ),
               const SizedBox(width: 16),
               Expanded(
                 child: Column(
@@ -74,7 +79,7 @@ class TodayInTheSkyCard extends StatelessWidget {
                     Text(
                       phase.name,
                       style: GoogleFonts.poppins(
-                        color: _kGoldLight,
+                        color: p.primaryHi,
                         fontSize: 15,
                         fontWeight: FontWeight.w700,
                       ),
@@ -119,12 +124,11 @@ class TodayInTheSkyCard extends StatelessWidget {
     );
   }
 
-  String _shortDate(DateTime d) {
-    const months = [
-      'JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN',
-      'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC',
-    ];
-    return '${d.day} ${months[d.month - 1]}';
+  String _shortDate(DateTime d, String locale) {
+    final raw = DateFormat('d MMM', locale).format(d);
+    // Dart's toUpperCase isn't locale-aware: map Turkish dotted i first.
+    final prepared = locale.startsWith('tr') ? raw.replaceAll('i', 'İ') : raw;
+    return prepared.toUpperCase();
   }
 }
 
@@ -134,6 +138,7 @@ class _HighlightRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final p = context.palette;
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -146,7 +151,7 @@ class _HighlightRow extends StatelessWidget {
             border: Border.all(color: _kBorder),
           ),
           alignment: Alignment.center,
-          child: Icon(highlight.icon, color: _kGold, size: 14),
+          child: Icon(highlight.icon, color: p.primary, size: 14),
         ),
         const SizedBox(width: 10),
         Expanded(
@@ -190,21 +195,34 @@ class _MoonGlyph extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final p = context.palette;
     return SizedBox(
       width: 56,
       height: 56,
       child: CustomPaint(
-        painter: _MoonPainter(illumination: illumination, waxing: waxing),
+        painter: _MoonPainter(
+          illumination: illumination,
+          waxing: waxing,
+          color: p.primary,
+          highlightColor: p.primaryHi,
+        ),
       ),
     );
   }
 }
 
 class _MoonPainter extends CustomPainter {
-  _MoonPainter({required this.illumination, required this.waxing});
+  _MoonPainter({
+    required this.illumination,
+    required this.waxing,
+    required this.color,
+    required this.highlightColor,
+  });
 
   final double illumination;
   final bool waxing;
+  final Color color;
+  final Color highlightColor;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -233,9 +251,10 @@ class _MoonPainter extends CustomPainter {
       // Full lit hemisphere on the lit side.
       ..drawRect(
         litRect,
-        Paint()..shader = const RadialGradient(
-          colors: [_kGoldLight, _kGold],
-        ).createShader(Rect.fromCircle(center: center, radius: r)),
+        Paint()
+          ..shader = RadialGradient(
+            colors: [highlightColor, color],
+          ).createShader(Rect.fromCircle(center: center, radius: r)),
       );
 
     // Shadow ellipse that sweeps across the disk based on illumination.
@@ -250,14 +269,13 @@ class _MoonPainter extends CustomPainter {
       size.height,
     );
     if (shadowRect.width > 0) {
-      final isShadowOnLitSide = (waxing && illumination < 0.5) ||
-          (!waxing && illumination < 0.5);
+      final isShadowOnLitSide =
+          (waxing && illumination < 0.5) || (!waxing && illumination < 0.5);
       canvas.drawOval(
         shadowRect.deflate(0),
         Paint()
-          ..color = isShadowOnLitSide
-              ? const Color(0xFF2D324A)
-              : _kGoldLight,
+          ..color =
+              isShadowOnLitSide ? const Color(0xFF2D324A) : highlightColor,
       );
     }
 
@@ -270,14 +288,16 @@ class _MoonPainter extends CustomPainter {
         Paint()
           ..style = PaintingStyle.stroke
           ..strokeWidth = 1
-          ..color = _kGold.withValues(alpha: 0.4),
+          ..color = color.withValues(alpha: 0.4),
       );
   }
 
   @override
   bool shouldRepaint(covariant _MoonPainter oldDelegate) =>
       oldDelegate.illumination != illumination ||
-      oldDelegate.waxing != waxing;
+      oldDelegate.waxing != waxing ||
+      oldDelegate.color != color ||
+      oldDelegate.highlightColor != highlightColor;
 }
 
 // ============================================================================
@@ -299,7 +319,7 @@ class _Phase {
 /// Approximate moon phase — accurate to within a few hours, no ephemeris
 /// required. Synodic month = 29.530588853 days, reference new moon at
 /// JD 2451549.5 (2000-01-06 18:14 UT).
-_Phase _moonPhase(DateTime date) {
+_Phase _moonPhase(DateTime date, AppLocalizations l10n) {
   final jd = _julianDay(date);
   const synodic = 29.530588853;
   final age = ((jd - 2451549.5) % synodic + synodic) % synodic;
@@ -310,21 +330,21 @@ _Phase _moonPhase(DateTime date) {
 
   String name;
   if (age < 1.0) {
-    name = 'New Moon';
+    name = l10n.skyMoonNew;
   } else if (age < 7.4) {
-    name = 'Waxing Crescent';
+    name = l10n.skyMoonWaxingCrescent;
   } else if (age < 8.4) {
-    name = 'First Quarter';
+    name = l10n.skyMoonFirstQuarter;
   } else if (age < 14.8) {
-    name = 'Waxing Gibbous';
+    name = l10n.skyMoonWaxingGibbous;
   } else if (age < 15.8) {
-    name = 'Full Moon';
+    name = l10n.skyMoonFull;
   } else if (age < 22.1) {
-    name = 'Waning Gibbous';
+    name = l10n.skyMoonWaningGibbous;
   } else if (age < 23.1) {
-    name = 'Last Quarter';
+    name = l10n.skyMoonLastQuarter;
   } else {
-    name = 'Waning Crescent';
+    name = l10n.skyMoonWaningCrescent;
   }
 
   return _Phase(name: name, illumination: illumination, waxing: waxing);
@@ -341,8 +361,7 @@ double _julianDay(DateTime date) {
   }
   final a = y ~/ 100;
   final b = 2 - a + a ~/ 4;
-  final dayFraction =
-      (utc.hour + utc.minute / 60 + utc.second / 3600) / 24;
+  final dayFraction = (utc.hour + utc.minute / 60 + utc.second / 3600) / 24;
   return (365.25 * (y + 4716)).floor() +
       (30.6001 * (m + 1)).floor() +
       utc.day +
@@ -360,25 +379,40 @@ class _Sign {
 /// Sun's tropical zodiac sign by date (approximate cusps — cusp days may
 /// be off by a day depending on the year, but the trade-off matches what
 /// a casual horoscope reader expects).
-_Sign _sunSign(DateTime date) {
+_Sign _sunSign(DateTime date, AppLocalizations l10n) {
   final m = date.month;
   final d = date.day;
-  if ((m == 3 && d >= 21) || (m == 4 && d <= 19)) return const _Sign('Aries', '♈');
-  if ((m == 4 && d >= 20) || (m == 5 && d <= 20)) return const _Sign('Taurus', '♉');
-  if ((m == 5 && d >= 21) || (m == 6 && d <= 20)) return const _Sign('Gemini', '♊');
-  if ((m == 6 && d >= 21) || (m == 7 && d <= 22)) return const _Sign('Cancer', '♋');
-  if ((m == 7 && d >= 23) || (m == 8 && d <= 22)) return const _Sign('Leo', '♌');
-  if ((m == 8 && d >= 23) || (m == 9 && d <= 22)) return const _Sign('Virgo', '♍');
-  if ((m == 9 && d >= 23) || (m == 10 && d <= 22)) return const _Sign('Libra', '♎');
-  if ((m == 10 && d >= 23) || (m == 11 && d <= 21)) return const _Sign('Scorpio', '♏');
-  if ((m == 11 && d >= 22) || (m == 12 && d <= 21)) return const _Sign('Sagittarius', '♐');
-  if ((m == 12 && d >= 22) || (m == 1 && d <= 19)) return const _Sign('Capricorn', '♑');
-  if ((m == 1 && d >= 20) || (m == 2 && d <= 18)) return const _Sign('Aquarius', '♒');
-  return const _Sign('Pisces', '♓');
+  if ((m == 3 && d >= 21) || (m == 4 && d <= 19))
+    return _Sign(l10n.chartSignAries, '♈');
+  if ((m == 4 && d >= 20) || (m == 5 && d <= 20))
+    return _Sign(l10n.chartSignTaurus, '♉');
+  if ((m == 5 && d >= 21) || (m == 6 && d <= 20))
+    return _Sign(l10n.chartSignGemini, '♊');
+  if ((m == 6 && d >= 21) || (m == 7 && d <= 22))
+    return _Sign(l10n.chartSignCancer, '♋');
+  if ((m == 7 && d >= 23) || (m == 8 && d <= 22))
+    return _Sign(l10n.chartSignLeo, '♌');
+  if ((m == 8 && d >= 23) || (m == 9 && d <= 22))
+    return _Sign(l10n.chartSignVirgo, '♍');
+  if ((m == 9 && d >= 23) || (m == 10 && d <= 22))
+    return _Sign(l10n.chartSignLibra, '♎');
+  if ((m == 10 && d >= 23) || (m == 11 && d <= 21))
+    return _Sign(l10n.chartSignScorpio, '♏');
+  if ((m == 11 && d >= 22) || (m == 12 && d <= 21))
+    return _Sign(l10n.chartSignSagittarius, '♐');
+  if ((m == 12 && d >= 22) || (m == 1 && d <= 19))
+    return _Sign(l10n.chartSignCapricorn, '♑');
+  if ((m == 1 && d >= 20) || (m == 2 && d <= 18))
+    return _Sign(l10n.chartSignAquarius, '♒');
+  return _Sign(l10n.chartSignPisces, '♓');
 }
 
 class _Highlight {
-  const _Highlight({required this.icon, required this.title, required this.body});
+  const _Highlight({
+    required this.icon,
+    required this.title,
+    required this.body,
+  });
   final IconData icon;
   final String title;
   final String body;
@@ -435,8 +469,7 @@ List<_Highlight> _highlightsFor(DateTime now, AppLocalizations l10n) {
       body: l10n.todaySkyBridgesBody,
     ),
   ];
-  final dayOfYear =
-      now.difference(DateTime(now.year)).inDays;
+  final dayOfYear = now.difference(DateTime(now.year)).inDays;
   final start = (dayOfYear * 3) % pool.length;
   return List<_Highlight>.generate(
     3,

@@ -15,6 +15,7 @@ class MembersScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final p = context.palette;
+    final l = AppLocalizations.of(context);
     final membersAsync = ref.watch(spaceMembersProvider(spaceId));
     return Scaffold(
       backgroundColor: p.background,
@@ -22,7 +23,7 @@ class MembersScreen extends ConsumerWidget {
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        title: Text(AppLocalizations.of(context).communityMembers),
+        title: Text(l.communityMembers),
       ),
       body: Stack(
         children: [
@@ -78,7 +79,7 @@ class MembersScreen extends ConsumerWidget {
                         const SizedBox(width: 12),
                         Expanded(
                           child: Text(
-                            m.userName.isEmpty ? 'Unknown' : m.userName,
+                            m.userName.isEmpty ? l.communityUnknownMember : m.userName,
                             style: TextStyle(
                               color: p.textPrimary,
                               fontSize: 14,
@@ -107,6 +108,13 @@ class _RoleChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context);
+    final label = switch (role) {
+      'owner' => l.spaceRoleOwner,
+      'mod' => l.spaceRoleMod,
+      'member' => l.spaceRoleMember,
+      _ => role.toUpperCase(),
+    };
     final color = role == 'owner'
         ? palette.gold
         : (role == 'mod' ? palette.primary : palette.textTertiary);
@@ -117,7 +125,7 @@ class _RoleChip extends StatelessWidget {
         borderRadius: BorderRadius.circular(8),
       ),
       child: Text(
-        role.toUpperCase(),
+        label,
         style: TextStyle(
           color: color,
           fontSize: 9,

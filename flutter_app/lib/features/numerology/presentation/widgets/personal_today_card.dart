@@ -1,5 +1,6 @@
 import 'package:cosmic_mirror/config/theme/app_palette.dart';
 import 'package:cosmic_mirror/features/numerology/domain/entities/numerology.dart';
+import 'package:cosmic_mirror/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 
 /// Stack of Personal Year + Month + Day with current-period descriptions.
@@ -11,6 +12,7 @@ class PersonalTodayCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final p = context.palette;
+    final l = AppLocalizations.of(context);
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -20,9 +22,9 @@ class PersonalTodayCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            'TODAY',
-            style: TextStyle(
+          Text(
+            l.numerologyTodayHeader,
+            style: const TextStyle(
               color: Colors.white70,
               fontSize: 10,
               letterSpacing: 1.6,
@@ -30,11 +32,11 @@ class PersonalTodayCard extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 10),
-          _row('Personal Year', cycles.personalYear),
+          _row(l.numerologyPersonalYear, cycles.personalYear),
           const SizedBox(height: 12),
-          _row('Personal Month', cycles.personalMonth),
+          _row(l.numerologyPersonalMonth, cycles.personalMonth),
           const SizedBox(height: 12),
-          _row('Personal Day', cycles.personalDay),
+          _row(l.numerologyPersonalDay, cycles.personalDay),
         ],
       ),
     );

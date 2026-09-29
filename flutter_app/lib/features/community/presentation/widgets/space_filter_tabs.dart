@@ -1,11 +1,14 @@
 import 'package:cosmic_mirror/config/theme/app_palette.dart';
+import 'package:cosmic_mirror/config/theme/lively_tokens.dart';
+import 'package:cosmic_mirror/config/theme/lively_type.dart';
 import 'package:cosmic_mirror/features/community/data/repositories/community_repository.dart';
 import 'package:cosmic_mirror/features/community/presentation/providers/community_providers.dart';
 import 'package:cosmic_mirror/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-/// Segmented control: All / Joined.
+/// Segmented control: All / Joined, with a pill that slides between them.
 class SpaceFilterTabs extends ConsumerWidget {
   const SpaceFilterTabs({super.key});
 
@@ -14,25 +17,59 @@ class SpaceFilterTabs extends ConsumerWidget {
     final p = context.palette;
     final l = AppLocalizations.of(context);
     final selected = ref.watch(spaceFilterProvider);
+    void select(SpaceFilter f) {
+      if (f == selected) return;
+      HapticFeedback.selectionClick();
+      ref.read(spaceFilterProvider.notifier).state = f;
+    }
+
     return Container(
-      padding: const EdgeInsets.all(4),
+      height: 42,
+      padding: const EdgeInsets.all(3),
       decoration: BoxDecoration(
-        color: p.surfaceElevated,
-        borderRadius: BorderRadius.circular(14),
+        color: p.surface,
+        borderRadius: BorderRadius.circular(LivelyRadius.full),
+        border: Border.all(color: p.line),
       ),
-      child: Row(
+      child: Stack(
         children: [
-          _Tab(
-            label: l.communityFilterAll,
-            active: selected == SpaceFilter.all,
-            onTap: () => ref.read(spaceFilterProvider.notifier).state =
-                SpaceFilter.all,
+          AnimatedAlign(
+            duration: LivelyMotion.quick,
+            curve: Curves.easeOutCubic,
+            alignment: selected == SpaceFilter.all
+                ? Alignment.centerLeft
+                : Alignment.centerRight,
+            child: FractionallySizedBox(
+              widthFactor: 0.5,
+              heightFactor: 1,
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  gradient: p.primaryGradient,
+                  borderRadius: BorderRadius.circular(LivelyRadius.full),
+                  boxShadow: [
+                    BoxShadow(
+                      color: p.primary.withValues(alpha: 0.25),
+                      blurRadius: 10,
+                      offset: const Offset(0, 3),
+                    ),
+                  ],
+                ),
+              ),
+            ),
           ),
-          _Tab(
-            label: l.communityFilterJoined,
-            active: selected == SpaceFilter.joined,
-            onTap: () => ref.read(spaceFilterProvider.notifier).state =
-                SpaceFilter.joined,
+          Row(
+            children: [
+              _Tab(
+                label: l.communityFilterAll,
+                active: selected == SpaceFilter.all,
+                onTap: () => select(SpaceFilter.all),
+              ),
+              _Tab(
+                label: l.communityFilterJoined,
+                active: selected == SpaceFilter.joined,
+                onTap: () => select(SpaceFilter.joined),
+              ),
+            ],
           ),
         ],
       ),
@@ -57,22 +94,13 @@ class _Tab extends StatelessWidget {
     return Expanded(
       child: GestureDetector(
         onTap: onTap,
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 180),
-          padding: const EdgeInsets.symmetric(vertical: 10),
-          alignment: Alignment.center,
-          decoration: BoxDecoration(
-            gradient: active ? p.primaryGradient : null,
-            borderRadius: BorderRadius.circular(10),
-          ),
-          child: Text(
-            label,
-            style: TextStyle(
-              color: active ? Colors.white : p.textSecondary,
-              fontSize: 12,
-              fontWeight: FontWeight.w700,
-              letterSpacing: 0.4,
-            ),
+        behavior: HitTestBehavior.opaque,
+        child: Center(
+          child: AnimatedDefaultTextStyle(
+            duration: LivelyMotion.quick,
+            style: LivelyType.small(active ? p.onPrimary : p.textMuted)
+                .copyWith(fontWeight: FontWeight.w600),
+            child: Text(label),
           ),
         ),
       ),

@@ -1,5 +1,6 @@
 import 'package:cosmic_mirror/config/theme/app_palette.dart';
 import 'package:cosmic_mirror/features/numerology/domain/entities/numerology.dart';
+import 'package:cosmic_mirror/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 
 /// Vertical timeline of the four Pinnacle cycles + four Challenge cycles.
@@ -19,11 +20,12 @@ class CyclesTimeline extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final p = context.palette;
+    final l = AppLocalizations.of(context);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          "PINNACLES — life's themes",
+          l.numerologyPinnaclesHeader,
           style: TextStyle(
             color: p.textSecondary,
             fontSize: 11,
@@ -34,7 +36,7 @@ class CyclesTimeline extends StatelessWidget {
         const SizedBox(height: 8),
         for (final cycle in pinnacles)
           _CycleBand(
-            label: 'Pinnacle ${cycle.index}',
+            label: l.numerologyPinnacleN(cycle.index),
             startAge: cycle.startAge,
             endAge: cycle.endAge,
             number: cycle.number,
@@ -43,7 +45,7 @@ class CyclesTimeline extends StatelessWidget {
           ),
         const SizedBox(height: 20),
         Text(
-          'CHALLENGES — areas to grow',
+          l.numerologyChallengesHeader,
           style: TextStyle(
             color: p.textSecondary,
             fontSize: 11,
@@ -54,7 +56,7 @@ class CyclesTimeline extends StatelessWidget {
         const SizedBox(height: 8),
         for (final cycle in challenges)
           _CycleBand(
-            label: 'Challenge ${cycle.index}',
+            label: l.numerologyChallengeN(cycle.index),
             startAge: cycle.startAge,
             endAge: cycle.endAge,
             number: cycle.number,
@@ -63,7 +65,7 @@ class CyclesTimeline extends StatelessWidget {
           ),
         const SizedBox(height: 12),
         Text(
-          'You are $currentAge — active cycle is highlighted.',
+          l.numerologyCurrentAgeNote(currentAge),
           style: TextStyle(color: p.textTertiary, fontSize: 11),
         ),
       ],
@@ -91,10 +93,11 @@ class _CycleBand extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final p = context.palette;
+    final l = AppLocalizations.of(context);
     final accent = isPositive ? p.primary : p.warning;
     final ageRange = endAge == -1
-        ? 'age $startAge+'
-        : 'ages $startAge–$endAge';
+        ? l.numerologyAgeFrom(startAge)
+        : l.numerologyAgeRange(startAge, endAge);
     return Container(
       margin: const EdgeInsets.only(bottom: 8),
       padding: const EdgeInsets.all(12),
@@ -157,7 +160,7 @@ class _CycleBand extends StatelessWidget {
                           borderRadius: BorderRadius.circular(4),
                         ),
                         child: Text(
-                          'NOW',
+                          l.numerologyNowBadge,
                           style: TextStyle(
                             color: accent,
                             fontSize: 9,

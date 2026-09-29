@@ -34,8 +34,10 @@ class DailyReadingScreen extends ConsumerWidget {
               final reading = readingAsync.valueOrNull;
               if (reading != null) {
                 Share.share(
-                  '"${reading.affirmation}"\n\nMy lucky color today: '
-                  '${reading.luckyColor}\n\n~ Lively',
+                  AppLocalizations.of(context).dailyShareText(
+                    reading.affirmation,
+                    reading.luckyColor,
+                  ),
                 );
               }
             },
@@ -143,7 +145,10 @@ class _Hero extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final p = context.palette;
-    final dateLine = DateFormat('EEEE, MMMM d').format(reading.readingDate);
+    final dateLine = DateFormat(
+      'EEEE, MMMM d',
+      Localizations.localeOf(context).toString(),
+    ).format(reading.readingDate);
 
     return SizedBox(
       width: double.infinity,
@@ -303,7 +308,7 @@ class _EnergyRing extends StatelessWidget {
                 ),
               ),
               Text(
-                'energy',
+                AppLocalizations.of(context).dailyEnergyRingLabel,
                 style: TextStyle(
                   color: p.textSecondary,
                   fontSize: 10,

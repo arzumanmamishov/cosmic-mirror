@@ -1,6 +1,10 @@
 class ServerException implements Exception {
   const ServerException({required this.message, this.statusCode, this.code});
 
+  /// Placeholder message used when the server didn't supply one. UI code
+  /// should treat this as "no message" and show a localized fallback.
+  static const fallbackMessage = 'An unexpected error occurred.';
+
   final String message;
   final int? statusCode;
   final String? code;

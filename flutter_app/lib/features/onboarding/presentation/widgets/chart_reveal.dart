@@ -2,7 +2,10 @@ import 'dart:async';
 
 import 'package:cosmic_mirror/config/theme/app_palette.dart';
 import 'package:cosmic_mirror/config/theme/lively_type.dart';
+import 'package:cosmic_mirror/core/utils/string_utils.dart';
+import 'package:cosmic_mirror/features/chart/presentation/astro_labels.dart';
 import 'package:cosmic_mirror/features/onboarding/presentation/providers/onboarding_provider.dart';
+import 'package:cosmic_mirror/l10n/app_localizations.dart';
 import 'package:cosmic_mirror/shared/widgets/lively/mini_wheel.dart';
 import 'package:cosmic_mirror/shared/widgets/loading_shimmer.dart';
 import 'package:flutter/material.dart';
@@ -62,6 +65,7 @@ class _ChartRevealWidgetState extends State<ChartRevealWidget>
   @override
   Widget build(BuildContext context) {
     final p = context.palette;
+    final l = AppLocalizations.of(context);
     final chart = widget.state.chartReveal;
 
     if (widget.state.isLoading || chart == null) {
@@ -80,9 +84,11 @@ class _ChartRevealWidgetState extends State<ChartRevealWidget>
       );
     }
 
-    final sunSign = chart['sun_sign'] as String? ?? 'Unknown';
-    final moonSign = chart['moon_sign'] as String? ?? 'Unknown';
-    final risingSign = chart['rising_sign'] as String? ?? 'Unknown';
+    // Signs arrive as English identifiers; keep them raw for glyph lookup
+    // and let _RevealCard map them to localized display names.
+    final sunSign = chart['sun_sign'] as String? ?? '';
+    final moonSign = chart['moon_sign'] as String? ?? '';
+    final risingSign = chart['rising_sign'] as String? ?? '';
     final sunDesc = chart['sun_description'] as String? ?? '';
     final moonDesc = chart['moon_description'] as String? ?? '';
     final risingDesc = chart['rising_description'] as String? ?? '';
@@ -93,13 +99,13 @@ class _ChartRevealWidgetState extends State<ChartRevealWidget>
         children: [
           const SizedBox(height: 8),
           Text(
-            'Your cosmic blueprint',
+            l.onboardingRevealTitle,
             style: LivelyType.d3(p.textPrimary),
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 8),
           Text(
-            'Here are your Big Three.',
+            l.onboardingRevealSubtitle,
             style: LivelyType.body(p.textMuted),
             textAlign: TextAlign.center,
           ),
@@ -107,7 +113,7 @@ class _ChartRevealWidgetState extends State<ChartRevealWidget>
           _RevealCard(
             controller: _sunController,
             icon: Icons.wb_sunny_rounded,
-            label: 'Sun Sign',
+            label: l.onboardingRevealSunSign,
             sign: sunSign,
             description: sunDesc,
           ),
@@ -115,7 +121,7 @@ class _ChartRevealWidgetState extends State<ChartRevealWidget>
           _RevealCard(
             controller: _moonController,
             icon: Icons.nightlight_round,
-            label: 'Moon Sign',
+            label: l.onboardingRevealMoonSign,
             sign: moonSign,
             description: moonDesc,
           ),
@@ -123,7 +129,7 @@ class _ChartRevealWidgetState extends State<ChartRevealWidget>
           _RevealCard(
             controller: _risingController,
             icon: Icons.arrow_upward_rounded,
-            label: 'Rising Sign',
+            label: l.onboardingRevealRisingSign,
             sign: risingSign,
             description: risingDesc,
           ),
@@ -151,7 +157,16 @@ class _RevealCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final p = context.palette;
+    final l = AppLocalizations.of(context);
+    final lang = Localizations.localeOf(context).languageCode;
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final trimmed = sign.trim();
+    final signLabel = trimmed.isEmpty
+        ? l.onboardingSignUnknown
+        : chartSignName(
+            l,
+            '${trimmed[0].toUpperCase()}${trimmed.substring(1).toLowerCase()}',
+          );
     return FadeTransition(
       opacity: CurvedAnimation(parent: controller, curve: Curves.easeOut),
       child: SlideTransition(
@@ -195,13 +210,13 @@ class _RevealCard extends StatelessWidget {
                         Icon(icon, color: p.primary, size: 12),
                         const SizedBox(width: 6),
                         Text(
-                          label.toUpperCase(),
+                          label.toUpperCaseLocale(lang),
                           style: LivelyType.caption(p.textMuted),
                         ),
                       ],
                     ),
                     const SizedBox(height: 2),
-                    Text(sign, style: LivelyType.d3(p.textPrimary).copyWith(fontSize: 22)),
+                    Text(signLabel, style: LivelyType.d3(p.textPrimary).copyWith(fontSize: 22)),
                     if (description.isNotEmpty) ...[
                       const SizedBox(height: 4),
                       Text(

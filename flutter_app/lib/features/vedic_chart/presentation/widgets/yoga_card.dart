@@ -1,5 +1,7 @@
 import 'package:cosmic_mirror/config/theme/app_palette.dart';
+import 'package:cosmic_mirror/features/chart/presentation/astro_labels.dart';
 import 'package:cosmic_mirror/features/vedic_chart/domain/entities/yoga.dart';
+import 'package:cosmic_mirror/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 
 /// Card describing one classical yoga (active or dormant). Color-coded by
@@ -12,6 +14,7 @@ class YogaCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final p = context.palette;
+    final l = AppLocalizations.of(context);
     final categoryColor = _categoryColors[yoga.category] ?? p.primary;
     return Container(
       margin: const EdgeInsets.symmetric(vertical: 6),
@@ -36,7 +39,7 @@ class YogaCard extends StatelessWidget {
                   borderRadius: BorderRadius.circular(6),
                 ),
                 child: Text(
-                  yoga.category.toUpperCase(),
+                  chartUpper(context, _categoryLabel(l, yoga.category)),
                   style: TextStyle(
                     color: categoryColor,
                     fontSize: 9,
@@ -48,7 +51,7 @@ class YogaCard extends StatelessWidget {
               const Spacer(),
               if (yoga.planets.isNotEmpty)
                 Text(
-                  yoga.planets.join(' + '),
+                  yoga.planets.map((e) => chartPlanetName(l, e)).join(' + '),
                   style: TextStyle(color: p.textTertiary, fontSize: 10),
                 ),
             ],
@@ -86,7 +89,7 @@ class YogaCard extends StatelessWidget {
           Row(
             children: [
               Text(
-                'STRENGTH',
+                l.vedicYogaStrength,
                 style: TextStyle(
                   color: p.textTertiary,
                   fontSize: 9,
@@ -108,7 +111,7 @@ class YogaCard extends StatelessWidget {
               ),
               const SizedBox(width: 8),
               Text(
-                '${(yoga.strength * 100).round()}%',
+                l.chartPercent('${(yoga.strength * 100).round()}'),
                 style: TextStyle(
                   color: p.textPrimary,
                   fontSize: 12,
@@ -120,6 +123,27 @@ class YogaCard extends StatelessWidget {
         ],
       ),
     );
+  }
+}
+
+String _categoryLabel(AppLocalizations l, String category) {
+  switch (category) {
+    case 'Pancha Mahapurusha':
+      return l.vedicYogaCategoryPanchaMahapurusha;
+    case 'Lunar':
+      return l.vedicYogaCategoryLunar;
+    case 'Solar':
+      return l.vedicYogaCategorySolar;
+    case 'Wealth':
+      return l.vedicYogaCategoryWealth;
+    case 'Power':
+      return l.vedicYogaCategoryPower;
+    case 'Wisdom':
+      return l.vedicYogaCategoryWisdom;
+    case 'Nodal':
+      return l.vedicYogaCategoryNodal;
+    default:
+      return category;
   }
 }
 

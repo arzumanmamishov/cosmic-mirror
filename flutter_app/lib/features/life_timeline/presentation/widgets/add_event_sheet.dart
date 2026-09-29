@@ -1,5 +1,6 @@
 import 'package:cosmic_mirror/config/theme/app_palette.dart';
 import 'package:cosmic_mirror/features/life_timeline/data/life_timeline_data.dart';
+import 'package:cosmic_mirror/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
@@ -18,11 +19,6 @@ class _AddEventSheetState extends State<AddEventSheet> {
   DateTime _date = DateTime.now();
   LifeEventCategory _category = LifeEventCategory.reflection;
   String? _mood;
-
-  static const _moods = [
-    'Elated', 'Grounded', 'Open', 'Pressured',
-    'Free', 'Cleansed', 'Tender', 'Resolved',
-  ];
 
   @override
   void dispose() {
@@ -52,8 +48,8 @@ class _AddEventSheetState extends State<AddEventSheet> {
         category: _category,
         mood: _mood,
         // Mock transits — in production, these come from Swiss Ephemeris
-        transits: const [
-          'Transit calculation pending',
+        transits: [
+          AppLocalizations.of(context).lifeTimelineTransitPending,
         ],
       ),
     );
@@ -62,6 +58,7 @@ class _AddEventSheetState extends State<AddEventSheet> {
   @override
   Widget build(BuildContext context) {
     final p = context.palette;
+    final l = AppLocalizations.of(context);
     final inset = MediaQuery.of(context).viewInsets.bottom;
 
     return Padding(
@@ -93,7 +90,7 @@ class _AddEventSheetState extends State<AddEventSheet> {
                 ),
                 const SizedBox(height: 20),
                 Text(
-                  'Add a Moment',
+                  l.lifeTimelineAddTitle,
                   style: TextStyle(
                     color: p.textPrimary,
                     fontSize: 22,
@@ -102,23 +99,23 @@ class _AddEventSheetState extends State<AddEventSheet> {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  'A turning point worth remembering.',
+                  l.lifeTimelineAddSubtitle,
                   style: TextStyle(color: p.textSecondary, fontSize: 13),
                 ),
                 const SizedBox(height: 20),
 
                 // Title
-                const _Label(label: 'Title'),
+                _Label(label: l.lifeTimelineFieldTitle),
                 const SizedBox(height: 6),
                 TextField(
                   controller: _titleCtrl,
                   style: TextStyle(color: p.textPrimary, fontSize: 15),
-                  decoration: _inputDecoration(p, 'e.g. Got the offer'),
+                  decoration: _inputDecoration(p, l.lifeTimelineFieldTitleHint),
                 ),
                 const SizedBox(height: 16),
 
                 // Date
-                const _Label(label: 'When'),
+                _Label(label: l.lifeTimelineFieldWhen),
                 const SizedBox(height: 6),
                 InkWell(
                   onTap: _pickDate,
@@ -142,7 +139,10 @@ class _AddEventSheetState extends State<AddEventSheet> {
                         ),
                         const SizedBox(width: 10),
                         Text(
-                          DateFormat('EEEE, MMM d, yyyy').format(_date),
+                          DateFormat(
+                            'EEEE, MMM d, yyyy',
+                            Localizations.localeOf(context).toString(),
+                          ).format(_date),
                           style: TextStyle(
                             color: p.textPrimary,
                             fontSize: 14,
@@ -156,7 +156,7 @@ class _AddEventSheetState extends State<AddEventSheet> {
                 const SizedBox(height: 16),
 
                 // Category
-                const _Label(label: 'Category'),
+                _Label(label: l.lifeTimelineFieldCategory),
                 const SizedBox(height: 8),
                 Wrap(
                   spacing: 8,
@@ -192,7 +192,7 @@ class _AddEventSheetState extends State<AddEventSheet> {
                             ),
                             const SizedBox(width: 6),
                             Text(
-                              c.label,
+                              c.label(l),
                               style: TextStyle(
                                 color: selected ? c.color : p.textSecondary,
                                 fontSize: 12,
@@ -208,12 +208,12 @@ class _AddEventSheetState extends State<AddEventSheet> {
                 const SizedBox(height: 16),
 
                 // Mood
-                const _Label(label: 'How did it feel?', optional: true),
+                _Label(label: l.lifeTimelineFieldMood, optional: true),
                 const SizedBox(height: 8),
                 Wrap(
                   spacing: 8,
                   runSpacing: 8,
-                  children: _moods.map((m) {
+                  children: lifeEventMoods.map((m) {
                     final selected = m == _mood;
                     return GestureDetector(
                       onTap: () => setState(
@@ -234,7 +234,7 @@ class _AddEventSheetState extends State<AddEventSheet> {
                           ),
                         ),
                         child: Text(
-                          m,
+                          lifeEventMoodLabel(l, m),
                           style: TextStyle(
                             color: selected ? p.primary : p.textSecondary,
                             fontSize: 12,
@@ -248,7 +248,7 @@ class _AddEventSheetState extends State<AddEventSheet> {
                 const SizedBox(height: 16),
 
                 // Description
-                const _Label(label: 'Notes', optional: true),
+                _Label(label: l.lifeTimelineFieldNotes, optional: true),
                 const SizedBox(height: 6),
                 TextField(
                   controller: _descCtrl,
@@ -257,7 +257,7 @@ class _AddEventSheetState extends State<AddEventSheet> {
                   style: TextStyle(color: p.textPrimary, fontSize: 14),
                   decoration: _inputDecoration(
                     p,
-                    'What was happening, what shifted...',
+                    l.lifeTimelineFieldNotesHint,
                   ),
                 ),
                 const SizedBox(height: 24),
@@ -275,9 +275,9 @@ class _AddEventSheetState extends State<AddEventSheet> {
                         borderRadius: BorderRadius.circular(14),
                       ),
                     ),
-                    child: const Text(
-                      'Save Moment',
-                      style: TextStyle(
+                    child: Text(
+                      l.lifeTimelineSaveMoment,
+                      style: const TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w700,
                       ),
@@ -340,7 +340,7 @@ class _Label extends StatelessWidget {
         if (optional) ...[
           const SizedBox(width: 6),
           Text(
-            '(optional)',
+            AppLocalizations.of(context).addPersonOptional,
             style: TextStyle(
               color: p.textTertiary,
               fontSize: 10,

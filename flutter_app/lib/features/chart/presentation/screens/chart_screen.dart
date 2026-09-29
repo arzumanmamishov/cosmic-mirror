@@ -1,6 +1,6 @@
 import 'package:cosmic_mirror/config/theme/app_palette.dart';
 import 'package:cosmic_mirror/core/network/api_endpoints.dart';
-import 'package:cosmic_mirror/core/utils/string_utils.dart';
+import 'package:cosmic_mirror/features/chart/presentation/astro_labels.dart';
 import 'package:cosmic_mirror/features/chart/presentation/widgets/natal_chart_wheel.dart';
 import 'package:cosmic_mirror/l10n/app_localizations.dart';
 import 'package:cosmic_mirror/shared/providers/user_provider.dart';
@@ -58,12 +58,12 @@ class _ChartContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final planets = (chart['planets'] as List<dynamic>? ?? [])
-        .cast<Map<String, dynamic>>();
-    final houses = (chart['houses'] as List<dynamic>? ?? [])
-        .cast<Map<String, dynamic>>();
-    final aspects = (chart['aspects'] as List<dynamic>? ?? [])
-        .cast<Map<String, dynamic>>();
+    final planets =
+        (chart['planets'] as List<dynamic>? ?? []).cast<Map<String, dynamic>>();
+    final houses =
+        (chart['houses'] as List<dynamic>? ?? []).cast<Map<String, dynamic>>();
+    final aspects =
+        (chart['aspects'] as List<dynamic>? ?? []).cast<Map<String, dynamic>>();
     final elements = chart['elements'] as Map<String, dynamic>? ?? {};
 
     final big3 = _bigThree(planets, houses);
@@ -140,6 +140,8 @@ class _Hero extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final p = context.palette;
+    final l = AppLocalizations.of(context);
+    String sign(String? s) => s == null ? '—' : chartSignName(l, s);
     return Padding(
       padding: EdgeInsets.fromLTRB(
         20,
@@ -154,8 +156,8 @@ class _Hero extends StatelessWidget {
             children: [
               Expanded(
                 child: _BigSignCard(
-                  label: 'Sun',
-                  sign: big3.sun ?? '—',
+                  label: l.chartPlanetSun,
+                  sign: sign(big3.sun),
                   glyph: '☉',
                   color: p.gold,
                 ),
@@ -163,8 +165,8 @@ class _Hero extends StatelessWidget {
               const SizedBox(width: 10),
               Expanded(
                 child: _BigSignCard(
-                  label: 'Moon',
-                  sign: big3.moon ?? '—',
+                  label: l.chartPlanetMoon,
+                  sign: sign(big3.moon),
                   glyph: '☽',
                   color: p.accent,
                 ),
@@ -172,8 +174,8 @@ class _Hero extends StatelessWidget {
               const SizedBox(width: 10),
               Expanded(
                 child: _BigSignCard(
-                  label: 'Rising',
-                  sign: big3.rising ?? '—',
+                  label: l.profileRising,
+                  sign: sign(big3.rising),
                   glyph: '↑',
                   color: p.primary,
                 ),
@@ -281,7 +283,7 @@ class _BigSignCard extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           Text(
-            label.toUpperCase(),
+            chartUpper(context, label),
             style: TextStyle(
               color: p.textTertiary,
               fontSize: 9,
@@ -385,14 +387,24 @@ class _PlanetsTab extends StatelessWidget {
   final List<Map<String, dynamic>> planets;
 
   static const _glyphs = {
-    'Sun': '☉', 'Moon': '☽', 'Mercury': '☿', 'Venus': '♀',
-    'Mars': '♂', 'Jupiter': '♃', 'Saturn': '♄', 'Uranus': '♅',
-    'Neptune': '♆', 'Pluto': '♇', 'North Node': '☊', 'Chiron': '⚷',
+    'Sun': '☉',
+    'Moon': '☽',
+    'Mercury': '☿',
+    'Venus': '♀',
+    'Mars': '♂',
+    'Jupiter': '♃',
+    'Saturn': '♄',
+    'Uranus': '♅',
+    'Neptune': '♆',
+    'Pluto': '♇',
+    'North Node': '☊',
+    'Chiron': '⚷',
   };
 
   @override
   Widget build(BuildContext context) {
     final p = context.palette;
+    final l = AppLocalizations.of(context);
     if (planets.isEmpty) {
       return Center(
         child: Text(
@@ -447,7 +459,7 @@ class _PlanetsTab extends StatelessWidget {
                     Row(
                       children: [
                         Text(
-                          name,
+                          chartPlanetName(l, name),
                           style: TextStyle(
                             color: p.textPrimary,
                             fontSize: 15,
@@ -466,7 +478,7 @@ class _PlanetsTab extends StatelessWidget {
                               borderRadius: BorderRadius.circular(4),
                             ),
                             child: Text(
-                              'Rx',
+                              l.vedicRetro,
                               style: TextStyle(
                                 color: p.warning,
                                 fontSize: 9,
@@ -479,8 +491,8 @@ class _PlanetsTab extends StatelessWidget {
                     ),
                     const SizedBox(height: 2),
                     Text(
-                      '$sign · ${degree.toStringAsFixed(1)}°'
-                      '${house != null ? ' · House $house' : ''}',
+                      '${l.chartHouseLine(chartSignName(l, sign), degree.toStringAsFixed(1))}'
+                      '${house != null ? ' · ${l.chartHouseNumber(house)}' : ''}',
                       style: TextStyle(color: p.textSecondary, fontSize: 12),
                     ),
                   ],
@@ -589,7 +601,10 @@ class _HousesTab extends StatelessWidget {
                     const SizedBox(height: 2),
                     Text(
                       AppLocalizations.of(context).chartHouseLine(
-                        '${h['sign']}',
+                        chartSignName(
+                          AppLocalizations.of(context),
+                          '${h['sign']}',
+                        ),
                         (h['degree'] as num? ?? 0).toStringAsFixed(1),
                       ),
                       style: TextStyle(color: p.textSecondary, fontSize: 12),
@@ -674,7 +689,17 @@ class _AspectsTab extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      '${a['planet1']} ${type.capitalizeFirst()} ${a['planet2']}',
+                      AppLocalizations.of(context).chartAspectTitle(
+                        chartPlanetName(
+                          AppLocalizations.of(context),
+                          '${a['planet1']}',
+                        ),
+                        chartAspectName(AppLocalizations.of(context), type),
+                        chartPlanetName(
+                          AppLocalizations.of(context),
+                          '${a['planet2']}',
+                        ),
+                      ),
                       style: TextStyle(
                         color: p.textPrimary,
                         fontSize: 13,
@@ -765,7 +790,7 @@ class _ElementsTab extends StatelessWidget {
                   const SizedBox(width: 12),
                   Expanded(
                     child: Text(
-                      '${e.key[0].toUpperCase()}${e.key.substring(1)}',
+                      chartElementName(AppLocalizations.of(context), e.key),
                       style: TextStyle(
                         color: p.textPrimary,
                         fontSize: 15,
@@ -774,7 +799,8 @@ class _ElementsTab extends StatelessWidget {
                     ),
                   ),
                   Text(
-                    '${pct.toStringAsFixed(0)}%',
+                    AppLocalizations.of(context)
+                        .chartPercent(pct.toStringAsFixed(0)),
                     style: TextStyle(
                       color: color,
                       fontSize: 18,

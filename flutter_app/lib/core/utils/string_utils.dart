@@ -17,3 +17,26 @@ extension SafeStringLabels on String {
     return '${this[0].toUpperCase()}${substring(1)}';
   }
 }
+
+/// Locale-aware case mapping. Dart's [String.toUpperCase] ignores locale,
+/// so Turkish dotted/dotless i come out wrong ("şifre" → "ŞIFRE" instead
+/// of "ŞİFRE"). Use these for any *display* text that gets re-cased.
+extension LocaleAwareCase on String {
+  /// Uppercases using the rules of [languageCode] (e.g. 'tr').
+  String toUpperCaseLocale(String languageCode) {
+    if (languageCode.toLowerCase().startsWith('tr') ||
+        languageCode.toLowerCase().startsWith('az')) {
+      return replaceAll('i', 'İ').replaceAll('ı', 'I').toUpperCase();
+    }
+    return toUpperCase();
+  }
+
+  /// Lowercases using the rules of [languageCode] (e.g. 'tr').
+  String toLowerCaseLocale(String languageCode) {
+    if (languageCode.toLowerCase().startsWith('tr') ||
+        languageCode.toLowerCase().startsWith('az')) {
+      return replaceAll('I', 'ı').replaceAll('İ', 'i').toLowerCase();
+    }
+    return toLowerCase();
+  }
+}

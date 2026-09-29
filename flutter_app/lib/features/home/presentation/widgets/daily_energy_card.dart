@@ -1,5 +1,6 @@
 import 'package:cosmic_mirror/config/theme/colors.dart';
 import 'package:cosmic_mirror/config/theme/typography.dart';
+import 'package:cosmic_mirror/l10n/app_localizations.dart';
 import 'package:cosmic_mirror/shared/widgets/cosmic_card.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -11,6 +12,7 @@ class DailyEnergyCard extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     // In production, this reads from dailyReadingProvider
+    final l = AppLocalizations.of(context);
     return CosmicCard(
       glassmorphism: true,
       onTap: () => context.push('/daily-reading'),
@@ -26,7 +28,7 @@ class DailyEnergyCard extends ConsumerWidget {
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Text(
-                  "TODAY'S ENERGY",
+                  l.homeTodaysEnergyLabel,
                   style: CosmicTypography.overline.copyWith(
                     color: CosmicColors.gold,
                   ),
@@ -40,13 +42,13 @@ class DailyEnergyCard extends ConsumerWidget {
             ],
           ),
           const SizedBox(height: 16),
-          const Text(
-            'A day for inner reflection and creative expression',
+          Text(
+            l.homeDailyEnergyHeadline,
             style: CosmicTypography.headlineSmall,
           ),
           const SizedBox(height: 8),
-          const Text(
-            'The Moon in Pisces heightens your intuition. Trust your instincts today, especially in conversations that matter.',
+          Text(
+            l.homeDailyEnergyBody,
             style: CosmicTypography.bodySmall,
             maxLines: 3,
             overflow: TextOverflow.ellipsis,
@@ -62,7 +64,7 @@ class DailyEnergyCard extends ConsumerWidget {
               const _EnergyDot(filled: false, color: CosmicColors.textTertiary),
               const SizedBox(width: 8),
               Text(
-                'Moderate Energy',
+                l.homeModerateEnergy,
                 style: CosmicTypography.caption.copyWith(
                   color: CosmicColors.gold,
                 ),

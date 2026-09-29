@@ -1,5 +1,7 @@
 import 'package:cosmic_mirror/config/theme/app_palette.dart';
 import 'package:cosmic_mirror/features/human_design/domain/entities/human_design.dart';
+import 'package:cosmic_mirror/features/human_design/presentation/hd_labels.dart';
+import 'package:cosmic_mirror/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 
 class ChannelListTile extends StatelessWidget {
@@ -10,6 +12,7 @@ class ChannelListTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final p = context.palette;
+    final hd = HDLabels(AppLocalizations.of(context));
     return Container(
       margin: const EdgeInsets.symmetric(vertical: 4),
       padding: const EdgeInsets.all(12),
@@ -41,7 +44,7 @@ class ChannelListTile extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  channel.name,
+                  hd.channel(channel.name),
                   style: TextStyle(
                     color: p.textPrimary,
                     fontSize: 14,
@@ -50,7 +53,7 @@ class ChannelListTile extends StatelessWidget {
                 ),
                 const SizedBox(height: 2),
                 Text(
-                  channel.centers.join(' ↔ '),
+                  channel.centers.map(hd.center).join(' ↔ '),
                   style: TextStyle(color: p.textSecondary, fontSize: 11),
                 ),
               ],

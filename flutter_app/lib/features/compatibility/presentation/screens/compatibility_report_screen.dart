@@ -42,12 +42,11 @@ class CompatibilityReportScreen extends ConsumerWidget {
             onPressed: () {
               final report = reportAsync.valueOrNull;
               if (report != null) {
-                final name = report['person_name'] as String? ?? 'Someone';
+                final l = AppLocalizations.of(context);
+                final name =
+                    report['person_name'] as String? ?? l.compatSomeone;
                 final score = (report['overall_score'] as num?)?.toInt() ?? 0;
-                Share.share(
-                  'My cosmic compatibility with $name is $score%! '
-                  'Check yours on Lively.',
-                );
+                Share.share(l.compatShareText(name, score));
               }
             },
           ),
@@ -83,7 +82,8 @@ class _ReportBody extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final name = report['person_name'] as String? ?? 'Someone';
+    final name = report['person_name'] as String? ??
+        AppLocalizations.of(context).compatSomeone;
     final overall = (report['overall_score'] as num?)?.toInt() ?? 0;
     final emotional = (report['emotional_score'] as num?)?.toInt() ?? 0;
     final communication =
@@ -179,7 +179,10 @@ class _Hero extends StatelessWidget {
               ),
               Positioned(
                 left: MediaQuery.sizeOf(context).width / 2 - 90,
-                child: const _Avatar(label: 'You', glyph: '☉'),
+                child: _Avatar(
+                  label: AppLocalizations.of(context).compatYou,
+                  glyph: '☉',
+                ),
               ),
               Positioned(
                 right: MediaQuery.sizeOf(context).width / 2 - 90,
@@ -230,7 +233,7 @@ class _Hero extends StatelessWidget {
         ),
         const SizedBox(height: 16),
         Text(
-          'You & $name',
+          AppLocalizations.of(context).compatYouAnd(name),
           style: TextStyle(
             color: p.textPrimary,
             fontSize: 24,

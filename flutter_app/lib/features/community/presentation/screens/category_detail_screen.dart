@@ -1,6 +1,7 @@
 import 'package:cosmic_mirror/config/theme/app_palette.dart';
 import 'package:cosmic_mirror/features/community/presentation/providers/community_providers.dart';
 import 'package:cosmic_mirror/features/community/presentation/widgets/space_card.dart';
+import 'package:cosmic_mirror/l10n/app_localizations.dart';
 import 'package:cosmic_mirror/shared/widgets/cosmic_starfield.dart';
 import 'package:cosmic_mirror/shared/widgets/error_view.dart';
 import 'package:cosmic_mirror/shared/widgets/loading_shimmer.dart';
@@ -24,9 +25,16 @@ class _CategoryDetailScreenState extends ConsumerState<CategoryDetailScreen> {
   String? _previousCategory;
   String? _previousQuery;
 
+  // Captured up front: `ref` can't be used once the widget is disposed,
+  // and the restore below runs after that.
+  late final StateController<String?> _categoryCtrl;
+  late final StateController<String> _queryCtrl;
+
   @override
   void initState() {
     super.initState();
+    _categoryCtrl = ref.read(selectedCategoryIdProvider.notifier);
+    _queryCtrl = ref.read(spaceSearchQueryProvider.notifier);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _previousCategory = ref.read(selectedCategoryIdProvider);
       _previousQuery = ref.read(spaceSearchQueryProvider);
@@ -38,9 +46,8 @@ class _CategoryDetailScreenState extends ConsumerState<CategoryDetailScreen> {
   @override
   void dispose() {
     Future.microtask(() {
-      ref.read(selectedCategoryIdProvider.notifier).state = _previousCategory;
-      ref.read(spaceSearchQueryProvider.notifier).state =
-          _previousQuery ?? '';
+      _categoryCtrl.state = _previousCategory;
+      _queryCtrl.state = _previousQuery ?? '';
     });
     super.dispose();
   }
@@ -48,10 +55,11 @@ class _CategoryDetailScreenState extends ConsumerState<CategoryDetailScreen> {
   @override
   Widget build(BuildContext context) {
     final p = context.palette;
+    final l = AppLocalizations.of(context);
     final spacesAsync = ref.watch(spacesProvider);
     final categoriesAsync = ref.watch(categoriesProvider);
     final categoryName = categoriesAsync.maybeWhen(
-      orElse: () => 'Category',
+      orElse: () => l.communityCategoryFallback,
       data: (cats) => cats
           .firstWhere(
             (c) => c.id == widget.categoryId,
@@ -90,7 +98,7 @@ class _CategoryDetailScreenState extends ConsumerState<CategoryDetailScreen> {
                     child: Padding(
                       padding: const EdgeInsets.all(32),
                       child: Text(
-                        'No spaces in this category yet.',
+                        l.communityCategoryEmpty,
                         textAlign: TextAlign.center,
                         style: TextStyle(color: p.textSecondary, fontSize: 13),
                       ),

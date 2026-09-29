@@ -1,4 +1,5 @@
 import 'package:cosmic_mirror/config/theme/app_palette.dart';
+import 'package:cosmic_mirror/core/error/error_message.dart';
 import 'package:cosmic_mirror/features/community/presentation/providers/community_providers.dart';
 import 'package:cosmic_mirror/features/community/presentation/widgets/comment_tile.dart';
 import 'package:cosmic_mirror/features/community/presentation/widgets/like_button.dart';
@@ -61,6 +62,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
   @override
   Widget build(BuildContext context) {
     final p = context.palette;
+    final l = AppLocalizations.of(context);
     final postAsync = ref.watch(postDetailProvider(widget.postId));
     final commentsAsync = ref.watch(commentsProvider(widget.postId));
 
@@ -71,7 +73,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: const BackButton(),
-        title: Text(AppLocalizations.of(context).communityPostTitle),
+        title: Text(l.communityPostTitle),
       ),
       body: Stack(
         children: [
@@ -132,7 +134,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                                     ),
                                   ),
                                   Text(
-                                    'in @${post.spaceHandle}',
+                                    l.postInSpace(post.spaceHandle),
                                     style: TextStyle(
                                       color: p.textSecondary,
                                       fontSize: 11,
@@ -177,7 +179,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                         ),
                         Divider(color: p.glassBorder, height: 32),
                         Text(
-                          'Comments',
+                          l.postCommentsHeader,
                           style: TextStyle(
                             color: p.textSecondary,
                             fontSize: 11,
@@ -188,7 +190,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                         commentsAsync.when(
                           loading: () => const ShimmerList(),
                           error: (e, _) => Text(
-                            e.toString(),
+                            FriendlyError.from(context, e).body,
                             style: TextStyle(color: p.error, fontSize: 12),
                           ),
                           data: (comments) => comments.isEmpty
@@ -197,7 +199,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                                       const EdgeInsets.symmetric(vertical: 24),
                                   child: Center(
                                     child: Text(
-                                      'No comments yet.',
+                                      l.postNoComments,
                                       style:
                                           TextStyle(color: p.textSecondary),
                                     ),
@@ -243,7 +245,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                         child: Row(
                           children: [
                             Text(
-                              'Replying to $_replyToName',
+                              l.postReplyingTo(_replyToName!),
                               style: TextStyle(
                                 color: p.textSecondary,
                                 fontSize: 11,
@@ -286,7 +288,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                                 fontSize: 14,
                               ),
                               decoration: InputDecoration(
-                                hintText: 'Write a comment',
+                                hintText: l.postWriteCommentHint,
                                 hintStyle: TextStyle(
                                   color: p.textTertiary,
                                   fontSize: 14,

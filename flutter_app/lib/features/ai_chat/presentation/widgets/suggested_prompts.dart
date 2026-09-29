@@ -29,7 +29,7 @@ class SuggestedPrompts extends StatelessWidget {
             Icon(Icons.auto_awesome_rounded, size: 14, color: p.gold),
             const SizedBox(width: 6),
             Text(
-              l.aiChatSuggestedQuestions.toUpperCase(),
+              l.aiChatSuggestedQuestionsCaps,
               style: TextStyle(
                 color: p.gold,
                 fontSize: 11,

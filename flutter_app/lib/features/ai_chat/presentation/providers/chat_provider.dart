@@ -56,7 +56,10 @@ class ChatInputState {
   });
 
   final bool isSending;
-  final String? error;
+
+  /// Raw error from the last failed call. Run it through
+  /// FriendlyError.from(...) before showing it so the text is localized.
+  final Object? error;
 
   /// True when the last send was rejected with a 429 (daily cap hit).
   /// Use this to render the paywall card without re-querying state.
@@ -78,7 +81,7 @@ class ChatInputNotifier extends StateNotifier<ChatInputState> {
       );
       return data['id'] as String;
     } catch (e) {
-      state = ChatInputState(error: e.toString());
+      state = ChatInputState(error: e);
       return null;
     }
   }
@@ -91,7 +94,7 @@ class ChatInputNotifier extends StateNotifier<ChatInputState> {
       await _client.delete(ApiEndpoints.chatThread(threadId));
       return null;
     } catch (e) {
-      state = ChatInputState(error: e.toString());
+      state = ChatInputState(error: e);
       return e;
     }
   }
@@ -109,14 +112,14 @@ class ChatInputNotifier extends StateNotifier<ChatInputState> {
       return ChatMessageModel.fromJson(data);
     } on RateLimitException catch (e) {
       state = ChatInputState(
-        error: e.message,
+        error: e,
         limitReached: true,
       );
       // Refresh usage so the counter shows the cap.
       _ref.invalidate(chatUsageProvider);
       return null;
     } catch (e) {
-      state = ChatInputState(error: e.toString());
+      state = ChatInputState(error: e);
       return null;
     }
   }

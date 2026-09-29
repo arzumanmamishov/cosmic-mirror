@@ -1,4 +1,5 @@
 import 'package:cosmic_mirror/config/theme/app_palette.dart';
+import 'package:cosmic_mirror/core/error/error_message.dart';
 import 'package:cosmic_mirror/features/ai_chat/domain/entities/chat_entities.dart';
 import 'package:cosmic_mirror/features/ai_chat/presentation/providers/chat_provider.dart';
 import 'package:cosmic_mirror/features/ai_chat/presentation/widgets/message_bubble.dart';
@@ -9,8 +10,6 @@ import 'package:cosmic_mirror/shared/widgets/loading_shimmer.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-
-const _kGold = Color(0xFFD4B16A);
 
 /// Modernized conversation screen.
 ///
@@ -92,8 +91,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
       // pollute the threads list.
       var threadId = _threadId;
       if (threadId == null) {
-        final newId =
-            await ref.read(chatInputProvider.notifier).createThread();
+        final newId = await ref.read(chatInputProvider.notifier).createThread();
         if (newId == null) return; // error already surfaced via state.error
         threadId = newId;
         setState(() => _threadId = newId);
@@ -162,7 +160,10 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                             _buildBody(serverMessages, chatState),
                       ),
             ),
-            if (chatState.error != null) _ErrorStrip(message: chatState.error!),
+            if (chatState.error != null)
+              _ErrorStrip(
+                message: FriendlyError.from(context, chatState.error).body,
+              ),
             const _UsageStrip(),
             _InputBar(
               controller: _controller,
@@ -179,7 +180,10 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   /// Renders the message list (or empty state) for both branches —
   /// fresh chat with no server messages AND established thread with
   /// the fetched server messages. Keeps the build method readable.
-  Widget _buildBody(List<ChatMessage> serverMessages, ChatInputState chatState) {
+  Widget _buildBody(
+    List<ChatMessage> serverMessages,
+    ChatInputState chatState,
+  ) {
     final all = [...serverMessages, ..._localMessages];
     if (all.isEmpty) return _EmptyState(onPrompt: _sendMessage);
     return ListView.builder(
@@ -194,7 +198,6 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
       },
     );
   }
-
 }
 
 // ============================================================================
@@ -406,19 +409,17 @@ class _CounterPill extends StatelessWidget {
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
           decoration: BoxDecoration(
-            color: atLimit ? _kGold.withValues(alpha: 0.14) : p.surface,
+            color: atLimit ? p.primary.withValues(alpha: 0.14) : p.surface,
             borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: atLimit ? _kGold : p.glassBorder),
+            border: Border.all(color: atLimit ? p.primary : p.glassBorder),
           ),
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
               Icon(
-                atLimit
-                    ? Icons.lock_outline_rounded
-                    : Icons.bolt_rounded,
+                atLimit ? Icons.lock_outline_rounded : Icons.bolt_rounded,
                 size: 14,
-                color: atLimit ? _kGold : p.textSecondary,
+                color: atLimit ? p.primary : p.textSecondary,
               ),
               const SizedBox(width: 6),
               Text(
@@ -426,7 +427,7 @@ class _CounterPill extends StatelessWidget {
                     ? l.aiChatLimitReached
                     : l.aiChatMessagesToday(used, limit),
                 style: TextStyle(
-                  color: atLimit ? _kGold : p.textSecondary,
+                  color: atLimit ? p.primary : p.textSecondary,
                   fontSize: 12,
                   fontWeight: FontWeight.w600,
                 ),
@@ -445,29 +446,30 @@ class _PremiumBadge extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context);
+    final p = context.palette;
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 6, 16, 0),
       child: Center(
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
           decoration: BoxDecoration(
-            color: _kGold.withValues(alpha: 0.14),
+            color: p.primary.withValues(alpha: 0.14),
             borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: _kGold),
+            border: Border.all(color: p.primary),
           ),
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Icon(
+              Icon(
                 Icons.workspace_premium_rounded,
                 size: 14,
-                color: _kGold,
+                color: p.primary,
               ),
               const SizedBox(width: 6),
               Text(
                 l.aiChatPremiumUnlimited,
-                style: const TextStyle(
-                  color: _kGold,
+                style: TextStyle(
+                  color: p.primary,
                   fontSize: 12,
                   fontWeight: FontWeight.w700,
                   letterSpacing: 0.3,
@@ -499,15 +501,15 @@ class _PaywallCard extends StatelessWidget {
           child: Ink(
             padding: const EdgeInsets.all(14),
             decoration: BoxDecoration(
-              color: _kGold.withValues(alpha: 0.10),
+              color: p.primary.withValues(alpha: 0.10),
               borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: _kGold),
+              border: Border.all(color: p.primary),
             ),
             child: Row(
               children: [
-                const Icon(
+                Icon(
                   Icons.workspace_premium_rounded,
-                  color: _kGold,
+                  color: p.primary,
                   size: 20,
                 ),
                 const SizedBox(width: 10),
@@ -535,9 +537,9 @@ class _PaywallCard extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(width: 8),
-                const Icon(
+                Icon(
                   Icons.arrow_forward_ios_rounded,
-                  color: _kGold,
+                  color: p.primary,
                   size: 14,
                 ),
               ],
@@ -638,9 +640,8 @@ class _InputBar extends ConsumerWidget {
                   height: 1.4,
                 ),
                 decoration: InputDecoration(
-                  hintText: atLimit
-                      ? l.aiChatLimitReachedHint
-                      : l.aiChatInputHint,
+                  hintText:
+                      atLimit ? l.aiChatLimitReachedHint : l.aiChatInputHint,
                   hintStyle: TextStyle(color: p.textTertiary),
                   border: InputBorder.none,
                   isCollapsed: true,
@@ -684,12 +685,8 @@ class _SendButton extends StatelessWidget {
         height: 46,
         decoration: BoxDecoration(
           gradient: enabled
-              ? const LinearGradient(
-                  colors: [
-                    Color(0xFFE9D49A),
-                    Color(0xFFD4B16A),
-                    Color(0xFF9F7637),
-                  ],
+              ? LinearGradient(
+                  colors: [p.primaryHi, p.primary, p.primaryDim],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 )

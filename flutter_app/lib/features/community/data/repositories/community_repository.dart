@@ -122,11 +122,13 @@ class CommunityRepository {
   }
 
   Future<void> approveJoinRequest(String spaceId, String userId) async {
-    await _client.post<dynamic>(ApiEndpoints.spaceApproveRequest(spaceId, userId));
+    await _client
+        .post<dynamic>(ApiEndpoints.spaceApproveRequest(spaceId, userId));
   }
 
   Future<void> declineJoinRequest(String spaceId, String userId) async {
-    await _client.post<dynamic>(ApiEndpoints.spaceDeclineRequest(spaceId, userId));
+    await _client
+        .post<dynamic>(ApiEndpoints.spaceDeclineRequest(spaceId, userId));
   }
 
   Future<List<SpaceMember>> listMembers(
@@ -172,6 +174,16 @@ class CommunityRepository {
     );
   }
 
+  /// The server only accepts https:// links. Users often type a bare
+  /// "example.com", so add the scheme (and upgrade http://) for them.
+  static String _normalizeLink(String raw) {
+    final t = raw.trim();
+    if (t.isEmpty) return t;
+    if (t.startsWith('https://')) return t;
+    if (t.startsWith('http://')) return 'https://${t.substring(7)}';
+    return 'https://$t';
+  }
+
   Future<Post> createPost({
     required String spaceId,
     required String content,
@@ -181,7 +193,8 @@ class CommunityRepository {
       ApiEndpoints.spacePosts(spaceId),
       data: {
         'content': content,
-        if (linkUrl != null && linkUrl.isNotEmpty) 'link_url': linkUrl,
+        if (linkUrl != null && linkUrl.trim().isNotEmpty)
+          'link_url': _normalizeLink(linkUrl),
       },
       fromJson: (raw) => Post.fromJson(raw as Map<String, dynamic>),
     );
@@ -196,7 +209,7 @@ class CommunityRepository {
       ApiEndpoints.post(postId),
       data: {
         if (content != null) 'content': content,
-        if (linkUrl != null) 'link_url': linkUrl,
+        if (linkUrl != null) 'link_url': _normalizeLink(linkUrl),
       },
     );
   }
@@ -219,7 +232,8 @@ class CommunityRepository {
     return _client.get<List<CommentWithMeta>>(
       ApiEndpoints.postComments(postId),
       fromJson: (raw) {
-        final list = (raw as Map<String, dynamic>)['comments'] as List<dynamic>?;
+        final list =
+            (raw as Map<String, dynamic>)['comments'] as List<dynamic>?;
         return (list ?? const [])
             .map((e) => CommentWithMeta.fromJson(e as Map<String, dynamic>))
             .toList();
@@ -276,10 +290,12 @@ class CommunityRepository {
         'offset': '$offset',
       },
       fromJson: (raw) {
-        final list = (raw as Map<String, dynamic>)['notifications']
-            as List<dynamic>?;
+        final list =
+            (raw as Map<String, dynamic>)['notifications'] as List<dynamic>?;
         return (list ?? const [])
-            .map((e) => NotificationWithMeta.fromJson(e as Map<String, dynamic>))
+            .map(
+              (e) => NotificationWithMeta.fromJson(e as Map<String, dynamic>),
+            )
             .toList();
       },
     );

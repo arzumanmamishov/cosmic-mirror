@@ -1,5 +1,6 @@
 import 'package:cosmic_mirror/config/theme/app_palette.dart';
 import 'package:cosmic_mirror/core/error/error_message.dart';
+import 'package:cosmic_mirror/core/network/app_locale.dart';
 import 'package:cosmic_mirror/l10n/app_localizations.dart';
 import 'package:cosmic_mirror/shared/widgets/error_view.dart' show ErrorView;
 import 'package:flutter/foundation.dart';
@@ -141,6 +142,9 @@ class ErrorPage extends StatelessWidget {
 /// crash card so the user sees something graceful even when something
 /// went very wrong inside a widget tree.
 Widget cosmicErrorWidgetBuilder(FlutterErrorDetails details) {
+  // May render above the Localizations widget, so resolve strings from the
+  // current app locale instead of a BuildContext.
+  final l = lookupAppLocalizations(Locale(currentLocaleCode));
   return Material(
     color: const Color(0xFF1A1F2E),
     child: SafeArea(
@@ -155,9 +159,9 @@ Widget cosmicErrorWidgetBuilder(FlutterErrorDetails details) {
               size: 48,
             ),
             const SizedBox(height: 16),
-            const Text(
-              'The cosmos hiccuped',
-              style: TextStyle(
+            Text(
+              l.errCrashTitle,
+              style: const TextStyle(
                 color: Colors.white,
                 fontSize: 18,
                 fontWeight: FontWeight.w800,
@@ -165,9 +169,9 @@ Widget cosmicErrorWidgetBuilder(FlutterErrorDetails details) {
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 8),
-            const Text(
-              'Something unexpected happened.\nRestart the app — if it keeps happening, let us know.',
-              style: TextStyle(color: Color(0xFFB6BAC4), fontSize: 13),
+            Text(
+              l.errCrashBody,
+              style: const TextStyle(color: Color(0xFFB6BAC4), fontSize: 13),
               textAlign: TextAlign.center,
             ),
             if (kDebugMode) ...[

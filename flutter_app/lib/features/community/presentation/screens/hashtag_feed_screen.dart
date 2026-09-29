@@ -1,4 +1,5 @@
 import 'package:cosmic_mirror/config/theme/app_palette.dart';
+import 'package:cosmic_mirror/l10n/app_localizations.dart';
 import 'package:cosmic_mirror/shared/widgets/cosmic_starfield.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -13,6 +14,7 @@ class HashtagFeedScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final p = context.palette;
+    final l = AppLocalizations.of(context);
     return Scaffold(
       backgroundColor: p.background,
       extendBodyBehindAppBar: true,
@@ -56,7 +58,7 @@ class HashtagFeedScreen extends ConsumerWidget {
                   ),
                   const SizedBox(height: 24),
                   Text(
-                    'Posts by hashtag are coming soon.',
+                    l.communityHashtagComingSoon,
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       color: p.textPrimary,
@@ -66,7 +68,7 @@ class HashtagFeedScreen extends ConsumerWidget {
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    'For now, browse spaces and discover hashtags inside posts.',
+                    l.communityHashtagComingSoonBody,
                     textAlign: TextAlign.center,
                     style: TextStyle(color: p.textSecondary, fontSize: 12),
                   ),

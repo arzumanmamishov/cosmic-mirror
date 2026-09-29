@@ -6,6 +6,7 @@ import 'package:cosmic_mirror/l10n/app_localizations.dart';
 import 'package:cosmic_mirror/shared/widgets/cosmic_starfield.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:intl/intl.dart';
 
 class NumerologyCompatScreen extends ConsumerStatefulWidget {
   const NumerologyCompatScreen({super.key});
@@ -66,13 +67,14 @@ class _NumerologyCompatScreenState
   @override
   Widget build(BuildContext context) {
     final p = context.palette;
+    final l = AppLocalizations.of(context);
     return Scaffold(
       backgroundColor: p.background,
       extendBodyBehindAppBar: true,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        title: Text(AppLocalizations.of(context).compatibilityTitle),
+        title: Text(l.compatibilityTitle),
       ),
       body: Stack(
         children: [
@@ -91,9 +93,14 @@ class _NumerologyCompatScreenState
               40,
             ),
             children: [
-              _field(p, 'PARTNER FULL BIRTH NAME', _name, 'e.g. Sarah Anne Chen'),
+              _field(
+                p,
+                l.numerologyCompatPartnerNameLabel,
+                _name,
+                l.numerologyCompatPartnerNameHint,
+              ),
               const SizedBox(height: 14),
-              _datePicker(p),
+              _datePicker(p, l),
               const SizedBox(height: 18),
               SizedBox(
                 width: double.infinity,
@@ -108,7 +115,9 @@ class _NumerologyCompatScreenState
                     ),
                   ),
                   child: Text(
-                    _busy ? 'Calculating…' : 'Compute compatibility',
+                    _busy
+                        ? l.numerologyCompatCalculating
+                        : l.numerologyCompatCompute,
                     style: const TextStyle(fontWeight: FontWeight.w800),
                   ),
                 ),
@@ -169,12 +178,12 @@ class _NumerologyCompatScreenState
     );
   }
 
-  Widget _datePicker(AppPalette p) {
+  Widget _datePicker(AppPalette p, AppLocalizations l) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'PARTNER BIRTH DATE',
+          l.numerologyCompatPartnerBirthDateLabel,
           style: TextStyle(
             color: p.textSecondary,
             fontSize: 11,
@@ -200,10 +209,10 @@ class _NumerologyCompatScreenState
                 const SizedBox(width: 10),
                 Text(
                   _birthDate == null
-                      ? 'Tap to pick'
-                      : '${_birthDate!.year}-'
-                          '${_birthDate!.month.toString().padLeft(2, '0')}-'
-                          '${_birthDate!.day.toString().padLeft(2, '0')}',
+                      ? l.numerologyCompatTapToPick
+                      : DateFormat.yMMMd(
+                          Localizations.localeOf(context).toString(),
+                        ).format(_birthDate!),
                   style: TextStyle(
                     color:
                         _birthDate == null ? p.textTertiary : p.textPrimary,

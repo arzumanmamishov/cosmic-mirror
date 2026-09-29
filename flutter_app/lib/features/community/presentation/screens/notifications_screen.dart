@@ -18,6 +18,7 @@ class NotificationsScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final p = context.palette;
+    final l = AppLocalizations.of(context);
     final notifsAsync = ref.watch(notificationsProvider);
     return Scaffold(
       backgroundColor: p.background,
@@ -26,7 +27,7 @@ class NotificationsScreen extends ConsumerWidget {
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: const BackButton(),
-        title: Text(AppLocalizations.of(context).communityNotifications),
+        title: Text(l.communityNotifications),
         actions: [
           TextButton(
             onPressed: () async {
@@ -38,7 +39,7 @@ class NotificationsScreen extends ConsumerWidget {
                 ..invalidate(unreadCountProvider);
             },
             child: Text(
-              AppLocalizations.of(context).communityMarkAllRead,
+              l.communityMarkAllRead,
               style: TextStyle(
                 color: p.primary,
                 fontSize: 12,
@@ -69,7 +70,7 @@ class NotificationsScreen extends ConsumerWidget {
                   child: Padding(
                     padding: const EdgeInsets.all(32),
                     child: Text(
-                      AppLocalizations.of(context).notifEmptyBlurb,
+                      l.notifEmptyBlurb,
                       textAlign: TextAlign.center,
                       style:
                           TextStyle(color: p.textSecondary, fontSize: 13),
@@ -77,7 +78,7 @@ class NotificationsScreen extends ConsumerWidget {
                   ),
                 );
               }
-              final groups = _groupByDay(AppLocalizations.of(context), entries);
+              final groups = _groupByDay(l, entries);
               return RefreshIndicator(
                 onRefresh: () async {
                   ref

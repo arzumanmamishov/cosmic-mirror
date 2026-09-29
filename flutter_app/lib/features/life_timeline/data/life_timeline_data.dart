@@ -3,6 +3,7 @@
 /// happening around that life event, derived from the user's natal chart.
 library;
 
+import 'package:cosmic_mirror/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 
 enum LifeEventCategory {
@@ -36,22 +37,22 @@ class LifeEvent {
 }
 
 extension LifeEventCategoryUI on LifeEventCategory {
-  String get label {
+  String label(AppLocalizations l) {
     switch (this) {
       case LifeEventCategory.career:
-        return 'Career';
+        return l.lifeTimelineCatCareer;
       case LifeEventCategory.love:
-        return 'Love';
+        return l.lifeTimelineCatLove;
       case LifeEventCategory.growth:
-        return 'Growth';
+        return l.lifeTimelineCatGrowth;
       case LifeEventCategory.loss:
-        return 'Loss';
+        return l.lifeTimelineCatLoss;
       case LifeEventCategory.travel:
-        return 'Travel';
+        return l.lifeTimelineCatTravel;
       case LifeEventCategory.family:
-        return 'Family';
+        return l.lifeTimelineCatFamily;
       case LifeEventCategory.reflection:
-        return 'Reflection';
+        return l.lifeTimelineCatReflection;
     }
   }
 
@@ -94,68 +95,94 @@ extension LifeEventCategoryUI on LifeEventCategory {
   }
 }
 
+/// Mood ids stored on [LifeEvent.mood]. Keep these stable; map to display
+/// text with [lifeEventMoodLabel].
+const lifeEventMoods = [
+  'Elated', 'Grounded', 'Open', 'Pressured',
+  'Free', 'Cleansed', 'Tender', 'Resolved',
+];
+
+/// Localized label for a stored mood id. Unknown values are returned as-is.
+String lifeEventMoodLabel(AppLocalizations l, String mood) {
+  switch (mood) {
+    case 'Elated':
+      return l.lifeTimelineMoodElated;
+    case 'Grounded':
+      return l.lifeTimelineMoodGrounded;
+    case 'Open':
+      return l.lifeTimelineMoodOpen;
+    case 'Pressured':
+      return l.lifeTimelineMoodPressured;
+    case 'Free':
+      return l.lifeTimelineMoodFree;
+    case 'Cleansed':
+      return l.lifeTimelineMoodCleansed;
+    case 'Tender':
+      return l.lifeTimelineMoodTender;
+    case 'Resolved':
+      return l.lifeTimelineMoodResolved;
+    default:
+      return mood;
+  }
+}
+
 /// Realistic mock data spanning the user's recent past, with believable
 /// astrological context. Events are intentionally written like a real
-/// person's journal entries, not lorem ipsum.
-final List<LifeEvent> mockLifeEvents = [
+/// person's journal entries, not lorem ipsum. Built per-locale so the sample
+/// text is shown in the user's language.
+List<LifeEvent> mockLifeEvents(AppLocalizations l) => [
   LifeEvent(
     id: 'evt_2024_03',
     date: DateTime(2024, 3, 14),
-    title: 'Got the offer',
-    description:
-        "Accepted the senior role at the design studio. Felt like everything I've worked toward suddenly clicked into place.",
+    title: l.lifeTimelineMock1Title,
+    description: l.lifeTimelineMock1Desc,
     category: LifeEventCategory.career,
-    transits: ['Jupiter trine natal MC', 'Venus in 10th house'],
+    transits: [l.lifeTimelineMock1Transit1, l.lifeTimelineMock1Transit2],
     mood: 'Elated',
   ),
   LifeEvent(
     id: 'evt_2024_07',
     date: DateTime(2024, 7, 5),
-    title: 'Cancer New Moon retreat',
-    description:
-        'Three days off-grid in Joshua Tree. Wrote 40 pages of journal. Came back with clarity about what I actually want.',
+    title: l.lifeTimelineMock2Title,
+    description: l.lifeTimelineMock2Desc,
     category: LifeEventCategory.reflection,
-    transits: ['New Moon conjunct natal Moon', 'Mercury retrograde in 4th'],
+    transits: [l.lifeTimelineMock2Transit1, l.lifeTimelineMock2Transit2],
     mood: 'Grounded',
   ),
   LifeEvent(
     id: 'evt_2024_10',
     date: DateTime(2024, 10, 22),
-    title: 'Met Theo',
-    description:
-        "Coffee at 4pm became dinner became a long walk. Felt the kind of recognition you can't fake.",
+    title: l.lifeTimelineMock3Title,
+    description: l.lifeTimelineMock3Desc,
     category: LifeEventCategory.love,
-    transits: ['Venus trine natal Sun', 'Sun in 7th house'],
+    transits: [l.lifeTimelineMock3Transit1, l.lifeTimelineMock3Transit2],
     mood: 'Open',
   ),
   LifeEvent(
     id: 'evt_2025_02',
     date: DateTime(2025, 2, 11),
-    title: 'Saturn return begins',
-    description:
-        'The first wave hit. Re-evaluating every commitment. Starting to feel which structures need to come down.',
+    title: l.lifeTimelineMock4Title,
+    description: l.lifeTimelineMock4Desc,
     category: LifeEventCategory.growth,
-    transits: ['Saturn conjunct natal Saturn (1st pass)'],
+    transits: [l.lifeTimelineMock4Transit1],
     mood: 'Pressured',
   ),
   LifeEvent(
     id: 'evt_2025_06',
     date: DateTime(2025, 6, 9),
-    title: 'Trip to Lisbon',
-    description:
-        'Two weeks alone with my notebook. Realised how much of my anxiety was just being too plugged in.',
+    title: l.lifeTimelineMock5Title,
+    description: l.lifeTimelineMock5Desc,
     category: LifeEventCategory.travel,
-    transits: ['Jupiter in 9th house', 'Mars trine Mercury'],
+    transits: [l.lifeTimelineMock5Transit1, l.lifeTimelineMock5Transit2],
     mood: 'Free',
   ),
   LifeEvent(
     id: 'evt_2026_01',
     date: DateTime(2026, 1, 18),
-    title: 'Ended the lease',
-    description:
-        'Moved out of the apartment. Decided I needed less space and fewer attachments. Saturn was right.',
+    title: l.lifeTimelineMock6Title,
+    description: l.lifeTimelineMock6Desc,
     category: LifeEventCategory.loss,
-    transits: ['Saturn square natal Moon', 'Pluto opposite natal Venus'],
+    transits: [l.lifeTimelineMock6Transit1, l.lifeTimelineMock6Transit2],
     mood: 'Cleansed',
   ),
 ];

@@ -1,5 +1,6 @@
 import 'package:cosmic_mirror/config/theme/colors.dart';
 import 'package:cosmic_mirror/config/theme/typography.dart';
+import 'package:cosmic_mirror/l10n/app_localizations.dart';
 import 'package:cosmic_mirror/shared/providers/subscription_state_provider.dart';
 import 'package:cosmic_mirror/shared/widgets/cosmic_button.dart';
 import 'package:flutter/material.dart';
@@ -10,13 +11,16 @@ class PremiumGate extends ConsumerWidget {
   const PremiumGate({
     required this.child,
     super.key,
-    this.featureName = 'this feature',
+    this.featureName,
     this.previewChild,
     this.showInline = true,
   });
 
   final Widget child;
-  final String featureName;
+
+  /// Localized feature name for the "Unlock …" headline. When null a
+  /// generic "Unlock this feature" is shown.
+  final String? featureName;
   final Widget? previewChild;
   final bool showInline;
 
@@ -47,10 +51,12 @@ class PremiumGate extends ConsumerWidget {
 class _UpgradePrompt extends StatelessWidget {
   const _UpgradePrompt({required this.featureName});
 
-  final String featureName;
+  final String? featureName;
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context);
+    final name = featureName;
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
@@ -76,19 +82,21 @@ class _UpgradePrompt extends StatelessWidget {
           ),
           const SizedBox(height: 12),
           Text(
-            'Unlock $featureName',
+            name == null
+                ? l.premiumUnlockThisFeature
+                : l.premiumUnlockFeature(name),
             style: CosmicTypography.headlineSmall,
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 8),
-          const Text(
-            'Upgrade to Premium for full access to personalized insights.',
+          Text(
+            l.premiumUpgradeBody,
             style: CosmicTypography.bodySmall,
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 16),
           CosmicButton(
-            label: 'View Plans',
+            label: l.premiumViewPlans,
             onPressed: () => context.push('/paywall'),
             fullWidth: false,
           ),

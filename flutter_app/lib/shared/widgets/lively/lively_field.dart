@@ -1,5 +1,7 @@
 import 'package:cosmic_mirror/config/theme/app_palette.dart';
 import 'package:cosmic_mirror/config/theme/lively_type.dart';
+import 'package:cosmic_mirror/core/utils/string_utils.dart';
+import 'package:cosmic_mirror/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 
 /// Lively text field — an uppercase caption label above a rounded input
@@ -77,7 +79,9 @@ class _LivelyFieldState extends State<LivelyField> {
       children: [
         if (widget.label != null) ...[
           Text(
-            widget.label!.toUpperCase(),
+            widget.label!.toUpperCaseLocale(
+              Localizations.localeOf(context).languageCode,
+            ),
             style: LivelyType.caption(p.textMuted).copyWith(letterSpacing: 1.1),
           ),
           const SizedBox(height: 8),
@@ -121,6 +125,9 @@ class _LivelyFieldState extends State<LivelyField> {
                   onChanged: widget.onChanged,
                   onSubmitted: widget.onSubmitted,
                   cursorColor: p.primary,
+                  // Reveal the whole field box, not just the caret line,
+                  // when the keyboard opens.
+                  scrollPadding: const EdgeInsets.fromLTRB(20, 20, 20, 60),
                   style: widget.large
                       ? LivelyType.h1(p.textPrimary)
                       : LivelyType.h2(p.textPrimary)
@@ -154,7 +161,9 @@ class _LivelyFieldState extends State<LivelyField> {
                           : Icons.visibility_outlined,
                       color: p.textMuted,
                       size: 20,
-                      semanticLabel: _revealed ? 'Hide password' : 'Show password',
+                      semanticLabel: _revealed
+                          ? AppLocalizations.of(context).commonHidePassword
+                          : AppLocalizations.of(context).commonShowPassword,
                     ),
                   ),
                 ),

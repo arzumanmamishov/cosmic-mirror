@@ -1,22 +1,23 @@
 import 'package:cosmic_mirror/config/theme/colors.dart';
 import 'package:cosmic_mirror/config/theme/typography.dart';
+import 'package:cosmic_mirror/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 class QuickActions extends StatelessWidget {
   const QuickActions({super.key});
 
-  static const _actions = [
-    ('AI Chat', Icons.chat_bubble_outline, '/chat', CosmicColors.primary),
-    ('Compatibility', Icons.favorite_outline, '/compatibility', CosmicColors.accent),
-    ('Full Chart', Icons.auto_awesome, '/chart', CosmicColors.success),
-    ('Vedic', Icons.brightness_5_rounded, '/vedic-chart', CosmicColors.gold),
-  ];
-
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context);
+    final actions = [
+      (l.homeQuickAiChat, Icons.chat_bubble_outline, '/chat', CosmicColors.primary),
+      (l.compatibilityTitle, Icons.favorite_outline, '/compatibility', CosmicColors.accent),
+      (l.homeQuickFullChart, Icons.auto_awesome, '/chart', CosmicColors.success),
+      (l.chartCategoryVedic, Icons.brightness_5_rounded, '/vedic-chart', CosmicColors.gold),
+    ];
     return Row(
-      children: _actions.map((action) {
+      children: actions.map((action) {
         final (label, icon, route, color) = action;
         return Expanded(
           child: GestureDetector(

@@ -1,5 +1,5 @@
 import 'package:cosmic_mirror/config/theme/app_palette.dart';
-import 'package:cosmic_mirror/core/utils/string_utils.dart';
+import 'package:cosmic_mirror/features/chart/presentation/astro_labels.dart';
 import 'package:cosmic_mirror/features/vedic_chart/data/repositories/vedic_repository.dart';
 import 'package:cosmic_mirror/features/vedic_chart/domain/entities/vedic_chart.dart';
 import 'package:cosmic_mirror/features/vedic_chart/presentation/providers/vedic_providers.dart';
@@ -64,11 +64,10 @@ class _AyanamsaMenu extends ConsumerWidget {
     final p = context.palette;
     final selected = ref.watch(selectedAyanamsaProvider);
     return PopupMenuButton<Ayanamsa>(
-      tooltip: 'Ayanamsa',
+      tooltip: AppLocalizations.of(context).vedicAyanamsa,
       icon: Icon(Icons.tune_rounded, color: p.textPrimary),
       color: p.surfaceElevated,
-      onSelected: (v) =>
-          ref.read(selectedAyanamsaProvider.notifier).state = v,
+      onSelected: (v) => ref.read(selectedAyanamsaProvider.notifier).state = v,
       itemBuilder: (_) => Ayanamsa.values
           .map(
             (a) => PopupMenuItem<Ayanamsa>(
@@ -142,6 +141,7 @@ class _Hero extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final p = context.palette;
+    final l = AppLocalizations.of(context);
     final sun = chart.planets.where((e) => e.name == 'Sun').firstOrNull;
     final moon = chart.planets.where((e) => e.name == 'Moon').firstOrNull;
     return Padding(
@@ -157,8 +157,8 @@ class _Hero extends ConsumerWidget {
             children: [
               Expanded(
                 child: _BigSign(
-                  label: 'LAGNA',
-                  english: chart.lagna.sign,
+                  label: l.vedicLagnaLabel,
+                  english: chartSignName(l, chart.lagna.sign),
                   sanskrit: chart.lagna.signSanskrit,
                   color: p.primary,
                 ),
@@ -166,8 +166,8 @@ class _Hero extends ConsumerWidget {
               const SizedBox(width: 10),
               Expanded(
                 child: _BigSign(
-                  label: 'CHANDRA',
-                  english: moon?.sign ?? '—',
+                  label: l.vedicChandraLabel,
+                  english: moon == null ? '—' : chartSignName(l, moon.sign),
                   sanskrit: moon?.signSanskrit ?? '',
                   color: p.accent,
                 ),
@@ -175,8 +175,8 @@ class _Hero extends ConsumerWidget {
               const SizedBox(width: 10),
               Expanded(
                 child: _BigSign(
-                  label: 'SURYA',
-                  english: sun?.sign ?? '—',
+                  label: l.vedicSuryaLabel,
+                  english: sun == null ? '—' : chartSignName(l, sun.sign),
                   sanskrit: sun?.signSanskrit ?? '',
                   color: p.gold,
                 ),
@@ -191,8 +191,7 @@ class _Hero extends ConsumerWidget {
               borderRadius: BorderRadius.circular(20),
             ),
             child: Text(
-              AppLocalizations.of(context)
-                  .vedicAtmakarakaLabel(chart.atmaKaraka),
+              l.vedicAtmakarakaLabel(chartPlanetName(l, chart.atmaKaraka)),
               style: TextStyle(
                 color: p.gold,
                 fontSize: 11,
@@ -205,7 +204,7 @@ class _Hero extends ConsumerWidget {
           NorthIndianChart(chart: chart),
           const SizedBox(height: 12),
           Text(
-            AppLocalizations.of(context).vedicChartCaption(
+            l.vedicChartCaption(
               chart.vargaName,
               chart.varga,
               chart.ayanamsa,
@@ -332,6 +331,7 @@ class _PlanetsTab extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final p = context.palette;
+    final l = AppLocalizations.of(context);
     return ListView.separated(
       padding: const EdgeInsets.fromLTRB(20, 12, 20, 40),
       itemCount: chart.planets.length,
@@ -356,7 +356,7 @@ class _PlanetsTab extends StatelessWidget {
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Text(
-                  pl.name.abbrev(),
+                  chartPlanetAbbr(l, pl.name),
                   style: TextStyle(
                     color: _dignityColor(pl.dignity, p),
                     fontSize: 14,
@@ -372,7 +372,7 @@ class _PlanetsTab extends StatelessWidget {
                     Row(
                       children: [
                         Text(
-                          '${pl.name} · ${pl.sanskrit}',
+                          '${chartPlanetName(l, pl.name)} · ${pl.sanskrit}',
                           style: TextStyle(
                             color: p.textPrimary,
                             fontSize: 14,
@@ -383,7 +383,7 @@ class _PlanetsTab extends StatelessWidget {
                           Padding(
                             padding: const EdgeInsets.only(left: 6),
                             child: _badge(
-                              AppLocalizations.of(context).vedicRetro,
+                              l.vedicRetro,
                               p.warning,
                               p,
                             ),
@@ -392,7 +392,7 @@ class _PlanetsTab extends StatelessWidget {
                           Padding(
                             padding: const EdgeInsets.only(left: 4),
                             child: _badge(
-                              AppLocalizations.of(context).vedicCombust,
+                              l.vedicCombust,
                               p.error,
                               p,
                             ),
@@ -401,14 +401,20 @@ class _PlanetsTab extends StatelessWidget {
                     ),
                     const SizedBox(height: 2),
                     Text(
-                      '${pl.sign} (${pl.signSanskrit}) · '
-                      '${pl.degree.toStringAsFixed(1)}° · House ${pl.house}',
+                      l.vedicPlanetPosition(
+                        chartSignName(l, pl.sign),
+                        pl.signSanskrit,
+                        pl.degree.toStringAsFixed(1),
+                        pl.house,
+                      ),
                       style: TextStyle(color: p.textSecondary, fontSize: 12),
                     ),
                     const SizedBox(height: 2),
                     Text(
-                      '${pl.nakshatra.name} pada ${pl.pada} · '
-                      '${_dignityLabel(pl.dignity)}',
+                      [
+                        l.vedicNakshatraPada(pl.nakshatra.name, pl.pada),
+                        if (pl.dignity.isNotEmpty) _dignityLabel(l, pl.dignity),
+                      ].join(' · '),
                       style: TextStyle(color: p.textTertiary, fontSize: 11),
                     ),
                   ],
@@ -457,8 +463,26 @@ class _PlanetsTab extends StatelessWidget {
     }
   }
 
-  String _dignityLabel(String d) =>
-      d.isEmpty ? '' : '${d[0].toUpperCase()}${d.substring(1)}';
+  String _dignityLabel(AppLocalizations l, String d) {
+    switch (d) {
+      case 'exalted':
+        return l.vedicDignityExalted;
+      case 'debilitated':
+        return l.vedicDignityDebilitated;
+      case 'mooltrikona':
+        return l.vedicDignityMooltrikona;
+      case 'own':
+        return l.vedicDignityOwn;
+      case 'friend':
+        return l.vedicDignityFriend;
+      case 'enemy':
+        return l.vedicDignityEnemy;
+      case 'neutral':
+        return l.vedicDignityNeutral;
+      default:
+        return d.isEmpty ? '' : '${d[0].toUpperCase()}${d.substring(1)}';
+    }
+  }
 }
 
 class _BhavasTab extends StatelessWidget {
@@ -517,17 +541,25 @@ class _BhavasTab extends StatelessWidget {
                     const SizedBox(height: 2),
                     Text(
                       AppLocalizations.of(context).vedicBhavaLord(
-                        b.sign,
+                        chartSignName(AppLocalizations.of(context), b.sign),
                         b.signSanskrit,
-                        b.lord,
+                        chartPlanetName(AppLocalizations.of(context), b.lord),
                       ),
                       style: TextStyle(color: p.textSecondary, fontSize: 12),
                     ),
                     if (b.planets.isNotEmpty) ...[
                       const SizedBox(height: 4),
                       Text(
-                        AppLocalizations.of(context)
-                            .vedicBhavaOccupants(b.planets.join(', ')),
+                        AppLocalizations.of(context).vedicBhavaOccupants(
+                          b.planets
+                              .map(
+                                (e) => chartPlanetName(
+                                  AppLocalizations.of(context),
+                                  e,
+                                ),
+                              )
+                              .join(', '),
+                        ),
                         style: TextStyle(color: p.textTertiary, fontSize: 11),
                       ),
                     ],
@@ -549,12 +581,12 @@ class _AspectsTab extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final p = context.palette;
-    final grahaAspects =
-        chart.aspects.where((a) => a.to != 'House').toList();
+    final l = AppLocalizations.of(context);
+    final grahaAspects = chart.aspects.where((a) => a.to != 'House').toList();
     if (grahaAspects.isEmpty) {
       return Center(
         child: Text(
-          AppLocalizations.of(context).vedicNoAspects,
+          l.vedicNoAspects,
           style: TextStyle(color: p.textSecondary),
         ),
       );
@@ -584,7 +616,7 @@ class _AspectsTab extends StatelessWidget {
                   borderRadius: BorderRadius.circular(6),
                 ),
                 child: Text(
-                  a.type,
+                  _aspectType(l, a.type),
                   style: TextStyle(
                     color: p.primary,
                     fontSize: 10,
@@ -595,7 +627,10 @@ class _AspectsTab extends StatelessWidget {
               const SizedBox(width: 10),
               Expanded(
                 child: Text(
-                  AppLocalizations.of(context).vedicAspectsLine(a.from, a.to),
+                  l.vedicAspectsLine(
+                    chartPlanetName(l, a.from),
+                    chartPlanetName(l, a.to),
+                  ),
                   style: TextStyle(color: p.textPrimary, fontSize: 13),
                 ),
               ),
@@ -609,6 +644,12 @@ class _AspectsTab extends StatelessWidget {
       },
     );
   }
+
+  /// Backend sends ordinals like "7th" / "3rd"; re-render them per locale.
+  static String _aspectType(AppLocalizations l, String type) {
+    final n = int.tryParse(type.replaceAll(RegExp('[^0-9]'), ''));
+    return n == null ? type : l.vedicAspectOrdinal(n.toString());
+  }
 }
 
 class _NakshatrasTab extends StatelessWidget {
@@ -617,17 +658,18 @@ class _NakshatrasTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context);
     return ListView(
       padding: const EdgeInsets.fromLTRB(20, 12, 20, 40),
       children: [
         NakshatraCard(
-          title: 'Lagna',
+          title: l.vedicLagna,
           nakshatra: chart.lagna.nakshatra,
           pada: chart.lagna.pada,
         ),
         for (final pl in chart.planets)
           NakshatraCard(
-            title: pl.name,
+            title: chartPlanetName(l, pl.name),
             nakshatra: pl.nakshatra,
             pada: pl.pada,
           ),
@@ -784,7 +826,10 @@ class _ShadbalaTab extends ConsumerWidget {
             final e = entries[i];
             return Padding(
               padding: const EdgeInsets.fromLTRB(20, 20, 20, 40),
-              child: ShadbalaRadar(planet: e.key, bala: e.value),
+              child: ShadbalaRadar(
+                planet: chartPlanetName(AppLocalizations.of(context), e.key),
+                bala: e.value,
+              ),
             );
           },
         );

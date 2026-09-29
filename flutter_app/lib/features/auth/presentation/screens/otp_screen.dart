@@ -9,6 +9,7 @@ import 'dart:math' as math;
 import 'package:cosmic_mirror/config/theme/app_palette.dart';
 import 'package:cosmic_mirror/config/theme/lively_type.dart';
 import 'package:cosmic_mirror/features/auth/presentation/providers/auth_provider.dart';
+import 'package:cosmic_mirror/l10n/app_localizations.dart';
 import 'package:cosmic_mirror/shared/providers/user_provider.dart';
 import 'package:cosmic_mirror/shared/widgets/lively/gold_button.dart';
 import 'package:cosmic_mirror/shared/widgets/lively/lively_backdrop.dart';
@@ -131,7 +132,9 @@ class _OtpScreenState extends ConsumerState<OtpScreen>
     if (code.length != 6) return;
     if (widget.purpose == OtpPurpose.passwordReset &&
         _newPasswordCtrl.text.length < 8) {
-      setState(() => _error = 'Password must be at least 8 characters');
+      setState(
+        () => _error = AppLocalizations.of(context).authPasswordTooShort,
+      );
       return;
     }
     setState(() {
@@ -160,7 +163,9 @@ class _OtpScreenState extends ConsumerState<OtpScreen>
       if (!mounted) return;
       if (widget.purpose == OtpPurpose.passwordReset) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Password updated. Please sign in.')),
+          SnackBar(
+            content: Text(AppLocalizations.of(context).authPasswordUpdated),
+          ),
         );
         context.go('/auth');
       } else {
@@ -196,24 +201,28 @@ class _OtpScreenState extends ConsumerState<OtpScreen>
   }
 
   String _prettyError(Object e) {
+    final l = AppLocalizations.of(context);
     final s = e.toString();
     if (s.contains('invalid_code') ||
         s.contains('Invalid or expired code')) {
-      return "That code didn't work. Try again or resend.";
+      return l.authOtpInvalidCode;
     }
     if (s.contains('rate_limited')) {
-      return 'Too many attempts. Please wait a minute.';
+      return l.authTooManyAttemptsWait;
     }
-    return 'Something went wrong. Please try again.';
+    return l.commonSomethingWentWrong;
   }
 
   @override
   Widget build(BuildContext context) {
     final p = context.palette;
+    final l = AppLocalizations.of(context);
+    // Kickers are stored pre-uppercased in the ARB: Dart's toUpperCase()
+    // isn't locale-aware (Turkish i → İ).
     final headline = switch (widget.purpose) {
-      OtpPurpose.register => 'Confirm your email',
-      OtpPurpose.login => 'Sign in',
-      OtpPurpose.passwordReset => 'Reset your password',
+      OtpPurpose.register => l.authOtpKickerConfirmEmail,
+      OtpPurpose.login => l.authOtpKickerSignIn,
+      OtpPurpose.passwordReset => l.authOtpKickerResetPassword,
     };
 
     return Scaffold(
@@ -233,17 +242,17 @@ class _OtpScreenState extends ConsumerState<OtpScreen>
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  headline.toUpperCase(),
+                  headline,
                   style: LivelyType.kicker(p.primary),
                 ),
                 const SizedBox(height: 12),
                 Text(
-                  'Check your email',
+                  l.authOtpCheckEmail,
                   style: LivelyType.d2(p.textPrimary),
                 ),
                 const SizedBox(height: 14),
                 Text(
-                  'We sent a 6-digit code to ${widget.email}.',
+                  l.authOtpSentTo(widget.email),
                   style: LivelyType.body(p.textMuted),
                 ),
                 const SizedBox(height: 28),
@@ -257,7 +266,7 @@ class _OtpScreenState extends ConsumerState<OtpScreen>
                   const SizedBox(height: 20),
                   LivelyField(
                     controller: _newPasswordCtrl,
-                    label: 'New password',
+                    label: l.authNewPassword,
                     hint: '••••••••',
                     obscure: true,
                     autofillHints: const [AutofillHints.newPassword],
@@ -270,7 +279,7 @@ class _OtpScreenState extends ConsumerState<OtpScreen>
                 const SizedBox(height: 20),
                 if (widget.purpose == OtpPurpose.passwordReset)
                   GoldButton(
-                    label: 'Reset password',
+                    label: l.authResetPasswordButton,
                     loading: _busy,
                     onPressed: _busy ? null : _verify,
                   ),
@@ -278,13 +287,15 @@ class _OtpScreenState extends ConsumerState<OtpScreen>
                 Center(
                   child: _cooldown > 0
                       ? Text(
-                          'Resend code in 0:${_cooldown.toString().padLeft(2, '0')}',
+                          l.authOtpResendIn(
+                            '0:${_cooldown.toString().padLeft(2, '0')}',
+                          ),
                           style: LivelyType.small(p.textDim),
                         )
                       : TextButton(
                           onPressed: _busy ? null : _requestCode,
                           child: Text(
-                            'Resend code',
+                            l.authOtpResend,
                             style: LivelyType.small(p.primary),
                           ),
                         ),

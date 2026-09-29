@@ -237,14 +237,14 @@ class _ErrorInterceptor extends Interceptor {
           );
         }
         throw ServerException(
-          message: message ?? 'An unexpected error occurred.',
+          message: message ?? ServerException.fallbackMessage,
           statusCode: statusCode,
           code: code,
         );
       // ignore: no_default_cases
       default:
         throw ServerException(
-          message: err.message ?? 'An unexpected error occurred.',
+          message: err.message ?? ServerException.fallbackMessage,
         );
     }
   }

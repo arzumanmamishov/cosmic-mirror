@@ -18,13 +18,15 @@ class LifeTimelineScreen extends StatefulWidget {
 }
 
 class _LifeTimelineScreenState extends State<LifeTimelineScreen> {
-  late List<LifeEvent> _events;
+  List<LifeEvent>? _events;
 
   @override
-  void initState() {
-    super.initState();
-    // Most recent first
-    _events = [...mockLifeEvents]..sort((a, b) => b.date.compareTo(a.date));
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Seed once with localized sample data (needs context for l10n).
+    // Most recent first.
+    _events ??= (mockLifeEvents(AppLocalizations.of(context))
+      ..sort((a, b) => b.date.compareTo(a.date)));
   }
 
   Future<void> _addEvent() async {
@@ -36,7 +38,7 @@ class _LifeTimelineScreenState extends State<LifeTimelineScreen> {
     );
     if (newEvent != null && mounted) {
       setState(() {
-        _events = [..._events, newEvent]
+        _events = [...?_events, newEvent]
           ..sort((a, b) => b.date.compareTo(a.date));
       });
     }
@@ -45,6 +47,7 @@ class _LifeTimelineScreenState extends State<LifeTimelineScreen> {
   @override
   Widget build(BuildContext context) {
     final p = context.palette;
+    final events = _events ?? const <LifeEvent>[];
 
     return Scaffold(
       backgroundColor: p.background,
@@ -69,14 +72,14 @@ class _LifeTimelineScreenState extends State<LifeTimelineScreen> {
         intensity: 0.6,
         child: ListView.builder(
           padding: const EdgeInsets.fromLTRB(20, 90, 20, 100),
-          itemCount: _events.length + 1,
+          itemCount: events.length + 1,
           itemBuilder: (context, i) {
             if (i == 0) {
-              return FadeSlideIn(child: _Header(count: _events.length));
+              return FadeSlideIn(child: _Header(count: events.length));
             }
-            final event = _events[i - 1];
+            final event = events[i - 1];
             final isFirst = i == 1;
-            final isLast = i == _events.length;
+            final isLast = i == events.length;
             return FadeSlideIn(
               delay: Duration(milliseconds: 80 + i * 50),
               child: _TimelineItem(
@@ -164,8 +167,12 @@ class _TimelineItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final p = context.palette;
+    final l = AppLocalizations.of(context);
     final color = event.category.color;
-    final dateLabel = DateFormat('MMM d, yyyy').format(event.date);
+    final dateLabel = DateFormat(
+      'MMM d, yyyy',
+      Localizations.localeOf(context).toString(),
+    ).format(event.date);
 
     return IntrinsicHeight(
       child: Row(
@@ -246,7 +253,7 @@ class _TimelineItem extends StatelessWidget {
                               ),
                               const SizedBox(width: 4),
                               Text(
-                                event.category.label,
+                                event.category.label(l),
                                 style: TextStyle(
                                   color: color,
                                   fontSize: 10,
@@ -287,8 +294,10 @@ class _TimelineItem extends StatelessWidget {
                           ),
                           const SizedBox(width: 4),
                           Text(
-                            AppLocalizations.of(context)
-                                .lifeTimelineFelt(event.mood!.toLowerCase()),
+                            l.lifeTimelineFelt(
+                              lifeEventMoodLabel(l, event.mood!)
+                                  .toLowerCase(),
+                            ),
                             style: TextStyle(
                               color: p.textTertiary,
                               fontSize: 11,

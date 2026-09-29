@@ -1,5 +1,6 @@
 import 'package:cosmic_mirror/config/theme/app_palette.dart';
 import 'package:cosmic_mirror/features/community/presentation/providers/community_providers.dart';
+import 'package:cosmic_mirror/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -86,12 +87,13 @@ class _JoinButtonState extends ConsumerState<JoinButton> {
   @override
   Widget build(BuildContext context) {
     final p = context.palette;
+    final l = AppLocalizations.of(context);
     final padH = widget.compact ? 14.0 : 18.0;
     final padV = widget.compact ? 6.0 : 10.0;
     final label = switch (_state) {
-      JoinState.join => 'Join',
-      JoinState.pending => 'Pending',
-      JoinState.joined => 'Joined',
+      JoinState.join => l.communityJoinSpace,
+      JoinState.pending => l.spaceJoinPending,
+      JoinState.joined => l.discussionsJoined,
     };
     final isPrimary = _state == JoinState.join;
     return GestureDetector(
@@ -110,7 +112,7 @@ class _JoinButtonState extends ConsumerState<JoinButton> {
         child: Text(
           label,
           style: TextStyle(
-            color: isPrimary ? Colors.white : p.textSecondary,
+            color: isPrimary ? p.onPrimary : p.textSecondary,
             fontSize: 12,
             fontWeight: FontWeight.w700,
             letterSpacing: 0.4,

@@ -34,7 +34,7 @@ class YearlyForecastScreen extends ConsumerWidget {
         title: Text(l.yearlyForecastTitle),
       ),
       body: PremiumGate(
-        featureName: 'Yearly Forecast',
+        featureName: l.yearlyForecastTitle,
         child: forecastAsync.when(
           loading: () => const ShimmerList(itemCount: 5),
           error: (e, _) => ErrorView(

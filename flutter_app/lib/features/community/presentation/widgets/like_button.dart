@@ -60,7 +60,7 @@ class _LikeButtonState extends ConsumerState<LikeButton> {
   @override
   Widget build(BuildContext context) {
     final p = context.palette;
-    final color = _liked ? p.accent : p.textSecondary;
+    final color = _liked ? p.error : p.textSecondary;
     return InkWell(
       onTap: _toggle,
       borderRadius: BorderRadius.circular(8),

@@ -42,7 +42,7 @@ class _TimelineScreenState extends ConsumerState<TimelineScreen> {
       backgroundColor: p.background,
       appBar: AppBar(title: Text(l.transitHeroTitle)),
       body: PremiumGate(
-        featureName: 'Timeline Forecasts',
+        featureName: l.timelineFeatureName,
         child: Column(
           children: [
             Padding(
@@ -169,12 +169,8 @@ class _PillTab extends StatelessWidget {
         padding: const EdgeInsets.symmetric(vertical: 10),
         decoration: BoxDecoration(
           gradient: active
-              ? const LinearGradient(
-                  colors: [
-                    Color(0xFFE9D49A),
-                    Color(0xFFD4B16A),
-                    Color(0xFF9F7637),
-                  ],
+              ? LinearGradient(
+                  colors: [p.primaryHi, p.primary, p.primaryDim],
                 )
               : null,
           borderRadius: BorderRadius.circular(100),

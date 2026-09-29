@@ -1,4 +1,5 @@
 import 'package:cosmic_mirror/config/theme/app_palette.dart';
+import 'package:cosmic_mirror/core/error/error_message.dart';
 import 'package:cosmic_mirror/features/community/presentation/providers/community_providers.dart';
 import 'package:cosmic_mirror/features/community/presentation/widgets/compose_post_field.dart';
 import 'package:cosmic_mirror/l10n/app_localizations.dart';
@@ -58,7 +59,8 @@ class _ComposePostSheetState extends ConsumerState<ComposePostSheet> {
       );
       if (mounted) Navigator.of(context).pop();
     } catch (e) {
-      setState(() => _error = e.toString());
+      if (!mounted) return;
+      setState(() => _error = FriendlyError.from(context, e).body);
     } finally {
       if (mounted) setState(() => _busy = false);
     }

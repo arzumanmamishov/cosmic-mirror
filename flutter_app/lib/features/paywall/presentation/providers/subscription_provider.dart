@@ -26,21 +26,31 @@ class PaywallState {
     this.isYearly = true,
     this.isPurchasing = false,
     this.error,
+    this.errorObject,
   });
 
   final bool isYearly;
   final bool isPurchasing;
+
+  /// Already-localized message (from Stripe's own `localizedMessage`),
+  /// safe to show verbatim.
   final String? error;
+
+  /// Raw failure for everything else. The UI maps it through
+  /// `FriendlyError` so the user sees localized copy, never `toString()`.
+  final Object? errorObject;
 
   PaywallState copyWith({
     bool? isYearly,
     bool? isPurchasing,
     String? error,
+    Object? errorObject,
   }) {
     return PaywallState(
       isYearly: isYearly ?? this.isYearly,
       isPurchasing: isPurchasing ?? this.isPurchasing,
       error: error,
+      errorObject: errorObject,
     );
   }
 }
@@ -98,13 +108,15 @@ class PaywallNotifier extends StateNotifier<PaywallState> {
         state = state.copyWith(isPurchasing: false);
         return false;
       }
+      final msg = e.error.localizedMessage;
       state = state.copyWith(
         isPurchasing: false,
-        error: e.error.localizedMessage ?? e.error.code.name,
+        error: (msg != null && msg.isNotEmpty) ? msg : null,
+        errorObject: (msg != null && msg.isNotEmpty) ? null : e,
       );
       return false;
     } catch (e) {
-      state = state.copyWith(isPurchasing: false, error: e.toString());
+      state = state.copyWith(isPurchasing: false, errorObject: e);
       return false;
     }
   }
@@ -119,7 +131,7 @@ class PaywallNotifier extends StateNotifier<PaywallState> {
       state = state.copyWith(isPurchasing: false);
       return true;
     } catch (e) {
-      state = state.copyWith(isPurchasing: false, error: e.toString());
+      state = state.copyWith(isPurchasing: false, errorObject: e);
       return false;
     }
   }

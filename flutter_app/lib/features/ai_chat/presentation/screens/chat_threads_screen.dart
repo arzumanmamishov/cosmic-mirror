@@ -124,6 +124,7 @@ class ChatThreadsScreen extends ConsumerWidget {
 
   Future<bool> _confirmDelete(BuildContext context, String? title) async {
     final p = context.palette;
+    final l = AppLocalizations.of(context);
     final result = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
@@ -132,22 +133,22 @@ class ChatThreadsScreen extends ConsumerWidget {
           borderRadius: BorderRadius.circular(20),
         ),
         title: Text(
-          'Delete conversation?',
+          l.chatThreadsDeleteConfirm,
           style: TextStyle(color: p.textPrimary, fontWeight: FontWeight.w700),
         ),
         content: Text(
-          '"${title ?? 'New Conversation'}" and all its messages will be removed. This cannot be undone.',
+          l.chatThreadsDeleteBody(title ?? l.chatThreadsUntitled),
           style: TextStyle(color: p.textSecondary, height: 1.4),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(false),
-            child: Text('Cancel', style: TextStyle(color: p.textSecondary)),
+            child: Text(l.cancel, style: TextStyle(color: p.textSecondary)),
           ),
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(true),
             style: TextButton.styleFrom(foregroundColor: p.error),
-            child: Text(AppLocalizations.of(context).chatThreadsDelete),
+            child: Text(l.chatThreadsDelete),
           ),
         ],
       ),
@@ -163,13 +164,14 @@ class _Header extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final p = context.palette;
+    final l = AppLocalizations.of(context);
     return Padding(
       padding: const EdgeInsets.only(bottom: 8),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Cosmic Conversations',
+            l.chatThreadsHeaderTitle,
             style: TextStyle(
               color: p.textPrimary,
               fontSize: 26,
@@ -179,7 +181,7 @@ class _Header extends StatelessWidget {
           ),
           const SizedBox(height: 4),
           Text(
-            '$threadCount conversation${threadCount == 1 ? '' : 's'} · powered by your chart',
+            l.chatThreadsHeaderSubtitle(threadCount),
             style: TextStyle(color: p.textSecondary, fontSize: 13),
           ),
           const SizedBox(height: 8),
@@ -203,6 +205,7 @@ class _ThreadCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final p = context.palette;
+    final l = AppLocalizations.of(context);
     return Dismissible(
       key: ValueKey(thread.id),
       direction: DismissDirection.endToStart,
@@ -265,7 +268,7 @@ class _ThreadCard extends StatelessWidget {
                         children: [
                           Expanded(
                             child: Text(
-                              thread.title ?? 'New Conversation',
+                              thread.title ?? l.chatThreadsUntitled,
                               style: TextStyle(
                                 color: p.textPrimary,
                                 fontSize: 14,
@@ -279,6 +282,7 @@ class _ThreadCard extends StatelessWidget {
                           Text(
                             CosmicDateUtils.timeAgo(
                               thread.updatedAt ?? thread.createdAt,
+                              l,
                             ),
                             style: TextStyle(
                               color: p.textTertiary,
@@ -290,7 +294,7 @@ class _ThreadCard extends StatelessWidget {
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        thread.lastMessage ?? 'Tap to continue your reading',
+                        thread.lastMessage ?? l.chatThreadsTapToContinue,
                         style: TextStyle(
                           color: p.textSecondary,
                           fontSize: 12.5,
@@ -311,7 +315,7 @@ class _ThreadCard extends StatelessWidget {
                     size: 20,
                   ),
                   onPressed: onDelete,
-                  tooltip: AppLocalizations.of(context).chatThreadsDelete,
+                  tooltip: l.chatThreadsDelete,
                 ),
               ],
             ),
@@ -329,6 +333,7 @@ class _EmptyState extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final p = context.palette;
+    final l = AppLocalizations.of(context);
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(32),
@@ -361,7 +366,7 @@ class _EmptyState extends StatelessWidget {
             ),
             const SizedBox(height: 24),
             Text(
-              'Begin a Cosmic Dialogue',
+              l.chatThreadsEmptyTitle,
               style: TextStyle(
                 color: p.textPrimary,
                 fontSize: 22,
@@ -370,7 +375,7 @@ class _EmptyState extends StatelessWidget {
             ),
             const SizedBox(height: 8),
             Text(
-              'Ask anything about your chart, transits,\nor a moment you want to understand.',
+              l.chatThreadsEmptyBody,
               style: TextStyle(
                 color: p.textSecondary,
                 fontSize: 14,
@@ -382,7 +387,7 @@ class _EmptyState extends StatelessWidget {
             ElevatedButton.icon(
               onPressed: onStart,
               icon: const Icon(Icons.add_rounded),
-              label: Text(AppLocalizations.of(context).chatThreadsStart),
+              label: Text(l.chatThreadsStart),
               style: ElevatedButton.styleFrom(
                 backgroundColor: p.primary,
                 foregroundColor: Colors.white,

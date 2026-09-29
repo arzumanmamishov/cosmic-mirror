@@ -1,5 +1,6 @@
 import 'package:cosmic_mirror/config/theme/app_palette.dart';
 import 'package:cosmic_mirror/features/numerology/domain/entities/numerology.dart';
+import 'package:cosmic_mirror/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 
 /// Result panel for a numerology compatibility comparison.
@@ -11,6 +12,7 @@ class CompatScorePanel extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final p = context.palette;
+    final l = AppLocalizations.of(context);
     return Column(
       children: [
         // Score ring
@@ -42,7 +44,7 @@ class CompatScorePanel extends StatelessWidget {
                   ),
                 ),
                 Text(
-                  'Match',
+                  l.numerologyCompatMatch,
                   style: TextStyle(color: p.textSecondary, fontSize: 11),
                 ),
               ],
@@ -56,11 +58,11 @@ class CompatScorePanel extends StatelessWidget {
           style: TextStyle(color: p.textPrimary, fontSize: 14, height: 1.5),
         ),
         const SizedBox(height: 20),
-        _row('Life Path', report.lifePathScore, p),
+        _row(l.numerologyCoreLifePath, report.lifePathScore, p),
         const SizedBox(height: 8),
-        _row('Expression', report.expressionScore, p),
+        _row(l.numerologyCoreExpression, report.expressionScore, p),
         const SizedBox(height: 8),
-        _row('Soul Urge', report.soulUrgeScore, p),
+        _row(l.numerologyCoreSoulUrge, report.soulUrgeScore, p),
       ],
     );
   }

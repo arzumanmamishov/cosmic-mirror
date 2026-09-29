@@ -15,6 +15,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:intl/intl.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class ProfileScreen extends ConsumerWidget {
@@ -46,6 +47,7 @@ class ProfileScreen extends ConsumerWidget {
           ),
           IconButton(
             icon: const Icon(Icons.settings_outlined),
+            tooltip: AppLocalizations.of(context).profileSettings,
             onPressed: () => context.push('/settings'),
           ),
         ],
@@ -642,7 +644,7 @@ class _BigThree extends StatelessWidget {
         children: [
           Expanded(
             child: _SignTile(
-              label: 'Sun',
+              label: AppLocalizations.of(context).profileSun,
               sign: sun ?? '—',
               glyph: '☉',
               color: p.gold,
@@ -651,7 +653,7 @@ class _BigThree extends StatelessWidget {
           _Divider(p: p),
           Expanded(
             child: _SignTile(
-              label: 'Moon',
+              label: AppLocalizations.of(context).profileMoon,
               sign: moon ?? '—',
               glyph: '☽',
               color: p.accent,
@@ -660,7 +662,7 @@ class _BigThree extends StatelessWidget {
           _Divider(p: p),
           Expanded(
             child: _SignTile(
-              label: 'Rising',
+              label: AppLocalizations.of(context).profileRising,
               sign: rising ?? '—',
               glyph: '↑',
               color: p.primary,
@@ -951,7 +953,9 @@ class _BirthDataCard extends ConsumerWidget {
     var birthPlace = '—';
     if (profile != null) {
       final d = profile.birthDate;
-      birthDate = '${_monthName(d.month)} ${d.day}, ${d.year}';
+      birthDate = DateFormat.yMMMd(
+        Localizations.localeOf(context).toString(),
+      ).format(d);
       birthPlace = profile.birthPlace.isNotEmpty ? profile.birthPlace : '—';
       if (profile.birthTimeKnown && profile.birthTime != null) {
         final t = profile.birthTime!;
@@ -1000,24 +1004,6 @@ class _BirthDataCard extends ConsumerWidget {
         ],
       ),
     );
-  }
-
-  String _monthName(int m) {
-    const months = [
-      'Jan',
-      'Feb',
-      'Mar',
-      'Apr',
-      'May',
-      'Jun',
-      'Jul',
-      'Aug',
-      'Sep',
-      'Oct',
-      'Nov',
-      'Dec',
-    ];
-    return months[(m - 1).clamp(0, 11)];
   }
 }
 

@@ -1,5 +1,6 @@
 import 'package:cosmic_mirror/config/theme/app_palette.dart';
 import 'package:cosmic_mirror/core/network/api_endpoints.dart';
+import 'package:cosmic_mirror/features/compatibility/presentation/relationship_labels.dart';
 import 'package:cosmic_mirror/features/onboarding/presentation/widgets/birthplace_search.dart';
 import 'package:cosmic_mirror/l10n/app_localizations.dart';
 import 'package:cosmic_mirror/shared/providers/user_provider.dart';
@@ -29,10 +30,6 @@ class _AddPersonScreenState extends ConsumerState<AddPersonScreen> {
   TimeOfDay? _birthTime;
   bool _isLoading = false;
   String? _error;
-
-  static const _relationships = [
-    'Partner', 'Friend', 'Family', 'Coworker', 'Crush', 'Other',
-  ];
 
   @override
   void dispose() {
@@ -173,7 +170,7 @@ class _AddPersonScreenState extends ConsumerState<AddPersonScreen> {
                 child: Wrap(
                   spacing: 8,
                   runSpacing: 8,
-                  children: _relationships.map((r) {
+                  children: relationshipIds.map((r) {
                     final selected = r == _relationship;
                     return GestureDetector(
                       onTap: () => setState(() => _relationship = r),
@@ -193,7 +190,7 @@ class _AddPersonScreenState extends ConsumerState<AddPersonScreen> {
                           ),
                         ),
                         child: Text(
-                          r,
+                          relationshipLabel(l, r),
                           style: TextStyle(
                             color: selected ? p.primary : p.textSecondary,
                             fontSize: 12,
@@ -218,7 +215,10 @@ class _AddPersonScreenState extends ConsumerState<AddPersonScreen> {
                   icon: Icons.calendar_month_rounded,
                   value: _birthDate == null
                       ? l.addPersonSelectDate
-                      : DateFormat('EEEE, MMM d, yyyy').format(_birthDate!),
+                      : DateFormat(
+                          'EEEE, MMM d, yyyy',
+                          Localizations.localeOf(context).toString(),
+                        ).format(_birthDate!),
                   placeholder: _birthDate == null,
                   onTap: _pickDate,
                 ),

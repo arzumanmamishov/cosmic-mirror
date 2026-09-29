@@ -24,7 +24,7 @@ class RitualsScreen extends ConsumerWidget {
         title: Text(l.ritualsTitle),
       ),
       body: PremiumGate(
-        featureName: 'Daily Rituals',
+        featureName: l.ritualsDailyRitualsFeature,
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(20),
           child: Column(

@@ -1,6 +1,14 @@
 import 'package:cosmic_mirror/config/theme/app_palette.dart';
 import 'package:cosmic_mirror/features/numerology/domain/entities/numerology.dart';
+import 'package:cosmic_mirror/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
+
+/// Locale-aware uppercase: Dart's [String.toUpperCase] maps `i` to `I`,
+/// which is wrong in Turkish (should be `İ`).
+String numerologyUpper(BuildContext context, String s) =>
+    Localizations.localeOf(context).languageCode == 'tr'
+        ? s.replaceAll('i', 'İ').toUpperCase()
+        : s.toUpperCase();
 
 /// A single numerology number card. Big value on the left, label + small
 /// description on the right. Master numbers and karmic-debt numbers get
@@ -20,6 +28,7 @@ class NumberCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final p = context.palette;
+    final l = AppLocalizations.of(context);
     final accent = number.isMaster
         ? p.gold
         : (number.isKarmicDebt ? p.warning : p.primary);
@@ -67,7 +76,7 @@ class NumberCard extends StatelessWidget {
                       const SizedBox(width: 6),
                     ],
                     Text(
-                      title.toUpperCase(),
+                      numerologyUpper(context, title),
                       style: TextStyle(
                         color: p.textSecondary,
                         fontSize: 11,
@@ -77,11 +86,11 @@ class NumberCard extends StatelessWidget {
                     ),
                     if (number.isMaster) ...[
                       const SizedBox(width: 6),
-                      _badge('Master', p.gold, p),
+                      _badge(l.numerologyMasterChip, p.gold, p),
                     ],
                     if (number.isKarmicDebt) ...[
                       const SizedBox(width: 6),
-                      _badge('Karmic ${number.rawSum}', p.warning, p),
+                      _badge(l.numerologyKarmicChip(number.rawSum), p.warning, p),
                     ],
                   ],
                 ),

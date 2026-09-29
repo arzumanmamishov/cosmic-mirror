@@ -1,6 +1,7 @@
 import 'package:cosmic_mirror/config/theme/app_palette.dart';
 import 'package:cosmic_mirror/features/community/domain/entities/post.dart';
 import 'package:cosmic_mirror/features/community/presentation/widgets/like_button.dart';
+import 'package:cosmic_mirror/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
@@ -105,7 +106,7 @@ class CommentTile extends StatelessWidget {
                             vertical: 4,
                           ),
                           child: Text(
-                            'Reply',
+                            AppLocalizations.of(context).communityReply,
                             style: TextStyle(
                               color: p.textSecondary,
                               fontSize: 11,

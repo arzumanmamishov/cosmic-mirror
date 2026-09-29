@@ -1,11 +1,13 @@
 import 'package:cosmic_mirror/config/theme/app_palette.dart';
 import 'package:cosmic_mirror/features/psychomatrix/domain/entities/psychomatrix.dart';
 import 'package:cosmic_mirror/features/psychomatrix/presentation/providers/psychomatrix_providers.dart';
+import 'package:cosmic_mirror/l10n/app_localizations.dart';
 import 'package:cosmic_mirror/shared/widgets/error_view.dart';
 import 'package:cosmic_mirror/shared/widgets/lively/lively_backdrop.dart';
 import 'package:cosmic_mirror/shared/widgets/loading_shimmer.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:intl/intl.dart';
 
 /// The visual grid layout, in display rows. The psychomatrix is stored
 /// column-major (col1: 1,2,3 | col2: 4,5,6 | col3: 7,8,9) but rendered as
@@ -30,7 +32,7 @@ class PsychomatrixScreen extends ConsumerWidget {
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: const BackButton(),
-        title: const Text('Pythagoras Square'),
+        title: Text(AppLocalizations.of(context).psychoTitle),
       ),
       body: LivelyBackdrop(
         seed: 41,
@@ -54,17 +56,18 @@ class _Body extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context);
     // Build the staggered children list, then fade each in on entry.
     final children = <Widget>[
       _Hero(reading: reading),
       const SizedBox(height: 20),
-      const _SectionLabel('Your Matrix'),
+      _SectionLabel(l.psychoYourMatrix),
       const SizedBox(height: 12),
       _Grid(reading: reading),
       const SizedBox(height: 8),
       _GridHint(),
       const SizedBox(height: 24),
-      const _SectionLabel('Lines & Strengths'),
+      _SectionLabel(l.psychoLinesStrengths),
       const SizedBox(height: 12),
       ...reading.lines.map((l) => _LineCard(line: l)),
       const SizedBox(height: 40),
@@ -97,7 +100,13 @@ class _Hero extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final p = context.palette;
+    final l = AppLocalizations.of(context);
     final w = reading.workingNumbers;
+    final parsedBirth = DateTime.tryParse(reading.birthDate);
+    final birthLabel = parsedBirth == null
+        ? reading.birthDate
+        : DateFormat.yMMMd(Localizations.localeOf(context).toString())
+            .format(parsedBirth);
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -107,9 +116,9 @@ class _Hero extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            'WORKING NUMBERS',
-            style: TextStyle(
+          Text(
+            l.psychoWorkingNumbers,
+            style: const TextStyle(
               color: Colors.white70,
               fontSize: 11,
               letterSpacing: 1.6,
@@ -119,7 +128,7 @@ class _Hero extends StatelessWidget {
           if (reading.birthDate.isNotEmpty) ...[
             const SizedBox(height: 4),
             Text(
-              'Birth date ${reading.birthDate}',
+              l.psychoBirthDate(birthLabel),
               style: TextStyle(
                 color: Colors.white.withValues(alpha: 0.8),
                 fontSize: 12,
@@ -129,13 +138,13 @@ class _Hero extends StatelessWidget {
           const SizedBox(height: 16),
           Row(
             children: [
-              _WorkingChip(label: 'W1', value: w.first),
+              _WorkingChip(label: l.psychoWorkingShort(1), value: w.first),
               const SizedBox(width: 10),
-              _WorkingChip(label: 'W2', value: w.second),
+              _WorkingChip(label: l.psychoWorkingShort(2), value: w.second),
               const SizedBox(width: 10),
-              _WorkingChip(label: 'W3', value: w.third),
+              _WorkingChip(label: l.psychoWorkingShort(3), value: w.third),
               const SizedBox(width: 10),
-              _WorkingChip(label: 'W4', value: w.fourth),
+              _WorkingChip(label: l.psychoWorkingShort(4), value: w.fourth),
             ],
           ),
         ],
@@ -305,7 +314,7 @@ class _GridHint extends StatelessWidget {
   Widget build(BuildContext context) {
     final p = context.palette;
     return Text(
-      'Tap any cell to read its meaning.',
+      AppLocalizations.of(context).psychoTapCellHint,
       textAlign: TextAlign.center,
       style: TextStyle(color: p.textTertiary, fontSize: 12),
     );
@@ -365,8 +374,9 @@ void _showCellSheet(BuildContext context, PsychomatrixCell cell) {
                         const SizedBox(height: 2),
                         Text(
                           cell.count == 0
-                              ? 'Absent'
-                              : '${cell.repeated}  ·  ${cell.count}x',
+                              ? AppLocalizations.of(context).psychoAbsent
+                              : AppLocalizations.of(context)
+                                  .psychoCellCount(cell.repeated, cell.count),
                           style: TextStyle(
                             color: p.textSecondary,
                             fontSize: 13,
@@ -434,7 +444,8 @@ class _LineCard extends StatelessWidget {
           ),
           const SizedBox(height: 6),
           Text(
-            'Cells ${line.cells.join(' · ')}',
+            AppLocalizations.of(context)
+                .psychoCellsList(line.cells.join(' · ')),
             style: TextStyle(
               color: p.textTertiary,
               fontSize: 11,

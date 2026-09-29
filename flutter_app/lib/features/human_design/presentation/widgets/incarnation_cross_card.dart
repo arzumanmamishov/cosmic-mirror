@@ -1,5 +1,7 @@
 import 'package:cosmic_mirror/config/theme/app_palette.dart';
 import 'package:cosmic_mirror/features/human_design/domain/entities/human_design.dart';
+import 'package:cosmic_mirror/features/human_design/presentation/hd_labels.dart';
+import 'package:cosmic_mirror/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 
 class IncarnationCrossCard extends StatelessWidget {
@@ -10,6 +12,14 @@ class IncarnationCrossCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final p = context.palette;
+    final l = AppLocalizations.of(context);
+    final hd = HDLabels(l);
+    final gateLabels = [
+      l.hdCrossPersonalitySun,
+      l.hdCrossPersonalityEarth,
+      l.hdCrossDesignSun,
+      l.hdCrossDesignEarth,
+    ];
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -21,7 +31,7 @@ class IncarnationCrossCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'INCARNATION CROSS',
+            l.hdIncarnationCross,
             style: TextStyle(
               color: p.textSecondary,
               fontSize: 11,
@@ -31,7 +41,7 @@ class IncarnationCrossCard extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           Text(
-            cross.name,
+            hd.crossName(cross.name),
             style: TextStyle(
               color: p.textPrimary,
               fontSize: 16,
@@ -40,7 +50,7 @@ class IncarnationCrossCard extends StatelessWidget {
           ),
           const SizedBox(height: 4),
           Text(
-            'Quarter of ${cross.quarter}',
+            l.hdQuarterOf(hd.quarter(cross.quarter)),
             style: TextStyle(color: p.textSecondary, fontSize: 12),
           ),
           const SizedBox(height: 14),
@@ -48,7 +58,7 @@ class IncarnationCrossCard extends StatelessWidget {
             children: [
               for (var i = 0; i < cross.gates.length; i++) ...[
                 _GateBlock(
-                  label: const ['P-Sun', 'P-Earth', 'D-Sun', 'D-Earth'][i],
+                  label: gateLabels[i],
                   gate: cross.gates[i],
                   palette: p,
                 ),

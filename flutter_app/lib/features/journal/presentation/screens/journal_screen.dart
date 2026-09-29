@@ -125,9 +125,15 @@ class _EntryCard extends StatelessWidget {
         DateTime.now();
     final content = entry['content'] as String? ?? '';
     final mood = entry['mood'] as String?;
-    final dayOfWeek = DateFormat('EEE').format(date).toUpperCase();
-    final dayOfMonth = DateFormat('d').format(date);
-    final monthYear = DateFormat('MMM y').format(date);
+    final locale = Localizations.localeOf(context).toString();
+    final weekday = DateFormat('EEE', locale).format(date);
+    // Dart's toUpperCase isn't locale-aware: map Turkish dotted i first.
+    final dayOfWeek = (locale.startsWith('tr')
+            ? weekday.replaceAll('i', 'İ')
+            : weekday)
+        .toUpperCase();
+    final dayOfMonth = DateFormat('d', locale).format(date);
+    final monthYear = DateFormat('MMM y', locale).format(date);
 
     return InkWell(
       onTap: () => context.push('/journal/${entry['id']}'),

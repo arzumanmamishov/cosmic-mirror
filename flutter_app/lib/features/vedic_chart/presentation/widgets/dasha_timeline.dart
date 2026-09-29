@@ -1,6 +1,7 @@
 import 'package:cosmic_mirror/config/theme/app_palette.dart';
-import 'package:cosmic_mirror/core/utils/string_utils.dart';
+import 'package:cosmic_mirror/features/chart/presentation/astro_labels.dart';
 import 'package:cosmic_mirror/features/vedic_chart/domain/entities/dasha.dart';
+import 'package:cosmic_mirror/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 
 /// Vimshottari Dasha timeline. Shows the active Maha → Antar → Pratyantar
@@ -21,7 +22,7 @@ class DashaTimeline extends StatelessWidget {
         _CurrentCard(path: tree.current, palette: p),
         const SizedBox(height: 16),
         Text(
-          'Mahadashas (120-year cycle)',
+          AppLocalizations.of(context).vedicMahadashasHeader,
           style: TextStyle(
             color: p.textSecondary,
             fontSize: 11,
@@ -49,6 +50,7 @@ class _CurrentCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context);
     return Container(
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
@@ -58,9 +60,9 @@ class _CurrentCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            'CURRENT DASHA',
-            style: TextStyle(
+          Text(
+            l.vedicCurrentDasha,
+            style: const TextStyle(
               color: Colors.white70,
               fontSize: 10,
               letterSpacing: 1.6,
@@ -69,7 +71,9 @@ class _CurrentCard extends StatelessWidget {
           ),
           const SizedBox(height: 10),
           Text(
-            '${path.maha} — ${path.antar} — ${path.pratyantar}',
+            '${chartPlanetName(l, path.maha)} — '
+            '${chartPlanetName(l, path.antar)} — '
+            '${chartPlanetName(l, path.pratyantar)}',
             style: const TextStyle(
               color: Colors.white,
               fontSize: 18,
@@ -78,7 +82,7 @@ class _CurrentCard extends StatelessWidget {
           ),
           const SizedBox(height: 6),
           Text(
-            'Maha · Antar · Pratyantar',
+            l.vedicDashaLevels,
             style: TextStyle(
               color: Colors.white.withValues(alpha: 0.7),
               fontSize: 11,
@@ -99,6 +103,7 @@ class _MahaTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final p = context.palette;
+    final l = AppLocalizations.of(context);
     return Container(
       margin: const EdgeInsets.only(bottom: 8),
       decoration: BoxDecoration(
@@ -127,7 +132,7 @@ class _MahaTile extends StatelessWidget {
                 borderRadius: BorderRadius.circular(10),
               ),
               child: Text(
-                _grahaAbbr[period.lord] ?? period.lord.abbrev(),
+                chartPlanetAbbr(l, period.lord),
                 style: TextStyle(
                   color: isActive ? p.primary : p.textPrimary,
                   fontSize: 14,
@@ -141,7 +146,7 @@ class _MahaTile extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    period.lord,
+                    chartPlanetName(l, period.lord),
                     style: TextStyle(
                       color: p.textPrimary,
                       fontSize: 14,
@@ -166,7 +171,7 @@ class _MahaTile extends StatelessWidget {
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Text(
-                  'NOW',
+                  l.vedicDashaNow,
                   style: TextStyle(
                     color: p.primary,
                     fontSize: 9,
@@ -208,7 +213,7 @@ class _AntarRow extends StatelessWidget {
           const SizedBox(width: 10),
           Expanded(
             child: Text(
-              period.lord,
+              chartPlanetName(AppLocalizations.of(context), period.lord),
               style: TextStyle(
                 color: active ? p.textPrimary : p.textSecondary,
                 fontSize: 12,
@@ -225,18 +230,6 @@ class _AntarRow extends StatelessWidget {
     );
   }
 }
-
-const _grahaAbbr = {
-  'Sun': 'Su',
-  'Moon': 'Mo',
-  'Mars': 'Ma',
-  'Mercury': 'Me',
-  'Jupiter': 'Ju',
-  'Venus': 'Ve',
-  'Saturn': 'Sa',
-  'Rahu': 'Ra',
-  'Ketu': 'Ke',
-};
 
 String _fmtDate(DateTime d) {
   return '${d.year}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';

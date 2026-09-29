@@ -232,7 +232,7 @@ class _LetterBreakdownPanel extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            l.numerologyNameLetterBreakdown.toUpperCase(),
+            numerologyUpper(context, l.numerologyNameLetterBreakdown),
             style: TextStyle(
               color: p.textSecondary,
               fontSize: 11,
@@ -360,7 +360,7 @@ class _PassionAndKarmaPanel extends StatelessWidget {
           ),
           const SizedBox(height: 12),
           Text(
-            l.numerologyNameKarmicLessons.toUpperCase(),
+            numerologyUpper(context, l.numerologyNameKarmicLessons),
             style: TextStyle(
               color: p.textSecondary,
               fontSize: 11,
@@ -426,7 +426,7 @@ class _Row extends StatelessWidget {
       children: [
         Expanded(
           child: Text(
-            label.toUpperCase(),
+            numerologyUpper(context, label),
             style: TextStyle(
               color: p.textSecondary,
               fontSize: 11,

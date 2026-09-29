@@ -1,5 +1,6 @@
 import 'package:cosmic_mirror/config/theme/app_palette.dart';
 import 'package:cosmic_mirror/features/home/data/home_mock_data.dart';
+import 'package:cosmic_mirror/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 
 class AstrologersSection extends StatelessWidget {
@@ -8,6 +9,7 @@ class AstrologersSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final p = context.palette;
+    final l = AppLocalizations.of(context);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -18,7 +20,7 @@ class AstrologersSection extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                'Popular Astrologers',
+                l.homePopularAstrologers,
                 style: TextStyle(
                   color: p.textPrimary,
                   fontSize: 16,
@@ -26,7 +28,7 @@ class AstrologersSection extends StatelessWidget {
                 ),
               ),
               Text(
-                'See all',
+                l.homeSeeAll,
                 style: TextStyle(
                   color: p.accent,
                   fontSize: 13,
