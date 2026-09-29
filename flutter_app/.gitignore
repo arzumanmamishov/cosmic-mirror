@@ -43,3 +43,7 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# Split debug info from obfuscated release builds (scripts/build_release.sh).
+# Keep these privately per release for crash symbolication — never commit.
+/build/debug-info/

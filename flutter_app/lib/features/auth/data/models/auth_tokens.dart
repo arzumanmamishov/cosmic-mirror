@@ -13,13 +13,15 @@ class AuthTokens {
   factory AuthTokens.fromJson(Map<String, dynamic> json) {
     return AuthTokens(
       accessToken: json['access_token'] as String? ?? '',
-      accessExpiresAt: DateTime.tryParse(json['access_expires_at'] as String? ?? '')
-              ?.toUtc() ??
-          DateTime.now().toUtc(),
+      accessExpiresAt:
+          DateTime.tryParse(json['access_expires_at'] as String? ?? '')
+                  ?.toUtc() ??
+              DateTime.now().toUtc(),
       refreshToken: json['refresh_token'] as String? ?? '',
-      refreshExpiresAt: DateTime.tryParse(json['refresh_expires_at'] as String? ?? '')
-              ?.toUtc() ??
-          DateTime.now().toUtc(),
+      refreshExpiresAt:
+          DateTime.tryParse(json['refresh_expires_at'] as String? ?? '')
+                  ?.toUtc() ??
+              DateTime.now().toUtc(),
     );
   }
 
@@ -38,8 +40,9 @@ class AuthTokens {
   /// True when the access token has ≤ 30 s of life left — the API
   /// interceptor uses this to preemptively refresh, so a request in
   /// flight doesn't get a 401 mid-parse.
-  bool get accessNearExpiry =>
-      DateTime.now().toUtc().isAfter(accessExpiresAt.subtract(const Duration(seconds: 30)));
+  bool get accessNearExpiry => DateTime.now()
+      .toUtc()
+      .isAfter(accessExpiresAt.subtract(const Duration(seconds: 30)));
 
   /// True when the refresh token itself has expired — the session is
   /// dead and the user must sign in again.

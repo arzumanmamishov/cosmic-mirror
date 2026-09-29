@@ -10,9 +10,9 @@ plugins {
 }
 
 // Release signing. Secrets live in android/key.properties (gitignored — see
-// android/key.properties.example). When the file is absent we fall back to the
-// debug keystore so `flutter run --release` still works locally; CI and any
-// store build MUST provide key.properties + the keystore.
+// android/key.properties.example). Debug/profile builds never need it; any
+// *release* task fails fast when it is missing (see the check at the bottom)
+// so a store build can never be silently signed with the debug keystore.
 val keystoreProperties = Properties()
 val keystorePropertiesFile = rootProject.file("key.properties")
 val hasReleaseSigning = keystorePropertiesFile.exists()
@@ -62,20 +62,42 @@ android {
 
     buildTypes {
         release {
-            // Use the real release keystore when key.properties is present,
-            // otherwise fall back to debug keys so local `flutter run --release`
-            // still works. A store build requires android/key.properties.
-            signingConfig = if (hasReleaseSigning) {
-                signingConfigs.getByName("release")
-            } else {
-                signingConfigs.getByName("debug")
-            }
+            // Always the real release keystore. If key.properties is missing
+            // the release tasks abort with a GradleException (see below).
+            signingConfig = signingConfigs.getByName("release")
+            // R8 code + resource shrinking. (The Flutter Gradle plugin also
+            // turns these on by default; stated explicitly so it is visible.)
+            // Plugin-specific keep rules live in proguard-rules.pro.
+            isMinifyEnabled = true
+            isShrinkResources = true
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro",
+            )
         }
     }
 }
 
 flutter {
     source = "../.."
+}
+
+// Fail any release build (assembleRelease, bundleRelease, …) when the release
+// keystore config is missing. Evaluated once the task graph is known, so
+// debug/profile builds and IDE sync keep working without key.properties.
+gradle.taskGraph.whenReady {
+    val releaseTask = allTasks.firstOrNull {
+        it.project == project && it.name.contains("Release")
+    }
+    if (!hasReleaseSigning && releaseTask != null) {
+        throw GradleException(
+            "Release signing is not configured: android/key.properties was " +
+                "not found (needed by task '${releaseTask.name}'). Copy " +
+                "android/key.properties.example to android/key.properties and " +
+                "point it at the upload keystore. Refusing to build a release " +
+                "signed with debug keys."
+        )
+    }
 }
 
 dependencies {

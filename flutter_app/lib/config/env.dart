@@ -57,10 +57,18 @@ class Env {
     }
   }
 
-  static const revenueCatApiKey = String.fromEnvironment(
-    'REVENUECAT_API_KEY',
-    defaultValue: 'your_revenuecat_api_key',
-  );
+  /// RevenueCat public SDK key. Empty unless provided with
+  /// `--dart-define=REVENUECAT_API_KEY=...` (scripts/build_release.sh
+  /// passes it). When empty, RevenueCat is never configured and every
+  /// `Purchases.*` call is skipped — see [hasRevenueCatKey].
+  static const revenueCatApiKey = String.fromEnvironment('REVENUECAT_API_KEY');
+
+  /// True only when a real-looking RevenueCat key was compiled in. The
+  /// legacy placeholder is still rejected in case an old build script
+  /// passes it explicitly.
+  static bool get hasRevenueCatKey =>
+      revenueCatApiKey.isNotEmpty &&
+      revenueCatApiKey != 'your_revenuecat_api_key';
 
   /// Stripe **publishable** key (safe to ship in the binary). The mobile
   /// Payment Sheet uses this together with the per-customer ephemeral

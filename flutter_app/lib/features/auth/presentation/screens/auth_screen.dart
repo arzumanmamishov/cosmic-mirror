@@ -4,6 +4,7 @@
 
 import 'package:cosmic_mirror/config/theme/app_palette.dart';
 import 'package:cosmic_mirror/config/theme/lively_type.dart';
+import 'package:cosmic_mirror/core/error/exceptions.dart';
 import 'package:cosmic_mirror/features/auth/presentation/providers/auth_provider.dart';
 import 'package:cosmic_mirror/features/auth/presentation/screens/otp_screen.dart';
 import 'package:cosmic_mirror/l10n/app_localizations.dart';
@@ -131,7 +132,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
         s.contains('No account with that email')) {
       return l.authNoAccountTapCreate;
     }
-    if (s.contains('rate_limited')) {
+    if (e is RateLimitException || s.contains('rate_limit')) {
       return l.authTooManyCodeRequests;
     }
     return l.commonSomethingWentWrong;
@@ -148,7 +149,8 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
     if (s.contains('invalid_credentials')) {
       return l.authErrorInvalidCredential;
     }
-    if (s.contains('rate_limited')) {
+    // 429 — per-IP rate limit or the per-account login lockout.
+    if (e is RateLimitException || s.contains('rate_limit')) {
       return l.authTooManyAttemptsShort;
     }
     return l.commonSomethingWentWrong;
@@ -186,7 +188,9 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
 
                   // hero
                   Text(
-                    isLogin ? l.authKickerWelcomeBack : l.authKickerCreateAccount,
+                    isLogin
+                        ? l.authKickerWelcomeBack
+                        : l.authKickerCreateAccount,
                     style: LivelyType.kicker(p.primary),
                   ),
                   const SizedBox(height: 12),
@@ -198,9 +202,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                   SizedBox(
                     width: 290,
                     child: Text(
-                      isLogin
-                          ? l.authSignInSubtitle
-                          : l.authRegisterSubtitle,
+                      isLogin ? l.authSignInSubtitle : l.authRegisterSubtitle,
                       style: LivelyType.body(p.textMuted),
                     ),
                   ),

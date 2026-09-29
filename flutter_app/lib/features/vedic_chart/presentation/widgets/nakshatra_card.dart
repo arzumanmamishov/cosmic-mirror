@@ -30,66 +30,73 @@ class NakshatraCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: p.glassBorder),
       ),
-      child: ExpansionTile(
-        tilePadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-        childrenPadding: const EdgeInsets.fromLTRB(16, 0, 16, 14),
-        iconColor: p.textSecondary,
-        collapsedIconColor: p.textTertiary,
-        title: Row(
-          children: [
-            Container(
-              width: 40,
-              height: 40,
-              alignment: Alignment.center,
-              decoration: BoxDecoration(
-                gradient: p.primaryGradient,
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Text(
-                '${nakshatra.index}',
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 14,
-                  fontWeight: FontWeight.w800,
+      // Transparent Material gives the tile's ink ripple a surface to
+      // paint on — otherwise the coloured box above hides the tap feedback.
+      child: Material(
+        type: MaterialType.transparency,
+        borderRadius: BorderRadius.circular(16),
+        clipBehavior: Clip.antiAlias,
+        child: ExpansionTile(
+          tilePadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+          childrenPadding: const EdgeInsets.fromLTRB(16, 0, 16, 14),
+          iconColor: p.textSecondary,
+          collapsedIconColor: p.textTertiary,
+          title: Row(
+            children: [
+              Container(
+                width: 40,
+                height: 40,
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                  gradient: p.primaryGradient,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Text(
+                  '${nakshatra.index}',
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w800,
+                  ),
                 ),
               ),
-            ),
-            const SizedBox(width: 14),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    '$title — ${nakshatra.name}',
-                    style: TextStyle(
-                      color: p.textPrimary,
-                      fontSize: 14,
-                      fontWeight: FontWeight.w700,
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      '$title — ${nakshatra.name}',
+                      style: TextStyle(
+                        color: p.textPrimary,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w700,
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 2),
-                  Text(
-                    l.vedicNakshatraPadaRuler(
-                      pada,
-                      chartPlanetName(l, nakshatra.ruler),
+                    const SizedBox(height: 2),
+                    Text(
+                      l.vedicNakshatraPadaRuler(
+                        pada,
+                        chartPlanetName(l, nakshatra.ruler),
+                      ),
+                      style: TextStyle(color: p.textSecondary, fontSize: 12),
                     ),
-                    style: TextStyle(color: p.textSecondary, fontSize: 12),
-                  ),
-                ],
+                  ],
+                ),
               ),
-            ),
+            ],
+          ),
+          children: [
+            _kv(p, l.vedicNakshatraDeity, nakshatra.deity),
+            _kv(p, l.vedicNakshatraSymbol, nakshatra.symbol),
+            _kv(p, l.vedicNakshatraGana, nakshatra.gana),
+            _kv(p, l.vedicNakshatraNadi, nakshatra.nadi),
+            _kv(p, l.vedicNakshatraVarna, nakshatra.varna),
+            _kv(p, l.vedicNakshatraCaste, nakshatra.caste),
+            _kv(p, l.vedicNakshatraAnimal, nakshatra.animal),
+            _kv(p, l.vedicNakshatraGender, nakshatra.gender),
           ],
         ),
-        children: [
-          _kv(p, l.vedicNakshatraDeity, nakshatra.deity),
-          _kv(p, l.vedicNakshatraSymbol, nakshatra.symbol),
-          _kv(p, l.vedicNakshatraGana, nakshatra.gana),
-          _kv(p, l.vedicNakshatraNadi, nakshatra.nadi),
-          _kv(p, l.vedicNakshatraVarna, nakshatra.varna),
-          _kv(p, l.vedicNakshatraCaste, nakshatra.caste),
-          _kv(p, l.vedicNakshatraAnimal, nakshatra.animal),
-          _kv(p, l.vedicNakshatraGender, nakshatra.gender),
-        ],
       ),
     );
   }

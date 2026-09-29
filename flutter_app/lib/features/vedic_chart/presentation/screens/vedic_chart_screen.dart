@@ -371,12 +371,18 @@ class _PlanetsTab extends StatelessWidget {
                   children: [
                     Row(
                       children: [
-                        Text(
-                          '${chartPlanetName(l, pl.name)} · ${pl.sanskrit}',
-                          style: TextStyle(
-                            color: p.textPrimary,
-                            fontSize: 14,
-                            fontWeight: FontWeight.w700,
+                        // Shrinks with an ellipsis so the Retro / Combust
+                        // badges always fit on narrow screens.
+                        Flexible(
+                          child: Text(
+                            '${chartPlanetName(l, pl.name)} · ${pl.sanskrit}',
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              color: p.textPrimary,
+                              fontSize: 14,
+                              fontWeight: FontWeight.w700,
+                            ),
                           ),
                         ),
                         if (pl.retrograde)

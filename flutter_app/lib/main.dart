@@ -6,7 +6,7 @@ import 'package:cosmic_mirror/config/env.dart';
 import 'package:cosmic_mirror/features/auth/presentation/providers/auth_provider.dart';
 import 'package:cosmic_mirror/shared/providers/user_provider.dart';
 import 'package:cosmic_mirror/shared/widgets/error_page.dart';
-import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:flutter/foundation.dart' show kIsWeb, kReleaseMode;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -41,15 +41,17 @@ Future<void> main() async {
 
       await Hive.initFlutter();
 
-      // Skip RevenueCat init when no real API key is wired in. The default
-      // placeholder ('your_revenuecat_api_key') triggers a noisy
-      // InvalidCredentialsError on every cold start in dev. Pass a real
-      // key via --dart-define=REVENUECAT_API_KEY=... to enable.
-      final hasRcKey = Env.revenueCatApiKey.isNotEmpty &&
-          Env.revenueCatApiKey != 'your_revenuecat_api_key';
-      if (!kIsWeb && hasRcKey) {
+      // Skip RevenueCat init when no real API key is wired in (the default
+      // is empty). Pass a real key via --dart-define=REVENUECAT_API_KEY=...
+      // to enable. Purchases.* calls are guarded by Env.hasRevenueCatKey,
+      // so a missing key degrades to "not premium" instead of crashing.
+      if (!kIsWeb && Env.hasRevenueCatKey) {
         await Purchases.configure(
           PurchasesConfiguration(Env.revenueCatApiKey),
+        );
+      } else if (kReleaseMode) {
+        debugPrint(
+          'WARNING: REVENUECAT_API_KEY not set — in-app purchases disabled.',
         );
       }
 

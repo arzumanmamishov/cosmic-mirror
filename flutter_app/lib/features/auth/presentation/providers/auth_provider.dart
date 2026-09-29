@@ -11,8 +11,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 // Re-export so screens can reference OtpPurpose without importing the data
 // layer directly.
-export 'package:cosmic_mirror/features/auth/data/auth_api.dart'
-    show OtpPurpose;
+export 'package:cosmic_mirror/features/auth/data/auth_api.dart' show OtpPurpose;
 
 /// The API client. Constructed with an `onSessionExpired` callback that
 /// asks the AuthController to flip to signed-out — the router redirect

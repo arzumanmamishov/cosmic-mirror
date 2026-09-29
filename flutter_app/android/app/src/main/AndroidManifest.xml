@@ -1,4 +1,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Network access for the API. Must live in the main manifest: the one
+         in src/debug only applies to debug builds. -->
+    <uses-permission android:name="android.permission.INTERNET"/>
     <!-- Required by image_picker for ImageSource.camera. The gallery
          picker uses scoped storage on Android 13+ and needs no extra
          permission. -->

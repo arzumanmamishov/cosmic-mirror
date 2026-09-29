@@ -114,75 +114,82 @@ class _MahaTile extends StatelessWidget {
           width: isActive ? 1.5 : 1,
         ),
       ),
-      child: ExpansionTile(
-        tilePadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-        childrenPadding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
-        iconColor: p.textSecondary,
-        collapsedIconColor: p.textTertiary,
-        title: Row(
-          children: [
-            Container(
-              width: 36,
-              height: 36,
-              alignment: Alignment.center,
-              decoration: BoxDecoration(
-                color: isActive
-                    ? p.primary.withValues(alpha: 0.2)
-                    : p.surfaceElevated,
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: Text(
-                chartPlanetAbbr(l, period.lord),
-                style: TextStyle(
-                  color: isActive ? p.primary : p.textPrimary,
-                  fontSize: 14,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    chartPlanetName(l, period.lord),
-                    style: TextStyle(
-                      color: p.textPrimary,
-                      fontSize: 14,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                  Text(
-                    '${_fmtDate(period.startDate)} — ${_fmtDate(period.endDate)}',
-                    style: TextStyle(color: p.textSecondary, fontSize: 11),
-                  ),
-                ],
-              ),
-            ),
-            if (isActive)
+      // Transparent Material gives the tile's ink ripple a surface to
+      // paint on — otherwise the coloured box above hides the tap feedback.
+      child: Material(
+        type: MaterialType.transparency,
+        borderRadius: BorderRadius.circular(14),
+        clipBehavior: Clip.antiAlias,
+        child: ExpansionTile(
+          tilePadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+          childrenPadding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+          iconColor: p.textSecondary,
+          collapsedIconColor: p.textTertiary,
+          title: Row(
+            children: [
               Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 8,
-                  vertical: 3,
-                ),
+                width: 36,
+                height: 36,
+                alignment: Alignment.center,
                 decoration: BoxDecoration(
-                  color: p.primary.withValues(alpha: 0.2),
-                  borderRadius: BorderRadius.circular(8),
+                  color: isActive
+                      ? p.primary.withValues(alpha: 0.2)
+                      : p.surfaceElevated,
+                  borderRadius: BorderRadius.circular(10),
                 ),
                 child: Text(
-                  l.vedicDashaNow,
+                  chartPlanetAbbr(l, period.lord),
                   style: TextStyle(
-                    color: p.primary,
-                    fontSize: 9,
-                    fontWeight: FontWeight.w800,
-                    letterSpacing: 1.2,
+                    color: isActive ? p.primary : p.textPrimary,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w700,
                   ),
                 ),
               ),
-          ],
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      chartPlanetName(l, period.lord),
+                      style: TextStyle(
+                        color: p.textPrimary,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    Text(
+                      '${_fmtDate(period.startDate)} — ${_fmtDate(period.endDate)}',
+                      style: TextStyle(color: p.textSecondary, fontSize: 11),
+                    ),
+                  ],
+                ),
+              ),
+              if (isActive)
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 3,
+                  ),
+                  decoration: BoxDecoration(
+                    color: p.primary.withValues(alpha: 0.2),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Text(
+                    l.vedicDashaNow,
+                    style: TextStyle(
+                      color: p.primary,
+                      fontSize: 9,
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: 1.2,
+                    ),
+                  ),
+                ),
+            ],
+          ),
+          children: period.sub.map((a) => _AntarRow(period: a)).toList(),
         ),
-        children: period.sub.map((a) => _AntarRow(period: a)).toList(),
       ),
     );
   }

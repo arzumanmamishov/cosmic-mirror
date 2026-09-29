@@ -458,12 +458,18 @@ class _PlanetsTab extends StatelessWidget {
                   children: [
                     Row(
                       children: [
-                        Text(
-                          chartPlanetName(l, name),
-                          style: TextStyle(
-                            color: p.textPrimary,
-                            fontSize: 15,
-                            fontWeight: FontWeight.w600,
+                        // Long (e.g. Turkish) names ellipsize instead of
+                        // pushing the Retro badge off the card.
+                        Flexible(
+                          child: Text(
+                            chartPlanetName(l, name),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              color: p.textPrimary,
+                              fontSize: 15,
+                              fontWeight: FontWeight.w600,
+                            ),
                           ),
                         ),
                         if (retro) ...[

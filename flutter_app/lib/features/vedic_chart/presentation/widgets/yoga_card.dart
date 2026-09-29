@@ -48,31 +48,47 @@ class YogaCard extends StatelessWidget {
                   ),
                 ),
               ),
-              const Spacer(),
-              if (yoga.planets.isNotEmpty)
-                Text(
-                  yoga.planets.map((e) => chartPlanetName(l, e)).join(' + '),
-                  style: TextStyle(color: p.textTertiary, fontSize: 10),
-                ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: yoga.planets.isEmpty
+                    ? const SizedBox.shrink()
+                    : Text(
+                        yoga.planets
+                            .map((e) => chartPlanetName(l, e))
+                            .join(' + '),
+                        textAlign: TextAlign.end,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(color: p.textTertiary, fontSize: 10),
+                      ),
+              ),
             ],
           ),
           const SizedBox(height: 10),
           Row(
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
-              Text(
-                yoga.name,
-                style: TextStyle(
-                  color: p.textPrimary,
-                  fontSize: 16,
-                  fontWeight: FontWeight.w700,
+              Flexible(
+                child: Text(
+                  yoga.name,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    color: p.textPrimary,
+                    fontSize: 16,
+                    fontWeight: FontWeight.w700,
+                  ),
                 ),
               ),
               const SizedBox(width: 8),
               if (yoga.sanskrit.isNotEmpty && yoga.sanskrit != yoga.name)
-                Text(
-                  '· ${yoga.sanskrit}',
-                  style: TextStyle(color: p.textSecondary, fontSize: 12),
+                Flexible(
+                  child: Text(
+                    '· ${yoga.sanskrit}',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(color: p.textSecondary, fontSize: 12),
+                  ),
                 ),
             ],
           ),

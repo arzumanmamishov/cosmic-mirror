@@ -1,4 +1,5 @@
 import 'package:cosmic_mirror/core/network/api_endpoints.dart';
+import 'package:cosmic_mirror/shared/providers/subscription_state_provider.dart';
 import 'package:cosmic_mirror/shared/providers/user_provider.dart';
 import 'package:flutter/material.dart' show ThemeMode;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -99,6 +100,7 @@ class PaywallNotifier extends StateNotifier<PaywallState> {
       try {
         await _ref.read(currentUserProvider.notifier).bootstrapSession();
       } catch (_) {/* non-fatal */}
+      await _waitForServerPremium();
 
       state = state.copyWith(isPurchasing: false);
       return true;
@@ -121,6 +123,19 @@ class PaywallNotifier extends StateNotifier<PaywallState> {
     }
   }
 
+  /// The Stripe webhook that activates the subscription usually lands a
+  /// moment after the Payment Sheet closes — poll the server briefly so
+  /// Premium unlocks without an app restart.
+  Future<void> _waitForServerPremium() async {
+    for (var i = 0; i < 6; i++) {
+      _ref.invalidate(serverPremiumProvider);
+      try {
+        if (await _ref.read(serverPremiumProvider.future)) return;
+      } catch (_) {/* retry */}
+      await Future<void>.delayed(const Duration(milliseconds: 1500));
+    }
+  }
+
   /// Stripe doesn't have a "restore" concept the way RevenueCat does —
   /// the source of truth is the server. Re-fetch the session and return
   /// whether the user is now Premium.
@@ -128,6 +143,8 @@ class PaywallNotifier extends StateNotifier<PaywallState> {
     state = state.copyWith(isPurchasing: true);
     try {
       await _ref.read(currentUserProvider.notifier).bootstrapSession();
+      _ref.invalidate(serverPremiumProvider);
+      await _ref.read(serverPremiumProvider.future);
       state = state.copyWith(isPurchasing: false);
       return true;
     } catch (e) {

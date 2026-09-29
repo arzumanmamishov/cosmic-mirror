@@ -8,6 +8,7 @@ import 'dart:math' as math;
 
 import 'package:cosmic_mirror/config/theme/app_palette.dart';
 import 'package:cosmic_mirror/config/theme/lively_type.dart';
+import 'package:cosmic_mirror/core/error/exceptions.dart';
 import 'package:cosmic_mirror/features/auth/presentation/providers/auth_provider.dart';
 import 'package:cosmic_mirror/l10n/app_localizations.dart';
 import 'package:cosmic_mirror/shared/providers/user_provider.dart';
@@ -203,11 +204,10 @@ class _OtpScreenState extends ConsumerState<OtpScreen>
   String _prettyError(Object e) {
     final l = AppLocalizations.of(context);
     final s = e.toString();
-    if (s.contains('invalid_code') ||
-        s.contains('Invalid or expired code')) {
+    if (s.contains('invalid_code') || s.contains('Invalid or expired code')) {
       return l.authOtpInvalidCode;
     }
-    if (s.contains('rate_limited')) {
+    if (e is RateLimitException || s.contains('rate_limit')) {
       return l.authTooManyAttemptsWait;
     }
     return l.commonSomethingWentWrong;
@@ -357,7 +357,8 @@ class _CodeCells extends StatelessWidget {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: List<Widget>.generate(6, (i) {
-                final text = i < controller.text.length ? controller.text[i] : '';
+                final text =
+                    i < controller.text.length ? controller.text[i] : '';
                 final current = i == controller.text.length;
                 Color border;
                 if (errored) {
