@@ -297,20 +297,26 @@ func transitEventsToLite(events []swisseph.TransitEvent) []openai.TransitEventLi
 	return out
 }
 
-// parseBirthTime parses "HH:MM" format into hour and minute.
+// parseBirthTime extracts hour and minute from a stored birth time.
+// Postgres TIME columns come back as "HH:MM:SS" (the app sends "HH:MM"),
+// and some drivers render a full timestamp ("0000-01-01T13:00:00Z"), so
+// accept all three. Anything unparseable falls back to noon.
 func parseBirthTime(t string) (int, int) {
+	t = strings.TrimSpace(t)
+	if i := strings.IndexByte(t, 'T'); i >= 0 {
+		t = t[i+1:]
+	}
 	parts := strings.Split(t, ":")
-	if len(parts) != 2 {
+	if len(parts) < 2 {
 		return 12, 0
 	}
 	h, err1 := strconv.Atoi(parts[0])
 	m, err2 := strconv.Atoi(parts[1])
-	if err1 != nil || err2 != nil {
+	if err1 != nil || err2 != nil || h < 0 || h > 23 || m < 0 || m > 59 {
 		return 12, 0
 	}
 	return h, m
 }
-
 
 func sunDescription(sign string, lang string) string {
 	if lang == "tr" {

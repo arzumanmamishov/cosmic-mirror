@@ -375,16 +375,16 @@ func determineAuthority(definedCenters map[string]bool, channels []domain.HDChan
 		return "Splenic"
 	}
 	if definedCenters["Heart"] {
-		// Ego if connected to Throat (Manifestor); Self-Projected if to G.
-		if hasChannel(channels, "Heart", "Throat") {
-			return "Ego"
-		}
-		if hasChannel(channels, "Heart", "G") {
-			return "Self-Projected"
-		}
+		// Ego authority — "Ego Manifested" when the Heart reaches the Throat,
+		// "Ego Projected" when it connects to the G. Both are reported as Ego.
 		return "Ego"
 	}
-	// Mental / Sounding Board (only for Projectors with no inner motor).
+	// Self-Projected: the G center defined straight to the Throat
+	// (1-8, 7-31, 13-33, 10-20) with none of the inner authorities above.
+	if definedCenters["G"] && hasChannel(channels, "G", "Throat") {
+		return "Self-Projected"
+	}
+	// Mental / Sounding Board: Projectors defined only in Head/Ajna/Throat.
 	return "Mental"
 }
 
