@@ -25,15 +25,27 @@ func (r *BirthProfileRepository) Create(ctx context.Context, profile *domain.Bir
 	profile.CreatedAt = time.Now()
 	profile.UpdatedAt = time.Now()
 
-	_, err := r.db.ExecContext(ctx,
+	// Upsert on user_id: onboarding can re-submit for a user who already
+	// has a profile (e.g. after reinstall), which used to 500 on the
+	// unique constraint. RETURNING keeps the existing row's id/created_at.
+	return r.db.QueryRowxContext(ctx,
 		`INSERT INTO birth_profiles (id, user_id, birth_date, birth_time, birth_time_known,
 		 birth_place, latitude, longitude, timezone, created_at, updated_at)
-		 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)`,
+		 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+		 ON CONFLICT (user_id) DO UPDATE SET
+		   birth_date = EXCLUDED.birth_date,
+		   birth_time = EXCLUDED.birth_time,
+		   birth_time_known = EXCLUDED.birth_time_known,
+		   birth_place = EXCLUDED.birth_place,
+		   latitude = EXCLUDED.latitude,
+		   longitude = EXCLUDED.longitude,
+		   timezone = EXCLUDED.timezone,
+		   updated_at = EXCLUDED.updated_at
+		 RETURNING id, created_at`,
 		profile.ID, profile.UserID, profile.BirthDate, profile.BirthTime,
 		profile.BirthTimeKnown, profile.BirthPlace, profile.Latitude,
 		profile.Longitude, profile.Timezone, profile.CreatedAt, profile.UpdatedAt,
-	)
-	return err
+	).Scan(&profile.ID, &profile.CreatedAt)
 }
 
 func (r *BirthProfileRepository) GetByUserID(ctx context.Context, userID uuid.UUID) (*domain.BirthProfile, error) {

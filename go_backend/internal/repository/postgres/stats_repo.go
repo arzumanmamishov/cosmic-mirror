@@ -58,7 +58,7 @@ func (r *StatsRepository) streakDays(ctx context.Context, userID uuid.UUID) (int
 		   SELECT DATE(created_at AT TIME ZONE 'UTC') AS day
 		     FROM journal_entries WHERE user_id = $1
 		   UNION
-		   SELECT DATE(completed_at AT TIME ZONE 'UTC') AS day
+		   SELECT completed_date AS day
 		     FROM ritual_completions WHERE user_id = $1
 		   UNION
 		   SELECT DATE(created_at AT TIME ZONE 'UTC') AS day

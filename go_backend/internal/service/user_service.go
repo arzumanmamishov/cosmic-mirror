@@ -90,6 +90,8 @@ func (s *UserService) CreateBirthProfile(ctx context.Context, userID uuid.UUID, 
 	if err := s.profileRepo.Create(ctx, profile); err != nil {
 		return nil, fmt.Errorf("create birth profile: %w", err)
 	}
+	// Create upserts, so this may have overwritten existing birth data.
+	s.invalidateBirthScopedCaches(ctx, userID)
 	return profile, nil
 }
 
