@@ -1,25 +1,89 @@
 import 'package:cosmic_mirror/config/theme/app_palette.dart';
+import 'package:cosmic_mirror/core/error/error_message.dart';
+import 'package:cosmic_mirror/features/community/data/repositories/community_repository.dart';
 import 'package:cosmic_mirror/features/community/domain/entities/post.dart';
+import 'package:cosmic_mirror/features/community/presentation/providers/community_providers.dart';
 import 'package:cosmic_mirror/features/community/presentation/widgets/like_button.dart';
+import 'package:cosmic_mirror/features/community/presentation/widgets/moderation_actions.dart';
 import 'package:cosmic_mirror/l10n/app_localizations.dart';
+import 'package:cosmic_mirror/shared/providers/user_provider.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-class CommentTile extends StatelessWidget {
+class CommentTile extends ConsumerWidget {
   const CommentTile({
     required this.comment,
     this.onReply,
+    this.canModerate = false,
     super.key,
   });
 
   final CommentWithMeta comment;
   final VoidCallback? onReply;
 
+  /// The viewer owns the space this comment's post is in, so they may
+  /// delete other members' comments (the server also allows mods).
+  final bool canModerate;
+
+  List<ContentAction> _actions(
+    BuildContext context, {
+    required bool isMine,
+  }) {
+    final l = AppLocalizations.of(context);
+    final c = comment.comment;
+    return [
+      if (!isMine)
+        ...reportAndBlockActions(
+          context,
+          target: ReportTarget.comment,
+          targetId: c.id,
+          authorId: c.authorId,
+          authorName: comment.authorName,
+        ),
+      if (isMine || canModerate)
+        ContentAction(
+          icon: Icons.delete_outline_rounded,
+          label: l.moderationDeleteComment,
+          destructive: true,
+          onSelected: () async {
+            if (!await confirmDelete(
+              context,
+              l.moderationDeleteCommentConfirm,
+            )) {
+              return;
+            }
+            if (!context.mounted) return;
+            final container = ProviderScope.containerOf(context, listen: false);
+            final messenger = ScaffoldMessenger.of(context);
+            try {
+              await container
+                  .read(communityRepositoryProvider)
+                  .deleteComment(c.id);
+              container
+                ..invalidate(commentsProvider(c.postId))
+                ..invalidate(postDetailProvider(c.postId));
+            } catch (e) {
+              if (context.mounted) {
+                messenger.showSnackBar(
+                  SnackBar(
+                    content: Text(FriendlyError.from(context, e).body),
+                  ),
+                );
+              }
+            }
+          },
+        ),
+    ];
+  }
+
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final p = context.palette;
     final c = comment.comment;
     final isReply = c.parentCommentId != null;
+    final myId = ref.watch(currentUserProvider.select((s) => s.id));
+    final isMine = myId != null && myId == c.authorId;
     return Padding(
       padding: EdgeInsets.only(left: isReply ? 28 : 0, top: 8, bottom: 8),
       child: Row(
@@ -85,6 +149,10 @@ class CommentTile extends StatelessWidget {
                           height: 1.4,
                         ),
                       ),
+                      if (c.isHidden) ...[
+                        const SizedBox(height: 6),
+                        const HiddenContentNotice(),
+                      ],
                     ],
                   ),
                 ),
@@ -116,6 +184,11 @@ class CommentTile extends StatelessWidget {
                         ),
                       ),
                     ],
+                    const Spacer(),
+                    ContentMoreButton(
+                      size: 16,
+                      actions: () => _actions(context, isMine: isMine),
+                    ),
                   ],
                 ),
               ],

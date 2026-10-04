@@ -3,23 +3,79 @@ import 'package:cosmic_mirror/config/theme/app_palette.dart';
 import 'package:cosmic_mirror/config/theme/lively_tokens.dart';
 import 'package:cosmic_mirror/config/theme/lively_type.dart';
 import 'package:cosmic_mirror/config/theme/macos_colors.dart';
+import 'package:cosmic_mirror/core/error/error_message.dart';
+import 'package:cosmic_mirror/features/community/data/repositories/community_repository.dart';
 import 'package:cosmic_mirror/features/community/domain/entities/post.dart';
+import 'package:cosmic_mirror/features/community/presentation/providers/community_providers.dart';
 import 'package:cosmic_mirror/features/community/presentation/widgets/like_button.dart';
+import 'package:cosmic_mirror/features/community/presentation/widgets/moderation_actions.dart';
 import 'package:cosmic_mirror/l10n/app_localizations.dart';
+import 'package:cosmic_mirror/shared/providers/user_provider.dart';
 import 'package:cosmic_mirror/shared/utils/avatar_url.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-class PostCard extends StatelessWidget {
+class PostCard extends ConsumerWidget {
   const PostCard({required this.post, super.key});
 
   final PostWithMeta post;
 
+  /// "…" menu: delete for the author; report + block for everyone else.
+  List<ContentAction> _actions(
+    BuildContext context,
+    WidgetRef ref, {
+    required bool isMine,
+  }) {
+    final l = AppLocalizations.of(context);
+    final pst = post.post;
+    if (isMine) {
+      return [
+        ContentAction(
+          icon: Icons.delete_outline_rounded,
+          label: l.moderationDeletePost,
+          destructive: true,
+          onSelected: () async {
+            if (!await confirmDelete(context, l.moderationDeletePostConfirm)) {
+              return;
+            }
+            if (!context.mounted) return;
+            final container = ProviderScope.containerOf(context, listen: false);
+            final messenger = ScaffoldMessenger.of(context);
+            try {
+              await container
+                  .read(communityRepositoryProvider)
+                  .deletePost(pst.id);
+              container
+                ..invalidate(spacePostsProvider(pst.spaceId))
+                ..invalidate(userCommunityProfileProvider);
+            } catch (e) {
+              if (context.mounted) {
+                messenger.showSnackBar(
+                  SnackBar(content: Text(FriendlyError.from(context, e).body)),
+                );
+              }
+            }
+          },
+        ),
+      ];
+    }
+    return reportAndBlockActions(
+      context,
+      target: ReportTarget.post,
+      targetId: pst.id,
+      authorId: pst.authorId,
+      authorName: post.authorName,
+    );
+  }
+
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final p = context.palette;
     final l = AppLocalizations.of(context);
     final pst = post.post;
+    final myId = ref.watch(currentUserProvider.select((s) => s.id));
+    final isMine = myId != null && myId == pst.authorId;
     void open() => context.push('/community/${pst.spaceId}/post/${pst.id}');
     return Material(
       color: p.surface,
@@ -36,39 +92,53 @@ class PostCard extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              InkWell(
-                onTap: () => context.push('/community/user/${pst.authorId}'),
-                borderRadius: BorderRadius.circular(LivelyRadius.sm),
-                child: Row(
-                  children: [
-                    _AuthorAvatar(
-                      name: post.authorName,
-                      url: post.authorAvatarUrl,
-                    ),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+              Row(
+                children: [
+                  Expanded(
+                    child: InkWell(
+                      onTap: () =>
+                          context.push('/community/user/${pst.authorId}'),
+                      borderRadius: BorderRadius.circular(LivelyRadius.sm),
+                      child: Row(
                         children: [
-                          Text(
-                            post.authorName,
-                            style: LivelyType.small(p.textPrimary)
-                                .copyWith(fontWeight: FontWeight.w600),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
+                          _AuthorAvatar(
+                            name: post.authorName,
+                            url: post.authorAvatarUrl,
                           ),
-                          Text(
-                            '@${post.spaceHandle} · ${_relativeTime(l, pst.createdAt)}',
-                            style: LivelyType.caption(p.textDim),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  post.authorName,
+                                  style: LivelyType.small(p.textPrimary)
+                                      .copyWith(fontWeight: FontWeight.w600),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                                Text(
+                                  '@${post.spaceHandle} · ${_relativeTime(l, pst.createdAt)}',
+                                  style: LivelyType.caption(p.textDim),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ],
+                            ),
                           ),
                         ],
                       ),
                     ),
-                  ],
-                ),
+                  ),
+                  ContentMoreButton(
+                    actions: () => _actions(context, ref, isMine: isMine),
+                  ),
+                ],
               ),
+              if (pst.isHidden) ...[
+                const SizedBox(height: 10),
+                const HiddenContentNotice(),
+              ],
               const SizedBox(height: 12),
               Text(pst.content, style: LivelyType.body(p.textPrimary)),
               if (pst.linkUrl != null && pst.linkUrl!.isNotEmpty) ...[

@@ -1,5 +1,6 @@
 import 'package:cosmic_mirror/core/network/api_client.dart';
 import 'package:cosmic_mirror/core/network/api_endpoints.dart';
+import 'package:cosmic_mirror/features/community/domain/entities/blocked_user.dart';
 import 'package:cosmic_mirror/features/community/domain/entities/notification.dart';
 import 'package:cosmic_mirror/features/community/domain/entities/post.dart';
 import 'package:cosmic_mirror/features/community/domain/entities/space.dart';
@@ -12,6 +13,32 @@ enum SpaceFilter {
 
   const SpaceFilter(this.queryValue);
   final String queryValue;
+}
+
+/// What a report points at. `wire` is the backend's target_type.
+enum ReportTarget {
+  post('post'),
+  comment('comment'),
+  space('space'),
+  user('user');
+
+  const ReportTarget(this.wire);
+  final String wire;
+}
+
+/// Report reasons accepted by POST /reports (order = order in the sheet).
+enum ReportReason {
+  spam('spam'),
+  harassment('harassment'),
+  hate('hate'),
+  sexual('sexual'),
+  violence('violence'),
+  selfHarm('self_harm'),
+  misinformation('misinformation'),
+  other('other');
+
+  const ReportReason(this.wire);
+  final String wire;
 }
 
 /// Single repository for the entire Community feature. Centralizes the
@@ -338,6 +365,48 @@ class CommunityRepository {
       ApiEndpoints.communityUser(userIdOrMe),
       fromJson: (raw) =>
           UserCommunityProfile.fromJson(raw as Map<String, dynamic>),
+    );
+  }
+
+  // ===== Safety: reports + blocks =====
+
+  /// Files a report. Reporting the same thing twice is a no-op on the
+  /// server (200 instead of 201), so retries are safe.
+  Future<void> report({
+    required ReportTarget target,
+    required String targetId,
+    required ReportReason reason,
+    String? details,
+  }) async {
+    await _client.post<dynamic>(
+      ApiEndpoints.reports,
+      data: {
+        'target_type': target.wire,
+        'target_id': targetId,
+        'reason': reason.wire,
+        if (details != null && details.trim().isNotEmpty)
+          'details': details.trim(),
+      },
+    );
+  }
+
+  Future<void> blockUser(String userId) async {
+    await _client.post<dynamic>(ApiEndpoints.userBlock(userId));
+  }
+
+  Future<void> unblockUser(String userId) async {
+    await _client.delete(ApiEndpoints.userBlock(userId));
+  }
+
+  Future<List<BlockedUser>> listBlockedUsers() async {
+    return _client.get<List<BlockedUser>>(
+      ApiEndpoints.myBlockedUsers,
+      fromJson: (raw) {
+        final list = (raw as Map<String, dynamic>)['blocks'] as List<dynamic>?;
+        return (list ?? const [])
+            .map((e) => BlockedUser.fromJson(e as Map<String, dynamic>))
+            .toList();
+      },
     );
   }
 

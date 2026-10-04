@@ -1,4 +1,5 @@
 import 'package:cosmic_mirror/config/theme/app_palette.dart';
+import 'package:cosmic_mirror/core/error/error_message.dart';
 import 'package:cosmic_mirror/features/numerology/domain/entities/numerology.dart';
 import 'package:cosmic_mirror/features/numerology/presentation/providers/numerology_providers.dart';
 import 'package:cosmic_mirror/features/numerology/presentation/widgets/compat_score_panel.dart';
@@ -58,7 +59,9 @@ class _NumerologyCompatScreenState
               );
       if (mounted) setState(() => _result = result);
     } catch (e) {
-      if (mounted) setState(() => _error = e.toString());
+      if (mounted) {
+        setState(() => _error = FriendlyError.from(context, e).body);
+      }
     } finally {
       if (mounted) setState(() => _busy = false);
     }

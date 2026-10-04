@@ -1,4 +1,5 @@
 import 'package:cosmic_mirror/features/community/data/repositories/community_repository.dart';
+import 'package:cosmic_mirror/features/community/domain/entities/blocked_user.dart';
 import 'package:cosmic_mirror/features/community/domain/entities/notification.dart';
 import 'package:cosmic_mirror/features/community/domain/entities/post.dart';
 import 'package:cosmic_mirror/features/community/domain/entities/space.dart';
@@ -101,3 +102,30 @@ final spaceJoinRequestsProvider = FutureProvider.autoDispose
     .family<List<SpaceMember>, String>((ref, spaceId) async {
   return ref.read(communityRepositoryProvider).listJoinRequests(spaceId);
 });
+
+/// Users the current user blocked (Settings → Blocked users).
+final blockedUsersProvider =
+    FutureProvider.autoDispose<List<BlockedUser>>((ref) async {
+  return ref.read(communityRepositoryProvider).listBlockedUsers();
+});
+
+/// Refetches everything that may contain the given user's content after
+/// a block / unblock, so it disappears (or comes back) immediately.
+/// Family providers are invalidated as a whole. Pass `ref.invalidate` or
+/// `container.invalidate`.
+void invalidateAfterBlockChange(void Function(ProviderOrFamily) invalidate) {
+  for (final p in <ProviderOrFamily>[
+    spacePostsProvider,
+    postDetailProvider,
+    commentsProvider,
+    spaceMembersProvider,
+    userCommunityProfileProvider,
+    notificationsProvider,
+    unreadCountProvider,
+    popularHashtagsProvider,
+    spacesProvider,
+    blockedUsersProvider,
+  ]) {
+    invalidate(p);
+  }
+}

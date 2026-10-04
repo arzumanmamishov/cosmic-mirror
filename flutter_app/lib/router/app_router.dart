@@ -5,6 +5,7 @@ import 'package:cosmic_mirror/features/auth/presentation/screens/auth_screen.dar
 import 'package:cosmic_mirror/features/auth/presentation/screens/forgot_password_screen.dart';
 import 'package:cosmic_mirror/features/auth/presentation/screens/otp_screen.dart';
 import 'package:cosmic_mirror/features/chart/presentation/screens/chart_screen.dart';
+import 'package:cosmic_mirror/features/community/presentation/screens/blocked_users_screen.dart';
 import 'package:cosmic_mirror/features/community/presentation/screens/category_detail_screen.dart';
 import 'package:cosmic_mirror/features/community/presentation/screens/community_profile_screen.dart';
 import 'package:cosmic_mirror/features/community/presentation/screens/create_space_screen.dart';
@@ -495,6 +496,16 @@ final appRouterProvider = Provider<GoRouter>((ref) {
           state,
           const SettingsScreen(),
         ),
+        routes: [
+          // Unblock people blocked in the Community (UGC safety).
+          GoRoute(
+            path: 'blocked-users',
+            pageBuilder: (context, state) => _slideTransition(
+              state,
+              const BlockedUsersScreen(),
+            ),
+          ),
+        ],
       ),
     ],
   );

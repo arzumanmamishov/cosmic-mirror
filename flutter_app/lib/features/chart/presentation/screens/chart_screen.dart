@@ -42,7 +42,7 @@ class ChartScreen extends ConsumerWidget {
         child: chartAsync.when(
           loading: () => const ShimmerList(itemCount: 4),
           error: (error, _) => ErrorView(
-            message: error.toString(),
+            error: error,
             onRetry: () => ref.invalidate(chartProvider),
           ),
           data: (chart) => _ChartContent(chart: chart),

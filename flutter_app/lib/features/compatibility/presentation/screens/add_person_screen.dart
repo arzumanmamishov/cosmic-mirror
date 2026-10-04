@@ -1,4 +1,5 @@
 import 'package:cosmic_mirror/config/theme/app_palette.dart';
+import 'package:cosmic_mirror/core/error/error_message.dart';
 import 'package:cosmic_mirror/core/network/api_endpoints.dart';
 import 'package:cosmic_mirror/features/compatibility/presentation/relationship_labels.dart';
 import 'package:cosmic_mirror/features/onboarding/presentation/widgets/birthplace_search.dart';
@@ -86,8 +87,9 @@ class _AddPersonScreenState extends ConsumerState<AddPersonScreen> {
       );
       if (mounted) context.pop();
     } catch (e) {
+      if (!mounted) return;
       setState(() {
-        _error = e.toString();
+        _error = FriendlyError.from(context, e).body;
         _isLoading = false;
       });
     }

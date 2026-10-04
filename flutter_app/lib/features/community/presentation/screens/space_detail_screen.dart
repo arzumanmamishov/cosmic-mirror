@@ -3,10 +3,12 @@ import 'package:cosmic_mirror/config/theme/app_palette.dart';
 import 'package:cosmic_mirror/config/theme/lively_tokens.dart';
 import 'package:cosmic_mirror/config/theme/lively_type.dart';
 import 'package:cosmic_mirror/config/theme/macos_colors.dart';
+import 'package:cosmic_mirror/features/community/data/repositories/community_repository.dart';
 import 'package:cosmic_mirror/features/community/domain/entities/space.dart';
 import 'package:cosmic_mirror/features/community/presentation/providers/community_providers.dart';
 import 'package:cosmic_mirror/features/community/presentation/screens/compose_post_sheet.dart';
 import 'package:cosmic_mirror/features/community/presentation/widgets/join_button.dart';
+import 'package:cosmic_mirror/features/community/presentation/widgets/moderation_actions.dart';
 import 'package:cosmic_mirror/features/community/presentation/widgets/post_card.dart';
 import 'package:cosmic_mirror/l10n/app_localizations.dart';
 import 'package:cosmic_mirror/shared/providers/user_provider.dart';
@@ -55,12 +57,16 @@ class SpaceDetailScreen extends ConsumerWidget {
             data: (s) {
               final isOwner =
                   currentUserId != null && currentUserId == s.space.createdBy;
-              // Every menu entry needs membership (or ownership).
-              if (!s.isJoined && !isOwner) return const SizedBox.shrink();
+              // Always shown: everyone but the owner can report the space.
               return _GlassIconButton(
                 icon: Icons.more_horiz_rounded,
-                onPressed: () =>
-                    _showOverflow(context, s.space.id, isOwner: isOwner),
+                tooltip: MaterialLocalizations.of(context).moreButtonTooltip,
+                onPressed: () => _showOverflow(
+                  context,
+                  s.space.id,
+                  isOwner: isOwner,
+                  isJoined: s.isJoined,
+                ),
               );
             },
           ),
@@ -150,6 +156,7 @@ class SpaceDetailScreen extends ConsumerWidget {
     BuildContext context,
     String spaceId, {
     required bool isOwner,
+    required bool isJoined,
   }) {
     final p = context.palette;
     final l = AppLocalizations.of(context);
@@ -189,11 +196,38 @@ class SpaceDetailScreen extends ConsumerWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              item(
-                Icons.group_rounded,
-                l.communityMembers,
-                '/community/$spaceId/members',
-              ),
+              if (isJoined || isOwner)
+                item(
+                  Icons.group_rounded,
+                  l.communityMembers,
+                  '/community/$spaceId/members',
+                ),
+              if (!isOwner)
+                ListTile(
+                  leading: Container(
+                    width: 36,
+                    height: 36,
+                    alignment: Alignment.center,
+                    decoration: BoxDecoration(
+                      color: p.error.withValues(alpha: 0.12),
+                      borderRadius: BorderRadius.circular(LivelyRadius.md),
+                    ),
+                    child: Icon(Icons.flag_outlined, color: p.error, size: 19),
+                  ),
+                  title: Text(
+                    l.reportSpace,
+                    style: LivelyType.body(p.error)
+                        .copyWith(fontWeight: FontWeight.w500),
+                  ),
+                  onTap: () {
+                    Navigator.pop(context);
+                    showReportSheet(
+                      context,
+                      target: ReportTarget.space,
+                      targetId: spaceId,
+                    );
+                  },
+                ),
               if (isOwner) ...[
                 item(
                   Icons.how_to_reg_rounded,

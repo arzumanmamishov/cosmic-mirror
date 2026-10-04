@@ -12,6 +12,11 @@
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
 	<string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
+	<key>CFBundleLocalizations</key>
+	<array>
+		<string>en</string>
+		<string>tr</string>
+	</array>
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleName</key>
@@ -28,23 +33,16 @@
 	<false/>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
-	<key>NSAppTransportSecurity</key>
-	<dict>
-		<!-- Permit HTTP to LAN addresses (192.168.x.x, 10.x.x.x, etc.) so
-		     dev builds can hit the local backend on the Mac without
-		     needing to run TLS. Public HTTPS traffic still goes through
-		     the normal ATS enforcement. -->
-		<key>NSAllowsLocalNetworking</key>
-		<true/>
-	</dict>
-	<key>NSLocalNetworkUsageDescription</key>
-	<string>Lively connects to the development backend on your local network.</string>
+	<!-- No ATS exceptions / NSLocalNetworkUsageDescription here on purpose.
+	     Dart's HttpClient (dio, cached_network_image) uses BSD sockets, which
+	     ATS does not govern (the engine hard-codes
+	     may_insecurely_connect_to_all_domains = true), so debug builds can
+	     still reach http://192.168.x.x:8080. The local-network privacy
+	     prompt string is injected into Debug/Profile builds only by
+	     Flutter's xcode_backend (addVmServiceBonjourService); Release
+	     builds ship without it. Localized strings: */InfoPlist.strings. -->
 	<key>NSCameraUsageDescription</key>
 	<string>Lively needs your camera to take a profile photo.</string>
-	<key>NSMicrophoneUsageDescription</key>
-	<string>Lively does not record audio.</string>
-	<key>NSPhotoLibraryAddUsageDescription</key>
-	<string>Lively needs permission to save photos.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>Lively needs access to your photo library to set a profile picture.</string>
 	<key>UIApplicationSceneManifest</key>

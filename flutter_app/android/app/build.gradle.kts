@@ -6,7 +6,6 @@ plugins {
     id("kotlin-android")
     // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
     id("dev.flutter.flutter-gradle-plugin")
-    id("com.google.gms.google-services")
 }
 
 // Release signing. Secrets live in android/key.properties (gitignored — see
@@ -26,9 +25,8 @@ android {
     ndkVersion = flutter.ndkVersion
 
     compileOptions {
-        // flutter_local_notifications needs the desugared java.time API on
-        // older Android versions. Enabling core library desugaring lets it
-        // build against a low minSdk without runtime crashes.
+        // Core library desugaring (java.time etc. on old Android versions).
+        // Harmless to keep; plugins that use those APIs rely on it.
         isCoreLibraryDesugaringEnabled = true
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
@@ -101,7 +99,11 @@ gradle.taskGraph.whenReady {
 }
 
 dependencies {
-    // Required by flutter_local_notifications (and any other plugin that
-    // uses java.time / NIO APIs) when targeting older minSdk levels.
+    // Required by plugins that use java.time / NIO APIs when targeting
+    // older minSdk levels (see isCoreLibraryDesugaringEnabled above).
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.4")
+    // LaunchTheme / NormalTheme extend Theme.MaterialComponents (see
+    // res/values/styles.xml), so the Material library must be on the
+    // classpath.
+    implementation("com.google.android.material:material:1.12.0")
 }

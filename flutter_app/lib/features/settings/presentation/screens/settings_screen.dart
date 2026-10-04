@@ -4,6 +4,8 @@ import 'package:cosmic_mirror/config/theme/app_palette.dart';
 import 'package:cosmic_mirror/config/theme/colors.dart';
 import 'package:cosmic_mirror/config/theme/lively_type.dart';
 import 'package:cosmic_mirror/config/theme/typography.dart';
+import 'package:cosmic_mirror/core/error/error_message.dart';
+import 'package:cosmic_mirror/core/network/api_endpoints.dart';
 import 'package:cosmic_mirror/features/auth/presentation/providers/auth_provider.dart';
 import 'package:cosmic_mirror/l10n/app_localizations.dart';
 import 'package:cosmic_mirror/shared/providers/locale_provider.dart';
@@ -11,10 +13,18 @@ import 'package:cosmic_mirror/shared/providers/subscription_state_provider.dart'
 import 'package:cosmic_mirror/shared/providers/theme_provider.dart';
 import 'package:cosmic_mirror/shared/providers/user_provider.dart';
 import 'package:cosmic_mirror/shared/widgets/lively/lively_backdrop.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:in_app_review/in_app_review.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
+
+/// Installed app version + build number, read once from the platform.
+final _packageInfoProvider = FutureProvider<PackageInfo>(
+  (ref) => PackageInfo.fromPlatform(),
+);
 
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
@@ -63,7 +73,22 @@ class SettingsScreen extends ConsumerWidget {
                   : l10n.settingsUpgrade,
             ),
             trailing: const Icon(Icons.chevron_right),
-            onTap: () => context.push('/paywall'),
+            onTap: () {
+              // Store subscribers manage (change plan / cancel) on the
+              // App Store / Google Play subscription page; everyone else
+              // gets the paywall (which shows a "You're Premium" state
+              // with management options for web subscribers).
+              final manageUri = ref.read(hasPremiumProvider)
+                  ? storeSubscriptionManagementUri(
+                      ref.read(customerInfoProvider),
+                    )
+                  : null;
+              if (manageUri != null) {
+                launchUrl(manageUri, mode: LaunchMode.externalApplication);
+              } else {
+                context.push('/paywall');
+              }
+            },
           ),
 
           const Divider(),
@@ -74,17 +99,10 @@ class SettingsScreen extends ConsumerWidget {
           _SectionHeader(l10n.settingsLanguage),
           const _LanguagePicker(),
 
-          const Divider(),
-          _SectionHeader(l10n.settingsPreferences),
-
-          ListTile(
-            leading: const Icon(Icons.notifications_outlined),
-            title: Text(l10n.profileNotifications),
-            trailing: const Icon(Icons.chevron_right),
-            onTap: () {
-              // Navigate to notification preferences
-            },
-          ),
+          // TODO(notifications): restore a "Preferences → Notifications"
+          // row once push delivery ships (see docs/NEXT_STEPS.md, "Push
+          // notifications (delivery)"). Hidden until then so the row
+          // isn't a dead button.
 
           const Divider(),
           _SectionHeader(l10n.settingsSupport),
@@ -101,9 +119,7 @@ class SettingsScreen extends ConsumerWidget {
           ListTile(
             leading: const Icon(Icons.star_outline),
             title: Text(l10n.settingsRateApp),
-            onTap: () {
-              // Open app store rating
-            },
+            onTap: _rateApp,
           ),
 
           const Divider(),
@@ -137,6 +153,13 @@ class SettingsScreen extends ConsumerWidget {
           const Divider(),
           _SectionHeader(l10n.settingsAccount),
 
+          // People blocked in the Community (unblock from here).
+          ListTile(
+            leading: const Icon(Icons.block_rounded),
+            title: Text(l10n.blockedUsersTitle),
+            trailing: const Icon(Icons.chevron_right_rounded),
+            onTap: () => context.push('/settings/blocked-users'),
+          ),
           ListTile(
             leading: const Icon(Icons.logout),
             title: Text(l10n.settingsSignOut),
@@ -182,7 +205,12 @@ class SettingsScreen extends ConsumerWidget {
                   final dl10n = AppLocalizations.of(dialogCtx);
                   return AlertDialog(
                     title: Text(dl10n.settingsDeleteAccount),
-                    content: Text(dl10n.settingsDeleteAccountConfirm),
+                    // The server can't cancel App Store / Google Play
+                    // subscriptions, and Apple requires telling users so.
+                    content: Text(
+                      '${dl10n.settingsDeleteAccountConfirm}\n\n'
+                      '${dl10n.subscriptionDeleteAccountStoreNote}',
+                    ),
                     actions: [
                       TextButton(
                         onPressed: () => Navigator.pop(dialogCtx, false),
@@ -200,13 +228,8 @@ class SettingsScreen extends ConsumerWidget {
                 },
               );
 
-              if (confirmed ?? false) {
-                // Backend account-deletion isn't wired yet in the local-
-                // auth port — treat this as a client-side sign-out for
-                // now. A follow-up POST /users/me/delete will hard-delete.
-                await ref.read(authControllerProvider.notifier).logout();
-                ref.read(currentUserProvider.notifier).clear();
-                if (context.mounted) context.go('/auth');
+              if ((confirmed ?? false) && context.mounted) {
+                await _deleteAccount(context, ref);
               }
             },
           ),
@@ -214,7 +237,13 @@ class SettingsScreen extends ConsumerWidget {
               const SizedBox(height: 32),
               Center(
                 child: Text(
-                  l10n.settingsAppVersion,
+                  ref.watch(_packageInfoProvider).maybeWhen(
+                        data: (info) => l10n.settingsAppVersion(
+                          info.version,
+                          info.buildNumber,
+                        ),
+                        orElse: () => '',
+                      ),
                   style: CosmicTypography.caption,
                 ),
               ),
@@ -225,6 +254,57 @@ class SettingsScreen extends ConsumerWidget {
       ),
     );
   }
+}
+
+/// Asks the OS for the native rating sheet; falls back to the store page
+/// when the in-app prompt isn't available (e.g. no Play Store services).
+Future<void> _rateApp() async {
+  final review = InAppReview.instance;
+  try {
+    if (await review.isAvailable()) {
+      await review.requestReview();
+      return;
+    }
+    // iOS needs the numeric App Store id for the store-page fallback.
+    final isIos = defaultTargetPlatform == TargetPlatform.iOS;
+    if (!isIos || Env.appStoreId.isNotEmpty) {
+      await review.openStoreListing(appStoreId: Env.appStoreId);
+    }
+  } catch (_) {/* nothing useful to show the user */}
+}
+
+/// Hard-deletes the account on the backend (DELETE /users/me), then clears
+/// every local trace of the session. On failure the user stays signed in
+/// and sees a localized error.
+Future<void> _deleteAccount(BuildContext context, WidgetRef ref) async {
+  final navigator = Navigator.of(context, rootNavigator: true);
+  unawaited(
+    showDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => const PopScope(
+        canPop: false,
+        child: Center(child: CircularProgressIndicator()),
+      ),
+    ),
+  );
+  try {
+    await ref.read(apiClientProvider).delete(ApiEndpoints.me);
+  } catch (e) {
+    navigator.pop();
+    if (context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(FriendlyError.from(context, e).body)),
+      );
+    }
+    return;
+  }
+  navigator.pop();
+  // logout() also revokes the refresh token server-side (best-effort) and
+  // wipes the stored tokens.
+  await ref.read(authControllerProvider.notifier).logout();
+  ref.read(currentUserProvider.notifier).clear();
+  if (context.mounted) context.go('/auth');
 }
 
 class _SectionHeader extends StatelessWidget {

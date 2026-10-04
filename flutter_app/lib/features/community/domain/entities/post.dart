@@ -11,6 +11,7 @@ class Post extends Equatable {
     required this.createdAt,
     required this.updatedAt,
     this.linkUrl,
+    this.hiddenAt,
   });
 
   factory Post.fromJson(Map<String, dynamic> json) {
@@ -26,6 +27,7 @@ class Post extends Equatable {
           DateTime.now(),
       updatedAt: DateTime.tryParse(json['updated_at'] as String? ?? '') ??
           DateTime.now(),
+      hiddenAt: DateTime.tryParse(json['hidden_at'] as String? ?? ''),
     );
   }
 
@@ -39,8 +41,14 @@ class Post extends Equatable {
   final DateTime createdAt;
   final DateTime updatedAt;
 
+  /// Set when moderation hid the post (auto-hide after repeated reports,
+  /// or a moderator). The server only returns hidden posts to their
+  /// author, so the UI shows an "under review" note.
+  final DateTime? hiddenAt;
+  bool get isHidden => hiddenAt != null;
+
   @override
-  List<Object?> get props => [id, likeCount, commentCount];
+  List<Object?> get props => [id, likeCount, commentCount, hiddenAt];
 }
 
 /// Feed-shape variant: Post + author / space metadata + per-viewer flag.
@@ -86,6 +94,7 @@ class Comment extends Equatable {
     required this.createdAt,
     required this.updatedAt,
     this.parentCommentId,
+    this.hiddenAt,
   });
 
   factory Comment.fromJson(Map<String, dynamic> json) {
@@ -100,6 +109,7 @@ class Comment extends Equatable {
           DateTime.now(),
       updatedAt: DateTime.tryParse(json['updated_at'] as String? ?? '') ??
           DateTime.now(),
+      hiddenAt: DateTime.tryParse(json['hidden_at'] as String? ?? ''),
     );
   }
 
@@ -112,8 +122,12 @@ class Comment extends Equatable {
   final DateTime createdAt;
   final DateTime updatedAt;
 
+  /// See [Post.hiddenAt].
+  final DateTime? hiddenAt;
+  bool get isHidden => hiddenAt != null;
+
   @override
-  List<Object?> get props => [id, likeCount];
+  List<Object?> get props => [id, likeCount, hiddenAt];
 }
 
 class CommentWithMeta extends Equatable {

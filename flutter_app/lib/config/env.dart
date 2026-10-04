@@ -57,33 +57,34 @@ class Env {
     }
   }
 
-  /// RevenueCat public SDK key. Empty unless provided with
-  /// `--dart-define=REVENUECAT_API_KEY=...` (scripts/build_release.sh
-  /// passes it). When empty, RevenueCat is never configured and every
-  /// `Purchases.*` call is skipped — see [hasRevenueCatKey].
+  /// RevenueCat public SDK key for the platform being built (iOS keys start
+  /// with `appl_`, Android keys with `goog_`). Empty unless provided with
+  /// `--dart-define=REVENUECAT_API_KEY=...` — scripts/build_release.sh
+  /// passes the right per-platform key. When missing (or for the wrong
+  /// platform) RevenueCat is never configured and every `Purchases.*` call
+  /// is skipped — see [hasRevenueCatKey].
   static const revenueCatApiKey = String.fromEnvironment('REVENUECAT_API_KEY');
 
-  /// True only when a real-looking RevenueCat key was compiled in. The
-  /// legacy placeholder is still rejected in case an old build script
-  /// passes it explicitly.
-  static bool get hasRevenueCatKey =>
-      revenueCatApiKey.isNotEmpty &&
-      revenueCatApiKey != 'your_revenuecat_api_key';
+  /// True only when a RevenueCat key for this platform was compiled in.
+  /// In-app purchases exist only on iOS / Android (never on web), and an
+  /// Android key in an iOS build (or vice versa) would fail at configure
+  /// time, so it is rejected here. `test_` keys (RevenueCat Test Store)
+  /// are accepted on both.
+  static bool get hasRevenueCatKey {
+    if (kIsWeb || revenueCatApiKey.isEmpty) return false;
+    if (revenueCatApiKey.startsWith('test_')) return true;
+    return switch (defaultTargetPlatform) {
+      TargetPlatform.iOS => revenueCatApiKey.startsWith('appl_'),
+      TargetPlatform.android => revenueCatApiKey.startsWith('goog_'),
+      _ => false,
+    };
+  }
 
-  /// Stripe **publishable** key (safe to ship in the binary). The mobile
-  /// Payment Sheet uses this together with the per-customer ephemeral
-  /// key + payment-intent client_secret minted by our backend. Override
-  /// at build time with `--dart-define=STRIPE_PUBLISHABLE_KEY=pk_test_…`.
-  static const stripePublishableKey = String.fromEnvironment(
-    'STRIPE_PUBLISHABLE_KEY',
-  );
-
-  /// `merchant.com.lively.app` for Apple Pay — wire to a real merchant
-  /// id in Stripe + your provisioning profile before enabling Apple Pay.
-  static const stripeMerchantIdentifier = String.fromEnvironment(
-    'STRIPE_MERCHANT_IDENTIFIER',
-    defaultValue: 'merchant.com.lively.app',
-  );
+  /// Numeric App Store id (the digits in apps.apple.com/app/id<…>). Only
+  /// needed on iOS as a fallback when the in-app review prompt is
+  /// unavailable. Pass with `--dart-define=APP_STORE_ID=...` once the app
+  /// is listed.
+  static const appStoreId = String.fromEnvironment('APP_STORE_ID');
 
   static bool get isDev => current == Environment.dev;
   static bool get isProd => current == Environment.prod;

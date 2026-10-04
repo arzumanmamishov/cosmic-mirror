@@ -1,4 +1,5 @@
 import 'package:cosmic_mirror/config/theme/app_palette.dart';
+import 'package:cosmic_mirror/core/error/error_message.dart';
 import 'package:cosmic_mirror/core/network/api_endpoints.dart';
 import 'package:cosmic_mirror/features/chart/presentation/screens/chart_screen.dart'
     show chartProvider;
@@ -117,7 +118,9 @@ class _EditBirthDataScreenState extends ConsumerState<EditBirthDataScreen> {
     } catch (e) {
       if (mounted) {
         setState(() {
-          _error = AppLocalizations.of(context).profileSaveError('$e');
+          _error = AppLocalizations.of(context).profileSaveError(
+            FriendlyError.from(context, e).body,
+          );
           _saving = false;
         });
       }
@@ -157,7 +160,9 @@ class _EditBirthDataScreenState extends ConsumerState<EditBirthDataScreen> {
           child: Padding(
             padding: const EdgeInsets.all(24),
             child: Text(
-              AppLocalizations.of(context).profileBirthDataLoadError('$e'),
+              AppLocalizations.of(context).profileBirthDataLoadError(
+                FriendlyError.from(context, e).body,
+              ),
               style: TextStyle(color: p.error),
               textAlign: TextAlign.center,
             ),

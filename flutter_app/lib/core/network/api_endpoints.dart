@@ -62,11 +62,9 @@ class ApiEndpoints {
       '$basePath/notifications/preferences';
 
   // Subscription
+  // Premium is bought in-app via App Store / Google Play (RevenueCat); the
+  // backend's /stripe/* endpoints are for web checkout only.
   static const String subscriptionStatus = '$basePath/subscription/status';
-
-  // Stripe — premium subscriptions via the mobile Payment Sheet.
-  static const String stripePaymentSheet = '$basePath/stripe/payment-sheet';
-  static const String stripeCancel = '$basePath/stripe/cancel';
 
   // Legal
   static const String privacyPolicy = '$basePath/legal/privacy';
@@ -108,6 +106,11 @@ class ApiEndpoints {
   /// User community-profile. Pass a UUID or the literal "me".
   static String communityUser(String userIdOrMe) =>
       '$basePath/community/users/$userIdOrMe';
+
+  // Community safety: report content, block / unblock users.
+  static const String reports = '$basePath/reports';
+  static const String myBlockedUsers = '$basePath/users/me/blocks';
+  static String userBlock(String userId) => '$basePath/users/$userId/block';
 
   // Numerology
   static const String numerology = '$basePath/numerology';

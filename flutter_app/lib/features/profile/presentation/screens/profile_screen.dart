@@ -1,6 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cosmic_mirror/config/theme/app_palette.dart';
 import 'package:cosmic_mirror/config/theme/lively_type.dart';
+import 'package:cosmic_mirror/core/error/error_message.dart';
 import 'package:cosmic_mirror/core/network/api_endpoints.dart';
 import 'package:cosmic_mirror/features/auth/presentation/providers/auth_provider.dart';
 import 'package:cosmic_mirror/features/profile/presentation/providers/profile_providers.dart';
@@ -191,8 +192,9 @@ Future<void> _showEditProfileSheet(BuildContext context, WidgetRef ref) async {
                 ScaffoldMessenger.of(sheetContext).showSnackBar(
                   SnackBar(
                     content: Text(
-                      AppLocalizations.of(sheetContext)
-                          .profileSaveError(e.toString()),
+                      AppLocalizations.of(sheetContext).profileSaveError(
+                        FriendlyError.from(sheetContext, e).body,
+                      ),
                     ),
                   ),
                 );

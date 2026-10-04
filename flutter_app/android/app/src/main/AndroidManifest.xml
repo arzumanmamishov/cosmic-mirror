@@ -2,12 +2,13 @@
     <!-- Network access for the API. Must live in the main manifest: the one
          in src/debug only applies to debug builds. -->
     <uses-permission android:name="android.permission.INTERNET"/>
-    <!-- Required by image_picker for ImageSource.camera. The gallery
-         picker uses scoped storage on Android 13+ and needs no extra
-         permission. -->
-    <uses-permission android:name="android.permission.CAMERA"/>
+    <!-- No CAMERA permission: image_picker's ImageSource.camera launches the
+         system camera app via ACTION_IMAGE_CAPTURE, which needs none.
+         Declaring CAMERA without requesting it at runtime would actually
+         make that intent throw a SecurityException. The gallery picker uses
+         the system photo picker and needs no permission either. -->
     <application
-        android:label="Lively App"
+        android:label="Lively"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher"
         android:allowBackup="false"

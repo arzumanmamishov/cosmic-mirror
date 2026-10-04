@@ -76,13 +76,16 @@ class AppLocalizationsTr extends AppLocalizations {
   String get authTermsPrefix => 'Devam ederek ';
 
   @override
-  String get authTerms => 'Şartlar';
+  String get authTerms => 'Kullanım Şartları';
 
   @override
   String get authAnd => ' ve ';
 
   @override
   String get authPrivacy => 'Gizlilik Politikası';
+
+  @override
+  String get authTermsSuffix => '\'nı kabul etmiş olursun.';
 
   @override
   String get authEmailRequired => 'E-posta ve şifre gereklidir.';
@@ -719,7 +722,9 @@ class AppLocalizationsTr extends AppLocalizations {
   String get settingsDelete => 'Sil';
 
   @override
-  String get settingsAppVersion => 'Lively v1.0.0';
+  String settingsAppVersion(String version, String build) {
+    return 'Lively $version ($build)';
+  }
 
   @override
   String get chatThreadsTitle => 'Astrolog';
@@ -3422,4 +3427,224 @@ class AppLocalizationsTr extends AppLocalizations {
   String dailyShareText(String affirmation, String color) {
     return '\"$affirmation\"\n\nBugünkü şans rengim: $color\n\n~ Lively';
   }
+
+  @override
+  String paywallStartTrialCta(int days) {
+    return '$days günlük ücretsiz denemeyi başlat';
+  }
+
+  @override
+  String paywallTrialThenPrice(int days, String price) {
+    return '$days gün ücretsiz, sonra $price';
+  }
+
+  @override
+  String get paywallTermsOfUse => 'Kullanım Koşulları (EULA)';
+
+  @override
+  String subscriptionPricePerMonthLong(String price) {
+    return 'aylık $price';
+  }
+
+  @override
+  String subscriptionPricePerYearLong(String price) {
+    return 'yıllık $price';
+  }
+
+  @override
+  String subscriptionDisclosure(String price, String store) {
+    return '$price. Ödeme, satın almayı onayladığında $store hesabından alınır. Abonelik, mevcut dönemin bitiminden en az 24 saat önce iptal edilmediği sürece aynı fiyattan otomatik olarak yenilenir; yenileme ücreti dönem bitmeden önceki 24 saat içinde alınır. Aboneliğini istediğin zaman $store hesap ayarlarından yönetebilir veya iptal edebilirsin.';
+  }
+
+  @override
+  String subscriptionDisclosureTrial(int days, String price, String store) {
+    return '$days gün ücretsiz, sonra $price. Deneme bitmeden en az 24 saat önce iptal edersen ücret alınmaz. Deneme bittiğinde ödeme $store hesabından alınır ve abonelik, mevcut dönemin bitiminden en az 24 saat önce iptal edilmediği sürece aynı fiyattan otomatik olarak yenilenir. Aboneliğini istediğin zaman $store hesap ayarlarından yönetebilir veya iptal edebilirsin.';
+  }
+
+  @override
+  String get subscriptionPlansUnavailableTitle =>
+      'Planlar şu anda kullanılamıyor';
+
+  @override
+  String get subscriptionPlansUnavailableBody =>
+      'Abonelik seçeneklerini mağazadan yükleyemedik. Bağlantını kontrol edip tekrar dene.';
+
+  @override
+  String get subscriptionPurchasesUnsupported =>
+      'Uygulama içi satın almalar uygulamanın bu sürümünde kullanılamıyor.';
+
+  @override
+  String get subscriptionRestoreNothing =>
+      'Daha önce yapılmış bir satın alma bulunamadı.';
+
+  @override
+  String get subscriptionRestoreSuccess =>
+      'Satın alımların geri yüklendi. Premium\'a tekrar hoş geldin!';
+
+  @override
+  String get subscriptionPaymentPending =>
+      'Satın alman onay bekliyor. Mağaza onaylar onaylamaz Premium açılacak.';
+
+  @override
+  String get subscriptionPurchaseNotAllowed =>
+      'Bu cihazda satın alma yapılamıyor. Mağaza hesabını veya cihaz kısıtlamalarını kontrol et.';
+
+  @override
+  String get subscriptionAlreadyOwned =>
+      'Bu mağaza hesabında zaten bir abonelik var. Etkinleştirmek için Satın Alımları Geri Yükle\'ye dokun.';
+
+  @override
+  String get subscriptionPurchaseFailed =>
+      'Satın alma tamamlanamadı. Lütfen tekrar dene.';
+
+  @override
+  String get subscriptionPremiumActiveTitle => 'Premium\'dasın';
+
+  @override
+  String get subscriptionPremiumActiveBody =>
+      'Tüm özelliklere tam erişimin var.';
+
+  @override
+  String subscriptionTrialEndsOn(String date) {
+    return 'Ücretsiz denemen $date tarihinde bitiyor.';
+  }
+
+  @override
+  String subscriptionRenewsOn(String date) {
+    return '$date tarihinde yenilenir.';
+  }
+
+  @override
+  String subscriptionActiveUntil(String date) {
+    return '$date tarihine kadar aktif.';
+  }
+
+  @override
+  String get subscriptionBillingIssue =>
+      'Ödeme yönteminde bir sorun var. Premium\'u korumak için mağaza hesabından güncelle.';
+
+  @override
+  String get subscriptionManage => 'Aboneliği yönet';
+
+  @override
+  String get subscriptionManagedOnWeb =>
+      'Aboneliğin web sitemizden satın alındı. Değiştirmek veya iptal etmek için support@livelyapp.co adresine yaz.';
+
+  @override
+  String get subscriptionContactSupport => 'Destekle iletişime geç';
+
+  @override
+  String get subscriptionDeleteAccountStoreNote =>
+      'App Store veya Google Play üzerinden abone olduysan, hesabını silmek bu aboneliği iptal etmez. Gelecekteki ödemeleri durdurmak için aboneliğini App Store veya Google Play abonelik ayarlarından iptal et.';
+
+  @override
+  String get reportPost => 'Gönderiyi şikâyet et';
+
+  @override
+  String get reportComment => 'Yorumu şikâyet et';
+
+  @override
+  String get reportSpace => 'Alanı şikâyet et';
+
+  @override
+  String get reportUser => 'Kullanıcıyı şikâyet et';
+
+  @override
+  String get reportSheetSubtitle =>
+      'Bunu neden şikâyet ediyorsun? Kişi, şikâyet edenin sen olduğunu bilmeyecek.';
+
+  @override
+  String get reportReasonSpam => 'Spam veya dolandırıcılık';
+
+  @override
+  String get reportReasonHarassment => 'Taciz veya zorbalık';
+
+  @override
+  String get reportReasonHate => 'Nefret söylemi';
+
+  @override
+  String get reportReasonSexual => 'Cinsel içerik';
+
+  @override
+  String get reportReasonViolence => 'Şiddet veya tehdit';
+
+  @override
+  String get reportReasonSelfHarm => 'Kendine zarar verme veya intihar';
+
+  @override
+  String get reportReasonMisinformation => 'Yanlış bilgi';
+
+  @override
+  String get reportReasonOther => 'Başka bir şey';
+
+  @override
+  String get reportDetailsHint => 'Ayrıntı ekle (isteğe bağlı)';
+
+  @override
+  String get reportSubmit => 'Şikâyeti gönder';
+
+  @override
+  String get reportThanks =>
+      'Teşekkürler — ekibimiz bunu 24 saat içinde inceleyecek.';
+
+  @override
+  String get blockUserMenu => 'Kullanıcıyı engelle';
+
+  @override
+  String blockUserConfirmTitle(String name) {
+    return '$name engellensin mi?';
+  }
+
+  @override
+  String get blockUserConfirmBody =>
+      'Toplulukta birbirinizin gönderilerini, yorumlarını ve etkinliklerini görmeyeceksiniz; o da senin gönderilerine yorum yapamayacak veya beğenemeyecek. Kişiye bildirim gitmez. Engeli istediğin zaman Ayarlar → Engellenen kullanıcılar bölümünden kaldırabilirsin.';
+
+  @override
+  String get blockUserAction => 'Engelle';
+
+  @override
+  String blockUserDone(String name) {
+    return '$name engellendi.';
+  }
+
+  @override
+  String get blockUnblock => 'Engeli kaldır';
+
+  @override
+  String blockUnblockDone(String name) {
+    return '$name adlı kullanıcının engeli kaldırıldı.';
+  }
+
+  @override
+  String get blockProfileNotice =>
+      'Bu kullanıcıyı engelledin. Gönderilerini, yorumlarını ve etkinliklerini görmeyeceksin.';
+
+  @override
+  String get blockedUsersTitle => 'Engellenen kullanıcılar';
+
+  @override
+  String get blockedUsersEmptyTitle => 'Engellenen kullanıcı yok';
+
+  @override
+  String get blockedUsersEmptyBody =>
+      'Toplulukta engellediğin kişiler burada görünür.';
+
+  @override
+  String get moderationDeletePost => 'Gönderiyi sil';
+
+  @override
+  String get moderationDeleteComment => 'Yorumu sil';
+
+  @override
+  String get moderationDeletePostConfirm => 'Bu gönderi silinsin mi?';
+
+  @override
+  String get moderationDeleteCommentConfirm => 'Bu yorum silinsin mi?';
+
+  @override
+  String get moderationDeleteBody => 'Bu işlem geri alınamaz.';
+
+  @override
+  String get moderationHiddenNotice =>
+      'Ekibimiz şikâyetleri incelerken gizlendi. Bunu yalnızca sen görebilirsin.';
 }

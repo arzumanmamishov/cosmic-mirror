@@ -1,4 +1,5 @@
 import 'package:cosmic_mirror/config/theme/app_palette.dart';
+import 'package:cosmic_mirror/core/error/error_message.dart';
 import 'package:cosmic_mirror/core/network/api_endpoints.dart';
 import 'package:cosmic_mirror/l10n/app_localizations.dart';
 import 'package:cosmic_mirror/shared/providers/user_provider.dart';
@@ -79,7 +80,9 @@ class _JournalEntryScreenState extends ConsumerState<JournalEntryScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
-              AppLocalizations.of(context).journalSaveFailed(e.toString()),
+              AppLocalizations.of(context).journalSaveFailed(
+                FriendlyError.from(context, e).body,
+              ),
             ),
           ),
         );

@@ -1,9 +1,13 @@
 import 'package:cosmic_mirror/config/theme/app_palette.dart';
 import 'package:cosmic_mirror/core/error/error_message.dart';
+import 'package:cosmic_mirror/features/community/data/repositories/community_repository.dart';
+import 'package:cosmic_mirror/features/community/domain/entities/post.dart';
 import 'package:cosmic_mirror/features/community/presentation/providers/community_providers.dart';
 import 'package:cosmic_mirror/features/community/presentation/widgets/comment_tile.dart';
 import 'package:cosmic_mirror/features/community/presentation/widgets/like_button.dart';
+import 'package:cosmic_mirror/features/community/presentation/widgets/moderation_actions.dart';
 import 'package:cosmic_mirror/l10n/app_localizations.dart';
+import 'package:cosmic_mirror/shared/providers/user_provider.dart';
 import 'package:cosmic_mirror/shared/widgets/cosmic_starfield.dart';
 import 'package:cosmic_mirror/shared/widgets/error_view.dart';
 import 'package:cosmic_mirror/shared/widgets/loading_shimmer.dart';
@@ -54,9 +58,61 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
         _replyToCommentId = null;
         _replyToName = null;
       });
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(FriendlyError.from(context, e).body)),
+        );
+      }
     } finally {
       if (mounted) setState(() => _busy = false);
     }
+  }
+
+  /// "…" menu for the post: delete for the author, report + block for
+  /// everyone else. Leaves the screen when the post is gone for the viewer.
+  List<ContentAction> _postActions(PostWithMeta post, {required bool isMine}) {
+    final l = AppLocalizations.of(context);
+    final pst = post.post;
+    void leave() {
+      if (mounted) Navigator.of(context).maybePop();
+    }
+
+    if (isMine) {
+      return [
+        ContentAction(
+          icon: Icons.delete_outline_rounded,
+          label: l.moderationDeletePost,
+          destructive: true,
+          onSelected: () async {
+            if (!await confirmDelete(context, l.moderationDeletePostConfirm)) {
+              return;
+            }
+            if (!mounted) return;
+            try {
+              await ref.read(communityRepositoryProvider).deletePost(pst.id);
+              ref
+                ..invalidate(spacePostsProvider(pst.spaceId))
+                ..invalidate(userCommunityProfileProvider);
+              leave();
+            } catch (e) {
+              if (!mounted) return;
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text(FriendlyError.from(context, e).body)),
+              );
+            }
+          },
+        ),
+      ];
+    }
+    return reportAndBlockActions(
+      context,
+      target: ReportTarget.post,
+      targetId: pst.id,
+      authorId: pst.authorId,
+      authorName: post.authorName,
+      onBlocked: leave,
+    );
   }
 
   @override
@@ -65,6 +121,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
     final l = AppLocalizations.of(context);
     final postAsync = ref.watch(postDetailProvider(widget.postId));
     final commentsAsync = ref.watch(commentsProvider(widget.postId));
+    final myId = ref.watch(currentUserProvider.select((s) => s.id));
 
     return Scaffold(
       backgroundColor: p.background,
@@ -74,6 +131,19 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
         elevation: 0,
         leading: const BackButton(),
         title: Text(l.communityPostTitle),
+        actions: [
+          postAsync.maybeWhen(
+            orElse: () => const SizedBox.shrink(),
+            data: (post) => ContentMoreButton(
+              size: 22,
+              actions: () => _postActions(
+                post,
+                isMine: myId != null && myId == post.post.authorId,
+              ),
+            ),
+          ),
+          const SizedBox(width: 8),
+        ],
       ),
       body: Stack(
         children: [
@@ -96,6 +166,15 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                   ),
                   data: (post) {
                     final pst = post.post;
+                    // Space owners may delete any comment on posts in
+                    // their space (mods too, server-side).
+                    final ownsSpace = myId != null &&
+                        ref
+                                .watch(spaceDetailProvider(pst.spaceId))
+                                .valueOrNull
+                                ?.space
+                                .createdBy ==
+                            myId;
                     return ListView(
                       padding: const EdgeInsets.fromLTRB(20, 100, 20, 16),
                       children: [
@@ -145,6 +224,10 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                             ),
                           ],
                         ),
+                        if (pst.isHidden) ...[
+                          const SizedBox(height: 12),
+                          const HiddenContentNotice(),
+                        ],
                         const SizedBox(height: 14),
                         Text(
                           pst.content,
@@ -164,8 +247,11 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                               initialCount: pst.likeCount,
                             ),
                             const SizedBox(width: 16),
-                            Icon(Icons.chat_bubble_outline_rounded,
-                                size: 16, color: p.textSecondary,),
+                            Icon(
+                              Icons.chat_bubble_outline_rounded,
+                              size: 16,
+                              color: p.textSecondary,
+                            ),
                             const SizedBox(width: 4),
                             Text(
                               '${pst.commentCount}',
@@ -200,8 +286,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                                   child: Center(
                                     child: Text(
                                       l.postNoComments,
-                                      style:
-                                          TextStyle(color: p.textSecondary),
+                                      style: TextStyle(color: p.textSecondary),
                                     ),
                                   ),
                                 )
@@ -210,6 +295,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                                     for (final c in comments)
                                       CommentTile(
                                         comment: c,
+                                        canModerate: ownsSpace,
                                         onReply: () => setState(() {
                                           _replyToCommentId = c.comment.id;
                                           _replyToName = c.authorName;

@@ -3,17 +3,21 @@
 # Builds only — nothing is uploaded.
 #
 # Usage:
-#   REVENUECAT_API_KEY=... STRIPE_PUBLISHABLE_KEY=pk_live_... \
+#   REVENUECAT_API_KEY_IOS=appl_... REVENUECAT_API_KEY_ANDROID=goog_... \
 #     scripts/build_release.sh [android|ios|all]      (default: all)
 #
 # Env vars:
-#   REVENUECAT_API_KEY          required  RevenueCat public SDK key (per platform
-#                                         keys: REVENUECAT_API_KEY_ANDROID /
-#                                         REVENUECAT_API_KEY_IOS override it)
-#   STRIPE_PUBLISHABLE_KEY      required  Stripe publishable key (pk_live_…)
-#   STRIPE_MERCHANT_IDENTIFIER  optional  Apple Pay merchant id
+#   REVENUECAT_API_KEY_IOS      required for ios      RevenueCat public Apple
+#                                                     SDK key (appl_…)
+#   REVENUECAT_API_KEY_ANDROID  required for android  RevenueCat public Google
+#                                                     SDK key (goog_…)
+#   REVENUECAT_API_KEY          optional  fallback when the per-platform var is
+#                                         unset (must still match the platform)
 #   API_BASE_URL                optional  default https://api.livelyapp.co
-#   ALLOW_TEST_STRIPE_KEY=1     optional  permit a pk_test_ key
+#
+# Premium is sold only through App Store / Google Play in-app purchases
+# (RevenueCat); the app contains no Stripe SDK. RevenueCat keys are
+# platform-specific — RevenueCat → Project settings → API keys.
 #
 # Debug symbols go to build/debug-info/<platform>. They are gitignored but MUST
 # be archived privately per release — without them obfuscated crash stack
@@ -28,21 +32,31 @@ case "$TARGET" in android|ios|all) ;; *)
 esac
 
 API_BASE_URL="${API_BASE_URL:-https://api.livelyapp.co}"
-STRIPE_MERCHANT_IDENTIFIER="${STRIPE_MERCHANT_IDENTIFIER:-}"
 
 die() { echo "error: $*" >&2; exit 1; }
 
-[[ -n "${STRIPE_PUBLISHABLE_KEY:-}" ]] || die "STRIPE_PUBLISHABLE_KEY is not set"
-if [[ "$STRIPE_PUBLISHABLE_KEY" == pk_test_* && "${ALLOW_TEST_STRIPE_KEY:-}" != 1 ]]; then
-  die "STRIPE_PUBLISHABLE_KEY is a test key (set ALLOW_TEST_STRIPE_KEY=1 to allow)"
-fi
 [[ "$API_BASE_URL" == https://* ]] || die "API_BASE_URL must be https:// (got $API_BASE_URL)"
 
+# rc_key_for IOS|ANDROID — the RevenueCat public SDK key for that platform.
+# The app rejects a key for the wrong store at runtime (purchases would be
+# silently disabled), so the prefix is enforced here: appl_ for iOS, goog_
+# for Android.
 rc_key_for() {
   local platform_var="REVENUECAT_API_KEY_$1"
   local key="${!platform_var:-${REVENUECAT_API_KEY:-}}"
   [[ -n "$key" && "$key" != "your_revenuecat_api_key" ]] \
-    || die "REVENUECAT_API_KEY (or $platform_var) is not set"
+    || die "$platform_var is not set (RevenueCat public SDK key for $1)"
+  local prefix
+  case "$1" in
+    IOS) prefix=appl_ ;;
+    ANDROID) prefix=goog_ ;;
+  esac
+  if [[ "$key" != "$prefix"* ]]; then
+    if [[ -z "${!platform_var:-}" ]]; then
+      die "REVENUECAT_API_KEY is not a $1 key (expected ${prefix}…); set $platform_var"
+    fi
+    die "$platform_var must start with ${prefix} (got ${key:0:5}…)"
+  fi
   printf '%s' "$key"
 }
 
@@ -52,11 +66,7 @@ common_defines() {
     --dart-define=ENVIRONMENT=prod
     "--dart-define=API_BASE_URL=$API_BASE_URL"
     "--dart-define=REVENUECAT_API_KEY=$rc_key"
-    "--dart-define=STRIPE_PUBLISHABLE_KEY=$STRIPE_PUBLISHABLE_KEY"
   )
-  if [[ -n "$STRIPE_MERCHANT_IDENTIFIER" ]]; then
-    defines+=("--dart-define=STRIPE_MERCHANT_IDENTIFIER=$STRIPE_MERCHANT_IDENTIFIER")
-  fi
   printf '%s\n' "${defines[@]}"
 }
 

@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Lively dark ground — matches AppPalette.dark.background (0xFF08080F)
+         so the native splash hands off to the first Flutter frame without a
+         white flash. -->
+    <color name="lively_background">#08080F</color>
+</resources>

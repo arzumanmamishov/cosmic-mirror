@@ -1,7 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Theme applied to the Android Window while the process is starting when the OS's Dark Mode setting is off -->
-    <style name="LaunchTheme" parent="@android:style/Theme.Light.NoTitleBar">
+    <!-- Both themes descend from a MaterialComponents theme so plugin UIs
+         that inflate AppCompat / Material views (e.g. store billing and
+         paywall screens) work on this FragmentActivity host.
+
+         The app is dark-first (ThemeMode.dark by default), so the launch
+         window uses the brand dark ground regardless of the OS setting —
+         there is deliberately no values-night override. -->
+
+    <!-- Theme applied to the Android Window while the process is starting. -->
+    <style name="LaunchTheme" parent="Theme.MaterialComponents.DayNight.NoActionBar">
         <!-- Show a splash screen on the activity. Automatically removed when
              the Flutter engine draws its first frame -->
         <item name="android:windowBackground">@drawable/launch_background</item>
@@ -12,7 +20,7 @@
          running.
 
          This Theme is only used starting with V2 of Flutter's Android embedding. -->
-    <style name="NormalTheme" parent="@android:style/Theme.Light.NoTitleBar">
-        <item name="android:windowBackground">?android:colorBackground</item>
+    <style name="NormalTheme" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+        <item name="android:windowBackground">@color/lively_background</item>
     </style>
 </resources>

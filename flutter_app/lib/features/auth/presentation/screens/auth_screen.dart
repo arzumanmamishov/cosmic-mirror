@@ -13,9 +13,11 @@ import 'package:cosmic_mirror/shared/widgets/lively/gold_button.dart';
 import 'package:cosmic_mirror/shared/widgets/lively/lively_backdrop.dart';
 import 'package:cosmic_mirror/shared/widgets/lively/lively_field.dart';
 import 'package:cosmic_mirror/shared/widgets/lively_logo.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class AuthScreen extends ConsumerStatefulWidget {
   const AuthScreen({super.key});
@@ -266,12 +268,63 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                       ),
                     ),
                   ],
+                  const SizedBox(height: 18),
+                  const _TermsNotice(),
                 ],
               ),
             ),
           ),
         ),
       ),
+    );
+  }
+}
+
+/// "By continuing you agree to our Terms and Privacy Policy" with tappable
+/// links to the public legal pages.
+class _TermsNotice extends StatefulWidget {
+  const _TermsNotice();
+
+  @override
+  State<_TermsNotice> createState() => _TermsNoticeState();
+}
+
+class _TermsNoticeState extends State<_TermsNotice> {
+  static final _termsUrl = Uri.parse('https://livelyapp.co/terms');
+  static final _privacyUrl = Uri.parse('https://livelyapp.co/privacy');
+
+  late final TapGestureRecognizer _termsTap = TapGestureRecognizer()
+    ..onTap = () => launchUrl(_termsUrl);
+  late final TapGestureRecognizer _privacyTap = TapGestureRecognizer()
+    ..onTap = () => launchUrl(_privacyUrl);
+
+  @override
+  void dispose() {
+    _termsTap.dispose();
+    _privacyTap.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final p = context.palette;
+    final l = AppLocalizations.of(context);
+    final link = LivelyType.small(p.primary).copyWith(
+      decoration: TextDecoration.underline,
+      decorationColor: p.primary,
+    );
+    return Text.rich(
+      TextSpan(
+        style: LivelyType.small(p.textMuted),
+        children: [
+          TextSpan(text: l.authTermsPrefix),
+          TextSpan(text: l.authTerms, style: link, recognizer: _termsTap),
+          TextSpan(text: l.authAnd),
+          TextSpan(text: l.authPrivacy, style: link, recognizer: _privacyTap),
+          TextSpan(text: l.authTermsSuffix),
+        ],
+      ),
+      textAlign: TextAlign.center,
     );
   }
 }

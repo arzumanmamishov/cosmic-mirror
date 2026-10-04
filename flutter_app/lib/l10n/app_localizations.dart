@@ -248,6 +248,12 @@ abstract class AppLocalizations {
   /// **'Privacy Policy'**
   String get authPrivacy;
 
+  /// No description provided for @authTermsSuffix.
+  ///
+  /// In en, this message translates to:
+  /// **'.'**
+  String get authTermsSuffix;
+
   /// No description provided for @authEmailRequired.
   ///
   /// In en, this message translates to:
@@ -1433,8 +1439,8 @@ abstract class AppLocalizations {
   /// No description provided for @settingsAppVersion.
   ///
   /// In en, this message translates to:
-  /// **'Lively v1.0.0'**
-  String get settingsAppVersion;
+  /// **'Lively {version} ({build})'**
+  String settingsAppVersion(String version, String build);
 
   /// No description provided for @chatThreadsTitle.
   ///
@@ -6368,6 +6374,360 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'\"{affirmation}\"\n\nMy lucky color today: {color}\n\n~ Lively'**
   String dailyShareText(String affirmation, String color);
+
+  /// No description provided for @paywallStartTrialCta.
+  ///
+  /// In en, this message translates to:
+  /// **'Start {days}-day free trial'**
+  String paywallStartTrialCta(int days);
+
+  /// No description provided for @paywallTrialThenPrice.
+  ///
+  /// In en, this message translates to:
+  /// **'{days} days free, then {price}'**
+  String paywallTrialThenPrice(int days, String price);
+
+  /// No description provided for @paywallTermsOfUse.
+  ///
+  /// In en, this message translates to:
+  /// **'Terms of Use (EULA)'**
+  String get paywallTermsOfUse;
+
+  /// No description provided for @subscriptionPricePerMonthLong.
+  ///
+  /// In en, this message translates to:
+  /// **'{price} per month'**
+  String subscriptionPricePerMonthLong(String price);
+
+  /// No description provided for @subscriptionPricePerYearLong.
+  ///
+  /// In en, this message translates to:
+  /// **'{price} per year'**
+  String subscriptionPricePerYearLong(String price);
+
+  /// No description provided for @subscriptionDisclosure.
+  ///
+  /// In en, this message translates to:
+  /// **'{price}. Payment is charged to your {store} account at confirmation of purchase. The subscription renews automatically at the same price unless it is cancelled at least 24 hours before the end of the current period; renewal is charged within the 24 hours before the period ends. Manage or cancel it anytime in your {store} account settings.'**
+  String subscriptionDisclosure(String price, String store);
+
+  /// No description provided for @subscriptionDisclosureTrial.
+  ///
+  /// In en, this message translates to:
+  /// **'Free for {days} days, then {price}. Cancel at least 24 hours before the trial ends and you won\'t be charged. When the trial ends, payment is charged to your {store} account and the subscription renews automatically at the same price unless it is cancelled at least 24 hours before the end of the current period. Manage or cancel it anytime in your {store} account settings.'**
+  String subscriptionDisclosureTrial(int days, String price, String store);
+
+  /// No description provided for @subscriptionPlansUnavailableTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Plans aren\'t available right now'**
+  String get subscriptionPlansUnavailableTitle;
+
+  /// No description provided for @subscriptionPlansUnavailableBody.
+  ///
+  /// In en, this message translates to:
+  /// **'We couldn\'t load the subscription options from the store. Check your connection and try again.'**
+  String get subscriptionPlansUnavailableBody;
+
+  /// No description provided for @subscriptionPurchasesUnsupported.
+  ///
+  /// In en, this message translates to:
+  /// **'In-app purchases aren\'t available in this version of the app.'**
+  String get subscriptionPurchasesUnsupported;
+
+  /// No description provided for @subscriptionRestoreNothing.
+  ///
+  /// In en, this message translates to:
+  /// **'No previous purchases found.'**
+  String get subscriptionRestoreNothing;
+
+  /// No description provided for @subscriptionRestoreSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Your purchases have been restored. Welcome back to Premium!'**
+  String get subscriptionRestoreSuccess;
+
+  /// No description provided for @subscriptionPaymentPending.
+  ///
+  /// In en, this message translates to:
+  /// **'Your purchase is waiting for approval. Premium unlocks as soon as the store confirms it.'**
+  String get subscriptionPaymentPending;
+
+  /// No description provided for @subscriptionPurchaseNotAllowed.
+  ///
+  /// In en, this message translates to:
+  /// **'Purchases aren\'t allowed on this device. Check your store account or device restrictions.'**
+  String get subscriptionPurchaseNotAllowed;
+
+  /// No description provided for @subscriptionAlreadyOwned.
+  ///
+  /// In en, this message translates to:
+  /// **'This store account already has a subscription. Tap Restore Purchases to activate it.'**
+  String get subscriptionAlreadyOwned;
+
+  /// No description provided for @subscriptionPurchaseFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'The purchase couldn\'t be completed. Please try again.'**
+  String get subscriptionPurchaseFailed;
+
+  /// No description provided for @subscriptionPremiumActiveTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'You\'re Premium'**
+  String get subscriptionPremiumActiveTitle;
+
+  /// No description provided for @subscriptionPremiumActiveBody.
+  ///
+  /// In en, this message translates to:
+  /// **'You have full access to every feature.'**
+  String get subscriptionPremiumActiveBody;
+
+  /// No description provided for @subscriptionTrialEndsOn.
+  ///
+  /// In en, this message translates to:
+  /// **'Your free trial ends on {date}.'**
+  String subscriptionTrialEndsOn(String date);
+
+  /// No description provided for @subscriptionRenewsOn.
+  ///
+  /// In en, this message translates to:
+  /// **'Renews on {date}.'**
+  String subscriptionRenewsOn(String date);
+
+  /// No description provided for @subscriptionActiveUntil.
+  ///
+  /// In en, this message translates to:
+  /// **'Active until {date}.'**
+  String subscriptionActiveUntil(String date);
+
+  /// No description provided for @subscriptionBillingIssue.
+  ///
+  /// In en, this message translates to:
+  /// **'There\'s a problem with your payment method. Update it in your store account to keep Premium.'**
+  String get subscriptionBillingIssue;
+
+  /// No description provided for @subscriptionManage.
+  ///
+  /// In en, this message translates to:
+  /// **'Manage subscription'**
+  String get subscriptionManage;
+
+  /// No description provided for @subscriptionManagedOnWeb.
+  ///
+  /// In en, this message translates to:
+  /// **'Your subscription was purchased on our website. To change or cancel it, contact support@livelyapp.co.'**
+  String get subscriptionManagedOnWeb;
+
+  /// No description provided for @subscriptionContactSupport.
+  ///
+  /// In en, this message translates to:
+  /// **'Contact support'**
+  String get subscriptionContactSupport;
+
+  /// No description provided for @subscriptionDeleteAccountStoreNote.
+  ///
+  /// In en, this message translates to:
+  /// **'If you subscribed through the App Store or Google Play, deleting your account doesn\'t cancel that subscription. Cancel it in your App Store or Google Play subscription settings to stop future charges.'**
+  String get subscriptionDeleteAccountStoreNote;
+
+  /// No description provided for @reportPost.
+  ///
+  /// In en, this message translates to:
+  /// **'Report post'**
+  String get reportPost;
+
+  /// No description provided for @reportComment.
+  ///
+  /// In en, this message translates to:
+  /// **'Report comment'**
+  String get reportComment;
+
+  /// No description provided for @reportSpace.
+  ///
+  /// In en, this message translates to:
+  /// **'Report space'**
+  String get reportSpace;
+
+  /// No description provided for @reportUser.
+  ///
+  /// In en, this message translates to:
+  /// **'Report user'**
+  String get reportUser;
+
+  /// No description provided for @reportSheetSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Why are you reporting this? The person won\'t know it was you.'**
+  String get reportSheetSubtitle;
+
+  /// No description provided for @reportReasonSpam.
+  ///
+  /// In en, this message translates to:
+  /// **'Spam or scam'**
+  String get reportReasonSpam;
+
+  /// No description provided for @reportReasonHarassment.
+  ///
+  /// In en, this message translates to:
+  /// **'Harassment or bullying'**
+  String get reportReasonHarassment;
+
+  /// No description provided for @reportReasonHate.
+  ///
+  /// In en, this message translates to:
+  /// **'Hate speech'**
+  String get reportReasonHate;
+
+  /// No description provided for @reportReasonSexual.
+  ///
+  /// In en, this message translates to:
+  /// **'Sexual content'**
+  String get reportReasonSexual;
+
+  /// No description provided for @reportReasonViolence.
+  ///
+  /// In en, this message translates to:
+  /// **'Violence or threats'**
+  String get reportReasonViolence;
+
+  /// No description provided for @reportReasonSelfHarm.
+  ///
+  /// In en, this message translates to:
+  /// **'Self-harm or suicide'**
+  String get reportReasonSelfHarm;
+
+  /// No description provided for @reportReasonMisinformation.
+  ///
+  /// In en, this message translates to:
+  /// **'False information'**
+  String get reportReasonMisinformation;
+
+  /// No description provided for @reportReasonOther.
+  ///
+  /// In en, this message translates to:
+  /// **'Something else'**
+  String get reportReasonOther;
+
+  /// No description provided for @reportDetailsHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Add details (optional)'**
+  String get reportDetailsHint;
+
+  /// No description provided for @reportSubmit.
+  ///
+  /// In en, this message translates to:
+  /// **'Submit report'**
+  String get reportSubmit;
+
+  /// No description provided for @reportThanks.
+  ///
+  /// In en, this message translates to:
+  /// **'Thanks — our team will review this within 24 hours.'**
+  String get reportThanks;
+
+  /// No description provided for @blockUserMenu.
+  ///
+  /// In en, this message translates to:
+  /// **'Block user'**
+  String get blockUserMenu;
+
+  /// No description provided for @blockUserConfirmTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Block {name}?'**
+  String blockUserConfirmTitle(String name);
+
+  /// No description provided for @blockUserConfirmBody.
+  ///
+  /// In en, this message translates to:
+  /// **'You won\'t see each other\'s posts, comments or activity in the Community, and they won\'t be able to comment on or like your posts. They won\'t be notified. You can unblock them anytime in Settings → Blocked users.'**
+  String get blockUserConfirmBody;
+
+  /// No description provided for @blockUserAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Block'**
+  String get blockUserAction;
+
+  /// No description provided for @blockUserDone.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} is blocked.'**
+  String blockUserDone(String name);
+
+  /// No description provided for @blockUnblock.
+  ///
+  /// In en, this message translates to:
+  /// **'Unblock'**
+  String get blockUnblock;
+
+  /// No description provided for @blockUnblockDone.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} is unblocked.'**
+  String blockUnblockDone(String name);
+
+  /// No description provided for @blockProfileNotice.
+  ///
+  /// In en, this message translates to:
+  /// **'You blocked this user. You won\'t see their posts, comments or activity.'**
+  String get blockProfileNotice;
+
+  /// No description provided for @blockedUsersTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Blocked users'**
+  String get blockedUsersTitle;
+
+  /// No description provided for @blockedUsersEmptyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'No blocked users'**
+  String get blockedUsersEmptyTitle;
+
+  /// No description provided for @blockedUsersEmptyBody.
+  ///
+  /// In en, this message translates to:
+  /// **'People you block in the Community will appear here.'**
+  String get blockedUsersEmptyBody;
+
+  /// No description provided for @moderationDeletePost.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete post'**
+  String get moderationDeletePost;
+
+  /// No description provided for @moderationDeleteComment.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete comment'**
+  String get moderationDeleteComment;
+
+  /// No description provided for @moderationDeletePostConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete this post?'**
+  String get moderationDeletePostConfirm;
+
+  /// No description provided for @moderationDeleteCommentConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete this comment?'**
+  String get moderationDeleteCommentConfirm;
+
+  /// No description provided for @moderationDeleteBody.
+  ///
+  /// In en, this message translates to:
+  /// **'This can\'t be undone.'**
+  String get moderationDeleteBody;
+
+  /// No description provided for @moderationHiddenNotice.
+  ///
+  /// In en, this message translates to:
+  /// **'Hidden while our team reviews reports. Only you can see this.'**
+  String get moderationHiddenNotice;
 }
 
 class _AppLocalizationsDelegate

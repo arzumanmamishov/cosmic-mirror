@@ -49,14 +49,32 @@ class ApiClient {
   final Dio _dio;
   final OnSessionExpired? _onSessionExpired;
 
+  /// Dio wraps anything an interceptor throws in a
+  /// `DioException(type: unknown, error: <thrown>)`, so the domain
+  /// exceptions raised by [_ErrorInterceptor] would otherwise reach callers
+  /// as an opaque DioException — `on RateLimitException` / `FriendlyError`
+  /// type checks would never match. Re-throw the domain exception itself.
+  static Future<Response<dynamic>> _send(
+    Future<Response<dynamic>> Function() request,
+  ) async {
+    try {
+      return await request();
+    } on DioException catch (e, st) {
+      final inner = e.error;
+      if (_isDomainException(inner)) {
+        Error.throwWithStackTrace(inner!, st);
+      }
+      rethrow;
+    }
+  }
+
   Future<T> get<T>(
     String path, {
     Map<String, dynamic>? queryParameters,
     T Function(dynamic)? fromJson,
   }) async {
-    final response = await _dio.get<dynamic>(
-      path,
-      queryParameters: queryParameters,
+    final response = await _send(
+      () => _dio.get<dynamic>(path, queryParameters: queryParameters),
     );
     if (fromJson != null) return fromJson(response.data);
     return response.data as T;
@@ -68,10 +86,12 @@ class ApiClient {
     Map<String, dynamic>? queryParameters,
     T Function(dynamic)? fromJson,
   }) async {
-    final response = await _dio.post<dynamic>(
-      path,
-      data: data,
-      queryParameters: queryParameters,
+    final response = await _send(
+      () => _dio.post<dynamic>(
+        path,
+        data: data,
+        queryParameters: queryParameters,
+      ),
     );
     if (fromJson != null) return fromJson(response.data);
     return response.data as T;
@@ -82,13 +102,13 @@ class ApiClient {
     dynamic data,
     T Function(dynamic)? fromJson,
   }) async {
-    final response = await _dio.put<dynamic>(path, data: data);
+    final response = await _send(() => _dio.put<dynamic>(path, data: data));
     if (fromJson != null) return fromJson(response.data);
     return response.data as T;
   }
 
   Future<void> delete(String path) async {
-    await _dio.delete<dynamic>(path);
+    await _send(() => _dio.delete<dynamic>(path));
   }
 
   Future<T> uploadFile<T>(
@@ -100,14 +120,82 @@ class ApiClient {
     final formData = FormData.fromMap({
       fieldName: await MultipartFile.fromFile(filePath),
     });
-    final response = await _dio.post<dynamic>(path, data: formData);
+    final response =
+        await _send(() => _dio.post<dynamic>(path, data: formData));
     if (fromJson != null) return fromJson(response.data);
     return response.data as T;
   }
 }
 
+bool _isDomainException(Object? e) =>
+    e is ServerException ||
+    e is NetworkException ||
+    e is AuthException ||
+    e is RateLimitException ||
+    e is CacheException;
+
+/// Thrown by [_refreshTokens] when the backend rejected the refresh token
+/// (401/403): the session is dead and the user must sign in again.
+class _SessionDeadException implements Exception {
+  const _SessionDeadException();
+}
+
+/// The refresh currently in flight, shared by every [ApiClient] instance
+/// (some widgets build their own client). The backend rotates refresh
+/// tokens with reuse detection, so two concurrent refreshes with the same
+/// token would get the second one rejected — and log the user out.
+Future<AuthTokens>? _inflightRefresh;
+
+/// Exchanges the stored refresh token for a new pair, single-flight.
+/// Throws [_SessionDeadException] only when the server rejected the
+/// refresh token; network errors / 5xx propagate as-is (tokens are kept).
+Future<AuthTokens> _refreshTokens(BaseOptions options, String refreshToken) {
+  return _inflightRefresh ??= () async {
+    try {
+      // A bare Dio (no app interceptors) so the refresh call itself can't
+      // recurse into the 401 handler or be retried, and so the raw status
+      // code is available below.
+      final dio = Dio(
+        BaseOptions(
+          baseUrl: options.baseUrl,
+          connectTimeout: options.connectTimeout,
+          receiveTimeout: options.receiveTimeout,
+          sendTimeout: options.sendTimeout,
+          headers: {
+            'Accept': 'application/json',
+            'Accept-Language': currentLocaleCode,
+          },
+        ),
+      );
+      final Response<dynamic> resp;
+      try {
+        resp = await dio.post<dynamic>(
+          '/api/v1/auth/refresh',
+          data: {'refresh_token': refreshToken},
+        );
+      } on DioException catch (e) {
+        final status = e.response?.statusCode;
+        if (status == 401 || status == 403) {
+          throw const _SessionDeadException();
+        }
+        rethrow;
+      }
+      final data =
+          (resp.data as Map<String, dynamic>)['data'] as Map<String, dynamic>;
+      final newTokens = AuthTokens.fromJson(
+        data['tokens'] as Map<String, dynamic>,
+      );
+      await authStorage.write(newTokens);
+      return newTokens;
+    } finally {
+      _inflightRefresh = null;
+    }
+  }();
+}
+
 /// Stamps `Authorization: Bearer <access>` on every request and, on a 401,
-/// attempts exactly one refresh-then-retry. Auth endpoints themselves
+/// refreshes the access token (single-flight across concurrent requests)
+/// and retries the original request once. Auth endpoints themselves
 /// (register / login / refresh / password-reset) don't get the header —
 /// they're the calls that CREATE the token, so a stale one is worse than
 /// none.
@@ -136,6 +224,14 @@ class _AuthInterceptor extends Interceptor {
       handler.next(options);
       return;
     }
+    // If a refresh is already running, wait for it rather than firing a
+    // request with an access token we already know is stale.
+    final pending = _inflightRefresh;
+    if (pending != null) {
+      try {
+        await pending;
+      } catch (_) {/* fall through with whatever is stored */}
+    }
     final tokens = await authStorage.read();
     if (tokens != null && tokens.accessToken.isNotEmpty) {
       options.headers['Authorization'] = 'Bearer ${tokens.accessToken}';
@@ -158,34 +254,47 @@ class _AuthInterceptor extends Interceptor {
     }
     final tokens = await authStorage.read();
     if (tokens == null || tokens.refreshExpired) {
+      await authStorage.clear();
       _onSessionExpired?.call();
       handler.next(err);
       return;
     }
-    try {
-      final resp = await _dio.post<dynamic>(
-        '/api/v1/auth/refresh',
-        data: {'refresh_token': tokens.refreshToken},
-      );
-      final data =
-          (resp.data as Map<String, dynamic>)['data'] as Map<String, dynamic>;
-      final newTokens = AuthTokens.fromJson(
-        data['tokens'] as Map<String, dynamic>,
-      );
-      await authStorage.write(newTokens);
 
-      err.requestOptions.extra['_refreshed'] = true;
-      err.requestOptions.headers['Authorization'] =
-          'Bearer ${newTokens.accessToken}';
+    final AuthTokens fresh;
+    final sentAuth = err.requestOptions.headers['Authorization'];
+    if (sentAuth != null && sentAuth != 'Bearer ${tokens.accessToken}') {
+      // Another request already refreshed while this one was in flight —
+      // just retry with the newer token.
+      fresh = tokens;
+    } else {
+      try {
+        fresh = await _refreshTokens(_dio.options, tokens.refreshToken);
+      } on _SessionDeadException {
+        // The server rejected the refresh token — the session is over.
+        // Wipe stored tokens, notify the app, surface the original 401 so
+        // callers can route to sign-in.
+        await authStorage.clear();
+        _onSessionExpired?.call();
+        handler.next(err);
+        return;
+      } catch (_) {
+        // Transient failure (offline, timeout, 5xx). Keep the tokens so
+        // the next request can try again; surface the original error.
+        handler.next(err);
+        return;
+      }
+    }
+
+    err.requestOptions.extra['_refreshed'] = true;
+    err.requestOptions.headers['Authorization'] =
+        'Bearer ${fresh.accessToken}';
+    try {
       final retryResp = await _dio.fetch<dynamic>(err.requestOptions);
       handler.resolve(retryResp);
-    } catch (_) {
-      // Refresh failed for a reason other than a network hiccup — the
-      // refresh is dead. Wipe stored tokens, notify the app, surface the
-      // original 401 so callers can route to sign-in.
-      await authStorage.clear();
-      _onSessionExpired?.call();
-      handler.next(err);
+    } on DioException catch (e) {
+      // The retry already went through the full interceptor chain; pass
+      // its (wrapped domain) error straight out.
+      handler.reject(e);
     }
   }
 }
@@ -193,6 +302,9 @@ class _AuthInterceptor extends Interceptor {
 class _ErrorInterceptor extends Interceptor {
   @override
   void onError(DioException err, ErrorInterceptorHandler handler) {
+    // Already mapped (e.g. the failure of a retried request).
+    final inner = err.error;
+    if (inner is Exception && _isDomainException(inner)) throw inner;
     switch (err.type) {
       case DioExceptionType.connectionTimeout:
       case DioExceptionType.sendTimeout:
@@ -289,12 +401,16 @@ class _LocaleInterceptor extends Interceptor {
   }
 }
 
+/// Retries transient 5xx responses — for idempotent methods only. A POST
+/// (payments, chat messages, posts) may have been applied server-side
+/// before the 5xx, so replaying it could duplicate the side effect.
 class _RetryInterceptor extends Interceptor {
   _RetryInterceptor(this._dio);
 
   final Dio _dio;
   static const _maxRetries = 2;
   static const _retryableStatuses = {500, 502, 503, 504};
+  static const _idempotentMethods = {'GET', 'HEAD', 'PUT', 'DELETE'};
 
   @override
   Future<void> onError(
@@ -304,8 +420,11 @@ class _RetryInterceptor extends Interceptor {
     final statusCode = err.response?.statusCode;
     final retryCount = err.requestOptions.extra['retryCount'] as int? ?? 0;
 
+    final method = err.requestOptions.method.toUpperCase();
+
     if (statusCode != null &&
         _retryableStatuses.contains(statusCode) &&
+        _idempotentMethods.contains(method) &&
         retryCount < _maxRetries) {
       await Future<void>.delayed(
         Duration(milliseconds: 500 * (retryCount + 1)),
@@ -314,10 +433,12 @@ class _RetryInterceptor extends Interceptor {
       try {
         final response = await _dio.fetch<dynamic>(err.requestOptions);
         handler.resolve(response);
-        return;
-      } catch (_) {
-        // Fall through to handler.next
+      } on DioException catch (e) {
+        // The retry ran the full interceptor chain (including its own
+        // further retries); surface its final error.
+        handler.reject(e);
       }
+      return;
     }
     handler.next(err);
   }

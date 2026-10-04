@@ -1,0 +1,4 @@
+/* Localized Info.plist values (Turkish). */
+"CFBundleDisplayName" = "Lively";
+"NSCameraUsageDescription" = "Lively, profil fotoğrafı çekebilmen için kamerana erişmek istiyor.";
+"NSPhotoLibraryUsageDescription" = "Lively, profil fotoğrafı seçebilmen için fotoğraf arşivine erişmek istiyor.";

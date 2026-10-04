@@ -1,0 +1,4 @@
+/* Localized Info.plist values (English). Keep in sync with Info.plist. */
+"CFBundleDisplayName" = "Lively";
+"NSCameraUsageDescription" = "Lively needs your camera to take a profile photo.";
+"NSPhotoLibraryUsageDescription" = "Lively needs access to your photo library to set a profile picture.";

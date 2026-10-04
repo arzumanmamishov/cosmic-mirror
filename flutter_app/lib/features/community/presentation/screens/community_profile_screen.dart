@@ -1,9 +1,14 @@
 import 'package:cosmic_mirror/config/theme/app_palette.dart';
+import 'package:cosmic_mirror/features/community/data/repositories/community_repository.dart';
+import 'package:cosmic_mirror/features/community/domain/entities/user_profile.dart';
 import 'package:cosmic_mirror/features/community/presentation/providers/community_providers.dart';
+import 'package:cosmic_mirror/features/community/presentation/widgets/moderation_actions.dart';
 import 'package:cosmic_mirror/features/community/presentation/widgets/post_card.dart';
 import 'package:cosmic_mirror/features/community/presentation/widgets/space_card.dart';
-import 'package:cosmic_mirror/features/profile/presentation/screens/profile_screen.dart' show ProfileScreen;
+import 'package:cosmic_mirror/features/profile/presentation/screens/profile_screen.dart'
+    show ProfileScreen;
 import 'package:cosmic_mirror/l10n/app_localizations.dart';
+import 'package:cosmic_mirror/shared/providers/user_provider.dart';
 import 'package:cosmic_mirror/shared/widgets/cosmic_starfield.dart';
 import 'package:cosmic_mirror/shared/widgets/error_view.dart';
 import 'package:cosmic_mirror/shared/widgets/loading_shimmer.dart';
@@ -20,12 +25,57 @@ class CommunityProfileScreen extends ConsumerWidget {
 
   final String userIdOrMe;
 
+  /// Report / block (or unblock) for someone else's profile. Blocking
+  /// leaves the screen — there's nothing left to show.
+  List<ContentAction> _actions(
+    BuildContext context,
+    UserCommunityProfile profile,
+  ) {
+    final l = AppLocalizations.of(context);
+    void leave() {
+      if (context.mounted) Navigator.of(context).maybePop();
+    }
+
+    if (profile.isBlockedByMe) {
+      return [
+        ContentAction(
+          icon: Icons.flag_outlined,
+          label: l.reportUser,
+          onSelected: () => showReportSheet(
+            context,
+            target: ReportTarget.user,
+            targetId: profile.userId,
+          ),
+        ),
+        ContentAction(
+          icon: Icons.lock_open_rounded,
+          label: l.blockUnblock,
+          onSelected: () => unblockUser(
+            context,
+            userId: profile.userId,
+            name: profile.name,
+          ),
+        ),
+      ];
+    }
+    return reportAndBlockActions(
+      context,
+      target: ReportTarget.user,
+      targetId: profile.userId,
+      authorId: profile.userId,
+      authorName: profile.name,
+      onBlocked: leave,
+    );
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final p = context.palette;
     final l = AppLocalizations.of(context);
-    final profileAsync =
-        ref.watch(userCommunityProfileProvider(userIdOrMe));
+    final profileAsync = ref.watch(userCommunityProfileProvider(userIdOrMe));
+    final myId = ref.watch(currentUserProvider.select((s) => s.id));
+    bool isMe(UserCommunityProfile profile) =>
+        userIdOrMe == 'me' || (myId != null && profile.userId == myId);
     return Scaffold(
       backgroundColor: p.background,
       extendBodyBehindAppBar: true,
@@ -34,6 +84,18 @@ class CommunityProfileScreen extends ConsumerWidget {
         elevation: 0,
         leading: const BackButton(),
         title: Text(l.communityProfile),
+        actions: [
+          profileAsync.maybeWhen(
+            orElse: () => const SizedBox.shrink(),
+            data: (profile) => isMe(profile)
+                ? const SizedBox.shrink()
+                : ContentMoreButton(
+                    size: 22,
+                    actions: () => _actions(context, profile),
+                  ),
+          ),
+          const SizedBox(width: 8),
+        ],
       ),
       body: Stack(
         children: [
@@ -59,9 +121,15 @@ class CommunityProfileScreen extends ConsumerWidget {
                 padding: const EdgeInsets.fromLTRB(20, 100, 20, 32),
                 children: [
                   _ProfileHero(name: profile.name, palette: p),
+                  if (profile.isBlockedByMe) ...[
+                    const SizedBox(height: 20),
+                    _BlockedNotice(profile: profile, palette: p),
+                  ],
                   const SizedBox(height: 24),
                   _SectionHeader(
-                    label: l.communityProfileJoinedSpaces(profile.joinedSpaces.length),
+                    label: l.communityProfileJoinedSpaces(
+                      profile.joinedSpaces.length,
+                    ),
                     palette: p,
                   ),
                   const SizedBox(height: 8),
@@ -78,7 +146,9 @@ class CommunityProfileScreen extends ConsumerWidget {
                   ],
                   const SizedBox(height: 24),
                   _SectionHeader(
-                    label: l.communityProfileRecentPosts(profile.recentPosts.length),
+                    label: l.communityProfileRecentPosts(
+                      profile.recentPosts.length,
+                    ),
                     palette: p,
                   ),
                   const SizedBox(height: 8),
@@ -129,7 +199,9 @@ class _ProfileHero extends StatelessWidget {
         ),
         const SizedBox(height: 14),
         Text(
-          name.isEmpty ? AppLocalizations.of(context).communityUnknownUser : name,
+          name.isEmpty
+              ? AppLocalizations.of(context).communityUnknownUser
+              : name,
           style: TextStyle(
             color: palette.textPrimary,
             fontSize: 22,
@@ -137,6 +209,47 @@ class _ProfileHero extends StatelessWidget {
           ),
         ),
       ],
+    );
+  }
+}
+
+/// Shown on the profile of someone the viewer blocked, with a quick way
+/// to undo it.
+class _BlockedNotice extends StatelessWidget {
+  const _BlockedNotice({required this.profile, required this.palette});
+  final UserCommunityProfile profile;
+  final AppPalette palette;
+
+  @override
+  Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context);
+    return Container(
+      padding: const EdgeInsets.fromLTRB(14, 12, 8, 12),
+      decoration: BoxDecoration(
+        color: palette.surface,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: palette.glassBorder),
+      ),
+      child: Row(
+        children: [
+          Icon(Icons.block_rounded, size: 18, color: palette.textSecondary),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(
+              l.blockProfileNotice,
+              style: TextStyle(color: palette.textSecondary, fontSize: 12),
+            ),
+          ),
+          TextButton(
+            onPressed: () => unblockUser(
+              context,
+              userId: profile.userId,
+              name: profile.name,
+            ),
+            child: Text(l.blockUnblock),
+          ),
+        ],
+      ),
     );
   }
 }

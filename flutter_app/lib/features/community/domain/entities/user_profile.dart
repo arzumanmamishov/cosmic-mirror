@@ -10,6 +10,7 @@ class UserCommunityProfile extends Equatable {
     required this.name,
     required this.joinedSpaces,
     required this.recentPosts,
+    this.isBlockedByMe = false,
   });
 
   factory UserCommunityProfile.fromJson(Map<String, dynamic> json) {
@@ -22,6 +23,7 @@ class UserCommunityProfile extends Equatable {
       recentPosts: ((json['recent_posts'] as List<dynamic>?) ?? const [])
           .map((e) => PostWithMeta.fromJson(e as Map<String, dynamic>))
           .toList(),
+      isBlockedByMe: json['is_blocked_by_me'] as bool? ?? false,
     );
   }
 
@@ -30,6 +32,10 @@ class UserCommunityProfile extends Equatable {
   final List<SpaceWithMeta> joinedSpaces;
   final List<PostWithMeta> recentPosts;
 
+  /// The viewer has blocked this user. When either side blocked the
+  /// other, the server returns empty spaces / posts.
+  final bool isBlockedByMe;
+
   @override
-  List<Object?> get props => [userId, joinedSpaces, recentPosts];
+  List<Object?> get props => [userId, joinedSpaces, recentPosts, isBlockedByMe];
 }

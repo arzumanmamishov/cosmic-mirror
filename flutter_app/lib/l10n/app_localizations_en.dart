@@ -84,6 +84,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get authPrivacy => 'Privacy Policy';
 
   @override
+  String get authTermsSuffix => '.';
+
+  @override
   String get authEmailRequired => 'Email and password are required.';
 
   @override
@@ -718,7 +721,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get settingsDelete => 'Delete';
 
   @override
-  String get settingsAppVersion => 'Lively v1.0.0';
+  String settingsAppVersion(String version, String build) {
+    return 'Lively $version ($build)';
+  }
 
   @override
   String get chatThreadsTitle => 'Astrologer';
@@ -3439,4 +3444,223 @@ class AppLocalizationsEn extends AppLocalizations {
   String dailyShareText(String affirmation, String color) {
     return '\"$affirmation\"\n\nMy lucky color today: $color\n\n~ Lively';
   }
+
+  @override
+  String paywallStartTrialCta(int days) {
+    return 'Start $days-day free trial';
+  }
+
+  @override
+  String paywallTrialThenPrice(int days, String price) {
+    return '$days days free, then $price';
+  }
+
+  @override
+  String get paywallTermsOfUse => 'Terms of Use (EULA)';
+
+  @override
+  String subscriptionPricePerMonthLong(String price) {
+    return '$price per month';
+  }
+
+  @override
+  String subscriptionPricePerYearLong(String price) {
+    return '$price per year';
+  }
+
+  @override
+  String subscriptionDisclosure(String price, String store) {
+    return '$price. Payment is charged to your $store account at confirmation of purchase. The subscription renews automatically at the same price unless it is cancelled at least 24 hours before the end of the current period; renewal is charged within the 24 hours before the period ends. Manage or cancel it anytime in your $store account settings.';
+  }
+
+  @override
+  String subscriptionDisclosureTrial(int days, String price, String store) {
+    return 'Free for $days days, then $price. Cancel at least 24 hours before the trial ends and you won\'t be charged. When the trial ends, payment is charged to your $store account and the subscription renews automatically at the same price unless it is cancelled at least 24 hours before the end of the current period. Manage or cancel it anytime in your $store account settings.';
+  }
+
+  @override
+  String get subscriptionPlansUnavailableTitle =>
+      'Plans aren\'t available right now';
+
+  @override
+  String get subscriptionPlansUnavailableBody =>
+      'We couldn\'t load the subscription options from the store. Check your connection and try again.';
+
+  @override
+  String get subscriptionPurchasesUnsupported =>
+      'In-app purchases aren\'t available in this version of the app.';
+
+  @override
+  String get subscriptionRestoreNothing => 'No previous purchases found.';
+
+  @override
+  String get subscriptionRestoreSuccess =>
+      'Your purchases have been restored. Welcome back to Premium!';
+
+  @override
+  String get subscriptionPaymentPending =>
+      'Your purchase is waiting for approval. Premium unlocks as soon as the store confirms it.';
+
+  @override
+  String get subscriptionPurchaseNotAllowed =>
+      'Purchases aren\'t allowed on this device. Check your store account or device restrictions.';
+
+  @override
+  String get subscriptionAlreadyOwned =>
+      'This store account already has a subscription. Tap Restore Purchases to activate it.';
+
+  @override
+  String get subscriptionPurchaseFailed =>
+      'The purchase couldn\'t be completed. Please try again.';
+
+  @override
+  String get subscriptionPremiumActiveTitle => 'You\'re Premium';
+
+  @override
+  String get subscriptionPremiumActiveBody =>
+      'You have full access to every feature.';
+
+  @override
+  String subscriptionTrialEndsOn(String date) {
+    return 'Your free trial ends on $date.';
+  }
+
+  @override
+  String subscriptionRenewsOn(String date) {
+    return 'Renews on $date.';
+  }
+
+  @override
+  String subscriptionActiveUntil(String date) {
+    return 'Active until $date.';
+  }
+
+  @override
+  String get subscriptionBillingIssue =>
+      'There\'s a problem with your payment method. Update it in your store account to keep Premium.';
+
+  @override
+  String get subscriptionManage => 'Manage subscription';
+
+  @override
+  String get subscriptionManagedOnWeb =>
+      'Your subscription was purchased on our website. To change or cancel it, contact support@livelyapp.co.';
+
+  @override
+  String get subscriptionContactSupport => 'Contact support';
+
+  @override
+  String get subscriptionDeleteAccountStoreNote =>
+      'If you subscribed through the App Store or Google Play, deleting your account doesn\'t cancel that subscription. Cancel it in your App Store or Google Play subscription settings to stop future charges.';
+
+  @override
+  String get reportPost => 'Report post';
+
+  @override
+  String get reportComment => 'Report comment';
+
+  @override
+  String get reportSpace => 'Report space';
+
+  @override
+  String get reportUser => 'Report user';
+
+  @override
+  String get reportSheetSubtitle =>
+      'Why are you reporting this? The person won\'t know it was you.';
+
+  @override
+  String get reportReasonSpam => 'Spam or scam';
+
+  @override
+  String get reportReasonHarassment => 'Harassment or bullying';
+
+  @override
+  String get reportReasonHate => 'Hate speech';
+
+  @override
+  String get reportReasonSexual => 'Sexual content';
+
+  @override
+  String get reportReasonViolence => 'Violence or threats';
+
+  @override
+  String get reportReasonSelfHarm => 'Self-harm or suicide';
+
+  @override
+  String get reportReasonMisinformation => 'False information';
+
+  @override
+  String get reportReasonOther => 'Something else';
+
+  @override
+  String get reportDetailsHint => 'Add details (optional)';
+
+  @override
+  String get reportSubmit => 'Submit report';
+
+  @override
+  String get reportThanks =>
+      'Thanks — our team will review this within 24 hours.';
+
+  @override
+  String get blockUserMenu => 'Block user';
+
+  @override
+  String blockUserConfirmTitle(String name) {
+    return 'Block $name?';
+  }
+
+  @override
+  String get blockUserConfirmBody =>
+      'You won\'t see each other\'s posts, comments or activity in the Community, and they won\'t be able to comment on or like your posts. They won\'t be notified. You can unblock them anytime in Settings → Blocked users.';
+
+  @override
+  String get blockUserAction => 'Block';
+
+  @override
+  String blockUserDone(String name) {
+    return '$name is blocked.';
+  }
+
+  @override
+  String get blockUnblock => 'Unblock';
+
+  @override
+  String blockUnblockDone(String name) {
+    return '$name is unblocked.';
+  }
+
+  @override
+  String get blockProfileNotice =>
+      'You blocked this user. You won\'t see their posts, comments or activity.';
+
+  @override
+  String get blockedUsersTitle => 'Blocked users';
+
+  @override
+  String get blockedUsersEmptyTitle => 'No blocked users';
+
+  @override
+  String get blockedUsersEmptyBody =>
+      'People you block in the Community will appear here.';
+
+  @override
+  String get moderationDeletePost => 'Delete post';
+
+  @override
+  String get moderationDeleteComment => 'Delete comment';
+
+  @override
+  String get moderationDeletePostConfirm => 'Delete this post?';
+
+  @override
+  String get moderationDeleteCommentConfirm => 'Delete this comment?';
+
+  @override
+  String get moderationDeleteBody => 'This can\'t be undone.';
+
+  @override
+  String get moderationHiddenNotice =>
+      'Hidden while our team reviews reports. Only you can see this.';
 }

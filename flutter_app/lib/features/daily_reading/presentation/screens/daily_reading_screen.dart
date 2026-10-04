@@ -47,7 +47,7 @@ class DailyReadingScreen extends ConsumerWidget {
       body: readingAsync.when(
         loading: () => const ShimmerList(),
         error: (error, _) => ErrorView(
-          message: error.toString(),
+          error: error,
           onRetry: () => ref.invalidate(dailyReadingProvider),
         ),
         data: (reading) => _ReadingBody(reading: reading),
