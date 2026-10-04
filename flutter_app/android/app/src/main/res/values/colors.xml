@@ -4,4 +4,5 @@
          so the native splash hands off to the first Flutter frame without a
          white flash. -->
     <color name="lively_background">#08080F</color>
+	<color name="ic_launcher_background">#08080F</color>
 </resources>

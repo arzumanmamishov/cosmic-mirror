@@ -1,0 +1,11 @@
+# App icons — regenerate with: dart run flutter_launcher_icons
+# Sources are built from assets/images/lively_logo.png (V mark only; the
+# wordmark is unreadable at icon sizes) on the app's dark background.
+flutter_launcher_icons:
+  image_path: "assets/icon/app_icon.png"
+  ios: true
+  remove_alpha_ios: true
+  android: true
+  min_sdk_android: 24
+  adaptive_icon_background: "#08080F"
+  adaptive_icon_foreground: "assets/icon/app_icon_foreground.png"
