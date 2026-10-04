@@ -126,10 +126,10 @@ function ChartWheelSVG() {
       />
       {sectors.map((i) => {
         const a = (i * 30 * Math.PI) / 180;
-        const x1 = 100 + Math.cos(a) * 62;
-        const y1 = 100 + Math.sin(a) * 62;
-        const x2 = 100 + Math.cos(a) * 85;
-        const y2 = 100 + Math.sin(a) * 85;
+        const x1 = Math.round((100 + Math.cos(a) * 62) * 100) / 100;
+        const y1 = Math.round((100 + Math.sin(a) * 62) * 100) / 100;
+        const x2 = Math.round((100 + Math.cos(a) * 85) * 100) / 100;
+        const y2 = Math.round((100 + Math.sin(a) * 85) * 100) / 100;
         return (
           <line
             key={i}

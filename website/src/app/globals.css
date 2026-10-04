@@ -6,9 +6,13 @@
   :root {
     color-scheme: dark;
   }
+  /* Background lives on <html> only: a painted <body> background would
+     cover the fixed starfield, which sits at a negative z-index. */
+  html {
+    background-color: #1a1f2e;
+  }
   html,
   body {
-    background-color: #1a1f2e;
     color: #e6eaf2;
     -webkit-font-smoothing: antialiased;
   }
@@ -34,6 +38,30 @@
 }
 
 @layer components {
+  /* Slow light sweep across gradient text */
+  .text-shimmer {
+    background-size: 220% auto;
+    animation: shimmer 5s linear infinite;
+  }
+
+  /* Drifting nebula glows behind the starfield */
+  .nebula {
+    @apply absolute rounded-full blur-3xl;
+    will-change: transform;
+  }
+  .nebula-a {
+    @apply -left-40 -top-40 h-[42rem] w-[42rem] bg-[#7B61FF]/[0.16];
+    animation: drift-a 38s ease-in-out infinite alternate;
+  }
+  .nebula-b {
+    @apply -right-48 top-1/3 h-[36rem] w-[36rem] bg-[#D4B16A]/[0.12];
+    animation: drift-b 46s ease-in-out infinite alternate;
+  }
+  .nebula-c {
+    @apply bottom-[-12rem] left-1/4 h-[40rem] w-[40rem] bg-[#E14B8A]/[0.10];
+    animation: drift-c 52s ease-in-out infinite alternate;
+  }
+
   /* Reusable gold-text gradient for headings + brand marks */
   .text-gold-gradient {
     background: linear-gradient(135deg, #ffe9b8 0%, #d4b16a 45%, #9f7637 100%);
@@ -102,4 +130,31 @@
   .legal-callout > * + * {
     @apply mt-3;
   }
+}
+
+@keyframes shimmer {
+  to { background-position: 220% center; }
+}
+@keyframes drift-a {
+  to { transform: translate(18vw, 22vh) scale(1.15); }
+}
+@keyframes drift-b {
+  to { transform: translate(-22vw, 12vh) scale(0.9); }
+}
+@keyframes drift-c {
+  to { transform: translate(14vw, -24vh) scale(1.2); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+html {
+  scroll-behavior: smooth;
 }

@@ -52,10 +52,22 @@ const config: Config = {
           "0%,100%": { transform: "translateY(0)" },
           "50%": { transform: "translateY(-8px)" },
         },
+        marquee: {
+          from: { transform: "translateX(0)" },
+          to: { transform: "translateX(-50%)" },
+        },
+        "scroll-dot": {
+          "0%": { transform: "translateY(0)", opacity: "1" },
+          "70%": { transform: "translateY(14px)", opacity: "0" },
+          "100%": { transform: "translateY(0)", opacity: "0" },
+        },
       },
       animation: {
         twinkle: "twinkle 4s ease-in-out infinite",
         floaty: "floaty 6s ease-in-out infinite",
+        marquee: "marquee 40s linear infinite",
+        "marquee-rev": "marquee 46s linear infinite reverse",
+        "scroll-dot": "scroll-dot 1.8s ease-in-out infinite",
       },
     },
   },

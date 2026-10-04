@@ -37,9 +37,9 @@ export function VedicShowcase() {
               <div className="mt-1 text-2xl font-extrabold">Lahiri · Sidereal</div>
               <div className="mt-4 grid grid-cols-3 gap-3 text-center">
                 {[
-                  ["Lagna", "Sim", "♌"],
-                  ["Chandra", "Min", "♓"],
-                  ["Surya", "Mes", "♈"],
+                  ["Lagna", "Sim", "♌\uFE0E"],
+                  ["Chandra", "Min", "♓\uFE0E"],
+                  ["Surya", "Mes", "♈\uFE0E"],
                 ].map(([label, sign, glyph]) => (
                   <div
                     key={label}
@@ -153,10 +153,10 @@ function NorthIndianDiamond() {
         {[
           { x: 150, y: 100, glyph: "☉", color: "#F4C542" },
           { x: 100, y: 100, glyph: "☽", color: "#E9D49A" },
-          { x: 220, y: 100, glyph: "♂", color: "#F07C82" },
-          { x: 220, y: 170, glyph: "♀", color: "#E14B8A" },
-          { x: 150, y: 240, glyph: "♃", color: "#5CC9C0" },
-          { x: 100, y: 170, glyph: "♄", color: "#B6BAC4" },
+          { x: 220, y: 100, glyph: "♂\uFE0E", color: "#F07C82" },
+          { x: 220, y: 170, glyph: "♀\uFE0E", color: "#E14B8A" },
+          { x: 150, y: 240, glyph: "♃\uFE0E", color: "#5CC9C0" },
+          { x: 100, y: 170, glyph: "♄\uFE0E", color: "#B6BAC4" },
         ].map((p, i) => (
           <text
             key={i}

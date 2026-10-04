@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
+  // Absolute base for Open Graph / social preview URLs.
+  metadataBase: new URL("https://livelyapp.co"),
   title: "Lively — Your Cosmic Blueprint",
   description:
     "Western, Vedic, Numerology, and Human Design — all in one app. Daily readings, an AI astrologer, compatibility, journaling, and a community of fellow seekers.",

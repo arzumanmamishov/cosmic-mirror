@@ -1,3 +1,4 @@
+import { CosmicBackground } from "./fx/CosmicBackground";
 import type { ReactNode } from "react";
 import { Nav } from "@/components/Nav";
 import { Footer } from "@/components/Footer";
@@ -20,7 +21,8 @@ export function PageShell({
   children: ReactNode;
 }) {
   return (
-    <main className="relative min-h-screen overflow-x-hidden bg-cosmic-bg text-cosmic-text">
+    <main className="relative min-h-screen overflow-x-hidden text-cosmic-text">
+      <CosmicBackground />
       {/* Ambient cosmic gradient that floats above the solid bg */}
       <div className="pointer-events-none absolute inset-0 bg-cosmic-radial" />
       <div className="relative">

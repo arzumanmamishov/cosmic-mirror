@@ -14,15 +14,38 @@ import { Languages } from "@/components/Languages";
 import { Pricing } from "@/components/Pricing";
 import { DownloadCTA } from "@/components/DownloadCTA";
 import { Footer } from "@/components/Footer";
+import { CosmicBackground } from "@/components/fx/CosmicBackground";
+import {
+  CursorGlow,
+  Marquee,
+  ScrollProgress,
+} from "@/components/fx/Effects";
+
+const SIGNS = [
+  "♈ Aries", "♉ Taurus", "♊ Gemini", "♋ Cancer", "♌ Leo", "♍ Virgo",
+  "♎ Libra", "♏ Scorpio", "♐ Sagittarius", "♑ Capricorn", "♒ Aquarius", "♓ Pisces",
+];
+const SYSTEMS = [
+  "Natal chart", "Vedic kundli", "Dasha periods", "Numerology",
+  "Human Design", "AI astrologer", "Compatibility", "Daily reading",
+];
 
 export default function Page() {
   return (
-    <main className="relative overflow-x-hidden bg-cosmic-bg text-cosmic-text">
-      {/* Ambient cosmic gradient that floats above the solid bg */}
+    <main className="relative overflow-x-hidden text-cosmic-text">
+      {/* Living sky: starfield canvas + drifting nebulae, fixed behind
+          everything (the page background itself comes from <body>). */}
+      <CosmicBackground />
+      <CursorGlow />
+      <ScrollProgress />
       <div className="pointer-events-none absolute inset-0 bg-cosmic-radial" />
       <div className="relative">
         <Nav />
         <Hero />
+        <div className="space-y-4 border-y border-white/5 bg-white/[0.015] py-8 backdrop-blur-[2px]">
+          <Marquee items={SIGNS} />
+          <Marquee items={SYSTEMS} reverse />
+        </div>
         <FeatureGrid />
         <ChartShowcase />
         <VedicShowcase />
@@ -34,6 +57,9 @@ export default function Page() {
         <JournalAndRituals />
         <Community />
         <Languages />
+        <div className="py-6">
+          <Marquee items={SYSTEMS} />
+        </div>
         <Pricing />
         <DownloadCTA />
         <Footer />

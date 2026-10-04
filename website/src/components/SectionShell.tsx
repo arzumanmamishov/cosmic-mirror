@@ -24,31 +24,51 @@ export function SectionShell({
   return (
     <section id={id} className="section-y relative">
       <div className="mx-auto max-w-7xl px-5 md:px-8">
-        <motion.div
-          initial={{ opacity: 0, y: 24 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, amount: 0.3 }}
-          transition={{ duration: 0.7, ease: "easeOut" }}
-          className={align === "center" ? "text-center" : ""}
-        >
+        <div className={align === "center" ? "text-center" : ""}>
           {eyebrow && (
-            <div className="mb-3 text-xs font-bold uppercase tracking-[0.18em] text-gold">
+            <motion.div
+              initial={{ opacity: 0, x: align === "center" ? 0 : -16 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true, amount: 0.6 }}
+              transition={{ duration: 0.6, ease: "easeOut" }}
+              className={`mb-4 flex items-center gap-3 text-xs font-bold uppercase tracking-[0.18em] text-gold ${
+                align === "center" ? "justify-center" : ""
+              }`}
+            >
+              <motion.span
+                aria-hidden
+                initial={{ scaleX: 0 }}
+                whileInView={{ scaleX: 1 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.8, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
+                className="h-px w-10 origin-left bg-gold-gradient"
+              />
               {eyebrow}
-            </div>
+            </motion.div>
           )}
-          <h2 className="font-display text-3xl font-extrabold leading-tight tracking-tight md:text-5xl">
+          <motion.h2
+            initial={{ opacity: 0, y: 36, filter: "blur(10px)" }}
+            whileInView={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+            viewport={{ once: true, amount: 0.5 }}
+            transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
+            className="font-display text-3xl font-extrabold leading-tight tracking-tight md:text-5xl"
+          >
             {title}
-          </h2>
+          </motion.h2>
           {blurb && (
-            <p
+            <motion.p
+              initial={{ opacity: 0, y: 16 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, amount: 0.5 }}
+              transition={{ duration: 0.8, delay: 0.15, ease: "easeOut" }}
               className={`mt-5 max-w-2xl text-base leading-relaxed text-cosmic-muted md:text-lg ${
                 align === "center" ? "mx-auto" : ""
               }`}
             >
               {blurb}
-            </p>
+            </motion.p>
           )}
-        </motion.div>
+        </div>
         {children && <div className="mt-12 md:mt-16">{children}</div>}
       </div>
     </section>

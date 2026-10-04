@@ -1,6 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
+import { TiltCard } from "./fx/Effects";
 import { SectionShell } from "./SectionShell";
 
 const features = [
@@ -68,30 +69,35 @@ export function FeatureGrid() {
       }
       blurb="Most apps pick one tradition. Lively gives you the full set — Western, Vedic, numerology, Human Design — bound together by a chart-aware AI and a community of fellow seekers."
     >
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-4 [perspective:1200px] sm:grid-cols-2 lg:grid-cols-4">
         {features.map((f, i) => (
           <motion.div
             key={f.title}
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, amount: 0.4 }}
-            transition={{ duration: 0.5, delay: i * 0.05 }}
-            className="glass relative overflow-hidden rounded-2xl p-5 transition-all hover:-translate-y-1 hover:border-gold/30 hover:shadow-gold-glow"
+            initial={{ opacity: 0, y: 40, rotateX: -18 }}
+            whileInView={{ opacity: 1, y: 0, rotateX: 0 }}
+            viewport={{ once: true, amount: 0.3 }}
+            transition={{
+              duration: 0.8,
+              delay: (i % 4) * 0.08 + Math.floor(i / 4) * 0.12,
+              ease: [0.22, 1, 0.36, 1],
+            }}
           >
-            <div
-              className={`pointer-events-none absolute inset-0 bg-gradient-to-br ${f.accent} opacity-60`}
-            />
-            <div className="relative">
-              <div className="grid h-11 w-11 place-items-center rounded-xl bg-gold/15 font-display text-xl text-gold">
-                {f.glyph}
+            <TiltCard className="glass h-full overflow-hidden rounded-2xl p-5 transition-[border-color,box-shadow] duration-300 hover:border-gold/30 hover:shadow-gold-glow">
+              <div
+                className={`pointer-events-none absolute inset-0 bg-gradient-to-br ${f.accent} opacity-60`}
+              />
+              <div className="relative [transform:translateZ(30px)]">
+                <div className="grid h-11 w-11 place-items-center rounded-xl bg-gold/15 font-display text-xl text-gold transition-transform duration-500 group-hover:rotate-[360deg] group-hover:scale-110">
+                  {f.glyph}
+                </div>
+                <h3 className="mt-4 font-display text-lg font-bold">
+                  {f.title}
+                </h3>
+                <p className="mt-2 text-sm leading-relaxed text-cosmic-muted">
+                  {f.desc}
+                </p>
               </div>
-              <h3 className="mt-4 font-display text-lg font-bold">
-                {f.title}
-              </h3>
-              <p className="mt-2 text-sm leading-relaxed text-cosmic-muted">
-                {f.desc}
-              </p>
-            </div>
+            </TiltCard>
           </motion.div>
         ))}
       </div>

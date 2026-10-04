@@ -2,6 +2,9 @@
 
 import { SectionShell } from "./SectionShell";
 
+// Rounded so server and client SVG markup match exactly.
+const r2 = (n: number) => Math.round(n * 100) / 100;
+
 export function ChartShowcase() {
   return (
     <section id="charts" className="relative">
@@ -92,10 +95,10 @@ function NatalWheelArt() {
         />
         {sectors.map((i) => {
           const a = (i * 30 * Math.PI) / 180;
-          const x1 = 200 + Math.cos(a) * 140;
-          const y1 = 200 + Math.sin(a) * 140;
-          const x2 = 200 + Math.cos(a) * 180;
-          const y2 = 200 + Math.sin(a) * 180;
+          const x1 = r2(200 + Math.cos(a) * 140);
+          const y1 = r2(200 + Math.sin(a) * 140);
+          const x2 = r2(200 + Math.cos(a) * 180);
+          const y2 = r2(200 + Math.sin(a) * 180);
           return (
             <line
               key={`s${i}`}
@@ -111,8 +114,8 @@ function NatalWheelArt() {
         })}
         {sectors.map((i) => {
           const a = ((i * 30 + 15) * Math.PI) / 180;
-          const x = 200 + Math.cos(a) * 160;
-          const y = 200 + Math.sin(a) * 160;
+          const x = r2(200 + Math.cos(a) * 160);
+          const y = r2(200 + Math.sin(a) * 160);
           return (
             <text
               key={`g${i}`}
@@ -138,14 +141,14 @@ function NatalWheelArt() {
         {PLANET_POSITIONS.map((p, i) => (
           <g key={i}>
             <circle
-              cx={200 + Math.cos(p.angle) * 110}
-              cy={200 + Math.sin(p.angle) * 110}
+              cx={r2(200 + Math.cos(p.angle) * 110)}
+              cy={r2(200 + Math.sin(p.angle) * 110)}
               r="6"
               fill={p.color}
             />
             <text
-              x={200 + Math.cos(p.angle) * 110}
-              y={200 + Math.sin(p.angle) * 110 + 4}
+              x={r2(200 + Math.cos(p.angle) * 110)}
+              y={r2(200 + Math.sin(p.angle) * 110 + 4)}
               textAnchor="middle"
               fontSize="9"
               fill="#1a1f2e"
@@ -171,25 +174,25 @@ function NatalWheelArt() {
 }
 
 const ZODIAC_GLYPHS = [
-  "♈",
-  "♉",
-  "♊",
-  "♋",
-  "♌",
-  "♍",
-  "♎",
-  "♏",
-  "♐",
-  "♑",
-  "♒",
-  "♓",
+  "♈\uFE0E",
+  "♉\uFE0E",
+  "♊\uFE0E",
+  "♋\uFE0E",
+  "♌\uFE0E",
+  "♍\uFE0E",
+  "♎\uFE0E",
+  "♏\uFE0E",
+  "♐\uFE0E",
+  "♑\uFE0E",
+  "♒\uFE0E",
+  "♓\uFE0E",
 ];
 
 const PLANET_POSITIONS = [
-  { angle: -1.2, glyph: "☽", color: "#E9D49A" },
-  { angle: -0.4, glyph: "☿", color: "#5CC9C0" },
-  { angle: 0.6, glyph: "♀", color: "#E14B8A" },
-  { angle: 1.4, glyph: "♂", color: "#F07C82" },
-  { angle: 2.4, glyph: "♃", color: "#F4C542" },
-  { angle: 3.4, glyph: "♄", color: "#B6BAC4" },
+  { angle: -1.2, glyph: "☽\uFE0E", color: "#E9D49A" },
+  { angle: -0.4, glyph: "☿\uFE0E", color: "#5CC9C0" },
+  { angle: 0.6, glyph: "♀\uFE0E", color: "#E14B8A" },
+  { angle: 1.4, glyph: "♂\uFE0E", color: "#F07C82" },
+  { angle: 2.4, glyph: "♃\uFE0E", color: "#F4C542" },
+  { angle: 3.4, glyph: "♄\uFE0E", color: "#B6BAC4" },
 ];
