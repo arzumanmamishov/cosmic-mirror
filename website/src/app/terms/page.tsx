@@ -5,7 +5,7 @@ import { PageShell } from "@/components/PageShell";
 export const metadata: Metadata = {
   title: "Terms of Service — Lively",
   description:
-    "The terms that govern your use of Lively — including subscriptions, acceptable use, and the important reminder that astrology and AI content is for entertainment and self-reflection only.",
+    "The terms that govern your use of Lively — including subscriptions, acceptable use, our zero-tolerance community standards, and the important reminder that astrology and AI content is for entertainment and self-reflection only.",
   alternates: { canonical: "/terms" },
   openGraph: {
     title: "Terms of Service — Lively",
@@ -175,19 +175,67 @@ export default function TermsPage() {
         We may remove content or suspend accounts that violate these rules.
       </p>
 
-      <h2 id="user-content">8. Your content</h2>
+      <h2 id="community-standards">8. Community standards &mdash; zero tolerance</h2>
+      <div className="legal-callout">
+        <p>
+          <strong>
+            We have zero tolerance for objectionable content and abusive
+            users.
+          </strong>{" "}
+          The community (spaces, posts, comments, and profiles) is for
+          respectful conversation. You must not post or send content that is:
+        </p>
+        <ul>
+          <li>Hateful or discriminatory toward any person or group.</li>
+          <li>Harassing, bullying, threatening, or intimidating.</li>
+          <li>Sexually explicit, or that sexualizes minors in any way.</li>
+          <li>Violent, or that encourages or glorifies self-harm or suicide.</li>
+          <li>Spam, scams, or deliberately false or misleading information.</li>
+          <li>Illegal, or that infringes anyone&rsquo;s privacy, intellectual property, or other rights.</li>
+        </ul>
+      </div>
+      <ul>
+        <li>
+          <strong>Reporting.</strong> Every post, comment, space, and profile
+          in the App has a &ldquo;Report&rdquo; option. Our team reviews
+          reports within <strong>24 hours</strong>. Content reported by
+          several people may be hidden automatically while it is reviewed.
+        </li>
+        <li>
+          <strong>Blocking.</strong> You can block any user from their profile
+          or from the menu on their posts and comments. You and a blocked user
+          will no longer see each other&rsquo;s posts, comments, or activity,
+          and they cannot comment on or like your posts. You can unblock people
+          at any time in <em>Settings &rarr; Blocked users</em>.
+        </li>
+        <li>
+          <strong>Enforcement.</strong> We remove content that breaks these
+          standards and suspend or permanently ban the accounts responsible,
+          without notice where appropriate. Owners and moderators of a space
+          may also remove comments in their space.
+        </li>
+        <li>
+          <strong>Contact.</strong> To raise a safety concern directly, email{" "}
+          <a href="mailto:hello@livelyapp.co">hello@livelyapp.co</a>.
+        </li>
+      </ul>
+
+      <h2 id="user-content">9. Your content</h2>
       <p>
         You retain ownership of the content you create in the App, such as
         journal entries, community posts, and messages (&ldquo;User
         Content&rdquo;). You grant us a limited, worldwide, non-exclusive,
         royalty-free license to host, store, process, and display your User
         Content solely to operate and provide the Service to you (for example,
-        sending an AI chat message to our AI provider to generate a reply). You
+        sending an AI chat message to our AI provider to generate a reply, or
+        showing your community posts to other members). We may review, hide,
+        or remove community content as described in{" "}
+        <a href="#community-standards">section 8</a>. You
         are responsible for your User Content and confirm you have the rights to
         share it.
       </p>
 
-      <h2 id="ip">9. Intellectual property</h2>
+      <h2 id="ip">10. Intellectual property</h2>
       <p>
         The Service, including its software, design, text, graphics, logos, and
         the &ldquo;Lively&rdquo; name, is owned by us or our licensors and
@@ -197,7 +245,7 @@ export default function TermsPage() {
         modify, distribute, sell, or lease any part of the Service.
       </p>
 
-      <h2 id="third-party">10. Third-party services</h2>
+      <h2 id="third-party">11. Third-party services</h2>
       <p>
         The Service relies on third parties such as the Apple App Store, Google
         Play, OpenAI, Stripe/RevenueCat, and Firebase. Your use of those
@@ -206,7 +254,7 @@ export default function TermsPage() {
         party beneficiary of these Terms and may enforce them against you.
       </p>
 
-      <h2 id="warranty">11. Disclaimer of warranties</h2>
+      <h2 id="warranty">12. Disclaimer of warranties</h2>
       <p>
         The Service is provided <strong>&ldquo;as is&rdquo;</strong> and{" "}
         <strong>&ldquo;as available,&rdquo;</strong> without warranties of any
@@ -217,7 +265,7 @@ export default function TermsPage() {
         accurate, reliable, or complete.
       </p>
 
-      <h2 id="liability">12. Limitation of liability</h2>
+      <h2 id="liability">13. Limitation of liability</h2>
       <p>
         To the maximum extent permitted by law, Lively and its affiliates,
         officers, employees, and suppliers will not be liable for any indirect,
@@ -229,7 +277,7 @@ export default function TermsPage() {
         limits liability that cannot be limited under applicable law.
       </p>
 
-      <h2 id="indemnity">13. Indemnification</h2>
+      <h2 id="indemnity">14. Indemnification</h2>
       <p>
         You agree to indemnify and hold harmless Lively from any claims,
         damages, or expenses arising out of your misuse of the Service, your
@@ -237,7 +285,7 @@ export default function TermsPage() {
         third-party right.
       </p>
 
-      <h2 id="termination">14. Termination</h2>
+      <h2 id="termination">15. Termination</h2>
       <p>
         You may stop using the Service and delete your account at any time. We
         may suspend or terminate your access if you breach these Terms, misuse
@@ -247,7 +295,7 @@ export default function TermsPage() {
         and governing law) will survive.
       </p>
 
-      <h2 id="changes">15. Changes to these terms</h2>
+      <h2 id="changes">16. Changes to these terms</h2>
       <p>
         We may update these Terms from time to time. When we make material
         changes, we will update the &ldquo;Last updated&rdquo; date above and,
@@ -255,7 +303,7 @@ export default function TermsPage() {
         Service after an update means you accept the revised Terms.
       </p>
 
-      <h2 id="governing-law">16. Governing law and disputes</h2>
+      <h2 id="governing-law">17. Governing law and disputes</h2>
       <p>
         These Terms are governed by the laws of <strong>[Jurisdiction]</strong>,
         without regard to its conflict-of-laws rules, and the courts of{" "}
@@ -265,7 +313,7 @@ export default function TermsPage() {
         protection of the mandatory consumer laws that apply where you live.
       </p>
 
-      <h2 id="contact">17. Contact us</h2>
+      <h2 id="contact">18. Contact us</h2>
       <p>
         Questions about these Terms? Contact us at{" "}
         <a href="mailto:hello@livelyapp.co">hello@livelyapp.co</a>. For help
