@@ -49,7 +49,9 @@ func (r *CommentRepository) Create(ctx context.Context, tx Querier, c *domain.Co
 
 func (r *CommentRepository) GetByID(ctx context.Context, id, currentUserID uuid.UUID) (*domain.CommentWithMeta, error) {
 	var c domain.CommentWithMeta
-	err := r.db.GetContext(ctx, &c, commentWithMetaSelect+` WHERE c.id = $2`, currentUserID, id)
+	err := r.db.GetContext(ctx, &c,
+		commentWithMetaSelect+` WHERE c.id = $2 AND `+visibleContentSQL("c", "u", "$1"),
+		currentUserID, id)
 	if errors.Is(err, sql.ErrNoRows) {
 		return nil, nil
 	}
@@ -68,7 +70,8 @@ func (r *CommentRepository) GetBareByID(ctx context.Context, id uuid.UUID) (*dom
 func (r *CommentRepository) ListByPost(ctx context.Context, postID, currentUserID uuid.UUID) ([]domain.CommentWithMeta, error) {
 	var comments []domain.CommentWithMeta
 	err := r.db.SelectContext(ctx, &comments,
-		commentWithMetaSelect+` WHERE c.post_id = $2 ORDER BY c.created_at ASC LIMIT 500`,
+		commentWithMetaSelect+` WHERE c.post_id = $2 AND `+visibleContentSQL("c", "u", "$1")+`
+		 ORDER BY c.created_at ASC LIMIT 500`,
 		currentUserID, postID,
 	)
 	return comments, err

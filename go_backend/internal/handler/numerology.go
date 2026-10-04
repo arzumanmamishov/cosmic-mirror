@@ -3,6 +3,9 @@ package handler
 import (
 	"errors"
 	"net/http"
+	"strings"
+	"time"
+	"unicode/utf8"
 
 	"cosmic-mirror/internal/domain"
 	"cosmic-mirror/internal/middleware"
@@ -27,7 +30,7 @@ func (h *NumerologyHandler) GetReading(w http.ResponseWriter, r *http.Request) {
 				"Set your birth profile first to get a numerology reading.")
 			return
 		}
-		respondError(w, http.StatusInternalServerError, "numerology_error", err.Error())
+		respondServiceError(w, http.StatusInternalServerError, "numerology_error", err)
 		return
 	}
 	respondSuccess(w, reading)
@@ -44,9 +47,17 @@ func (h *NumerologyHandler) AnalyzeName(w http.ResponseWriter, r *http.Request) 
 		respondError(w, http.StatusBadRequest, "invalid_body", "Invalid request body")
 		return
 	}
-	out, err := h.svc.AnalyzeName(req.Name)
+	if strings.TrimSpace(req.Name) == "" {
+		respondError(w, http.StatusBadRequest, "name_required", "Name is required")
+		return
+	}
+	if utf8.RuneCountInString(req.Name) > 200 {
+		respondError(w, http.StatusBadRequest, "invalid_body", "Name must be at most 200 characters")
+		return
+	}
+	out, err := h.svc.AnalyzeName(r.Context(), req.Name)
 	if err != nil {
-		respondError(w, http.StatusBadRequest, "name_required", err.Error())
+		respondServiceError(w, http.StatusInternalServerError, "numerology_error", err)
 		return
 	}
 	respondSuccess(w, out)
@@ -61,6 +72,20 @@ func (h *NumerologyHandler) Compare(w http.ResponseWriter, r *http.Request) {
 		respondError(w, http.StatusBadRequest, "invalid_body", "Invalid request body")
 		return
 	}
+	// Validate here so bad input is a clean 400 and every remaining service
+	// error (DB / profile lookup) is a 500 whose detail stays server-side.
+	if strings.TrimSpace(req.FullName) == "" {
+		respondError(w, http.StatusBadRequest, "invalid_body", "full_name is required")
+		return
+	}
+	if utf8.RuneCountInString(req.FullName) > 200 {
+		respondError(w, http.StatusBadRequest, "invalid_body", "full_name must be at most 200 characters")
+		return
+	}
+	if _, err := time.Parse("2006-01-02", req.BirthDate); err != nil {
+		respondError(w, http.StatusBadRequest, "invalid_body", "birth_date must be a date in YYYY-MM-DD format")
+		return
+	}
 	out, err := h.svc.Compare(r.Context(), userID, req)
 	if err != nil {
 		if errors.Is(err, service.ErrNumerologyMissingProfile) {
@@ -68,7 +93,7 @@ func (h *NumerologyHandler) Compare(w http.ResponseWriter, r *http.Request) {
 				"Set your birth profile first.")
 			return
 		}
-		respondError(w, http.StatusBadRequest, "numerology_compat_error", err.Error())
+		respondServiceError(w, http.StatusInternalServerError, "numerology_compat_error", err)
 		return
 	}
 	respondSuccess(w, out)

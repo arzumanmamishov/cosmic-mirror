@@ -1,0 +1,28 @@
+# Keep secrets, data and build junk out of the image build context.
+# The build needs: go.mod/go.sum, cmd/, internal/, migrations/ (embedded
+# via go:embed and also copied into the runtime image) and ephemeris/.
+
+# Secrets — the compose file injects these at runtime instead.
+.env
+.env.*
+!.env.example
+!.env.production.example
+*.pem
+*.key
+**/firebase-service-account*.json
+
+# Data that must never be baked into an image
+backups/
+uploads/
+*.dump
+*.dump.partial
+*.sql.gz
+
+# Build output / VCS / editor noise
+bin/
+tmp/
+.git
+.gitignore
+.idea/
+.vscode/
+.DS_Store

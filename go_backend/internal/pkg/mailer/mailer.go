@@ -15,13 +15,21 @@
 package mailer
 
 import (
+	"bytes"
 	"context"
+	"crypto/rand"
 	"crypto/tls"
 	"encoding/base64"
+	"encoding/hex"
 	"errors"
 	"fmt"
 	"log/slog"
+	"mime"
+	"mime/quotedprintable"
+	"net"
+	"net/mail"
 	"net/smtp"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -110,7 +118,7 @@ func (s *smtpMailer) Send(ctx context.Context, m Message) error {
 		replyTo = s.cfg.FromEmail
 	}
 
-	body := buildMIME(from, m.To, replyTo, m.Subject, m.TextBody, m.HTMLBody, m.Inlines)
+	body := buildMIME(from, m.To, replyTo, m.Subject, m.TextBody, m.HTMLBody, m.Inlines, messageID(s.cfg.FromEmail))
 
 	// net/smtp wants Auth nil-able. Empty username = anonymous relay.
 	var auth smtp.Auth
@@ -118,23 +126,13 @@ func (s *smtpMailer) Send(ctx context.Context, m Message) error {
 		auth = smtp.PlainAuth("", s.cfg.Username, s.cfg.Password, s.cfg.Host)
 	}
 
-	addr := fmt.Sprintf("%s:%d", s.cfg.Host, s.cfg.Port)
-
 	// Run the actual send on a goroutine so ctx cancellation aborts
-	// promptly even if the SMTP server is hung. smtp.SendMail itself
-	// doesn't take a context.
+	// promptly even if the SMTP server is hung. The connection also gets
+	// its own dial timeout + overall deadline, so a hung server can't
+	// leak the goroutine and its socket forever after ctx gives up.
 	done := make(chan error, 1)
 	go func() {
-		// Implicit TLS on 465; STARTTLS otherwise when UseTLS is set.
-		if s.cfg.Port == 465 {
-			done <- sendImplicitTLS(addr, auth, s.cfg.Host, s.cfg.FromEmail, []string{m.To}, body)
-			return
-		}
-		if s.cfg.UseTLS {
-			done <- sendSTARTTLS(addr, auth, s.cfg.Host, s.cfg.FromEmail, []string{m.To}, body)
-			return
-		}
-		done <- smtp.SendMail(addr, auth, s.cfg.FromEmail, []string{m.To}, body)
+		done <- s.send(ctx, auth, []string{m.To}, body)
 	}()
 
 	select {
@@ -154,33 +152,61 @@ func (s *smtpMailer) Send(ctx context.Context, m Message) error {
 	}
 }
 
-// sendImplicitTLS dials on a TLS socket directly (port 465 style).
-// Used when the operator pointed us at an SMTPS endpoint.
-func sendImplicitTLS(addr string, auth smtp.Auth, host, from string, to []string, body []byte) error {
-	conn, err := tls.Dial("tcp", addr, &tls.Config{ServerName: host, MinVersion: tls.VersionTLS12})
-	if err != nil {
-		return fmt.Errorf("tls dial: %w", err)
+const (
+	// smtpDialTimeout bounds the TCP (+TLS for port 465) connect.
+	smtpDialTimeout = 10 * time.Second
+	// smtpSessionTimeout bounds the whole SMTP conversation once connected.
+	smtpSessionTimeout = 30 * time.Second
+)
+
+// send dials the relay and runs one SMTP transaction:
+//   - port 465: implicit TLS from the first byte;
+//   - UseTLS: plain connect, then mandatory STARTTLS;
+//   - otherwise: STARTTLS when the server offers it (what smtp.SendMail
+//     does), plain text only if it doesn't.
+func (s *smtpMailer) send(ctx context.Context, auth smtp.Auth, to []string, body []byte) error {
+	addr := net.JoinHostPort(s.cfg.Host, strconv.Itoa(s.cfg.Port))
+	tlsCfg := &tls.Config{ServerName: s.cfg.Host, MinVersion: tls.VersionTLS12}
+	dialer := &net.Dialer{Timeout: smtpDialTimeout}
+
+	var conn net.Conn
+	var err error
+	if s.cfg.Port == 465 {
+		conn, err = (&tls.Dialer{NetDialer: dialer, Config: tlsCfg}).DialContext(ctx, "tcp", addr)
+		if err != nil {
+			return fmt.Errorf("tls dial: %w", err)
+		}
+	} else {
+		conn, err = dialer.DialContext(ctx, "tcp", addr)
+		if err != nil {
+			return fmt.Errorf("smtp dial: %w", err)
+		}
 	}
 	defer conn.Close()
-	c, err := smtp.NewClient(conn, host)
+
+	deadline := time.Now().Add(smtpSessionTimeout)
+	if d, ok := ctx.Deadline(); ok && d.Before(deadline) {
+		deadline = d
+	}
+	if err := conn.SetDeadline(deadline); err != nil {
+		return fmt.Errorf("smtp deadline: %w", err)
+	}
+
+	c, err := smtp.NewClient(conn, s.cfg.Host)
 	if err != nil {
 		return fmt.Errorf("smtp client: %w", err)
 	}
 	defer c.Close()
-	return runSMTP(c, auth, from, to, body)
-}
 
-// sendSTARTTLS uses the plain smtp.Dial then upgrades.
-func sendSTARTTLS(addr string, auth smtp.Auth, host, from string, to []string, body []byte) error {
-	c, err := smtp.Dial(addr)
-	if err != nil {
-		return fmt.Errorf("smtp dial: %w", err)
+	if s.cfg.Port != 465 {
+		hasStartTLS, _ := c.Extension("STARTTLS")
+		if s.cfg.UseTLS || hasStartTLS {
+			if err := c.StartTLS(tlsCfg); err != nil {
+				return fmt.Errorf("starttls: %w", err)
+			}
+		}
 	}
-	defer c.Close()
-	if err := c.StartTLS(&tls.Config{ServerName: host, MinVersion: tls.VersionTLS12}); err != nil {
-		return fmt.Errorf("starttls: %w", err)
-	}
-	return runSMTP(c, auth, from, to, body)
+	return runSMTP(c, auth, s.cfg.FromEmail, to, body)
 }
 
 func runSMTP(c *smtp.Client, auth smtp.Auth, from string, to []string, body []byte) error {
@@ -237,15 +263,30 @@ func preview(s string, n int) string {
 // MIME builder — RFC 5322 + multipart/alternative when both parts exist.
 // ----------------------------------------------------------------------------
 
+// formatAddr renders an RFC 5322 address; a non-ASCII display name is
+// RFC 2047-encoded, an ASCII one quoted when needed.
 func formatAddr(name, email string) string {
 	if name == "" {
 		return email
 	}
-	// Quote the display name in case it contains commas or non-ASCII.
-	return fmt.Sprintf("%q <%s>", name, email)
+	return (&mail.Address{Name: name, Address: email}).String()
 }
 
-func buildMIME(from, to, replyTo, subject, text, html string, inlines []InlineImage) []byte {
+// messageID returns a unique RFC 5322 Message-ID on the sender's domain.
+// Some spam filters penalise mail that arrives without one.
+func messageID(fromEmail string) string {
+	domain := "localhost"
+	if at := strings.LastIndexByte(fromEmail, '@'); at >= 0 && at < len(fromEmail)-1 {
+		domain = fromEmail[at+1:]
+	}
+	var b [16]byte
+	if _, err := rand.Read(b[:]); err != nil {
+		return fmt.Sprintf("<%d@%s>", time.Now().UnixNano(), domain)
+	}
+	return fmt.Sprintf("<%s.%d@%s>", hex.EncodeToString(b[:]), time.Now().Unix(), domain)
+}
+
+func buildMIME(from, to, replyTo, subject, text, html string, inlines []InlineImage, msgID string) []byte {
 	var b strings.Builder
 	b.WriteString("From: ")
 	b.WriteString(from)
@@ -258,12 +299,19 @@ func buildMIME(from, to, replyTo, subject, text, html string, inlines []InlineIm
 		b.WriteString(replyTo)
 		b.WriteString("\r\n")
 	}
+	// Non-ASCII subjects (the OTP subject has an em dash; Turkish copy has
+	// ş/ğ/ı…) must be RFC 2047-encoded; Q-encoding is a no-op for ASCII.
 	b.WriteString("Subject: ")
-	b.WriteString(subject)
+	b.WriteString(mime.QEncoding.Encode("utf-8", subject))
 	b.WriteString("\r\n")
 	b.WriteString("Date: ")
 	b.WriteString(time.Now().UTC().Format(time.RFC1123Z))
 	b.WriteString("\r\n")
+	if msgID != "" {
+		b.WriteString("Message-ID: ")
+		b.WriteString(msgID)
+		b.WriteString("\r\n")
+	}
 	b.WriteString("MIME-Version: 1.0\r\n")
 
 	// With inline images, wrap the text/html body in multipart/related so the
@@ -314,22 +362,33 @@ func writeBodyPart(b *strings.Builder, text, html string) {
 		b.WriteString("\"\r\n\r\n")
 		b.WriteString("--")
 		b.WriteString(boundary)
-		b.WriteString("\r\nContent-Type: text/plain; charset=UTF-8\r\nContent-Transfer-Encoding: 8bit\r\n\r\n")
-		b.WriteString(text)
+		b.WriteString("\r\nContent-Type: text/plain; charset=UTF-8\r\nContent-Transfer-Encoding: quoted-printable\r\n\r\n")
+		b.WriteString(qp(text))
 		b.WriteString("\r\n--")
 		b.WriteString(boundary)
-		b.WriteString("\r\nContent-Type: text/html; charset=UTF-8\r\nContent-Transfer-Encoding: 8bit\r\n\r\n")
-		b.WriteString(html)
+		b.WriteString("\r\nContent-Type: text/html; charset=UTF-8\r\nContent-Transfer-Encoding: quoted-printable\r\n\r\n")
+		b.WriteString(qp(html))
 		b.WriteString("\r\n--")
 		b.WriteString(boundary)
 		b.WriteString("--\r\n")
 	case hasHTML:
-		b.WriteString("Content-Type: text/html; charset=UTF-8\r\nContent-Transfer-Encoding: 8bit\r\n\r\n")
-		b.WriteString(html)
+		b.WriteString("Content-Type: text/html; charset=UTF-8\r\nContent-Transfer-Encoding: quoted-printable\r\n\r\n")
+		b.WriteString(qp(html))
 	default:
-		b.WriteString("Content-Type: text/plain; charset=UTF-8\r\nContent-Transfer-Encoding: 8bit\r\n\r\n")
-		b.WriteString(text)
+		b.WriteString("Content-Type: text/plain; charset=UTF-8\r\nContent-Transfer-Encoding: quoted-printable\r\n\r\n")
+		b.WriteString(qp(text))
 	}
+}
+
+// qp quoted-printable-encodes a body part. Unlike raw 8bit it keeps every
+// line under SMTP's 998-octet limit (the HTML template is one long line)
+// and survives relays that aren't 8BITMIME-clean.
+func qp(s string) string {
+	var buf bytes.Buffer
+	w := quotedprintable.NewWriter(&buf)
+	_, _ = w.Write([]byte(strings.ReplaceAll(s, "\r\n", "\n")))
+	_ = w.Close()
+	return buf.String()
 }
 
 // chunkBase64 base64-encodes data, wrapped at 76 chars per line (RFC 2045).

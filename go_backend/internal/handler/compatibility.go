@@ -56,7 +56,8 @@ func (h *CompatibilityHandler) AddPerson(w http.ResponseWriter, r *http.Request)
 	}
 	person, err := h.compatSvc.AddPerson(r.Context(), userID, input)
 	if err != nil {
-		respondError(w, http.StatusBadRequest, "add_person_error", err.Error())
+		// Invalid birth data → 400; storage failures → 500.
+		respondServiceError(w, http.StatusInternalServerError, "add_person_error", err)
 		return
 	}
 	respondCreated(w, person)
@@ -110,6 +111,21 @@ func (h *CompatibilityHandler) GenerateReport(w http.ResponseWriter, r *http.Req
 
 	report, err := h.compatSvc.GenerateReport(r.Context(), userID, personID)
 	if err != nil {
+		// Same structured 429 shape as the AI-chat daily cap so the client
+		// can reuse its paywall + counter UI.
+		var limitErr *service.CompatibilityLimitError
+		if errors.As(err, &limitErr) {
+			respondJSON(w, http.StatusTooManyRequests, map[string]any{
+				"error": map[string]any{
+					"code":     "compatibility_limit_reached",
+					"message":  limitErr.Error(),
+					"used":     limitErr.Used,
+					"limit":    limitErr.Limit,
+					"reset_at": limitErr.ResetAt,
+				},
+			})
+			return
+		}
 		if errors.Is(err, service.ErrPersonNotFound) {
 			respondError(w, http.StatusNotFound, "not_found", "Person not found")
 			return

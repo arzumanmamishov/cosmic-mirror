@@ -2,6 +2,7 @@ package middleware
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -13,6 +14,8 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/redis/go-redis/v9"
 )
 
 // RealIP replaces r.RemoteAddr with the client's address, but only
@@ -107,17 +110,35 @@ func SecurityHeaders(hsts bool) func(http.Handler) http.Handler {
 }
 
 // MaxBody caps request bodies at [n] bytes so a client can't exhaust
-// memory with a huge JSON payload. Handlers that accept uploads apply
-// their own, larger MaxBytesReader and are skipped here.
-func MaxBody(n int64) func(http.Handler) http.Handler {
+// memory with a huge JSON payload. [uploads] maps the exact path of each
+// upload route to its own, larger cap; only those routes get it — a
+// multipart Content-Type on any other route is still capped at [n].
+// Upload handlers may apply a tighter MaxBytesReader of their own.
+func MaxBody(n int64, uploads map[string]int64) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			if !strings.HasPrefix(r.Header.Get("Content-Type"), "multipart/") {
-				r.Body = http.MaxBytesReader(w, r.Body, n)
+			limit := n
+			if c, ok := uploads[r.URL.Path]; ok && r.Method == http.MethodPost {
+				limit = c
 			}
+			r.Body = http.MaxBytesReader(w, r.Body, limit)
 			next.ServeHTTP(w, r)
 		})
 	}
+}
+
+// incrWindow bumps a counter and makes sure it carries a TTL, in one round
+// trip. EXPIRE ... NX only sets the TTL when the key has none, so a lost
+// EXPIRE (or a crash between the two commands) can't leave an immortal
+// counter behind. Requires Redis >= 7.0.
+func incrWindow(ctx context.Context, rdb *redis.Client, key string, ttl time.Duration) (int64, error) {
+	pipe := rdb.Pipeline()
+	incr := pipe.Incr(ctx, key)
+	pipe.ExpireNX(ctx, key, ttl)
+	if _, err := pipe.Exec(ctx); err != nil {
+		return 0, err
+	}
+	return incr.Val(), nil
 }
 
 // LimitByIP is a fixed-window per-IP limiter for unauthenticated routes
@@ -129,14 +150,11 @@ func (rl *RateLimiter) LimitByIP(bucket string, perMinute int) func(http.Handler
 			window := time.Now().Unix() / 60
 			key := fmt.Sprintf("ratelimit:ip:%s:%s:%d", bucket, ClientIP(r), window)
 			ctx := r.Context()
-			count, err := rl.rdb.Incr(ctx, key).Result()
+			count, err := incrWindow(ctx, rl.rdb, key, 60*time.Second)
 			if err != nil {
 				// Redis down: fail open rather than lock everyone out.
 				next.ServeHTTP(w, r)
 				return
-			}
-			if count == 1 {
-				rl.rdb.Expire(ctx, key, 60*time.Second)
 			}
 			if int(count) > perMinute {
 				w.Header().Set("Retry-After", strconv.FormatInt((window+1)*60-time.Now().Unix(), 10))
@@ -218,9 +236,7 @@ func (rl *RateLimiter) LoginLockout(maxFailures int, window time.Duration) func(
 			next.ServeHTTP(rec, r)
 			switch {
 			case rec.status == http.StatusUnauthorized:
-				if n, err := rl.rdb.Incr(ctx, key).Result(); err == nil && n == 1 {
-					rl.rdb.Expire(ctx, key, window)
-				}
+				_, _ = incrWindow(ctx, rl.rdb, key, window)
 			case rec.status < 300:
 				rl.rdb.Del(ctx, key)
 			}

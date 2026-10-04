@@ -114,8 +114,10 @@ func (r *HashtagRepository) ListPopular(ctx context.Context, viewerID uuid.UUID,
 		 FROM hashtags h
 		 JOIN post_hashtags ph ON ph.hashtag_id = h.id
 		 JOIN posts p ON p.id = ph.post_id
+		 JOIN users u ON u.id = p.author_id
 		 JOIN space_members m ON m.space_id = p.space_id
 		   AND m.user_id = $1 AND m.status = 'approved'
+		 WHERE `+visibleContentSQL("p", "u", "$1")+`
 		 GROUP BY h.id
 		 ORDER BY use_count DESC, h.name ASC
 		 LIMIT $2`, viewerID, limit,

@@ -1,7 +1,6 @@
 package numerology
 
 import (
-	"strings"
 	"unicode"
 )
 
@@ -9,7 +8,7 @@ import (
 // of the full name. These are the "lessons" the soul came to learn this life.
 func KarmicLessons(fullName string) []int {
 	present := make(map[int]bool, 9)
-	for _, r := range strings.ToUpper(fullName) {
+	for _, r := range upperName(fullName) {
 		if !unicode.IsLetter(r) {
 			continue
 		}
@@ -31,7 +30,7 @@ func KarmicLessons(fullName string) []int {
 // name is empty.
 func HiddenPassion(fullName string) int {
 	count := make(map[int]int, 9)
-	for _, r := range strings.ToUpper(fullName) {
+	for _, r := range upperName(fullName) {
 		if !unicode.IsLetter(r) {
 			continue
 		}

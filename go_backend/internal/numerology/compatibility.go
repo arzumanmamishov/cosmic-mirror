@@ -65,23 +65,14 @@ func reduceMaster(v int) int {
 }
 
 // Compatibility weights Life Path 50 %, Expression 30 %, Soul Urge 20 %.
-func Compatibility(aLife, aExpr, aSoul, bLife, bExpr, bSoul Number) CompatibilityReport {
+// The summary sentence is written in the requested language ("en" or "tr").
+func Compatibility(lang string, aLife, aExpr, aSoul, bLife, bExpr, bSoul Number) CompatibilityReport {
 	lp := compatScore(aLife.Value, bLife.Value)
 	ex := compatScore(aExpr.Value, bExpr.Value)
 	su := compatScore(aSoul.Value, bSoul.Value)
 	total := (lp*50 + ex*30 + su*20) / 100
 
-	summary := ""
-	switch {
-	case total >= 85:
-		summary = "Strong, mutually-supportive resonance."
-	case total >= 70:
-		summary = "Good chemistry with healthy growth-edges."
-	case total >= 55:
-		summary = "Workable; differences sharpen each other."
-	default:
-		summary = "Significant differences — conscious effort needed."
-	}
+	summary := CompatibilitySummary(lang, total)
 
 	return CompatibilityReport{
 		Score:           total,
@@ -90,4 +81,42 @@ func Compatibility(aLife, aExpr, aSoul, bLife, bExpr, bSoul Number) Compatibilit
 		SoulUrgeScore:   su,
 		Summary:         summary,
 	}
+}
+
+// compatTier maps a total score to its summary tier (0 = strongest).
+func compatTier(total int) int {
+	switch {
+	case total >= 85:
+		return 0
+	case total >= 70:
+		return 1
+	case total >= 55:
+		return 2
+	default:
+		return 3
+	}
+}
+
+var compatSummaries = [4]string{
+	"Strong, mutually-supportive resonance.",
+	"Good chemistry with healthy growth-edges.",
+	"Workable; differences sharpen each other.",
+	"Significant differences — conscious effort needed.",
+}
+
+var compatSummariesTR = [4]string{
+	"Güçlü, birbirini besleyen bir rezonans.",
+	"Sağlıklı büyüme alanları olan güzel bir uyum.",
+	"Yürüyebilir bir bağ; farklılıklarınız birbirinizi bileyler.",
+	"Belirgin farklılıklar var — bilinçli bir çaba gerekiyor.",
+}
+
+// CompatibilitySummary returns the one-line summary for a total score in the
+// requested language, falling back to English.
+func CompatibilitySummary(lang string, total int) string {
+	tier := compatTier(total)
+	if lang == "tr" && compatSummariesTR[tier] != "" {
+		return compatSummariesTR[tier]
+	}
+	return compatSummaries[tier]
 }

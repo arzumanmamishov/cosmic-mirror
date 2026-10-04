@@ -16,13 +16,14 @@ package handler
 
 import (
 	"context"
-	"cosmic-mirror/internal/middleware"
 	"encoding/json"
 	"errors"
 	"net/http"
 	"net/mail"
 	"strings"
+	"unicode/utf8"
 
+	"cosmic-mirror/internal/middleware"
 	"cosmic-mirror/internal/otp"
 	"cosmic-mirror/internal/service"
 )
@@ -102,7 +103,11 @@ func (h *AuthHandler) RequestOTP(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		if errors.Is(err, service.ErrOTPRateLimited) {
 			respondError(w, http.StatusTooManyRequests, "rate_limited",
-				"Too many code requests for this email. Try again in a few minutes.")
+				"Too many code requests for this email. Please try again later.")
+			return
+		}
+		if errors.Is(err, service.ErrOTPLocked) {
+			respondOTPLocked(w)
 			return
 		}
 		if errors.Is(err, service.ErrAuthUserNotFound) {
@@ -112,7 +117,7 @@ func (h *AuthHandler) RequestOTP(w http.ResponseWriter, r *http.Request) {
 				"No account with that email. Please sign up.")
 			return
 		}
-		respondError(w, http.StatusInternalServerError, "otp_request_failed", err.Error())
+		respondServiceError(w, http.StatusInternalServerError, "otp_request_failed", err)
 		return
 	}
 	respondSuccess(w, map[string]any{
@@ -144,8 +149,17 @@ func (h *AuthHandler) Register(w http.ResponseWriter, r *http.Request) {
 			"Password must be at most 72 characters")
 		return
 	}
+	// Validate everything BEFORE RegisterVerify: it consumes the OTP, so a
+	// later DB rejection (users.name is VARCHAR(100)) would burn the code
+	// and return a 500. Same 80-char cap as PUT /users/me.
+	name := strings.TrimSpace(in.Name)
+	if utf8.RuneCountInString(name) > maxNameRunes {
+		respondError(w, http.StatusBadRequest, "invalid_name",
+			"Name must be at most 80 characters")
+		return
+	}
 	sess, err := h.auth.RegisterVerify(r.Context(),
-		in.Email, in.Code, strings.TrimSpace(in.Name), in.Password,
+		in.Email, in.Code, name, in.Password,
 		clientIP(r), r.UserAgent(),
 	)
 	if err != nil {
@@ -174,7 +188,7 @@ func (h *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 				"Email or password is incorrect")
 			return
 		}
-		respondError(w, http.StatusInternalServerError, "login_failed", err.Error())
+		respondServiceError(w, http.StatusInternalServerError, "login_failed", err)
 		return
 	}
 	h.respondSession(r.Context(), w, http.StatusOK, sess)
@@ -232,7 +246,7 @@ func (h *AuthHandler) Refresh(w http.ResponseWriter, r *http.Request) {
 			respondError(w, http.StatusUnauthorized, "invalid_refresh", "Refresh token is invalid or expired")
 			return
 		}
-		respondError(w, http.StatusInternalServerError, "refresh_failed", err.Error())
+		respondServiceError(w, http.StatusInternalServerError, "refresh_failed", err)
 		return
 	}
 	h.respondSession(r.Context(), w, http.StatusOK, sess)
@@ -313,14 +327,27 @@ func (h *AuthHandler) writeAuthError(w http.ResponseWriter, err error) {
 	case errors.Is(err, service.ErrOTPInvalid),
 		errors.Is(err, service.ErrAuthInvalidCredentials):
 		respondError(w, http.StatusBadRequest, "invalid_code", "Invalid or expired code")
+	case errors.Is(err, service.ErrOTPLocked):
+		respondOTPLocked(w)
 	case errors.Is(err, service.ErrAuthEmailInUse):
 		respondError(w, http.StatusConflict, "email_in_use", "That email is already registered")
 	case errors.Is(err, service.ErrAuthUserNotFound):
 		respondError(w, http.StatusNotFound, "user_not_found", "No account for that email")
 	default:
-		respondError(w, http.StatusInternalServerError, "auth_error", err.Error())
+		respondServiceError(w, http.StatusInternalServerError, "auth_error", err)
 	}
 }
+
+// respondOTPLocked is the 429 for an email whose code verification is
+// locked after too many failed guesses. Same status + code as the
+// password LoginLockout so the app handles both the same way.
+func respondOTPLocked(w http.ResponseWriter) {
+	respondError(w, http.StatusTooManyRequests, "account_locked",
+		"Too many failed attempts. Please try again later.")
+}
+
+// maxNameRunes matches the display-name cap in UserHandler.UpdateMe.
+const maxNameRunes = 80
 
 // clientIP is the address resolved by middleware.RealIP, which only
 // honours forwarding headers from trusted proxies.

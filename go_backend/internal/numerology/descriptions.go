@@ -1,44 +1,47 @@
 package numerology
 
-// Description returns a short canned meaning for a given number context.
+// Description returns a short canned meaning for a given number context in
+// the requested language ("en" or "tr"; anything else is treated as "en").
 // `kind` is one of "life_path", "expression", "soul_urge", "personality",
 // "maturity", "birthday", "personal_year", "personal_month", "personal_day".
 //
 // Master numbers and karmic-debt numbers get distinct descriptions where
-// they apply.
-func Description(kind string, n Number) string {
-	if n.IsMaster {
-		switch n.Value {
-		case 11:
-			return "Master 11: spiritual messenger; inspiration meets intuition. Light up others by living your truth."
-		case 22:
-			return "Master 22: master builder; large-scale visions made tangible. Practical idealism."
-		case 33:
-			return "Master 33: master teacher; selfless service through compassion and creative communication."
+// they apply. A missing Turkish entry falls back to English.
+func Description(lang string, kind string, n Number) string {
+	if lang == "tr" {
+		if t := descriptionFrom(masterDescTR, descTablesTR, kind, n); t != "" {
+			return t
 		}
 	}
+	return descriptionFrom(masterDesc, descTables, kind, n)
+}
 
-	switch kind {
-	case "life_path":
-		return lifePathDesc[n.Value]
-	case "expression":
-		return expressionDesc[n.Value]
-	case "soul_urge":
-		return soulUrgeDesc[n.Value]
-	case "personality":
-		return personalityDesc[n.Value]
-	case "maturity":
-		return maturityDesc[n.Value]
-	case "birthday":
-		return birthdayDesc[n.Value]
-	case "personal_year":
-		return personalYearDesc[n.Value]
-	case "personal_month":
-		return personalMonthDesc[n.Value]
-	case "personal_day":
-		return personalDayDesc[n.Value]
+func descriptionFrom(masters map[int]string, tables map[string]map[int]string, kind string, n Number) string {
+	if n.IsMaster {
+		if t, ok := masters[n.Value]; ok {
+			return t
+		}
 	}
-	return ""
+	return tables[kind][n.Value]
+}
+
+var masterDesc = map[int]string{
+	11: "Master 11: spiritual messenger; inspiration meets intuition. Light up others by living your truth.",
+	22: "Master 22: master builder; large-scale visions made tangible. Practical idealism.",
+	33: "Master 33: master teacher; selfless service through compassion and creative communication.",
+}
+
+// descTables maps each description kind to its per-number English table.
+var descTables = map[string]map[int]string{
+	"life_path":      lifePathDesc,
+	"expression":     expressionDesc,
+	"soul_urge":      soulUrgeDesc,
+	"personality":    personalityDesc,
+	"maturity":       maturityDesc,
+	"birthday":       birthdayDesc,
+	"personal_year":  personalYearDesc,
+	"personal_month": personalMonthDesc,
+	"personal_day":   personalDayDesc,
 }
 
 var lifePathDesc = map[int]string{

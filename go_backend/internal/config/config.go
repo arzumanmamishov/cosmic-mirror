@@ -6,7 +6,9 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/joho/godotenv"
+	"github.com/redis/go-redis/v9"
 )
 
 type Config struct {
@@ -21,6 +23,11 @@ type Config struct {
 	EphemerisPath           string
 	UploadsDir              string
 	RevenueCatWebhookSecret string
+	// RevenueCatSecretAPIKey (sk_…) lets webhooks fetch the authoritative
+	// subscriber state from the RevenueCat REST API. Optional.
+	RevenueCatSecretAPIKey string
+	// RevenueCatEntitlementID is the entitlement that grants premium.
+	RevenueCatEntitlementID string
 	StripeSecretKey         string
 	StripePublishableKey    string
 	StripeWebhookSecret     string
@@ -54,6 +61,14 @@ type Config struct {
 
 	// MigrateOnStart applies pending SQL migrations at boot.
 	MigrateOnStart bool
+
+	// Community moderation (UGC safety). ModerationEmail receives one
+	// e-mail per new report; AdminEmails may use /api/v1/admin/*;
+	// ModerationAutoHideThreshold distinct open reports hide a post or
+	// comment (< 1 disables auto-hide).
+	ModerationEmail             string
+	AdminEmails                 []string
+	ModerationAutoHideThreshold int
 }
 
 func Load() (*Config, error) {
@@ -73,6 +88,8 @@ func Load() (*Config, error) {
 		EphemerisPath:           getEnv("EPHEMERIS_PATH", "./ephemeris"),
 		UploadsDir:              getEnv("UPLOADS_DIR", "/app/uploads"),
 		RevenueCatWebhookSecret: getEnv("REVENUECAT_WEBHOOK_SECRET", ""),
+		RevenueCatSecretAPIKey:  getEnv("REVENUECAT_SECRET_API_KEY", ""),
+		RevenueCatEntitlementID: getEnv("REVENUECAT_ENTITLEMENT_ID", "premium"),
 		StripeSecretKey:         getEnv("STRIPE_SECRET_KEY", ""),
 		StripePublishableKey:    getEnv("STRIPE_PUBLISHABLE_KEY", ""),
 		StripeWebhookSecret:     getEnv("STRIPE_WEBHOOK_SECRET", ""),
@@ -93,10 +110,29 @@ func Load() (*Config, error) {
 		JWTRefreshTTLDays:       getEnvInt("JWT_REFRESH_TTL_DAYS", 30),
 		TrustedProxies:          splitNonEmpty(getEnv("TRUSTED_PROXIES", "")),
 		MigrateOnStart:          getEnvBool("MIGRATE_ON_START", true),
+
+		// Community moderation (UGC safety).
+		ModerationEmail:             strings.TrimSpace(getEnv("MODERATION_EMAIL", "")),
+		AdminEmails:                 splitNonEmpty(strings.ToLower(getEnv("ADMIN_EMAILS", ""))),
+		ModerationAutoHideThreshold: getEnvInt("MODERATION_AUTOHIDE_THRESHOLD", 3),
 	}
 
 	if cfg.DatabaseURL == "" {
 		return nil, fmt.Errorf("DATABASE_URL is required")
+	}
+	// Parse both URLs up front so a password with URL-reserved characters
+	// (an `openssl rand -base64` secret contains / + =) fails at boot with
+	// a clear message instead of an opaque driver error. The parse errors
+	// are deliberately not echoed: they quote the URL, password included.
+	if _, err := pgconn.ParseConfig(cfg.DatabaseURL); err != nil {
+		return nil, fmt.Errorf("DATABASE_URL is not a valid connection string. " +
+			"If the password contains URL-reserved characters (/ + = @ : ? #), " +
+			"percent-encode it or regenerate it with `openssl rand -hex 32`")
+	}
+	if _, err := redis.ParseURL(cfg.RedisURL); err != nil {
+		return nil, fmt.Errorf("REDIS_URL is not a valid redis:// URL. " +
+			"If the password contains URL-reserved characters (/ + = @ : ? #), " +
+			"percent-encode it or regenerate it with `openssl rand -hex 32`")
 	}
 	if cfg.JWTSecret == "" {
 		// Dev fallback so a fresh clone doesn't refuse to boot — but any

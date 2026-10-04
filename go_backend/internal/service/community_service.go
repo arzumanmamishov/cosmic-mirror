@@ -12,6 +12,7 @@ import (
 	"cosmic-mirror/internal/repository/postgres"
 
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jmoiron/sqlx"
 )
 
@@ -105,6 +106,9 @@ func (s *CommunityService) CreateSpace(ctx context.Context, userID uuid.UUID, in
 		// Insert via the bare repo (it doesn't need the tx handle for the
 		// single-row insert; member insert needs tx for atomicity though).
 		if err := s.spaceRepo.Create(ctx, space); err != nil {
+			if mapped := mapSpaceWriteErr(err); mapped != err {
+				return mapped
+			}
 			return fmt.Errorf("create space: %w", err)
 		}
 		// The creator is always approved instantly — they're the owner.
@@ -126,7 +130,28 @@ func (s *CommunityService) UpdateSpace(ctx context.Context, id, userID uuid.UUID
 	if err := s.assertOwner(ctx, id, userID); err != nil {
 		return err
 	}
-	return s.spaceRepo.Update(ctx, id, input)
+	return mapSpaceWriteErr(s.spaceRepo.Update(ctx, id, input))
+}
+
+// mapSpaceWriteErr turns constraint violations from a spaces INSERT/UPDATE
+// into client errors. The handle pre-check in CreateSpace is racy — two
+// concurrent creates can both pass it, and the loser hits the UNIQUE
+// constraint (23505) — and an unknown category_id trips the FK (23503).
+// Anything else is returned unchanged.
+func mapSpaceWriteErr(err error) error {
+	var pgErr *pgconn.PgError
+	if err == nil || !errors.As(err, &pgErr) {
+		return err
+	}
+	switch pgErr.Code {
+	case "23505": // unique_violation — handle is the only unique column besides id
+		return ErrHandleTaken
+	case "23503": // foreign_key_violation
+		if strings.Contains(pgErr.ConstraintName, "category") {
+			return fmt.Errorf("%w: unknown category_id", domain.ErrValidation)
+		}
+	}
+	return err
 }
 
 func (s *CommunityService) DeleteSpace(ctx context.Context, id, userID uuid.UUID) error {
@@ -280,7 +305,7 @@ func (s *CommunityService) ListMembers(ctx context.Context, viewerID, spaceID uu
 			return nil, err
 		}
 	}
-	return s.memberRepo.ListBySpace(ctx, spaceID, limit, offset)
+	return s.memberRepo.ListBySpace(ctx, spaceID, viewerID, limit, offset)
 }
 
 func (s *CommunityService) ListCategories(ctx context.Context) ([]domain.SpaceCategory, error) {
@@ -299,6 +324,27 @@ func (s *CommunityService) GetUserCommunityProfile(ctx context.Context, currentU
 	}
 	if user == nil {
 		return nil, ErrUserNotFound
+	}
+	// Across a block (either direction) the profile is just a name: no
+	// spaces, no posts. is_blocked_by_me tells the app to offer Unblock.
+	if currentUserID != targetID {
+		blocked, err := postgres.IsBlockedEither(ctx, s.db, currentUserID, targetID)
+		if err != nil {
+			return nil, err
+		}
+		if blocked {
+			blockedByMe, err := postgres.HasBlocked(ctx, s.db, currentUserID, targetID)
+			if err != nil {
+				return nil, err
+			}
+			return &domain.UserCommunityProfile{
+				UserID:        user.ID,
+				Name:          user.Name,
+				IsBlockedByMe: blockedByMe,
+				JoinedSpaces:  []domain.SpaceWithMeta{},
+				RecentPosts:   []domain.PostWithMeta{},
+			}, nil
+		}
 	}
 	spaces, err := s.spaceRepo.ListByMember(ctx, targetID, currentUserID, 50, 0)
 	if err != nil {

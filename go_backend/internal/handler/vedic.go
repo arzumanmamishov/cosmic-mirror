@@ -24,7 +24,7 @@ func (h *VedicHandler) GetChart(w http.ResponseWriter, r *http.Request) {
 	ayanamsa := r.URL.Query().Get("ayanamsa")
 	chart, err := h.vedicSvc.GetVedicChart(r.Context(), userID, ayanamsa)
 	if err != nil {
-		respondError(w, http.StatusInternalServerError, "vedic_chart_error", err.Error())
+		respondServiceError(w, http.StatusInternalServerError, "vedic_chart_error", err)
 		return
 	}
 	respondSuccess(w, chart)
@@ -44,7 +44,7 @@ func (h *VedicHandler) GetDivisionalChart(w http.ResponseWriter, r *http.Request
 	}
 	chart, err := h.vedicSvc.GetDivisionalChart(r.Context(), userID, ayanamsa, divisor)
 	if err != nil {
-		respondError(w, http.StatusInternalServerError, "vedic_varga_error", err.Error())
+		respondServiceError(w, http.StatusInternalServerError, "vedic_varga_error", err)
 		return
 	}
 	respondSuccess(w, chart)
@@ -62,7 +62,7 @@ func (h *VedicHandler) GetDasha(w http.ResponseWriter, r *http.Request) {
 	}
 	tree, err := h.vedicSvc.GetDasha(r.Context(), userID, ayanamsa, levels)
 	if err != nil {
-		respondError(w, http.StatusInternalServerError, "vedic_dasha_error", err.Error())
+		respondServiceError(w, http.StatusInternalServerError, "vedic_dasha_error", err)
 		return
 	}
 	respondSuccess(w, tree)
@@ -74,7 +74,7 @@ func (h *VedicHandler) GetYogas(w http.ResponseWriter, r *http.Request) {
 	ayanamsa := r.URL.Query().Get("ayanamsa")
 	yogas, err := h.vedicSvc.GetYogas(r.Context(), userID, ayanamsa)
 	if err != nil {
-		respondError(w, http.StatusInternalServerError, "vedic_yogas_error", err.Error())
+		respondServiceError(w, http.StatusInternalServerError, "vedic_yogas_error", err)
 		return
 	}
 	respondSuccess(w, map[string]any{"yogas": yogas})
@@ -86,7 +86,7 @@ func (h *VedicHandler) GetShadbala(w http.ResponseWriter, r *http.Request) {
 	ayanamsa := r.URL.Query().Get("ayanamsa")
 	bala, err := h.vedicSvc.GetShadbala(r.Context(), userID, ayanamsa)
 	if err != nil {
-		respondError(w, http.StatusInternalServerError, "vedic_shadbala_error", err.Error())
+		respondServiceError(w, http.StatusInternalServerError, "vedic_shadbala_error", err)
 		return
 	}
 	respondSuccess(w, map[string]any{"shadbala": bala})
@@ -98,7 +98,7 @@ func (h *VedicHandler) GetAshtakavarga(w http.ResponseWriter, r *http.Request) {
 	ayanamsa := r.URL.Query().Get("ayanamsa")
 	av, err := h.vedicSvc.GetAshtakavarga(r.Context(), userID, ayanamsa)
 	if err != nil {
-		respondError(w, http.StatusInternalServerError, "vedic_ashtakavarga_error", err.Error())
+		respondServiceError(w, http.StatusInternalServerError, "vedic_ashtakavarga_error", err)
 		return
 	}
 	respondSuccess(w, av)

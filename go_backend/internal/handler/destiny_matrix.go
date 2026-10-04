@@ -27,7 +27,7 @@ func (h *DestinyMatrixHandler) GetReading(w http.ResponseWriter, r *http.Request
 				"Set your birth profile first to get a destiny matrix reading.")
 			return
 		}
-		respondError(w, http.StatusInternalServerError, "destiny_matrix_error", err.Error())
+		respondServiceError(w, http.StatusInternalServerError, "destiny_matrix_error", err)
 		return
 	}
 	respondSuccess(w, reading)

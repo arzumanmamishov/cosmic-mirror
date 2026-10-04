@@ -5,6 +5,14 @@
 #
 # Only Caddy publishes ports. Postgres, Redis and the API are reachable
 # solely on the private "backend" network.
+#
+# POSTGRES_PASSWORD / REDIS_PASSWORD are pasted into the DATABASE_URL /
+# REDIS_URL below without escaping, so generate them with
+# `openssl rand -hex 32` (URL-safe). The API refuses to boot with a clear
+# error if either URL doesn't parse.
+#
+# Images are pinned so a rebuild never silently changes a major/minor
+# version. Bump the tags deliberately (and read the release notes).
 
 x-logging: &logging
   driver: json-file
@@ -14,7 +22,7 @@ x-logging: &logging
 
 services:
   caddy:
-    image: caddy:2-alpine
+    image: caddy:2.8-alpine
     restart: unless-stopped
     ports:
       - "80:80"
@@ -37,6 +45,9 @@ services:
     build: .
     image: cosmic-mirror-api:latest
     restart: unless-stopped
+    # The server drains in-flight requests and workers for up to ~60s on
+    # SIGTERM; give it that long before Docker sends SIGKILL.
+    stop_grace_period: 100s  # > shutdownGrace (90s) in cmd/server/main.go
     env_file:
       - .env.production
     environment:
@@ -59,7 +70,7 @@ services:
     logging: *logging
 
   postgres:
-    image: postgres:15-alpine
+    image: postgres:15.8-alpine
     restart: unless-stopped
     environment:
       POSTGRES_USER: cosmic
@@ -76,7 +87,7 @@ services:
     logging: *logging
 
   redis:
-    image: redis:7-alpine
+    image: redis:7.4-alpine
     restart: unless-stopped
     command:
       - redis-server
@@ -86,6 +97,11 @@ services:
       - "yes"
       - --maxmemory
       - 256mb
+      # Every key the API writes has a TTL (caches: 1-30 days; rate-limit,
+      # login-lockout and AI-usage counters: 60s-48h), so volatile-lru
+      # would evict exactly the same set as allkeys-lru. LRU keeps the hot,
+      # short-lived security counters and evicts stale chart caches first.
+      # OTP brute-force limits live in Postgres, not here.
       - --maxmemory-policy
       - allkeys-lru
     volumes:

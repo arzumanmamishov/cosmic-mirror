@@ -130,40 +130,61 @@ Do not misuse the app: no unlawful, harmful, harassing, or infringing activity;
 no attempts to break security, scrape, reverse engineer, or disrupt the service;
 no automated abuse of the AI features.
 
-6. USER CONTENT
-You retain ownership of content you create (journal entries, messages, saved
-people). You grant us a limited licence to process it solely to provide the
-service to you, as described in the Privacy Policy.
+6. COMMUNITY CONDUCT — ZERO TOLERANCE
+The Community (spaces, posts, comments, and profiles) is for respectful
+conversation. We have ZERO TOLERANCE for objectionable content or abusive
+users. You must not post or send content that is hateful or discriminatory;
+harassing, bullying, or threatening; sexually explicit, or that sexualizes
+minors in any way; violent or that promotes self-harm; spam, scams, or
+deliberately misleading; or illegal or infringing on anyone's rights.
+• Report: every post, comment, space, and profile has a "Report" option. Our
+  team reviews reports within 24 hours. Content reported by several people may
+  be hidden automatically while it is reviewed.
+• Block: you can block any user from their profile or from their posts and
+  comments. You and a blocked user will no longer see each other's posts,
+  comments, or activity, and they cannot comment on or like your posts. You
+  can unblock people anytime in Settings → Blocked users.
+• Enforcement: we remove content that breaks these rules and suspend or
+  permanently ban accounts responsible, without notice where appropriate.
+  Space owners and moderators may also remove comments in their spaces.
+To report a concern directly, email support@livelyapp.co.
 
-7. INTELLECTUAL PROPERTY
+7. USER CONTENT
+You retain ownership of content you create (journal entries, messages, saved
+people, community posts and comments). You grant us a limited licence to
+process it solely to provide the service to you, as described in the Privacy
+Policy, and — for community content — to display it to other users and to
+review, hide, or remove it under section 6.
+
+8. INTELLECTUAL PROPERTY
 The app, its design, and generated content templates are owned by us or our
 licensors and are protected by law. We grant you a personal, non-transferable,
 revocable licence to use the app.
 
-8. DISCLAIMERS
+9. DISCLAIMERS
 The app is provided "as is" and "as available" without warranties of any kind
 to the fullest extent permitted by law. We do not warrant that content is
 accurate or that the service will be uninterrupted or error-free.
 
-9. LIMITATION OF LIABILITY
+10. LIMITATION OF LIABILITY
 To the maximum extent permitted by law, we are not liable for indirect,
 incidental, special, consequential, or punitive damages, or for any loss
 arising from your reliance on astrology or AI content. Nothing limits liability
 that cannot be limited by law.
 
-10. TERMINATION
+11. TERMINATION
 You may stop using the app and delete your account at any time. We may suspend
 or terminate access for breach of these Terms or to comply with law.
 
-11. GOVERNING LAW
+12. GOVERNING LAW
 These Terms are governed by the laws of [Jurisdiction], without regard to its
 conflict-of-laws rules, subject to any mandatory consumer protections in your
 country of residence.
 
-12. CHANGES
+13. CHANGES
 We may update these Terms; we will revise the version and effective date above
 and, for material changes, notify you in the app. Continued use means you accept
 the updated Terms.
 
-13. CONTACT
+14. CONTACT
 [Company Legal Entity] · support@livelyapp.co · https://livelyapp.co/terms`

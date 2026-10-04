@@ -481,3 +481,50 @@ func (c *Client) ComputeYogas(chart *domain.VedicChart) []domain.VedicYoga {
 	}
 	return out
 }
+
+// ===== Localization =====
+//
+// Yoga names and Sanskrit labels are proper names and stay transliterated;
+// Category is a stable key the client maps to its own labels, so it is never
+// translated. Only Description is localized, keyed by the rule's Name.
+
+func mahapurushaTR(planet string) string {
+	return "Büyük şahsiyet yogası: " + planet +
+		" kendi ya da yücelim burcunda bir kendrada (1, 4, 7, 10) yer aldığında oluşur."
+}
+
+var yogaDescriptionTR = map[string]string{
+	"Ruchaka":            mahapurushaTR("Mars"),
+	"Bhadra":             mahapurushaTR("Merkür"),
+	"Hamsa":              mahapurushaTR("Jüpiter"),
+	"Malavya":            mahapurushaTR("Venüs"),
+	"Sasa":               mahapurushaTR("Satürn"),
+	"Gajakesari":         "Ay ve Jüpiter karşılıklı kendrada (birbirine göre 1, 4, 7 ya da 10. evde) — şöhret, zekâ ve bereketli bir talih bahşeder.",
+	"Budh-Aditya":        "Güneş ve Merkür aynı burçta kavuşum halinde (ve ideal olarak yanmaya fazla yakın değil) — keskin bir zekâ ve güçlü bir iletişim.",
+	"Chandra-Mangala":    "Ay ve Mars aynı burçta kavuşum halinde — kendi emeğinle gelen bolluk, ama maddi konularda olası dalgalanmalar.",
+	"Kemadruma":          "Ay'ın iki yanındaki evlerde (Güneş, Rahu ve Ketu hariç) hiç gezegen yok — zihinsel huzur ve maddi destek konusunda sınavlar; Ay Lagna'dan bir kendradaysa ya da bakış alıyorsa bozulur.",
+	"Kala Sarpa":         "Yedi geleneksel gezegenin tamamı Rahu-Ketu ekseninin tek bir yanında — karmik bir yoğunluk ve hayatında belirli temalar etrafında toplanan bir enerji.",
+	"Saraswati":          "Merkür, Jüpiter ve Venüs'ün üçü de Lagna'dan kendra, trikona ya da 2. evde — olağanüstü bir öğrenme yeteneği, güzel söz ve sanat.",
+	"Lakshmi":            "9. evin yöneticisi kendi ya da yücelim burcunda bir kendra/trikonada VE Venüs iyi konumda — zenginlik, güzellik ve bolluk.",
+	"Raja Yoga":          "Bir kendranın (1, 4, 7, 10) yöneticisi ile bir trikonanın (1, 5, 9) yöneticisi kavuşum ya da karşılıklı bakışla bağlı — otorite, başarı ve itibar bahşeder.",
+	"Dhana Yoga":         "2. ve 11. evlerin yöneticileri birbirine bağlı (kavuşum ya da karşılıklı bakış) — servet birikimi ve kazanç.",
+	"Vipreeta Raja":      "Bir dushtananın (6, 8 ya da 12) yöneticisi başka bir dushtanada — mücadelenin ardından gelen paradoksal bir yükseliş, zorlukların içinden doğan başarı.",
+	"Neecha Bhanga Raja": "Düşüşteki bir gezegenin zayıflığı ortadan kalkıyor (örneğin düşüş burcunun yöneticisi Lagna'dan bir kendrada) — zorluk yükselişe dönüşür.",
+}
+
+// LocalizeYogas returns yogas with descriptions rendered in lang ("tr";
+// anything else returns the input unchanged). The input slice is not
+// mutated. Missing Turkish entries fall back to English.
+func LocalizeYogas(lang string, yogas []domain.VedicYoga) []domain.VedicYoga {
+	if lang != "tr" {
+		return yogas
+	}
+	out := make([]domain.VedicYoga, len(yogas))
+	for i, y := range yogas {
+		if t := yogaDescriptionTR[y.Name]; t != "" {
+			y.Description = t
+		}
+		out[i] = y
+	}
+	return out
+}

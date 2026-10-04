@@ -6,6 +6,7 @@ import (
 	"cosmic-mirror/migrations"
 	"fmt"
 	"log/slog"
+	"math/rand/v2"
 	"net/http"
 	"os"
 	"os/signal"
@@ -142,8 +143,10 @@ func main() {
 	readingSvc := service.NewReadingService(readingRepo, birthProfileRepo, openaiClient, rdb)
 	aiSvc := service.NewAIService(chatRepo, birthProfileRepo, userRepo, openaiClient, cfg.FreeTierChatLimit).
 		WithUsageCounter(rdb)
-	compatibilitySvc := service.NewCompatibilityService(compatibilityRepo, savedPeopleRepo, birthProfileRepo, openaiClient)
-	subscriptionSvc := service.NewSubscriptionService(subscriptionRepo, cfg.RevenueCatWebhookSecret)
+	subscriptionSvc := service.NewSubscriptionService(subscriptionRepo, cfg.RevenueCatWebhookSecret).
+		WithRevenueCatAPI(cfg.RevenueCatSecretAPIKey, cfg.RevenueCatEntitlementID)
+	compatibilitySvc := service.NewCompatibilityService(compatibilityRepo, savedPeopleRepo, birthProfileRepo, openaiClient).
+		WithFreeDailyLimit(rdb, freeCompatibilityDailyLimit, subscriptionSvc.IsPremium)
 	stripeSvc := service.NewStripeService(
 		subscriptionRepo,
 		userSvc,
@@ -153,12 +156,25 @@ func main() {
 		cfg.StripePriceMonthly,
 		cfg.StripePriceYearly,
 	)
+	// Account deletion cancels the Stripe subscription and revokes every
+	// session (wired after the fact: StripeService depends on UserService).
+	userSvc.WithAccountDeletion(refreshTokenRepo, stripeSvc)
 	// Community
 	communityNotifSvc := service.NewCommunityNotificationService(communityNotifRepo)
 	communitySvc := service.NewCommunityService(db, spaceRepo, spaceMemberRepo, spaceCategoryRepo, postRepo, userRepo, communityNotifSvc)
-	postSvc := service.NewPostService(db, postRepo, spaceRepo, spaceMemberRepo, hashtagRepo, communityNotifSvc)
+	postSvc := service.NewPostService(db, postRepo, spaceRepo, spaceMemberRepo, hashtagRepo, communityNotifRepo)
 	commentSvc := service.NewCommentService(db, commentRepo, postRepo, spaceMemberRepo, communityNotifSvc)
 	likeSvc := service.NewLikeService(db, likeRepo, postRepo, commentRepo, spaceMemberRepo, communityNotifSvc)
+	// Community safety: reports, blocks, auto-hide, admin moderation.
+	moderationSvc := service.NewModerationService(db, postgres.NewModerationRepository(db),
+		postRepo, commentRepo, spaceRepo, hashtagRepo, userRepo, refreshTokenRepo, mail,
+		service.ModerationConfig{
+			Email:             cfg.ModerationEmail,
+			AutoHideThreshold: cfg.ModerationAutoHideThreshold,
+		})
+	if cfg.ModerationEmail == "" && !cfg.IsDev() {
+		slog.Warn("MODERATION_EMAIL is empty — new content reports will not be e-mailed to anyone")
+	}
 	// Numerology + Human Design
 	numerologySvc := service.NewNumerologyService(userRepo, birthProfileRepo)
 	humanDesignSvc := service.NewHumanDesignService(birthProfileRepo, chartProvider, rdb)
@@ -181,13 +197,14 @@ func main() {
 		Subscription:  handler.NewSubscriptionHandler(subscriptionSvc),
 		Stripe:        handler.NewStripeHandler(stripeSvc),
 		Journal:       handler.NewJournalHandler(journalRepo),
-		Places:        handler.NewPlacesHandler(),
+		Places:        handler.NewPlacesHandler().WithRedis(rdb),
 		// Community / Spaces forum
 		Spaces:                 handler.NewSpacesHandler(communitySvc),
 		Posts:                  handler.NewPostsHandler(postSvc, likeSvc),
 		Comments:               handler.NewCommentsHandler(commentSvc, likeSvc),
 		CommunityNotifications: handler.NewCommunityNotificationsHandler(communityNotifSvc),
 		Discovery:              handler.NewDiscoveryHandler(communitySvc, hashtagRepo),
+		Moderation:             handler.NewModerationHandler(moderationSvc),
 		// Numerology + Human Design
 		Numerology:    handler.NewNumerologyHandler(numerologySvc),
 		HumanDesign:   handler.NewHumanDesignHandler(humanDesignSvc),
@@ -195,17 +212,20 @@ func main() {
 		DestinyMatrix: handler.NewDestinyMatrixHandler(destinyMatrixSvc),
 	}
 
-	// Background workers — scheduled on simple interval tickers, tied to a
-	// context cancelled on shutdown. Daily readings are also generated
-	// lazily on request, so these are best-effort pre-generation/dispatch.
+	// Background workers — each runs once shortly after startup (so a
+	// deploy/restart doesn't postpone daily jobs by a full interval), then
+	// on an interval ticker, tied to a context cancelled on shutdown. The
+	// start delays are staggered + jittered so the jobs don't all hit the
+	// DB at boot, nor in lockstep across replicas. Daily readings are also
+	// generated lazily on request, so these are best-effort.
 	workerCtx, stopWorkers := context.WithCancel(context.Background())
 	defer stopWorkers()
 	dailyReadingsWorker := worker.NewDailyReadingsWorker(db, readingSvc)
 	notificationsWorker := worker.NewNotificationsWorker(db)
-	cleanupWorker := worker.NewCleanupWorker(db, rdb)
-	scheduleWorker(workerCtx, "daily_readings", 24*time.Hour, dailyReadingsWorker.Run)
-	scheduleWorker(workerCtx, "notifications", 15*time.Minute, notificationsWorker.Run)
-	scheduleWorker(workerCtx, "cleanup", 24*time.Hour, cleanupWorker.Run)
+	cleanupWorker := worker.NewCleanupWorker(db, rdb, avatarStore)
+	scheduleWorker(workerCtx, "notifications", 30*time.Second, 15*time.Minute, notificationsWorker.Run)
+	scheduleWorker(workerCtx, "cleanup", 2*time.Minute, 24*time.Hour, cleanupWorker.Run)
+	scheduleWorker(workerCtx, "daily_readings", 5*time.Minute, 24*time.Hour, dailyReadingsWorker.Run)
 
 	// Router
 	router := server.NewRouter(handlers, authMiddleware, rateLimiter, cfg,
@@ -219,13 +239,24 @@ func main() {
 			return nil
 		})
 
-	// Server
+	// Server. Timeout budget (keep these consistent):
+	//   - an LLM call is capped at openai.RequestBudget (75s total; 40s per
+	//     attempt, retries + backoff only while budget remains);
+	//   - WriteTimeout (90s) leaves ~15s on top of that for the handler's
+	//     DB work and writing the response — at 30s the server used to cut
+	//     the connection while gpt-4o was still answering;
+	//   - shutdownGrace (90s) ≥ WriteTimeout, so a deploy lets every
+	//     in-flight request (including a slow LLM call) finish. The
+	//     container's stop grace period (docker stop_grace_period /
+	//     k8s terminationGracePeriodSeconds) must be ≥ ~95s for this to
+	//     take effect.
 	srv := &http.Server{
-		Addr:         fmt.Sprintf(":%s", cfg.Port),
-		Handler:      router,
-		ReadTimeout:  15 * time.Second,
-		WriteTimeout: 30 * time.Second,
-		IdleTimeout:  60 * time.Second,
+		Addr:              fmt.Sprintf(":%s", cfg.Port),
+		Handler:           router,
+		ReadHeaderTimeout: 10 * time.Second,
+		ReadTimeout:       15 * time.Second,
+		WriteTimeout:      openai.RequestBudget + 15*time.Second,
+		IdleTimeout:       60 * time.Second,
 	}
 
 	// Graceful shutdown
@@ -242,7 +273,10 @@ func main() {
 	<-quit
 
 	slog.Info("shutting down server...")
-	shutdownCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	// Stop background workers first so they don't start new work (e.g.
+	// another LLM call in the daily-readings batch) while draining.
+	stopWorkers()
+	shutdownCtx, cancel := context.WithTimeout(context.Background(), srv.WriteTimeout)
 	defer cancel()
 
 	if err := srv.Shutdown(shutdownCtx); err != nil {
@@ -251,11 +285,36 @@ func main() {
 	slog.Info("server stopped")
 }
 
-// scheduleWorker runs fn on an interval ticker in its own goroutine until ctx
-// is cancelled. Errors are logged, not fatal — a failed run shouldn't stop
+// freeCompatibilityDailyLimit caps gpt-4o compatibility reports per UTC day
+// for non-premium users (reusing a report from the last hour is free).
+const freeCompatibilityDailyLimit = 3
+
+// scheduleWorker runs fn once after [initialDelay] (plus up to 30s of
+// random jitter), then every [interval], in its own goroutine until ctx is
+// cancelled. Errors are logged, not fatal — a failed run shouldn't stop
 // future runs or the server.
-func scheduleWorker(ctx context.Context, name string, interval time.Duration, fn func(context.Context) error) {
+func scheduleWorker(ctx context.Context, name string, initialDelay, interval time.Duration, fn func(context.Context) error) {
+	run := func() {
+		start := time.Now()
+		if err := fn(ctx); err != nil {
+			if ctx.Err() != nil {
+				return // shutting down
+			}
+			slog.Error("worker run failed", "worker", name, "error", err,
+				"duration", time.Since(start).String())
+		}
+	}
 	go func() {
+		delay := initialDelay + time.Duration(rand.Int64N(int64(30*time.Second)))
+		timer := time.NewTimer(delay)
+		select {
+		case <-ctx.Done():
+			timer.Stop()
+			return
+		case <-timer.C:
+		}
+		run()
+
 		ticker := time.NewTicker(interval)
 		defer ticker.Stop()
 		for {
@@ -263,9 +322,7 @@ func scheduleWorker(ctx context.Context, name string, interval time.Duration, fn
 			case <-ctx.Done():
 				return
 			case <-ticker.C:
-				if err := fn(ctx); err != nil {
-					slog.Error("worker run failed", "worker", name, "error", err)
-				}
+				run()
 			}
 		}
 	}()

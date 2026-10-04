@@ -121,3 +121,18 @@ func (r *Repository) RecentCountForEmail(ctx context.Context, email string, wind
 	err := r.db.QueryRowxContext(ctx, q, email, window.Seconds()).Scan(&n)
 	return n, err
 }
+
+// FailedVerifyCount returns how many wrong guesses were made against codes
+// issued to [email] (any purpose) in the trailing [window]. Every verify
+// attempt bumps `attempts`, including the one that succeeds and consumes
+// the row, so failures = sum(attempts) - consumed rows. Kept in Postgres
+// (not Redis) so the lock can't be lost to a Redis eviction or restart.
+func (r *Repository) FailedVerifyCount(ctx context.Context, email string, window time.Duration) (int, error) {
+	const q = `
+SELECT COALESCE(SUM(attempts), 0) - COUNT(consumed_at)
+FROM email_otps
+WHERE email = $1 AND created_at > now() - make_interval(secs => $2)`
+	var n int
+	err := r.db.QueryRowxContext(ctx, q, email, window.Seconds()).Scan(&n)
+	return n, err
+}

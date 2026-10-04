@@ -8,7 +8,8 @@ import (
 )
 
 // letterValue maps each Latin letter to its Pythagorean digit.
-//   A=1, B=2, ..., I=9, J=1, ..., R=9, S=1, T=2, ..., Z=8.
+//
+//	A=1, B=2, ..., I=9, J=1, ..., R=9, S=1, T=2, ..., Z=8.
 //
 // Reduce-by-9 is the canonical Pythagorean assignment.
 var letterValue = map[rune]int{
@@ -27,6 +28,67 @@ var letterValue = map[rune]int{
 // implementation (a common modern Pythagorean convention).
 var vowels = map[rune]bool{
 	'A': true, 'E': true, 'I': true, 'O': true, 'U': true,
+}
+
+// letterFolds maps upper-case accented / non-English Latin letters to the
+// A–Z letter they're numbered as. Turkish (Ç Ğ İ I Ö Ş Ü — dotless ı
+// upper-cases to plain I) and Azerbaijani (Ə, which romanises to A as in
+// Məmmədov → Mammadov) come first, then common Western/Central European
+// accents. Without this, "Gökçe Şahin" silently lost ö, ç and ş and got
+// different numbers from "Gokce Sahin".
+var letterFolds = map[rune]rune{
+	// Turkish / Azerbaijani
+	'Ç': 'C', 'Ğ': 'G', 'İ': 'I', 'Ö': 'O', 'Ş': 'S', 'Ü': 'U', 'Ə': 'A',
+	// A
+	'À': 'A', 'Á': 'A', 'Â': 'A', 'Ã': 'A', 'Ä': 'A', 'Å': 'A', 'Ā': 'A', 'Ă': 'A', 'Ą': 'A',
+	// C D
+	'Ć': 'C', 'Ĉ': 'C', 'Ċ': 'C', 'Č': 'C', 'Ď': 'D', 'Đ': 'D', 'Ð': 'D',
+	// E
+	'È': 'E', 'É': 'E', 'Ê': 'E', 'Ë': 'E', 'Ē': 'E', 'Ĕ': 'E', 'Ė': 'E', 'Ę': 'E', 'Ě': 'E',
+	// G H
+	'Ĝ': 'G', 'Ġ': 'G', 'Ģ': 'G', 'Ĥ': 'H', 'Ħ': 'H',
+	// I J K
+	'Ì': 'I', 'Í': 'I', 'Î': 'I', 'Ï': 'I', 'Ĩ': 'I', 'Ī': 'I', 'Ĭ': 'I', 'Į': 'I', 'Ĵ': 'J', 'Ķ': 'K',
+	// L N
+	'Ĺ': 'L', 'Ļ': 'L', 'Ľ': 'L', 'Ŀ': 'L', 'Ł': 'L', 'Ñ': 'N', 'Ń': 'N', 'Ņ': 'N', 'Ň': 'N',
+	// O
+	'Ò': 'O', 'Ó': 'O', 'Ô': 'O', 'Õ': 'O', 'Ø': 'O', 'Ō': 'O', 'Ŏ': 'O', 'Ő': 'O',
+	// R S T
+	'Ŕ': 'R', 'Ŗ': 'R', 'Ř': 'R', 'Ś': 'S', 'Ŝ': 'S', 'Š': 'S', 'Ș': 'S',
+	'Ţ': 'T', 'Ť': 'T', 'Ŧ': 'T', 'Ț': 'T',
+	// U W Y Z
+	'Ù': 'U', 'Ú': 'U', 'Û': 'U', 'Ũ': 'U', 'Ū': 'U', 'Ŭ': 'U', 'Ů': 'U', 'Ű': 'U', 'Ų': 'U',
+	'Ŵ': 'W', 'Ý': 'Y', 'Ÿ': 'Y', 'Ŷ': 'Y', 'Ź': 'Z', 'Ż': 'Z', 'Ž': 'Z',
+}
+
+// Folded letters inherit the value and vowel-ness of their base letter, so
+// every lookup (including KarmicLessons / HiddenPassion) handles them.
+// Ö and Ü therefore count as vowels.
+func init() {
+	for folded, base := range letterFolds {
+		letterValue[folded] = letterValue[base]
+		if vowels[base] {
+			vowels[folded] = true
+		}
+	}
+}
+
+// ligatures are letters that romanise to two letters.
+var ligatures = strings.NewReplacer("ß", "SS", "ẞ", "SS", "Æ", "AE", "æ", "AE", "Œ", "OE", "œ", "OE")
+
+// turkicOnly are letters that only occur in Turkish / Azerbaijani names.
+// Their presence switches upper-casing to Turkish rules (i → İ), which
+// keeps the per-letter breakdown readable ("ŞAHİN", not "ŞAHIN"); values
+// are identical either way because İ and I both fold to I.
+const turkicOnly = "ğĞıİşŞəƏ"
+
+// upperName upper-cases a name for numerology, expanding ligatures.
+func upperName(s string) string {
+	s = ligatures.Replace(s)
+	if strings.ContainsAny(s, turkicOnly) {
+		return strings.ToUpperSpecial(unicode.TurkishCase, s)
+	}
+	return strings.ToUpper(s)
 }
 
 // Number is the result of any numerology calculation. RawSum is the value
@@ -93,7 +155,7 @@ func reduceFinal(n int) int {
 // Non-letters are ignored. The result is the unreduced sum.
 func sumLetters(s string, predicate func(rune) bool) int {
 	total := 0
-	for _, r := range strings.ToUpper(s) {
+	for _, r := range upperName(s) {
 		if !unicode.IsLetter(r) {
 			continue
 		}
@@ -110,7 +172,7 @@ func sumLetters(s string, predicate func(rune) bool) int {
 // allLetters predicate — every letter counts.
 func allLetters(rune) bool { return true }
 
-// onlyVowels predicate — only A/E/I/O/U.
+// onlyVowels predicate — only A/E/I/O/U (and their folded forms).
 func onlyVowels(r rune) bool { return vowels[r] }
 
 // onlyConsonants predicate — letters that are NOT vowels.
@@ -130,7 +192,7 @@ type LetterBreakdown struct {
 // spacing/word breaks by re-walking the input string.
 func LettersOf(fullName string) []LetterBreakdown {
 	out := make([]LetterBreakdown, 0, len(fullName))
-	for _, r := range strings.ToUpper(fullName) {
+	for _, r := range upperName(fullName) {
 		if !unicode.IsLetter(r) {
 			continue
 		}

@@ -6,6 +6,7 @@ import (
 
 	"cosmic-mirror/internal/destinymatrix"
 	"cosmic-mirror/internal/domain"
+	"cosmic-mirror/internal/middleware"
 	"cosmic-mirror/internal/repository"
 
 	"github.com/google/uuid"
@@ -31,15 +32,16 @@ func (s *DestinyMatrixService) GetReading(ctx context.Context, userID uuid.UUID)
 	}
 
 	res := destinymatrix.Compute(profile.BirthDate)
+	lang := middleware.LangFromContext(ctx)
 
 	points := make([]domain.DestinyPoint, 0, len(destinymatrix.PointDefs))
 	for _, pd := range destinymatrix.PointDefs {
 		value := res.Value(pd.Key)
-		name, meaning := destinymatrix.Arcana(value)
+		name, meaning := destinymatrix.Arcana(lang, value)
 		points = append(points, domain.DestinyPoint{
 			Key:        pd.Key,
 			Position:   pd.Position,
-			Title:      pd.Title,
+			Title:      destinymatrix.PointTitle(lang, pd.Key),
 			Arcana:     value,
 			ArcanaName: name,
 			Meaning:    meaning,
@@ -52,9 +54,9 @@ func (s *DestinyMatrixService) GetReading(ctx context.Context, userID uuid.UUID)
 		copy(keys, ld.PointKeys)
 		lines = append(lines, domain.DestinyLine{
 			Key:       ld.Key,
-			Title:     ld.Title,
+			Title:     destinymatrix.LineTitle(lang, ld.Key),
 			PointKeys: keys,
-			Theme:     ld.Theme,
+			Theme:     destinymatrix.LineTheme(lang, ld.Key),
 		})
 	}
 

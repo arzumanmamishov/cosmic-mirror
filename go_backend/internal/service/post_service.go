@@ -4,8 +4,10 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log/slog"
 	"regexp"
 	"strings"
+	"time"
 
 	"cosmic-mirror/internal/domain"
 	"cosmic-mirror/internal/repository/postgres"
@@ -20,7 +22,7 @@ type PostService struct {
 	spaceRepo   *postgres.SpaceRepository
 	memberRepo  *postgres.SpaceMemberRepository
 	hashtagRepo *postgres.HashtagRepository
-	notifSvc    *CommunityNotificationService
+	notifRepo   *postgres.CommunityNotificationRepository
 }
 
 func NewPostService(
@@ -29,11 +31,11 @@ func NewPostService(
 	spaceRepo *postgres.SpaceRepository,
 	memberRepo *postgres.SpaceMemberRepository,
 	hashtagRepo *postgres.HashtagRepository,
-	notifSvc *CommunityNotificationService,
+	notifRepo *postgres.CommunityNotificationRepository,
 ) *PostService {
 	return &PostService{
 		db: db, postRepo: postRepo, spaceRepo: spaceRepo,
-		memberRepo: memberRepo, hashtagRepo: hashtagRepo, notifSvc: notifSvc,
+		memberRepo: memberRepo, hashtagRepo: hashtagRepo, notifRepo: notifRepo,
 	}
 }
 
@@ -108,24 +110,28 @@ func (s *PostService) Create(ctx context.Context, userID, spaceID uuid.UUID, inp
 	}
 
 	// Fan out a "new post in space" notification to every other member.
-	go s.fanOutNewPost(spaceID, post.ID, userID, post.Content)
+	// Async so a big space doesn't slow down posting, but bounded: the
+	// request ctx is about to be cancelled, so detach from it and cap the
+	// work with a timeout instead of running unbounded on Background.
+	go s.fanOutNewPost(context.WithoutCancel(ctx), spaceID, post.ID, userID, post.Content)
 	return post, nil
 }
 
-func (s *PostService) fanOutNewPost(spaceID, postID, actorID uuid.UUID, content string) {
-	ctx := context.Background()
-	memberIDs, err := s.memberRepo.ListSpaceMemberUserIDs(ctx, spaceID)
+// fanOutTimeout bounds the async "new post" fan-out. It is a single
+// INSERT … SELECT, so this is generous even for very large spaces.
+const fanOutTimeout = 30 * time.Second
+
+func (s *PostService) fanOutNewPost(parent context.Context, spaceID, postID, actorID uuid.UUID, content string) {
+	ctx, cancel := context.WithTimeout(parent, fanOutTimeout)
+	defer cancel()
+	snippet := truncateRunes(content, 140, "…")
+	n, err := s.notifRepo.CreateForSpaceMembers(ctx, spaceID, actorID, "post_in_space", "post", postID, &snippet)
 	if err != nil {
+		slog.Error("fan out new-post notifications",
+			"error", err, "space_id", spaceID, "post_id", postID)
 		return
 	}
-	snippet := truncateRunes(content, 140, "…")
-	s.notifSvc.EmitMany(ctx, nil, memberIDs, EmitParams{
-		ActorID:    &actorID,
-		Type:       "post_in_space",
-		TargetType: "post",
-		TargetID:   postID,
-		Snippet:    &snippet,
-	})
+	slog.Debug("fanned out new-post notifications", "space_id", spaceID, "post_id", postID, "recipients", n)
 }
 
 func (s *PostService) Get(ctx context.Context, id, userID uuid.UUID) (*domain.PostWithMeta, error) {
@@ -226,8 +232,10 @@ func (s *PostService) Delete(ctx context.Context, id, userID uuid.UUID) error {
 		if err := s.hashtagRepo.UnlinkPost(ctx, tx, id); err != nil {
 			return err
 		}
-		// Tx commits even though we use the bare repo here — DELETE CASCADE
-		// will clean up comments/likes too.
-		return s.postRepo.Delete(ctx, id)
+		// Must run on the same tx: UnlinkPost holds row locks on
+		// post_hashtags that the DELETE's cascade needs — deleting on a
+		// separate connection deadlocks against this open tx. CASCADE
+		// cleans up comments/hashtag links.
+		return s.postRepo.DeleteTx(ctx, tx, id)
 	})
 }

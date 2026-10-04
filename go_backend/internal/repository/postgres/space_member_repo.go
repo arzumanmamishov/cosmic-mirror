@@ -2,6 +2,8 @@ package postgres
 
 import (
 	"context"
+	"database/sql"
+	"errors"
 
 	"cosmic-mirror/internal/domain"
 
@@ -112,10 +114,28 @@ func (r *SpaceMemberRepository) GetRole(ctx context.Context, spaceID, userID uui
 	return role, err
 }
 
+// GetMembership returns the user's role and status in the space, or two
+// empty strings when they have no membership row.
+func (r *SpaceMemberRepository) GetMembership(ctx context.Context, spaceID, userID uuid.UUID) (role, status string, err error) {
+	var row struct {
+		Role   string `db:"role"`
+		Status string `db:"status"`
+	}
+	err = r.db.GetContext(ctx, &row,
+		`SELECT role, status FROM space_members WHERE space_id = $1 AND user_id = $2`,
+		spaceID, userID,
+	)
+	if errors.Is(err, sql.ErrNoRows) {
+		return "", "", nil
+	}
+	return row.Role, row.Status, err
+}
+
 // ListBySpace returns only APPROVED members. Pending rows are not part
 // of the public member list — they're surfaced via ListPending for the
-// space owner only.
-func (r *SpaceMemberRepository) ListBySpace(ctx context.Context, spaceID uuid.UUID, limit, offset int) ([]domain.SpaceMember, error) {
+// space owner only. Members in a block relationship with [viewerID] and
+// banned accounts are left out.
+func (r *SpaceMemberRepository) ListBySpace(ctx context.Context, spaceID, viewerID uuid.UUID, limit, offset int) ([]domain.SpaceMember, error) {
 	var members []domain.SpaceMember
 	err := r.db.SelectContext(ctx, &members,
 		`SELECT m.space_id, m.user_id, m.role, m.status, m.joined_at,
@@ -124,11 +144,13 @@ func (r *SpaceMemberRepository) ListBySpace(ctx context.Context, spaceID uuid.UU
 		 FROM space_members m
 		 JOIN users u ON u.id = m.user_id
 		 WHERE m.space_id = $1 AND m.status = 'approved'
+		   AND u.banned_at IS NULL
+		   AND `+notBlockedSQL("$4", "m.user_id")+`
 		 ORDER BY
 		   CASE m.role WHEN 'owner' THEN 0 WHEN 'mod' THEN 1 ELSE 2 END,
 		   m.joined_at ASC
 		 LIMIT $2 OFFSET $3`,
-		spaceID, limit, offset,
+		spaceID, limit, offset, viewerID,
 	)
 	return members, err
 }

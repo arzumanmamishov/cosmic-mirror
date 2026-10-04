@@ -64,6 +64,16 @@ func (s *CommentService) Create(ctx context.Context, userID, postID uuid.UUID, i
 	if err := s.assertMember(ctx, post.SpaceID, userID); err != nil {
 		return nil, err
 	}
+	// Hidden posts are invisible to everyone but their author.
+	if post.HiddenAt != nil && post.AuthorID != userID {
+		return nil, ErrPostNotFound
+	}
+	// No commenting across a block (either direction).
+	if blocked, err := postgres.IsBlockedEither(ctx, s.db, userID, post.AuthorID); err != nil {
+		return nil, err
+	} else if blocked {
+		return nil, ErrForbidden
+	}
 
 	c := &domain.Comment{
 		PostID:          postID,
@@ -83,8 +93,14 @@ func (s *CommentService) Create(ctx context.Context, userID, postID uuid.UUID, i
 		if err != nil {
 			return nil, err
 		}
-		if parent == nil || parent.PostID != postID {
+		if parent == nil || parent.PostID != postID ||
+			(parent.HiddenAt != nil && parent.AuthorID != userID) {
 			return nil, ErrCommentNotFound
+		}
+		if blocked, err := postgres.IsBlockedEither(ctx, s.db, userID, parent.AuthorID); err != nil {
+			return nil, err
+		} else if blocked {
+			return nil, ErrForbidden
 		}
 		parentAuthorID = &parent.AuthorID
 	}
@@ -144,6 +160,17 @@ func (s *CommentService) ListByPost(ctx context.Context, postID, userID uuid.UUI
 	if err := s.assertMember(ctx, post.SpaceID, userID); err != nil {
 		return nil, err
 	}
+	// Same visibility as the post itself: hidden or across a block → 404.
+	if post.AuthorID != userID {
+		if post.HiddenAt != nil {
+			return nil, ErrPostNotFound
+		}
+		if blocked, err := postgres.IsBlockedEither(ctx, s.db, userID, post.AuthorID); err != nil {
+			return nil, err
+		} else if blocked {
+			return nil, ErrPostNotFound
+		}
+	}
 	return s.commentRepo.ListByPost(ctx, postID, userID)
 }
 
@@ -164,6 +191,9 @@ func (s *CommentService) Update(ctx context.Context, id, userID uuid.UUID, input
 	return s.commentRepo.Update(ctx, id, input)
 }
 
+// Delete removes a comment (and, via ON DELETE CASCADE, its replies).
+// Allowed for the comment's author and for the owner / moderators of the
+// space the post lives in, so communities can clean up abuse themselves.
 func (s *CommentService) Delete(ctx context.Context, id, userID uuid.UUID) error {
 	c, err := s.commentRepo.GetBareByID(ctx, id)
 	if err != nil {
@@ -173,12 +203,43 @@ func (s *CommentService) Delete(ctx context.Context, id, userID uuid.UUID) error
 		return ErrCommentNotFound
 	}
 	if c.AuthorID != userID {
-		return ErrForbidden
-	}
-	return postgres.WithTx(ctx, s.db, func(tx *sqlx.Tx) error {
-		if err := s.commentRepo.Delete(ctx, id); err != nil {
+		ok, err := s.canModerateSpaceOfPost(ctx, c.PostID, userID)
+		if err != nil {
 			return err
 		}
-		return s.postRepo.IncrementCommentCount(ctx, tx, c.PostID, -1)
-	})
+		if !ok {
+			return ErrForbidden
+		}
+	}
+	if err := s.commentRepo.Delete(ctx, id); err != nil {
+		return err
+	}
+	// Recount rather than decrement: deleting a top-level comment also
+	// cascades its replies (parent_comment_id ON DELETE CASCADE), so -1
+	// would leave comment_count too high. The delete has committed, so
+	// the recount sees it; a failed recount self-heals on the next delete.
+	return s.postRepo.RecountComments(ctx, s.db, c.PostID)
+}
+
+// canModerateSpaceOfPost reports whether userID is an approved owner or
+// mod of the space that postID belongs to.
+func (s *CommentService) canModerateSpaceOfPost(ctx context.Context, postID, userID uuid.UUID) (bool, error) {
+	post, err := s.postRepo.GetBareByID(ctx, postID)
+	if err != nil {
+		return false, err
+	}
+	if post == nil {
+		return false, nil
+	}
+	role, status, err := s.memberRepo.GetMembership(ctx, post.SpaceID, userID)
+	if err != nil {
+		return false, err
+	}
+	return canModerateSpace(role, status), nil
+}
+
+// canModerateSpace: space owners and mods (approved) may remove other
+// members' comments.
+func canModerateSpace(role, status string) bool {
+	return status == "approved" && (role == "owner" || role == "mod")
 }

@@ -4,6 +4,9 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"log/slog"
+	"math"
+	"strings"
 	"time"
 
 	"cosmic-mirror/internal/domain"
@@ -20,6 +23,27 @@ type UserService struct {
 	statsRepo   repository.StatsRepository
 	avatars     *storage.AvatarStore
 	rdb         *redis.Client
+
+	// Account-deletion collaborators (see WithAccountDeletion).
+	refreshTokens repository.RefreshTokenRepository
+	subCanceller  SubscriptionCanceller
+}
+
+// SubscriptionCanceller immediately terminates a user's paid subscription.
+// Implemented by *StripeService; injected as an interface because the
+// Stripe service itself depends on UserService.
+type SubscriptionCanceller interface {
+	CancelImmediately(ctx context.Context, userID uuid.UUID) error
+}
+
+// WithAccountDeletion wires what DeleteUser needs beyond the user row:
+// the refresh-token store (to end every session) and the subscription
+// canceller (so a deleted account is never billed again). Either may be
+// nil, in which case that step is skipped.
+func (s *UserService) WithAccountDeletion(refreshTokens repository.RefreshTokenRepository, subs SubscriptionCanceller) *UserService {
+	s.refreshTokens = refreshTokens
+	s.subCanceller = subs
+	return s
 }
 
 func NewUserService(
@@ -66,14 +90,69 @@ func (s *UserService) UpdateUser(ctx context.Context, id uuid.UUID, input domain
 	return s.userRepo.Update(ctx, id, input)
 }
 
+// DeleteUser deletes the caller's account: cancels any Stripe subscription
+// immediately, revokes every refresh token, then soft-deletes the user (the
+// cleanup worker hard-deletes the row and avatar files after 30 days).
+//
+// Order matters. Every step is idempotent and the caller's access token
+// keeps working until the soft delete, so any failure is returned and the
+// client can simply retry the DELETE. The Stripe cancel runs first and a
+// failure aborts the deletion: soft-deleting first would lock the user out
+// (auth rejects deleted users) while Stripe kept billing them, with no way
+// to retry from the app.
 func (s *UserService) DeleteUser(ctx context.Context, id uuid.UUID) error {
-	return s.userRepo.SoftDelete(ctx, id)
+	if s.subCanceller != nil {
+		if err := s.subCanceller.CancelImmediately(ctx, id); err != nil {
+			slog.Error("account deletion: cancel subscription failed", "user_id", id, "error", err)
+			return fmt.Errorf("cancel subscription: %w", err)
+		}
+	}
+	if s.refreshTokens != nil {
+		if err := s.refreshTokens.RevokeAllForUser(ctx, id); err != nil {
+			return fmt.Errorf("revoke sessions: %w", err)
+		}
+	}
+	if err := s.userRepo.SoftDelete(ctx, id); err != nil {
+		return fmt.Errorf("soft delete user: %w", err)
+	}
+	return nil
+}
+
+// validateBirthData checks the user-supplied birth fields shared by birth
+// profiles and saved people, returning the parsed birth date. Failures
+// wrap domain.ErrValidation (handlers map that to 400).
+func validateBirthData(birthDate string, lat, lon float64, timezone string) (time.Time, error) {
+	d, err := time.Parse("2006-01-02", strings.TrimSpace(birthDate))
+	if err != nil {
+		return time.Time{}, fmt.Errorf("%w: birth_date must be YYYY-MM-DD", domain.ErrValidation)
+	}
+	// Allow "today" in any timezone: compare against tomorrow UTC.
+	if d.After(time.Now().UTC().AddDate(0, 0, 1)) {
+		return time.Time{}, fmt.Errorf("%w: birth_date cannot be in the future", domain.ErrValidation)
+	}
+	if d.Year() < 1800 {
+		return time.Time{}, fmt.Errorf("%w: birth_date is too far in the past", domain.ErrValidation)
+	}
+	if math.IsNaN(lat) || lat < -90 || lat > 90 {
+		return time.Time{}, fmt.Errorf("%w: latitude must be between -90 and 90", domain.ErrValidation)
+	}
+	if math.IsNaN(lon) || lon < -180 || lon > 180 {
+		return time.Time{}, fmt.Errorf("%w: longitude must be between -180 and 180", domain.ErrValidation)
+	}
+	tz := strings.TrimSpace(timezone)
+	if tz == "" {
+		return time.Time{}, fmt.Errorf("%w: timezone is required", domain.ErrValidation)
+	}
+	if _, err := time.LoadLocation(tz); err != nil {
+		return time.Time{}, fmt.Errorf("%w: unknown timezone %q", domain.ErrValidation, tz)
+	}
+	return d, nil
 }
 
 func (s *UserService) CreateBirthProfile(ctx context.Context, userID uuid.UUID, input domain.CreateBirthProfileInput) (*domain.BirthProfile, error) {
-	birthDate, err := time.Parse("2006-01-02", input.BirthDate)
+	birthDate, err := validateBirthData(input.BirthDate, input.Latitude, input.Longitude, input.Timezone)
 	if err != nil {
-		return nil, fmt.Errorf("invalid birth_date format: %w", err)
+		return nil, err
 	}
 
 	profile := &domain.BirthProfile{
@@ -84,7 +163,7 @@ func (s *UserService) CreateBirthProfile(ctx context.Context, userID uuid.UUID, 
 		BirthPlace:     input.BirthPlace,
 		Latitude:       input.Latitude,
 		Longitude:      input.Longitude,
-		Timezone:       input.Timezone,
+		Timezone:       strings.TrimSpace(input.Timezone),
 	}
 
 	if err := s.profileRepo.Create(ctx, profile); err != nil {
@@ -95,16 +174,15 @@ func (s *UserService) CreateBirthProfile(ctx context.Context, userID uuid.UUID, 
 	return profile, nil
 }
 
+// UpdateBirthProfile replaces the user's birth data. It upserts: a user
+// without a profile row yet (e.g. onboarding was skipped or interrupted)
+// gets one created instead of the update silently matching zero rows.
 func (s *UserService) UpdateBirthProfile(ctx context.Context, userID uuid.UUID, input domain.CreateBirthProfileInput) error {
-	if err := s.profileRepo.Update(ctx, userID, input); err != nil {
-		return err
-	}
-	// Birth-data change invalidates every chart we've cached for this
-	// user — Western, Vedic (each ayanamsa, each varga, dasha), Human
-	// Design. Without this they keep showing yesterday's chart for up
-	// to 30 days.
-	s.invalidateBirthScopedCaches(ctx, userID)
-	return nil
+	// CreateBirthProfile validates, upserts on user_id, and invalidates
+	// every cached chart for this user — Western, Vedic (each ayanamsa,
+	// each varga, dasha), Human Design, timeline/yearly forecasts.
+	_, err := s.CreateBirthProfile(ctx, userID, input)
+	return err
 }
 
 // invalidateBirthScopedCaches deletes every Redis key scoped to a single
@@ -120,6 +198,10 @@ func (s *UserService) invalidateBirthScopedCaches(ctx context.Context, userID uu
 		fmt.Sprintf("vedic:chart:%s:*", userID),
 		fmt.Sprintf("vedic:varga:%s:*", userID),
 		fmt.Sprintf("vedic:dasha:%s:*", userID),
+		// Forecasts are computed from natal positions:
+		// timeline:{uid}:{type}:{date}:{lang} and yearly:{uid}:{year}:{lang}.
+		fmt.Sprintf("timeline:%s:*", userID),
+		fmt.Sprintf("yearly:%s:*", userID),
 	}
 	for _, pat := range patterns {
 		// Plain DEL for fully-qualified keys.

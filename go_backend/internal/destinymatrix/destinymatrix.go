@@ -180,6 +180,59 @@ var LineDefs = []LineDef{
 	},
 }
 
+// PointTitle returns the display title for a point key in the requested
+// language, falling back to English. Unknown keys return "".
+func PointTitle(lang, key string) string {
+	if lang == "tr" {
+		if t := pointTitlesTR[key]; t != "" {
+			return t
+		}
+	}
+	for _, pd := range PointDefs {
+		if pd.Key == key {
+			return pd.Title
+		}
+	}
+	return ""
+}
+
+// LineTitle returns the display title for a line key in the requested
+// language, falling back to English. Unknown keys return "".
+func LineTitle(lang, key string) string {
+	if lang == "tr" {
+		if t := lineTextTR[key]; t.title != "" {
+			return t.title
+		}
+	}
+	if ld, ok := lineDef(key); ok {
+		return ld.Title
+	}
+	return ""
+}
+
+// LineTheme returns the interpretive theme for a line key in the requested
+// language, falling back to English. Unknown keys return "".
+func LineTheme(lang, key string) string {
+	if lang == "tr" {
+		if t := lineTextTR[key]; t.theme != "" {
+			return t.theme
+		}
+	}
+	if ld, ok := lineDef(key); ok {
+		return ld.Theme
+	}
+	return ""
+}
+
+func lineDef(key string) (LineDef, bool) {
+	for _, ld := range LineDefs {
+		if ld.Key == key {
+			return ld, true
+		}
+	}
+	return LineDef{}, false
+}
+
 // Compute runs the full octagram algorithm for a birth date.
 func Compute(birthDate time.Time) Result {
 	d := birthDate.Day()

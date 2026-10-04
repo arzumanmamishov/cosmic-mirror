@@ -21,7 +21,7 @@ func (h *ChartHandler) GetChart(w http.ResponseWriter, r *http.Request) {
 	userID := middleware.UserIDFromContext(r.Context())
 	chart, err := h.chartSvc.GetNatalChart(r.Context(), userID)
 	if err != nil {
-		respondError(w, http.StatusInternalServerError, "chart_error", err.Error())
+		respondServiceError(w, http.StatusInternalServerError, "chart_error", err)
 		return
 	}
 	respondSuccess(w, chart)
@@ -31,7 +31,7 @@ func (h *ChartHandler) GetSummary(w http.ResponseWriter, r *http.Request) {
 	userID := middleware.UserIDFromContext(r.Context())
 	summary, err := h.chartSvc.GetChartSummary(r.Context(), userID)
 	if err != nil {
-		respondError(w, http.StatusInternalServerError, "chart_error", err.Error())
+		respondServiceError(w, http.StatusInternalServerError, "chart_error", err)
 		return
 	}
 	respondSuccess(w, summary)
@@ -42,7 +42,7 @@ func (h *ChartHandler) GetTimeline(w http.ResponseWriter, r *http.Request) {
 	forecastType := r.URL.Query().Get("type")
 	timeline, err := h.chartSvc.GetTimeline(r.Context(), userID, forecastType)
 	if err != nil {
-		respondError(w, http.StatusInternalServerError, "timeline_error", err.Error())
+		respondServiceError(w, http.StatusInternalServerError, "timeline_error", err)
 		return
 	}
 	respondSuccess(w, timeline)
@@ -60,7 +60,7 @@ func (h *ChartHandler) GetYearlyForecast(w http.ResponseWriter, r *http.Request)
 	}
 	forecast, err := h.chartSvc.GetYearlyForecast(r.Context(), userID, year)
 	if err != nil {
-		respondError(w, http.StatusInternalServerError, "yearly_error", err.Error())
+		respondServiceError(w, http.StatusInternalServerError, "yearly_error", err)
 		return
 	}
 	respondSuccess(w, forecast)

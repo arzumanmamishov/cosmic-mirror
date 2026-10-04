@@ -23,7 +23,7 @@ func NewDiscoveryHandler(communitySvc *service.CommunityService, hashtagRepo *po
 func (h *DiscoveryHandler) ListCategories(w http.ResponseWriter, r *http.Request) {
 	cats, err := h.communitySvc.ListCategories(r.Context())
 	if err != nil {
-		respondError(w, http.StatusInternalServerError, "categories_error", err.Error())
+		respondServiceError(w, http.StatusInternalServerError, "categories_error", err)
 		return
 	}
 	respondSuccess(w, map[string]any{"categories": cats})
@@ -33,7 +33,7 @@ func (h *DiscoveryHandler) ListPopularHashtags(w http.ResponseWriter, r *http.Re
 	limit := parseLimit(r.URL.Query().Get("limit"), 20, 100)
 	tags, err := h.hashtagRepo.ListPopular(r.Context(), middleware.UserIDFromContext(r.Context()), limit)
 	if err != nil {
-		respondError(w, http.StatusInternalServerError, "hashtags_error", err.Error())
+		respondServiceError(w, http.StatusInternalServerError, "hashtags_error", err)
 		return
 	}
 	if tags == nil {

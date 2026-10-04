@@ -7,6 +7,8 @@ import (
 	"time"
 
 	"cosmic-mirror/internal/domain"
+	"cosmic-mirror/internal/middleware"
+	"cosmic-mirror/internal/provider/swisseph"
 	"cosmic-mirror/internal/repository"
 	"cosmic-mirror/internal/tz"
 
@@ -90,8 +92,20 @@ func (s *VedicService) loadBirthData(ctx context.Context, userID uuid.UUID) (tim
 	return profile.BirthDate, hour, min, profile.Latitude, profile.Longitude, tzone, nil
 }
 
-// GetVedicChart returns the Rasi (D1) chart for a user.
+// GetVedicChart returns the Rasi (D1) chart for a user, with nakshatra
+// attributes localized to the request language.
 func (s *VedicService) GetVedicChart(ctx context.Context, userID uuid.UUID, ayanamsaStr string) (*domain.VedicChart, error) {
+	chart, err := s.getVedicChart(ctx, userID, ayanamsaStr)
+	if err != nil {
+		return nil, err
+	}
+	return swisseph.LocalizeVedicChart(middleware.LangFromContext(ctx), chart), nil
+}
+
+// getVedicChart returns the canonical (English) Rasi chart. The Redis cache
+// always holds this English form; localization happens on the way out, so
+// the cache key needs no language component.
+func (s *VedicService) getVedicChart(ctx context.Context, userID uuid.UUID, ayanamsaStr string) (*domain.VedicChart, error) {
 	ayanamsa := AyanamsaFromString(ayanamsaStr)
 	cacheKey := fmt.Sprintf("vedic:chart:%s:%d", userID, ayanamsa)
 	if cached, err := s.rdb.Get(ctx, cacheKey).Bytes(); err == nil {
@@ -179,11 +193,11 @@ func (s *VedicService) GetDasha(ctx context.Context, userID uuid.UUID, ayanamsaS
 
 // GetYogas returns the active classical yogas for the chart.
 func (s *VedicService) GetYogas(ctx context.Context, userID uuid.UUID, ayanamsaStr string) ([]domain.VedicYoga, error) {
-	chart, err := s.GetVedicChart(ctx, userID, ayanamsaStr)
+	chart, err := s.getVedicChart(ctx, userID, ayanamsaStr)
 	if err != nil {
 		return nil, err
 	}
-	return s.provider.ComputeYogas(chart), nil
+	return swisseph.LocalizeYogas(middleware.LangFromContext(ctx), s.provider.ComputeYogas(chart)), nil
 }
 
 // GetShadbala returns six-fold strength per planet.

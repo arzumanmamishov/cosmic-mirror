@@ -14,11 +14,11 @@ import (
 
 // userSelectCols is the column list every read path uses. Kept in one place
 // so adding a column doesn't need touching every SELECT. firebase_uid is
-// COALESCE'd to '' because the column is now nullable but the domain type
+// COALESCE'd to ” because the column is now nullable but the domain type
 // still uses `string` (empty = no Firebase link).
 const userSelectCols = `id, COALESCE(firebase_uid, '') AS firebase_uid, email, name,
     avatar_url, password_hash, email_verified_at, last_login_at,
-    created_at, updated_at`
+    created_at, updated_at, banned_at`
 
 type UserRepository struct {
 	db *sqlx.DB

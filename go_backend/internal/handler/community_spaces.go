@@ -41,7 +41,7 @@ func (h *SpacesHandler) List(w http.ResponseWriter, r *http.Request) {
 
 	spaces, err := h.communitySvc.ListSpaces(r.Context(), userID, filter, categoryID, q.Get("q"), limit, offset)
 	if err != nil {
-		respondError(w, http.StatusInternalServerError, "spaces_list_error", err.Error())
+		respondServiceError(w, http.StatusInternalServerError, "spaces_list_error", err)
 		return
 	}
 	respondSuccess(w, map[string]any{"spaces": spaces})
@@ -64,7 +64,7 @@ func (h *SpacesHandler) Create(w http.ResponseWriter, r *http.Request) {
 		case errors.Is(err, service.ErrHandleTaken):
 			respondError(w, http.StatusConflict, "handle_taken", err.Error())
 		default:
-			respondError(w, http.StatusInternalServerError, "create_space_error", err.Error())
+			respondServiceError(w, http.StatusInternalServerError, "create_space_error", err)
 		}
 		return
 	}
@@ -84,7 +84,7 @@ func (h *SpacesHandler) Get(w http.ResponseWriter, r *http.Request) {
 			respondError(w, http.StatusNotFound, "not_found", err.Error())
 			return
 		}
-		respondError(w, http.StatusInternalServerError, "get_space_error", err.Error())
+		respondServiceError(w, http.StatusInternalServerError, "get_space_error", err)
 		return
 	}
 	respondSuccess(w, space)
@@ -174,7 +174,7 @@ func (h *SpacesHandler) GetUserProfile(w http.ResponseWriter, r *http.Request) {
 			respondError(w, http.StatusNotFound, "not_found", "User not found")
 			return
 		}
-		respondError(w, http.StatusInternalServerError, "user_profile_error", err.Error())
+		respondServiceError(w, http.StatusInternalServerError, "user_profile_error", err)
 		return
 	}
 	respondSuccess(w, profile)
@@ -303,6 +303,6 @@ func respondCommunityError(w http.ResponseWriter, err error) {
 	case errors.Is(err, service.ErrHandleTaken):
 		respondError(w, http.StatusConflict, "conflict", err.Error())
 	default:
-		respondError(w, http.StatusInternalServerError, "internal_error", err.Error())
+		respondServiceError(w, http.StatusInternalServerError, "internal_error", err)
 	}
 }

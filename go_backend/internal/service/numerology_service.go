@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"cosmic-mirror/internal/domain"
+	"cosmic-mirror/internal/middleware"
 	"cosmic-mirror/internal/numerology"
 	"cosmic-mirror/internal/repository"
 
@@ -45,8 +46,9 @@ func (s *NumerologyService) GetReading(ctx context.Context, userID uuid.UUID) (*
 	}
 
 	now := time.Now()
-	prof := computeProfile(fullName, profile.BirthDate)
-	cyc := computeCycles(profile.BirthDate, prof.LifePath, now)
+	lang := middleware.LangFromContext(ctx)
+	prof := computeProfile(lang, fullName, profile.BirthDate)
+	cyc := computeCycles(lang, profile.BirthDate, prof.LifePath, now)
 
 	return &domain.NumerologyReading{Profile: prof, Cycles: cyc}, nil
 }
@@ -64,9 +66,11 @@ func (s *NumerologyService) Compare(ctx context.Context, userID uuid.UUID, req d
 	if otherFullName == "" {
 		return nil, errors.New("full_name is required")
 	}
-	other := computeProfile(otherFullName, otherDate)
+	lang := middleware.LangFromContext(ctx)
+	other := computeProfile(lang, otherFullName, otherDate)
 
 	report := numerology.Compatibility(
+		lang,
 		toNum(myReading.Profile.LifePath),
 		toNum(myReading.Profile.Expression),
 		toNum(myReading.Profile.SoulUrge),
@@ -87,8 +91,9 @@ func (s *NumerologyService) Compare(ctx context.Context, userID uuid.UUID, req d
 // AnalyzeName runs the standalone Name Numerology Calculator on any
 // arbitrary name (no auth scope, no birth profile). Returns the three
 // classical name-derived numbers plus the per-letter breakdown so the
-// UI can show how each total was built.
-func (s *NumerologyService) AnalyzeName(name string) (*domain.NumerologyNameAnalysis, error) {
+// UI can show how each total was built. Descriptions follow the request
+// language carried in ctx.
+func (s *NumerologyService) AnalyzeName(ctx context.Context, name string) (*domain.NumerologyNameAnalysis, error) {
 	trimmed := strings.TrimSpace(name)
 	if trimmed == "" {
 		return nil, errors.New("name is required")
@@ -97,6 +102,7 @@ func (s *NumerologyService) AnalyzeName(name string) (*domain.NumerologyNameAnal
 	soul := numerology.SoulUrge(trimmed)
 	pers := numerology.Personality(trimmed)
 
+	lang := middleware.LangFromContext(ctx)
 	letters := numerology.LettersOf(trimmed)
 	wire := make([]domain.NumerologyLetter, len(letters))
 	for i, l := range letters {
@@ -109,9 +115,9 @@ func (s *NumerologyService) AnalyzeName(name string) (*domain.NumerologyNameAnal
 
 	return &domain.NumerologyNameAnalysis{
 		Name:          trimmed,
-		Expression:    decorate(expr, "expression"),
-		SoulUrge:      decorate(soul, "soul_urge"),
-		Personality:   decorate(pers, "personality"),
+		Expression:    decorate(lang, expr, "expression"),
+		SoulUrge:      decorate(lang, soul, "soul_urge"),
+		Personality:   decorate(lang, pers, "personality"),
 		HiddenPassion: numerology.HiddenPassion(trimmed),
 		KarmicLessons: numerology.KarmicLessons(trimmed),
 		Letters:       wire,
@@ -120,8 +126,8 @@ func (s *NumerologyService) AnalyzeName(name string) (*domain.NumerologyNameAnal
 
 // computeProfile is the pure-function bridge between the numerology package
 // and the domain types — converts internal Numbers to wire-shape with
-// canned descriptions baked in.
-func computeProfile(fullName string, birthDate time.Time) domain.NumerologyProfile {
+// canned descriptions (in lang) baked in.
+func computeProfile(lang, fullName string, birthDate time.Time) domain.NumerologyProfile {
 	life := numerology.LifePath(birthDate)
 	expr := numerology.Expression(fullName)
 	soul := numerology.SoulUrge(fullName)
@@ -130,12 +136,12 @@ func computeProfile(fullName string, birthDate time.Time) domain.NumerologyProfi
 	bday := numerology.Birthday(birthDate)
 
 	return domain.NumerologyProfile{
-		LifePath:      decorate(life, "life_path"),
-		Expression:    decorate(expr, "expression"),
-		SoulUrge:      decorate(soul, "soul_urge"),
-		Personality:   decorate(pers, "personality"),
-		Maturity:      decorate(mat, "maturity"),
-		Birthday:      decorate(bday, "birthday"),
+		LifePath:      decorate(lang, life, "life_path"),
+		Expression:    decorate(lang, expr, "expression"),
+		SoulUrge:      decorate(lang, soul, "soul_urge"),
+		Personality:   decorate(lang, pers, "personality"),
+		Maturity:      decorate(lang, mat, "maturity"),
+		Birthday:      decorate(lang, bday, "birthday"),
 		KarmicLessons: numerology.KarmicLessons(fullName),
 		HiddenPassion: numerology.HiddenPassion(fullName),
 		FullName:      fullName,
@@ -143,7 +149,7 @@ func computeProfile(fullName string, birthDate time.Time) domain.NumerologyProfi
 	}
 }
 
-func computeCycles(birthDate time.Time, life domain.NumerologyNumber, now time.Time) domain.NumerologyCycles {
+func computeCycles(lang string, birthDate time.Time, life domain.NumerologyNumber, now time.Time) domain.NumerologyCycles {
 	currentAge := numerology.AgeAt(birthDate, now)
 	py := numerology.PersonalYear(birthDate, now)
 	pm := numerology.PersonalMonth(py, now)
@@ -153,29 +159,29 @@ func computeCycles(birthDate time.Time, life domain.NumerologyNumber, now time.T
 	challenges := numerology.Challenges(birthDate, toNum(life), currentAge)
 
 	out := domain.NumerologyCycles{
-		PersonalYear:  decorate(py, "personal_year"),
-		PersonalMonth: decorate(pm, "personal_month"),
-		PersonalDay:   decorate(pd, "personal_day"),
+		PersonalYear:  decorate(lang, py, "personal_year"),
+		PersonalMonth: decorate(lang, pm, "personal_month"),
+		PersonalDay:   decorate(lang, pd, "personal_day"),
 		CurrentAge:    currentAge,
 	}
 	for i, p := range pinnacles {
 		out.Pinnacles[i] = domain.NumerologyPinnacle{
 			Index: p.Index, StartAge: p.StartAge, EndAge: p.EndAge,
 			IsActive: p.IsActive,
-			Number:   decorate(p.Number, "personal_year"), // reuse year descriptions for cycle vibes
+			Number:   decorate(lang, p.Number, "personal_year"), // reuse year descriptions for cycle vibes
 		}
 	}
 	for i, c := range challenges {
 		out.Challenges[i] = domain.NumerologyChallenge{
 			Index: c.Index, StartAge: c.StartAge, EndAge: c.EndAge,
 			IsActive: c.IsActive,
-			Number:   decorate(c.Number, "personal_year"),
+			Number:   decorate(lang, c.Number, "personal_year"),
 		}
 	}
 	return out
 }
 
-func decorate(n numerology.Number, kind string) domain.NumerologyNumber {
+func decorate(lang string, n numerology.Number, kind string) domain.NumerologyNumber {
 	display := fmt.Sprintf("%d", n.Value)
 	if n.IsMaster {
 		// Show as "11/2" so the UI can display both.
@@ -193,7 +199,7 @@ func decorate(n numerology.Number, kind string) domain.NumerologyNumber {
 		RawSum:       n.RawSum,
 		IsMaster:     n.IsMaster,
 		IsKarmicDebt: n.IsKarmicDebt,
-		Description:  numerology.Description(kind, n),
+		Description:  numerology.Description(lang, kind, n),
 	}
 }
 

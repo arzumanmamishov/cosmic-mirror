@@ -41,7 +41,7 @@ func (h *JournalHandler) List(w http.ResponseWriter, r *http.Request) {
 
 	entries, err := h.journalRepo.List(r.Context(), userID, limit, offset)
 	if err != nil {
-		respondError(w, http.StatusInternalServerError, "journal_error", err.Error())
+		respondServiceError(w, http.StatusInternalServerError, "journal_error", err)
 		return
 	}
 	respondSuccess(w, map[string]any{"entries": entries})
@@ -78,7 +78,7 @@ func (h *JournalHandler) Create(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := h.journalRepo.Create(r.Context(), entry); err != nil {
-		respondError(w, http.StatusInternalServerError, "create_error", err.Error())
+		respondServiceError(w, http.StatusInternalServerError, "create_error", err)
 		return
 	}
 	respondCreated(w, entry)
@@ -108,7 +108,7 @@ func (h *JournalHandler) Update(w http.ResponseWriter, r *http.Request) {
 			respondError(w, http.StatusNotFound, "not_found", "Journal entry not found")
 			return
 		}
-		respondError(w, http.StatusInternalServerError, "update_error", err.Error())
+		respondServiceError(w, http.StatusInternalServerError, "update_error", err)
 		return
 	}
 	respondNoContent(w)

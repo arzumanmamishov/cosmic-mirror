@@ -406,19 +406,19 @@ func TestDeterminism(t *testing.T) {
 // meaning and out-of-range returns empty.
 func TestArcanaLookup(t *testing.T) {
 	for n := 1; n <= 22; n++ {
-		name, meaning := Arcana(n)
+		name, meaning := Arcana("en", n)
 		if name == "" || meaning == "" {
 			t.Errorf("Arcana(%d) = (%q,%q), want non-empty", n, name, meaning)
 		}
 	}
-	if n, _ := Arcana(1); n != "The Magician" {
+	if n, _ := Arcana("en", 1); n != "The Magician" {
 		t.Errorf("Arcana(1) name = %q, want \"The Magician\"", n)
 	}
-	if n, _ := Arcana(22); n != "The Fool" {
+	if n, _ := Arcana("en", 22); n != "The Fool" {
 		t.Errorf("Arcana(22) name = %q, want \"The Fool\"", n)
 	}
 	for _, bad := range []int{0, 23, -1, 100} {
-		if name, meaning := Arcana(bad); name != "" || meaning != "" {
+		if name, meaning := Arcana("en", bad); name != "" || meaning != "" {
 			t.Errorf("Arcana(%d) = (%q,%q), want empty", bad, name, meaning)
 		}
 	}

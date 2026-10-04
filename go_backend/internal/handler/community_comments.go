@@ -29,7 +29,8 @@ func (h *CommentsHandler) ListByPost(w http.ResponseWriter, r *http.Request) {
 	}
 	comments, err := h.commentSvc.ListByPost(r.Context(), postID, userID)
 	if err != nil {
-		respondError(w, http.StatusInternalServerError, "comments_list_error", err.Error())
+		// Unknown post → 404, not a member of its space → 403.
+		respondCommunityError(w, err)
 		return
 	}
 	respondSuccess(w, map[string]any{"comments": comments})

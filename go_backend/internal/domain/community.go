@@ -20,18 +20,18 @@ type SpaceCategory struct {
 
 // Space is a community / discussion group.
 type Space struct {
-	ID           uuid.UUID  `db:"id"            json:"id"`
-	Handle       string     `db:"handle"        json:"handle"`
-	Name         string     `db:"name"          json:"name"`
-	Description  *string    `db:"description"   json:"description,omitempty"`
-	AvatarURL    *string    `db:"avatar_url"    json:"avatar_url,omitempty"`
-	CategoryID   *uuid.UUID `db:"category_id"   json:"category_id,omitempty"`
-	CreatedBy    uuid.UUID  `db:"created_by"    json:"created_by"`
-	MemberCount  int        `db:"member_count"  json:"member_count"`
-	IsVerified   bool       `db:"is_verified"   json:"is_verified"`
-	IsSpicy      bool       `db:"is_spicy"      json:"is_spicy"`
-	CreatedAt    time.Time  `db:"created_at"    json:"created_at"`
-	UpdatedAt    time.Time  `db:"updated_at"    json:"updated_at"`
+	ID          uuid.UUID  `db:"id"            json:"id"`
+	Handle      string     `db:"handle"        json:"handle"`
+	Name        string     `db:"name"          json:"name"`
+	Description *string    `db:"description"   json:"description,omitempty"`
+	AvatarURL   *string    `db:"avatar_url"    json:"avatar_url,omitempty"`
+	CategoryID  *uuid.UUID `db:"category_id"   json:"category_id,omitempty"`
+	CreatedBy   uuid.UUID  `db:"created_by"    json:"created_by"`
+	MemberCount int        `db:"member_count"  json:"member_count"`
+	IsVerified  bool       `db:"is_verified"   json:"is_verified"`
+	IsSpicy     bool       `db:"is_spicy"      json:"is_spicy"`
+	CreatedAt   time.Time  `db:"created_at"    json:"created_at"`
+	UpdatedAt   time.Time  `db:"updated_at"    json:"updated_at"`
 }
 
 // SpaceWithMeta is the list-response shape — Space plus per-viewer flags
@@ -52,13 +52,13 @@ type SpaceWithMeta struct {
 // for display). Status is 'approved' for regular members; 'pending' rows
 // are only returned by the owner-only join-requests endpoint.
 type SpaceMember struct {
-	SpaceID         uuid.UUID `db:"space_id"        json:"space_id"`
-	UserID          uuid.UUID `db:"user_id"         json:"user_id"`
-	Role            string    `db:"role"            json:"role"`   // member|mod|owner
-	Status          string    `db:"status"          json:"status"` // pending|approved
-	JoinedAt        time.Time `db:"joined_at"       json:"joined_at"`
-	UserName        string    `db:"user_name"       json:"user_name"`
-	UserAvatarURL   *string   `db:"user_avatar_url" json:"user_avatar_url,omitempty"`
+	SpaceID       uuid.UUID `db:"space_id"        json:"space_id"`
+	UserID        uuid.UUID `db:"user_id"         json:"user_id"`
+	Role          string    `db:"role"            json:"role"`   // member|mod|owner
+	Status        string    `db:"status"          json:"status"` // pending|approved
+	JoinedAt      time.Time `db:"joined_at"       json:"joined_at"`
+	UserName      string    `db:"user_name"       json:"user_name"`
+	UserAvatarURL *string   `db:"user_avatar_url" json:"user_avatar_url,omitempty"`
 }
 
 // ===== Posts =====
@@ -73,6 +73,10 @@ type Post struct {
 	CommentCount int       `db:"comment_count" json:"comment_count"`
 	CreatedAt    time.Time `db:"created_at"    json:"created_at"`
 	UpdatedAt    time.Time `db:"updated_at"    json:"updated_at"`
+	// HiddenAt is set when the post was hidden by moderation (auto-hide
+	// after repeated reports, or a moderator). Only the author still
+	// sees a hidden post.
+	HiddenAt *time.Time `db:"hidden_at" json:"hidden_at,omitempty"`
 }
 
 // PostWithMeta is the feed-shape variant — Post plus joined author data,
@@ -97,6 +101,8 @@ type Comment struct {
 	LikeCount       int        `db:"like_count"         json:"like_count"`
 	CreatedAt       time.Time  `db:"created_at"         json:"created_at"`
 	UpdatedAt       time.Time  `db:"updated_at"         json:"updated_at"`
+	// HiddenAt: see Post.HiddenAt.
+	HiddenAt *time.Time `db:"hidden_at" json:"hidden_at,omitempty"`
 }
 
 type CommentWithMeta struct {
@@ -180,8 +186,12 @@ type UpdateCommentInput struct {
 // All seen "from the perspective of" the requesting (current) user, so the
 // per-viewer is_joined / is_liked_by_me flags are still computed.
 type UserCommunityProfile struct {
-	UserID       uuid.UUID         `json:"user_id"`
-	Name         string            `json:"name"`
-	JoinedSpaces []SpaceWithMeta   `json:"joined_spaces"`
-	RecentPosts  []PostWithMeta    `json:"recent_posts"`
+	UserID uuid.UUID `json:"user_id"`
+	Name   string    `json:"name"`
+	// IsBlockedByMe is true when the viewer has blocked this user; the
+	// app then offers "Unblock" instead of "Block". When either side has
+	// blocked the other, JoinedSpaces and RecentPosts are empty.
+	IsBlockedByMe bool            `json:"is_blocked_by_me"`
+	JoinedSpaces  []SpaceWithMeta `json:"joined_spaces"`
+	RecentPosts   []PostWithMeta  `json:"recent_posts"`
 }

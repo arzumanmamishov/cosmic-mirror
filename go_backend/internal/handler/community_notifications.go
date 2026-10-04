@@ -27,7 +27,7 @@ func (h *CommunityNotificationsHandler) List(w http.ResponseWriter, r *http.Requ
 
 	notifs, err := h.notifSvc.List(r.Context(), userID, unreadOnly, limit, offset)
 	if err != nil {
-		respondError(w, http.StatusInternalServerError, "notifications_list_error", err.Error())
+		respondServiceError(w, http.StatusInternalServerError, "notifications_list_error", err)
 		return
 	}
 	respondSuccess(w, map[string]any{"notifications": notifs})
@@ -37,7 +37,7 @@ func (h *CommunityNotificationsHandler) UnreadCount(w http.ResponseWriter, r *ht
 	userID := middleware.UserIDFromContext(r.Context())
 	count, err := h.notifSvc.UnreadCount(r.Context(), userID)
 	if err != nil {
-		respondError(w, http.StatusInternalServerError, "unread_count_error", err.Error())
+		respondServiceError(w, http.StatusInternalServerError, "unread_count_error", err)
 		return
 	}
 	respondSuccess(w, map[string]any{"unread_count": count})
@@ -51,7 +51,7 @@ func (h *CommunityNotificationsHandler) MarkRead(w http.ResponseWriter, r *http.
 		return
 	}
 	if err := h.notifSvc.MarkRead(r.Context(), id, userID); err != nil {
-		respondError(w, http.StatusInternalServerError, "mark_read_error", err.Error())
+		respondServiceError(w, http.StatusInternalServerError, "mark_read_error", err)
 		return
 	}
 	respondNoContent(w)
@@ -60,7 +60,7 @@ func (h *CommunityNotificationsHandler) MarkRead(w http.ResponseWriter, r *http.
 func (h *CommunityNotificationsHandler) MarkAllRead(w http.ResponseWriter, r *http.Request) {
 	userID := middleware.UserIDFromContext(r.Context())
 	if err := h.notifSvc.MarkAllRead(r.Context(), userID); err != nil {
-		respondError(w, http.StatusInternalServerError, "mark_all_read_error", err.Error())
+		respondServiceError(w, http.StatusInternalServerError, "mark_all_read_error", err)
 		return
 	}
 	respondNoContent(w)

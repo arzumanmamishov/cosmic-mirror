@@ -24,7 +24,7 @@ func (h *DailyReadingHandler) GetToday(w http.ResponseWriter, r *http.Request) {
 
 	reading, err := h.readingSvc.GetDailyReading(r.Context(), userID, today)
 	if err != nil {
-		respondError(w, http.StatusInternalServerError, "reading_error", err.Error())
+		respondServiceError(w, http.StatusInternalServerError, "reading_error", err)
 		return
 	}
 	respondSuccess(w, reading)
@@ -48,7 +48,7 @@ func (h *DailyReadingHandler) GetByDate(w http.ResponseWriter, r *http.Request) 
 
 	reading, err := h.readingSvc.GetDailyReading(r.Context(), userID, date)
 	if err != nil {
-		respondError(w, http.StatusInternalServerError, "reading_error", err.Error())
+		respondServiceError(w, http.StatusInternalServerError, "reading_error", err)
 		return
 	}
 	respondSuccess(w, reading)

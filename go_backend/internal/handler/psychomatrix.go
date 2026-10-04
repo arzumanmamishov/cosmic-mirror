@@ -26,7 +26,7 @@ func (h *PsychomatrixHandler) GetReading(w http.ResponseWriter, r *http.Request)
 				"Set your birth profile first to get a psychomatrix reading.")
 			return
 		}
-		respondError(w, http.StatusInternalServerError, "psychomatrix_error", err.Error())
+		respondServiceError(w, http.StatusInternalServerError, "psychomatrix_error", err)
 		return
 	}
 	respondSuccess(w, reading)

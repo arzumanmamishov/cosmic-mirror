@@ -2,8 +2,14 @@ package handler
 
 import (
 	"encoding/json"
+	"errors"
 	"log/slog"
 	"net/http"
+	"strings"
+	"unicode"
+	"unicode/utf8"
+
+	"cosmic-mirror/internal/domain"
 )
 
 type Handlers struct {
@@ -24,6 +30,8 @@ type Handlers struct {
 	Comments               *CommentsHandler
 	CommunityNotifications *CommunityNotificationsHandler
 	Discovery              *DiscoveryHandler
+	// Reports, blocks and the admin moderation queue (UGC safety)
+	Moderation *ModerationHandler
 	// Numerology + Human Design
 	Numerology    *NumerologyHandler
 	HumanDesign   *HumanDesignHandler
@@ -58,6 +66,36 @@ func respondError(w http.ResponseWriter, status int, code, message string) {
 	respondJSON(w, status, errorResponse{
 		Error: errorBody{Code: code, Message: message},
 	})
+}
+
+// respondServiceError is respondError for an error coming back from a
+// service. Input the service rejected (wrapped with domain.ErrValidation)
+// becomes a 400 carrying the service's message; anything else gets
+// [status] — for 5xx, respondError logs the detail and sends a generic
+// message, so driver / library text never reaches the client.
+func respondServiceError(w http.ResponseWriter, status int, code string, err error) {
+	if errors.Is(err, domain.ErrValidation) {
+		respondError(w, http.StatusBadRequest, "validation_error", validationMessage(err))
+		return
+	}
+	respondError(w, status, code, err.Error())
+}
+
+// validationMessage extracts the human part of an ErrValidation-wrapped
+// error. Services wrap as fmt.Errorf("%w: msg", domain.ErrValidation), and
+// callers may add context in front ("create x: validation failed: msg"),
+// so everything up to and including the sentinel text is dropped.
+func validationMessage(err error) string {
+	msg := err.Error()
+	sentinel := domain.ErrValidation.Error()
+	if i := strings.LastIndex(msg, sentinel); i >= 0 {
+		msg = strings.TrimLeft(msg[i+len(sentinel):], ": ")
+	}
+	if msg == "" {
+		return "Invalid input"
+	}
+	r, size := utf8.DecodeRuneInString(msg)
+	return string(unicode.ToUpper(r)) + msg[size:]
 }
 
 func respondSuccess(w http.ResponseWriter, data any) {

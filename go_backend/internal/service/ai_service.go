@@ -4,8 +4,10 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log/slog"
 	"strings"
 	"time"
+	"unicode/utf8"
 
 	"cosmic-mirror/internal/domain"
 	"cosmic-mirror/internal/middleware"
@@ -15,6 +17,9 @@ import (
 	"github.com/google/uuid"
 	"github.com/redis/go-redis/v9"
 )
+
+// maxChatMessageRunes caps a single user chat message, in characters.
+const maxChatMessageRunes = 500
 
 // ChatLimitError is returned by SendMessage when a free user has hit
 // the daily message cap. Handlers can type-assert to map it to a 429.
@@ -187,9 +192,10 @@ func (s *AIService) SendMessage(ctx context.Context, userID uuid.UUID, threadID 
 		return nil, err
 	}
 
-	// Validate input
-	if len(content) > 500 {
-		return nil, fmt.Errorf("message too long (max 500 characters)")
+	// Validate input. Characters, not bytes: a Turkish/emoji message of
+	// 300 characters can easily exceed 500 bytes.
+	if utf8.RuneCountInString(content) > maxChatMessageRunes {
+		return nil, fmt.Errorf("%w: message too long (max %d characters)", domain.ErrValidation, maxChatMessageRunes)
 	}
 
 	// Daily cap for free users — premium bypasses entirely.
@@ -264,10 +270,16 @@ func (s *AIService) SendMessage(ctx context.Context, userID uuid.UUID, threadID 
 		return nil, fmt.Errorf("save assistant message: %w", err)
 	}
 
-	// Auto-title the thread from first exchange
+	// Auto-title the thread from the first exchange. Persisted (only if
+	// still untitled) so the thread list shows it; best-effort — a failed
+	// title write must not fail a reply the user already paid for.
 	if thread != nil && thread.Title == nil {
 		title := truncateRunes(content, 50, "...")
-		thread.Title = &title
+		if err := s.chatRepo.SetTitleIfEmpty(ctx, threadID, title); err != nil {
+			slog.Warn("failed to persist chat thread title", "thread_id", threadID, "error", err)
+		} else {
+			thread.Title = &title
+		}
 	}
 
 	return assistantMsg, nil

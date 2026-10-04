@@ -1,7 +1,13 @@
 package handler
 
 import (
+	"bytes"
+	"errors"
+	"io"
 	"net/http"
+	"path/filepath"
+	"regexp"
+	"strings"
 	"unicode/utf8"
 
 	"cosmic-mirror/internal/domain"
@@ -71,12 +77,12 @@ func (h *UserHandler) UpdateMe(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	// The display name is shown to other users and fed into AI prompts.
-	if input.Name != nil && utf8.RuneCountInString(*input.Name) > 80 {
+	if input.Name != nil && utf8.RuneCountInString(*input.Name) > maxNameRunes {
 		respondError(w, http.StatusBadRequest, "invalid_body", "Name must be at most 80 characters")
 		return
 	}
 	if err := h.userSvc.UpdateUser(r.Context(), userID, input); err != nil {
-		respondError(w, http.StatusInternalServerError, "update_error", err.Error())
+		respondServiceError(w, http.StatusInternalServerError, "update_error", err)
 		return
 	}
 	respondNoContent(w)
@@ -85,10 +91,34 @@ func (h *UserHandler) UpdateMe(w http.ResponseWriter, r *http.Request) {
 func (h *UserHandler) DeleteMe(w http.ResponseWriter, r *http.Request) {
 	userID := middleware.UserIDFromContext(r.Context())
 	if err := h.userSvc.DeleteUser(r.Context(), userID); err != nil {
-		respondError(w, http.StatusInternalServerError, "delete_error", err.Error())
+		respondServiceError(w, http.StatusInternalServerError, "delete_error", err)
 		return
 	}
 	respondNoContent(w)
+}
+
+// AvatarMaxBytes caps an avatar upload request (multipart body included)
+// so a misbehaving client can't fill the disk in one shot. The router's
+// global body limit uses the same value for this route only.
+const AvatarMaxBytes = 8 << 20
+
+// avatarExts / isAvatarImage mirror the avatar store's allow-list so an
+// unsupported image is rejected with 415 here instead of surfacing as a
+// 500 from the store.
+var avatarExts = map[string]bool{".jpg": true, ".jpeg": true, ".png": true, ".webp": true, ".heic": true}
+
+func isAvatarImage(head []byte) bool {
+	switch http.DetectContentType(head) {
+	case "image/jpeg", "image/png", "image/webp":
+		return true
+	}
+	if len(head) >= 12 && string(head[4:8]) == "ftyp" {
+		switch string(head[8:12]) {
+		case "heic", "heix", "hevc", "hevx", "mif1", "msf1", "heim", "heis":
+			return true
+		}
+	}
+	return false
 }
 
 // UploadAvatar reads a multipart "file" field, saves it via the avatar
@@ -96,8 +126,7 @@ func (h *UserHandler) DeleteMe(w http.ResponseWriter, r *http.Request) {
 func (h *UserHandler) UploadAvatar(w http.ResponseWriter, r *http.Request) {
 	userID := middleware.UserIDFromContext(r.Context())
 
-	// Cap to 8MB so a misbehaving client can't fill the disk in one shot.
-	const maxBytes = 8 << 20
+	const maxBytes = AvatarMaxBytes
 	r.Body = http.MaxBytesReader(w, r.Body, maxBytes)
 
 	if err := r.ParseMultipartForm(maxBytes); err != nil {
@@ -113,9 +142,27 @@ func (h *UserHandler) UploadAvatar(w http.ResponseWriter, r *http.Request) {
 	}
 	defer file.Close()
 
-	url, err := h.userSvc.SetAvatar(r.Context(), userID, header.Filename, file)
+	if !avatarExts[strings.ToLower(filepath.Ext(header.Filename))] {
+		respondError(w, http.StatusUnsupportedMediaType, "unsupported_image",
+			"Avatar must be a JPEG, PNG, WebP or HEIC image.")
+		return
+	}
+	head := make([]byte, 512)
+	n, err := io.ReadFull(file, head)
+	if err != nil && !errors.Is(err, io.ErrUnexpectedEOF) {
+		respondError(w, http.StatusBadRequest, "invalid_file", "Could not read the uploaded file.")
+		return
+	}
+	if !isAvatarImage(head[:n]) {
+		respondError(w, http.StatusUnsupportedMediaType, "unsupported_image",
+			"Avatar must be a JPEG, PNG, WebP or HEIC image.")
+		return
+	}
+	src := io.MultiReader(bytes.NewReader(head[:n]), file)
+
+	url, err := h.userSvc.SetAvatar(r.Context(), userID, header.Filename, src)
 	if err != nil {
-		respondError(w, http.StatusInternalServerError, "save_error", err.Error())
+		respondServiceError(w, http.StatusInternalServerError, "save_error", err)
 		return
 	}
 	respondSuccess(w, map[string]string{"avatar_url": url})
@@ -125,7 +172,7 @@ func (h *UserHandler) UploadAvatar(w http.ResponseWriter, r *http.Request) {
 func (h *UserHandler) DeleteAvatar(w http.ResponseWriter, r *http.Request) {
 	userID := middleware.UserIDFromContext(r.Context())
 	if err := h.userSvc.ClearAvatar(r.Context(), userID); err != nil {
-		respondError(w, http.StatusInternalServerError, "clear_error", err.Error())
+		respondServiceError(w, http.StatusInternalServerError, "clear_error", err)
 		return
 	}
 	respondNoContent(w)
@@ -140,7 +187,7 @@ func (h *UserHandler) CreateBirthProfile(w http.ResponseWriter, r *http.Request)
 	}
 	profile, err := h.userSvc.CreateBirthProfile(r.Context(), userID, input)
 	if err != nil {
-		respondError(w, http.StatusInternalServerError, "profile_error", err.Error())
+		respondServiceError(w, http.StatusInternalServerError, "profile_error", err)
 		return
 	}
 	respondCreated(w, profile)
@@ -154,7 +201,7 @@ func (h *UserHandler) UpdateBirthProfile(w http.ResponseWriter, r *http.Request)
 		return
 	}
 	if err := h.userSvc.UpdateBirthProfile(r.Context(), userID, input); err != nil {
-		respondError(w, http.StatusInternalServerError, "profile_error", err.Error())
+		respondServiceError(w, http.StatusInternalServerError, "profile_error", err)
 		return
 	}
 	respondNoContent(w)
@@ -166,7 +213,7 @@ func (h *UserHandler) GetStats(w http.ResponseWriter, r *http.Request) {
 	userID := middleware.UserIDFromContext(r.Context())
 	stats, err := h.userSvc.GetStats(r.Context(), userID)
 	if err != nil {
-		respondError(w, http.StatusInternalServerError, "stats_error", err.Error())
+		respondServiceError(w, http.StatusInternalServerError, "stats_error", err)
 		return
 	}
 	respondSuccess(w, stats)
@@ -178,7 +225,7 @@ func (h *UserHandler) GetBirthProfile(w http.ResponseWriter, r *http.Request) {
 	userID := middleware.UserIDFromContext(r.Context())
 	profile, err := h.userSvc.GetBirthProfile(r.Context(), userID)
 	if err != nil {
-		respondError(w, http.StatusInternalServerError, "profile_error", err.Error())
+		respondServiceError(w, http.StatusInternalServerError, "profile_error", err)
 		return
 	}
 	if profile == nil {
@@ -192,7 +239,7 @@ func (h *UserHandler) GetPreferences(w http.ResponseWriter, r *http.Request) {
 	userID := middleware.UserIDFromContext(r.Context())
 	prefs, err := h.loadPrefs(r, userID)
 	if err != nil {
-		respondError(w, http.StatusInternalServerError, "prefs_error", err.Error())
+		respondServiceError(w, http.StatusInternalServerError, "prefs_error", err)
 		return
 	}
 	respondSuccess(w, map[string]any{
@@ -222,9 +269,17 @@ func (h *UserHandler) UpdatePreferences(w http.ResponseWriter, r *http.Request) 
 			}
 		}
 	}
+	if input.NotificationTime != nil && !isHHMM(*input.NotificationTime) {
+		respondError(w, http.StatusBadRequest, "invalid_body", "notification_time must be HH:MM (24-hour)")
+		return
+	}
+	if input.Theme != nil && !validThemes[strings.ToLower(strings.TrimSpace(*input.Theme))] {
+		respondError(w, http.StatusBadRequest, "invalid_body", "theme must be one of: dark, light, system")
+		return
+	}
 	prefs, err := h.loadPrefs(r, userID)
 	if err != nil {
-		respondError(w, http.StatusInternalServerError, "prefs_error", err.Error())
+		respondServiceError(w, http.StatusInternalServerError, "prefs_error", err)
 		return
 	}
 	if input.FocusAreas != nil {
@@ -237,14 +292,25 @@ func (h *UserHandler) UpdatePreferences(w http.ResponseWriter, r *http.Request) 
 		prefs.NotificationTime = *input.NotificationTime
 	}
 	if input.Theme != nil {
-		prefs.Theme = *input.Theme
+		prefs.Theme = strings.ToLower(strings.TrimSpace(*input.Theme))
 	}
 	if err := h.prefsRepo.Upsert(r.Context(), &prefs); err != nil {
-		respondError(w, http.StatusInternalServerError, "prefs_error", err.Error())
+		respondServiceError(w, http.StatusInternalServerError, "prefs_error", err)
 		return
 	}
 	respondNoContent(w)
 }
+
+// validThemes are the values the theme column accepts (VARCHAR(20),
+// default "dark"). The app doesn't send a theme today; this keeps
+// arbitrary strings (or a 21+ char value → DB error → 500) out.
+var validThemes = map[string]bool{"dark": true, "light": true, "system": true}
+
+// hhmm matches a 24-hour "HH:MM" time — the notification_time column is
+// VARCHAR(5) and the notification worker compares it to HH24:MI.
+var hhmm = regexp.MustCompile(`^([01][0-9]|2[0-3]):[0-5][0-9]$`)
+
+func isHHMM(s string) bool { return hhmm.MatchString(s) }
 
 // ritualCatalog is the fixed set of daily rituals the app offers. Completion
 // state is layered on from the user's ritual_completions rows.
@@ -258,7 +324,7 @@ func (h *UserHandler) GetRitualsToday(w http.ResponseWriter, r *http.Request) {
 	userID := middleware.UserIDFromContext(r.Context())
 	completions, err := h.ritualRepo.GetTodayCompletions(r.Context(), userID)
 	if err != nil {
-		respondError(w, http.StatusInternalServerError, "rituals_error", err.Error())
+		respondServiceError(w, http.StatusInternalServerError, "rituals_error", err)
 		return
 	}
 	done := make(map[string]bool, len(completions))
@@ -275,7 +341,7 @@ func (h *UserHandler) GetRitualsToday(w http.ResponseWriter, r *http.Request) {
 	}
 	streak, err := h.ritualRepo.GetStreak(r.Context(), userID)
 	if err != nil {
-		respondError(w, http.StatusInternalServerError, "rituals_error", err.Error())
+		respondServiceError(w, http.StatusInternalServerError, "rituals_error", err)
 		return
 	}
 	respondSuccess(w, map[string]any{"rituals": rituals, "streak": streak})
@@ -297,12 +363,12 @@ func (h *UserHandler) CompleteRitual(w http.ResponseWriter, r *http.Request) {
 	}
 	c := &domain.RitualCompletion{UserID: userID, RitualType: ritualType}
 	if err := h.ritualRepo.Complete(r.Context(), c); err != nil {
-		respondError(w, http.StatusInternalServerError, "ritual_error", err.Error())
+		respondServiceError(w, http.StatusInternalServerError, "ritual_error", err)
 		return
 	}
 	streak, err := h.ritualRepo.GetStreak(r.Context(), userID)
 	if err != nil {
-		respondError(w, http.StatusInternalServerError, "ritual_error", err.Error())
+		respondServiceError(w, http.StatusInternalServerError, "ritual_error", err)
 		return
 	}
 	respondSuccess(w, map[string]any{"completed": true, "streak": streak})
@@ -312,7 +378,7 @@ func (h *UserHandler) GetNotificationPrefs(w http.ResponseWriter, r *http.Reques
 	userID := middleware.UserIDFromContext(r.Context())
 	prefs, err := h.loadPrefs(r, userID)
 	if err != nil {
-		respondError(w, http.StatusInternalServerError, "prefs_error", err.Error())
+		respondServiceError(w, http.StatusInternalServerError, "prefs_error", err)
 		return
 	}
 	respondSuccess(w, map[string]any{
@@ -330,9 +396,13 @@ func (h *UserHandler) UpdateNotificationPrefs(w http.ResponseWriter, r *http.Req
 		respondError(w, http.StatusBadRequest, "invalid_body", "Invalid request body")
 		return
 	}
+	if input.PreferredTime != nil && !isHHMM(*input.PreferredTime) {
+		respondError(w, http.StatusBadRequest, "invalid_body", "preferred_time must be HH:MM (24-hour)")
+		return
+	}
 	prefs, err := h.loadPrefs(r, userID)
 	if err != nil {
-		respondError(w, http.StatusInternalServerError, "prefs_error", err.Error())
+		respondServiceError(w, http.StatusInternalServerError, "prefs_error", err)
 		return
 	}
 	if input.DailyReading != nil {
@@ -348,7 +418,7 @@ func (h *UserHandler) UpdateNotificationPrefs(w http.ResponseWriter, r *http.Req
 		prefs.NotificationTime = *input.PreferredTime
 	}
 	if err := h.prefsRepo.Upsert(r.Context(), &prefs); err != nil {
-		respondError(w, http.StatusInternalServerError, "prefs_error", err.Error())
+		respondServiceError(w, http.StatusInternalServerError, "prefs_error", err)
 		return
 	}
 	respondNoContent(w)

@@ -4,8 +4,15 @@ package psychomatrix
 // meanings that vary by how many times the digit appears (the "count band"),
 // and per-line meanings that vary by line strength.
 
-// CellTitle returns the short title for a grid cell digit (1..9).
-func CellTitle(digit int) string {
+// CellTitle returns the short title for a grid cell digit (1..9) in the
+// requested language ("en" or "tr"). Missing Turkish entries fall back to
+// English.
+func CellTitle(lang string, digit int) string {
+	if lang == "tr" {
+		if t := cellTitlesTR[digit]; t != "" {
+			return t
+		}
+	}
 	return cellTitles[digit]
 }
 
@@ -35,8 +42,15 @@ func countBand(count int) int {
 }
 
 // CellMeaning returns the interpretation for a cell digit given how many
-// times that digit occurs in the digit pool.
-func CellMeaning(digit, count int) string {
+// times that digit occurs in the digit pool, in the requested language.
+func CellMeaning(lang string, digit, count int) string {
+	if lang == "tr" {
+		if bands, ok := cellBandsTR[digit]; ok {
+			if t := bands[countBand(count)]; t != "" {
+				return t
+			}
+		}
+	}
 	bands, ok := cellBands[digit]
 	if !ok {
 		return ""
@@ -111,8 +125,14 @@ var cellBands = map[int][5]string{
 	},
 }
 
-// LineTitle returns the display title for a line key.
-func LineTitle(key string) string {
+// LineTitle returns the display title for a line key in the requested
+// language.
+func LineTitle(lang string, key string) string {
+	if lang == "tr" {
+		if t := lineTitlesTR[key]; t != "" {
+			return t
+		}
+	}
 	return lineTitles[key]
 }
 
@@ -129,19 +149,32 @@ var lineTitles = map[string]string{
 
 // LineMeaning returns the interpretation for a line given its strength
 // (total digit count across its three cells). Strength is read in three
-// bands: weak (0-1), balanced (2-4), strong (5+).
-func LineMeaning(key string, strength int) string {
+// bands: weak (0-1), balanced (2-4), strong (5+). Text is returned in the
+// requested language.
+func LineMeaning(lang string, key string, strength int) string {
+	if lang == "tr" {
+		if bands, ok := lineBandsTR[key]; ok {
+			if t := bands[lineBand(strength)]; t != "" {
+				return t
+			}
+		}
+	}
 	bands, ok := lineBands[key]
 	if !ok {
 		return ""
 	}
+	return bands[lineBand(strength)]
+}
+
+// lineBand maps a line strength to its band index: 0 weak, 1 balanced, 2 strong.
+func lineBand(strength int) int {
 	switch {
 	case strength <= 1:
-		return bands[0]
+		return 0
 	case strength <= 4:
-		return bands[1]
+		return 1
 	default:
-		return bands[2]
+		return 2
 	}
 }
 

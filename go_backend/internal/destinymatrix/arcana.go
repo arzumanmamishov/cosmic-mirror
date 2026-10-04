@@ -4,24 +4,38 @@ package destinymatrix
 // the octagram. Each point value 1..22 maps to one arcana with a short name
 // and a one-to-two-sentence meaning.
 
-// Arcana returns the name and meaning for an arcana value (1..22). For an
-// out-of-range value it returns empty strings.
-func Arcana(n int) (name, meaning string) {
+// Arcana returns the name and meaning for an arcana value (1..22) in the
+// requested language ("en" or "tr"; anything else is treated as "en"). A
+// missing Turkish field falls back to English. For an out-of-range value it
+// returns empty strings.
+func Arcana(lang string, n int) (name, meaning string) {
 	a, ok := arcana[n]
 	if !ok {
 		return "", ""
+	}
+	if lang == "tr" {
+		if t, ok := arcanaTR[n]; ok {
+			if t.name != "" {
+				a.name = t.name
+			}
+			if t.meaning != "" {
+				a.meaning = t.meaning
+			}
+		}
 	}
 	return a.name, a.meaning
 }
 
 // ArcanaName returns just the name for an arcana value, or "" if unknown.
-func ArcanaName(n int) string {
-	return arcana[n].name
+func ArcanaName(lang string, n int) string {
+	name, _ := Arcana(lang, n)
+	return name
 }
 
 // ArcanaMeaning returns just the meaning for an arcana value, or "" if unknown.
-func ArcanaMeaning(n int) string {
-	return arcana[n].meaning
+func ArcanaMeaning(lang string, n int) string {
+	_, meaning := Arcana(lang, n)
+	return meaning
 }
 
 type arcanaInfo struct {

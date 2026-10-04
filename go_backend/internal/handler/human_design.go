@@ -28,7 +28,7 @@ func (h *HumanDesignHandler) GetChart(w http.ResponseWriter, r *http.Request) {
 			respondError(w, http.StatusBadRequest, "missing_birth_time",
 				"Birth time is required for a Human Design chart — please update your profile with the exact time.")
 		default:
-			respondError(w, http.StatusInternalServerError, "human_design_error", err.Error())
+			respondServiceError(w, http.StatusInternalServerError, "human_design_error", err)
 		}
 		return
 	}

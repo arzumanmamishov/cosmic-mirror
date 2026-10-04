@@ -5,6 +5,7 @@ import (
 	"errors"
 
 	"cosmic-mirror/internal/domain"
+	"cosmic-mirror/internal/middleware"
 	"cosmic-mirror/internal/psychomatrix"
 	"cosmic-mirror/internal/repository"
 
@@ -31,6 +32,7 @@ func (s *PsychomatrixService) GetReading(ctx context.Context, userID uuid.UUID) 
 	}
 
 	res := psychomatrix.Compute(profile.BirthDate)
+	lang := middleware.LangFromContext(ctx)
 
 	cells := make([]domain.PsychomatrixCell, 0, 9)
 	for digit := 1; digit <= 9; digit++ {
@@ -39,8 +41,8 @@ func (s *PsychomatrixService) GetReading(ctx context.Context, userID uuid.UUID) 
 			Digit:    digit,
 			Count:    count,
 			Repeated: repeatedDigit(digit, count),
-			Title:    psychomatrix.CellTitle(digit),
-			Meaning:  psychomatrix.CellMeaning(digit, count),
+			Title:    psychomatrix.CellTitle(lang, digit),
+			Meaning:  psychomatrix.CellMeaning(lang, digit, count),
 		})
 	}
 
@@ -49,10 +51,10 @@ func (s *PsychomatrixService) GetReading(ctx context.Context, userID uuid.UUID) 
 		strength := res.Lines[ld.Key]
 		lines = append(lines, domain.PsychomatrixLine{
 			Key:      ld.Key,
-			Title:    psychomatrix.LineTitle(ld.Key),
+			Title:    psychomatrix.LineTitle(lang, ld.Key),
 			Cells:    []int{ld.Cells[0], ld.Cells[1], ld.Cells[2]},
 			Strength: strength,
-			Meaning:  psychomatrix.LineMeaning(ld.Key, strength),
+			Meaning:  psychomatrix.LineMeaning(lang, ld.Key, strength),
 		})
 	}
 

@@ -23,36 +23,60 @@ func NewCompatibilityRepository(db *sqlx.DB) *CompatibilityRepository {
 func (r *CompatibilityRepository) Create(ctx context.Context, report *domain.CompatibilityReport) error {
 	report.ID = uuid.New()
 	report.CreatedAt = time.Now()
+	if report.Lang == "" {
+		report.Lang = "en"
+	}
 
 	_, err := r.db.ExecContext(ctx,
 		`INSERT INTO compatibility_reports (id, user_id, saved_person_id,
 		 emotional_score, communication_score, chemistry_score,
-		 conflict_patterns, advice, full_report, created_at)
-		 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`,
+		 conflict_patterns, advice, full_report, lang, created_at)
+		 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)`,
 		report.ID, report.UserID, report.SavedPersonID,
 		report.EmotionalScore, report.CommunicationScore, report.ChemistryScore,
-		report.ConflictPatterns, report.Advice, report.FullReport, report.CreatedAt,
+		report.ConflictPatterns, report.Advice, report.FullReport, report.Lang, report.CreatedAt,
 	)
 	return err
 }
 
-func (r *CompatibilityRepository) GetByUserAndPerson(ctx context.Context, userID, personID uuid.UUID) (*domain.CompatibilityReport, error) {
+// GetByUserAndPerson returns the newest report for (user, person),
+// preferring one generated in [lang]: a report in the caller's language is
+// returned if one exists, otherwise the newest report in any language.
+// Callers that must not serve another language check report.Lang.
+// Returns nil, nil when the user has no report for this person.
+func (r *CompatibilityRepository) GetByUserAndPerson(ctx context.Context, userID, personID uuid.UUID, lang string) (*domain.CompatibilityReport, error) {
 	var report domain.CompatibilityReport
 	err := r.db.GetContext(ctx, &report,
-		`SELECT cr.*, sp.name as person_name
+		`SELECT cr.id, cr.user_id, cr.saved_person_id,
+		        cr.emotional_score, cr.communication_score, cr.chemistry_score,
+		        cr.conflict_patterns, cr.advice, cr.full_report, cr.lang,
+		        cr.created_at, sp.name AS person_name
 		 FROM compatibility_reports cr
 		 JOIN saved_people sp ON sp.id = cr.saved_person_id
 		 WHERE cr.user_id = $1 AND cr.saved_person_id = $2
-		 ORDER BY cr.created_at DESC LIMIT 1`,
-		userID, personID,
+		 ORDER BY (cr.lang = $3) DESC, cr.created_at DESC
+		 LIMIT 1`,
+		userID, personID, lang,
 	)
 	if errors.Is(err, sql.ErrNoRows) {
 		return nil, nil
 	}
-	if err == nil {
-		report.CalculateOverall()
+	if err != nil {
+		return nil, err
 	}
-	return &report, err
+	report.CalculateOverall()
+	return &report, nil
+}
+
+// CountUserReportsSince counts reports the user generated at or after
+// [since]. Fallback for the free-tier daily cap when Redis is unavailable.
+func (r *CompatibilityRepository) CountUserReportsSince(ctx context.Context, userID uuid.UUID, since time.Time) (int, error) {
+	var n int
+	err := r.db.GetContext(ctx, &n,
+		`SELECT COUNT(*) FROM compatibility_reports WHERE user_id = $1 AND created_at >= $2`,
+		userID, since,
+	)
+	return n, err
 }
 
 // SavedPeople methods

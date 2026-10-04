@@ -76,7 +76,10 @@ type DailyReadingRepository interface {
 type ChatRepository interface {
 	CreateThread(ctx context.Context, thread *domain.ChatThread) error
 	GetThread(ctx context.Context, id uuid.UUID) (*domain.ChatThread, error)
+	// ListThreads returns the user's most recent threads (bounded) with
+	// their last message.
 	ListThreads(ctx context.Context, userID uuid.UUID) ([]domain.ChatThread, error)
+	SetTitleIfEmpty(ctx context.Context, threadID uuid.UUID, title string) error
 	DeleteThread(ctx context.Context, id uuid.UUID) error
 	CreateMessage(ctx context.Context, msg *domain.ChatMessage) error
 	GetMessages(ctx context.Context, threadID uuid.UUID, limit, offset int) ([]domain.ChatMessage, error)
@@ -93,7 +96,10 @@ type SavedPeopleRepository interface {
 
 type CompatibilityRepository interface {
 	Create(ctx context.Context, report *domain.CompatibilityReport) error
-	GetByUserAndPerson(ctx context.Context, userID, personID uuid.UUID) (*domain.CompatibilityReport, error)
+	// GetByUserAndPerson prefers a report in [lang], falling back to the
+	// newest in any language. Returns nil, nil when none exists.
+	GetByUserAndPerson(ctx context.Context, userID, personID uuid.UUID, lang string) (*domain.CompatibilityReport, error)
+	CountUserReportsSince(ctx context.Context, userID uuid.UUID, since time.Time) (int, error)
 }
 
 type JournalRepository interface {
@@ -113,6 +119,12 @@ type SubscriptionRepository interface {
 	GetByUserID(ctx context.Context, userID uuid.UUID) (*domain.Subscription, error)
 	GetByStripeCustomer(ctx context.Context, stripeCustomerID string) (*domain.Subscription, error)
 	Upsert(ctx context.Context, sub *domain.Subscription) error
-	UpdateStatus(ctx context.Context, revenueCatID string, status domain.SubscriptionStatus, expiresAt *time.Time) error
+	// UpsertIfNotPremium skips the write (returns false) when the user's
+	// existing row currently grants premium.
+	UpsertIfNotPremium(ctx context.Context, sub *domain.Subscription) (bool, error)
+	// ApplyStoreState records a RevenueCat (App Store / Google Play)
+	// snapshot without touching the Stripe columns. Returns false when it
+	// was skipped (a newer snapshot is stored, or the user is gone).
+	ApplyStoreState(ctx context.Context, userID uuid.UUID, state domain.StoreSubscriptionState) (bool, error)
 	UpdateFromStripe(ctx context.Context, stripeSubscriptionID string, status domain.SubscriptionStatus, priceID string, planType domain.PlanType, currentPeriodEnd *time.Time, cancelAtPeriodEnd bool) error
 }

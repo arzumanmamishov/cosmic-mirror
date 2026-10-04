@@ -37,7 +37,10 @@ func NewRouter(h *handler.Handlers, auth *middleware.Auth, rl *middleware.RateLi
 	r.Use(middleware.Logger)
 	r.Use(chimw.Recoverer)
 	r.Use(middleware.SecurityHeaders(cfg.IsProd()))
-	r.Use(middleware.MaxBody(1 << 20))
+	// 1 MB for every JSON route; only the avatar upload gets a larger cap.
+	r.Use(middleware.MaxBody(1<<20, map[string]int64{
+		"/api/v1/users/me/avatar": handler.AvatarMaxBytes,
+	}))
 	r.Use(middleware.Language)
 	// Auth is a Bearer header, never a cookie, so CORS needs no
 	// credentials. Origins come from CORS_ORIGINS.
@@ -87,8 +90,16 @@ func NewRouter(h *handler.Handlers, auth *middleware.Auth, rl *middleware.RateLi
 		// stub — new clients hit /auth/register or /auth/login instead.
 		// Every public auth route is rate-limited per client IP — these
 		// are the password / OTP brute-force and mail-bombing targets.
+		// The per-IP budget is deliberately loose (30/min): mobile
+		// carriers put thousands of users behind one carrier-grade-NAT
+		// address, and a tight per-IP cap locks them all out at launch.
+		// The real brute-force defences are per account/email and can't
+		// be dodged by rotating IPs: LoginLockout below (10 bad passwords
+		// / 15 min), and in OTPService 5 guesses per code, 3 codes / 10
+		// min and 10 / day per email, and an OTP lock after 10 failed
+		// verifications per email in 24h.
 		r.Group(func(r chi.Router) {
-			r.Use(rl.LimitByIP("auth", 10))
+			r.Use(rl.LimitByIP("auth", 30))
 			r.Post("/auth/session", h.Auth.CreateSession)
 			r.Post("/auth/otp/request", h.Auth.RequestOTP)
 			r.Post("/auth/register", h.Auth.Register)
@@ -102,7 +113,8 @@ func NewRouter(h *handler.Handlers, auth *middleware.Auth, rl *middleware.RateLi
 			r.Post("/auth/logout", h.Auth.Logout)
 		})
 
-		// Public: subscription webhooks (RevenueCat legacy + Stripe).
+		// Public: subscription webhooks — RevenueCat (App Store / Google
+		// Play purchases from the mobile app) + Stripe (web checkout).
 		// Both must stay outside the auth-protected group because the
 		// webhook senders authenticate via signature, not a user token.
 		r.Post("/subscription/webhook", h.Subscription.HandleWebhook)
@@ -112,7 +124,10 @@ func NewRouter(h *handler.Handlers, auth *middleware.Auth, rl *middleware.RateLi
 		r.Get("/legal/privacy", h.Auth.PrivacyPolicy)
 		r.Get("/legal/terms", h.Auth.TermsOfService)
 
-		// Public: places search (geocoding)
+		// Public: places search (geocoding). Public because the app calls
+		// it without a bearer token (see flutter_app api_client.dart
+		// _isAuthEndpoint). Per-IP limited here; the handler adds a Redis
+		// result cache and a global 1 req/s throttle toward Nominatim.
 		r.With(rl.LimitByIP("places", 30)).Get("/places/search", h.Places.Search)
 
 		// Protected routes
@@ -185,9 +200,9 @@ func NewRouter(h *handler.Handlers, auth *middleware.Auth, rl *middleware.RateLi
 			// Subscription
 			r.Get("/subscription/status", h.Subscription.GetStatus)
 
-			// Stripe — premium subscriptions purchased via the mobile
-			// Payment Sheet. POST creates a Customer + incomplete Sub,
-			// returning the params the client needs to complete payment.
+			// Stripe — web checkout only (the mobile apps must sell through
+			// App Store / Google Play). POST creates a Customer + incomplete
+			// Sub, returning the params the client needs to complete payment.
 			r.Post("/stripe/payment-sheet", h.Stripe.PaymentSheet)
 			r.Post("/stripe/cancel", h.Stripe.Cancel)
 
@@ -238,6 +253,23 @@ func NewRouter(h *handler.Handlers, auth *middleware.Auth, rl *middleware.RateLi
 			// Community: discovery (categories + popular hashtags)
 			r.Get("/space-categories", h.Discovery.ListCategories)
 			r.Get("/hashtags/popular", h.Discovery.ListPopularHashtags)
+
+			// Community safety (App Store 1.2 / Play UGC): reports and
+			// blocks. Reports get their own per-user budget on top of
+			// the global limiter so one account can't flood the
+			// moderation inbox.
+			r.With(rl.LimitByUser("reports", 10)).Post("/reports", h.Moderation.CreateReport)
+			r.Get("/users/me/blocks", h.Moderation.ListBlocks)
+			r.Post("/users/{userID}/block", h.Moderation.Block)
+			r.Delete("/users/{userID}/block", h.Moderation.Unblock)
+
+			// Admin moderation queue — allow-listed by ADMIN_EMAILS
+			// (403 for everyone else, and for everyone when unset).
+			r.Group(func(r chi.Router) {
+				r.Use(auth.RequireAdmin(cfg.AdminEmails))
+				r.Get("/admin/reports", h.Moderation.AdminListReports)
+				r.Post("/admin/reports/{reportID}/resolve", h.Moderation.AdminResolveReport)
+			})
 
 			// Numerology
 			r.Get("/numerology", h.Numerology.GetReading)

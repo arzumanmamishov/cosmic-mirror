@@ -71,3 +71,141 @@ func padaOf(siderealLongitude float64) int {
 	}
 	return pada
 }
+
+// ===== Localization =====
+//
+// Sanskrit proper names (nakshatra names, deities, gana, nadi) stay
+// transliterated; descriptive attributes (symbols, animals, gender and the
+// English-worded varna/caste values) get a Turkish rendering. Tables are
+// indexed by nakshatra Index-1 (deity/symbol) or keyed by the English value
+// (animal, varna/caste, gender). Missing entries fall back to English.
+
+type nakshatraTextTR struct {
+	Deity  string
+	Symbol string
+}
+
+var nakshatraTR = [27]nakshatraTextTR{
+	{Deity: "Ashwini Kumaras", Symbol: "At başı"},
+	{Deity: "Yama", Symbol: "Yoni / rahim"},
+	{Deity: "Agni", Symbol: "Ustura / alev"},
+	{Deity: "Brahma / Prajapati", Symbol: "At arabası / banyan ağacı"},
+	{Deity: "Soma / Chandra", Symbol: "Geyik başı"},
+	{Deity: "Rudra", Symbol: "Gözyaşı damlası / elmas"},
+	{Deity: "Aditi", Symbol: "Yay ve sadak"},
+	{Deity: "Brihaspati", Symbol: "İnek memesi / lotus"},
+	{Deity: "Naga / yılan", Symbol: "Çöreklenmiş yılan"},
+	{Deity: "Pitris (atalar)", Symbol: "Kraliyet tahtı"},
+	{Deity: "Bhaga", Symbol: "Yatağın ön ayakları / hamak"},
+	{Deity: "Aryaman", Symbol: "Yatağın arka ayakları"},
+	{Deity: "Savitr / Surya", Symbol: "El"},
+	{Deity: "Vishvakarma / Tvashtar", Symbol: "Parlak mücevher / inci"},
+	{Deity: "Vayu", Symbol: "Rüzgârda salınan fidan"},
+	{Deity: "Indra ve Agni", Symbol: "Zafer takı / çömlekçi çarkı"},
+	{Deity: "Mitra", Symbol: "Lotus / asa"},
+	{Deity: "Indra", Symbol: "Küpe / şemsiye"},
+	{Deity: "Nirriti", Symbol: "Kök demeti"},
+	{Deity: "Apas / sular", Symbol: "Fil dişi / yelpaze"},
+	{Deity: "Vishvedevas", Symbol: "Fil dişi / yatak tahtaları"},
+	{Deity: "Vishnu", Symbol: "Kulak / üç ayak izi"},
+	{Deity: "Sekiz Vasu", Symbol: "Davul / flüt"},
+	{Deity: "Varuna", Symbol: "Boş daire / 100 yıldız"},
+	{Deity: "Aja Ekapada", Symbol: "Cenaze sedyesinin ön kısmı / iki yüzlü adam"},
+	{Deity: "Ahir Budhnya", Symbol: "Cenaze sedyesinin arka kısmı / derin sulardaki yılan"},
+	{Deity: "Pushan", Symbol: "Balık / davul"},
+}
+
+var nakshatraAnimalTR = map[string]string{
+	"Horse (male)":      "At (erkek)",
+	"Horse (female)":    "At (dişi)",
+	"Elephant (male)":   "Fil (erkek)",
+	"Elephant (female)": "Fil (dişi)",
+	"Sheep (female)":    "Koyun (dişi)",
+	"Serpent (male)":    "Yılan (erkek)",
+	"Serpent (female)":  "Yılan (dişi)",
+	"Dog (male)":        "Köpek (erkek)",
+	"Dog (female)":      "Köpek (dişi)",
+	"Cat (male)":        "Kedi (erkek)",
+	"Cat (female)":      "Kedi (dişi)",
+	"Goat (male)":       "Keçi (erkek)",
+	"Rat (male)":        "Fare (erkek)",
+	"Rat (female)":      "Fare (dişi)",
+	"Cow (male)":        "Sığır (erkek)",
+	"Cow (female)":      "Sığır (dişi)",
+	"Buffalo (male)":    "Manda (erkek)",
+	"Buffalo (female)":  "Manda (dişi)",
+	"Tiger (male)":      "Kaplan (erkek)",
+	"Tigress":           "Kaplan (dişi)",
+	"Deer (male)":       "Geyik (erkek)",
+	"Deer (female)":     "Geyik (dişi)",
+	"Monkey (male)":     "Maymun (erkek)",
+	"Monkey (female)":   "Maymun (dişi)",
+	"Mongoose (male)":   "Firavunfaresi (erkek)",
+	"Lion (male)":       "Aslan (erkek)",
+	"Lion (female)":     "Aslan (dişi)",
+}
+
+// nakshatraVarnaTR covers both the Varna and Caste fields.
+var nakshatraVarnaTR = map[string]string{
+	"Brahmin":   "Brahman",
+	"Kshatriya": "Kşatriya",
+	"Vaishya":   "Vaişya",
+	"Shudra":    "Şudra",
+	"Mleccha":   "Mleccha",
+	"Butcher":   "Kasap",
+	"Servant":   "Hizmetkâr",
+}
+
+var nakshatraGenderTR = map[string]string{
+	"male":    "eril",
+	"female":  "dişil",
+	"neutral": "nötr",
+}
+
+func trOr(table map[string]string, en string) string {
+	if t := table[en]; t != "" {
+		return t
+	}
+	return en
+}
+
+// LocalizeNakshatra returns a copy of n with its descriptive attributes
+// rendered in lang ("tr"; anything else returns n unchanged). Name, Ruler,
+// Gana and Nadi are never altered.
+func LocalizeNakshatra(lang string, n domain.VedicNakshatra) domain.VedicNakshatra {
+	if lang != "tr" {
+		return n
+	}
+	if n.Index >= 1 && n.Index <= len(nakshatraTR) {
+		t := nakshatraTR[n.Index-1]
+		if t.Deity != "" {
+			n.Deity = t.Deity
+		}
+		if t.Symbol != "" {
+			n.Symbol = t.Symbol
+		}
+	}
+	n.Animal = trOr(nakshatraAnimalTR, n.Animal)
+	n.Varna = trOr(nakshatraVarnaTR, n.Varna)
+	n.Caste = trOr(nakshatraVarnaTR, n.Caste)
+	n.Gender = trOr(nakshatraGenderTR, n.Gender)
+	return n
+}
+
+// LocalizeVedicChart returns chart with every nakshatra (lagna + planets)
+// localized to lang. For "en" (or unknown) it returns chart as-is; otherwise
+// it returns a copy and never mutates the input, so cached English charts
+// stay English.
+func LocalizeVedicChart(lang string, chart *domain.VedicChart) *domain.VedicChart {
+	if chart == nil || lang != "tr" {
+		return chart
+	}
+	out := *chart
+	out.Lagna.Nakshatra = LocalizeNakshatra(lang, chart.Lagna.Nakshatra)
+	out.Planets = make([]domain.VedicPlanetPlacement, len(chart.Planets))
+	for i, p := range chart.Planets {
+		p.Nakshatra = LocalizeNakshatra(lang, p.Nakshatra)
+		out.Planets[i] = p
+	}
+	return &out
+}

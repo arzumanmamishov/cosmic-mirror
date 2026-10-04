@@ -52,9 +52,14 @@ func (r *PostRepository) Create(ctx context.Context, tx Querier, p *domain.Post)
 	return err
 }
 
+// GetByID returns the post as seen by currentUserID: nil, nil when it
+// doesn't exist OR is invisible to the viewer (hidden, banned author, or a
+// block between viewer and author) — callers turn that into a 404.
 func (r *PostRepository) GetByID(ctx context.Context, id, currentUserID uuid.UUID) (*domain.PostWithMeta, error) {
 	var p domain.PostWithMeta
-	err := r.db.GetContext(ctx, &p, postWithMetaSelect+` WHERE p.id = $2`, currentUserID, id)
+	err := r.db.GetContext(ctx, &p,
+		postWithMetaSelect+` WHERE p.id = $2 AND `+visibleContentSQL("p", "u", "$1"),
+		currentUserID, id)
 	if errors.Is(err, sql.ErrNoRows) {
 		return nil, nil
 	}
@@ -75,7 +80,8 @@ func (r *PostRepository) GetBareByID(ctx context.Context, id uuid.UUID) (*domain
 func (r *PostRepository) ListBySpace(ctx context.Context, spaceID, currentUserID uuid.UUID, limit, offset int) ([]domain.PostWithMeta, error) {
 	var posts []domain.PostWithMeta
 	err := r.db.SelectContext(ctx, &posts,
-		postWithMetaSelect+` WHERE p.space_id = $2 ORDER BY p.created_at DESC LIMIT $3 OFFSET $4`,
+		postWithMetaSelect+` WHERE p.space_id = $2 AND `+visibleContentSQL("p", "u", "$1")+`
+		 ORDER BY p.created_at DESC LIMIT $3 OFFSET $4`,
 		currentUserID, spaceID, limit, offset,
 	)
 	return posts, err
@@ -90,6 +96,7 @@ func (r *PostRepository) ListByAuthor(ctx context.Context, authorID, currentUser
 	var posts []domain.PostWithMeta
 	err := r.db.SelectContext(ctx, &posts,
 		postWithMetaSelect+` WHERE p.author_id = $2
+		   AND `+visibleContentSQL("p", "u", "$1")+`
 		   AND EXISTS (
 		     SELECT 1 FROM space_members vm
 		     WHERE vm.space_id = p.space_id AND vm.user_id = $1 AND vm.status = 'approved'
@@ -128,7 +135,27 @@ func (r *PostRepository) update(ctx context.Context, q execContext, id uuid.UUID
 }
 
 func (r *PostRepository) Delete(ctx context.Context, id uuid.UUID) error {
-	_, err := r.db.ExecContext(ctx, `DELETE FROM posts WHERE id = $1`, id)
+	return r.DeleteTx(ctx, r.db, id)
+}
+
+// DeleteTx deletes the post on the given transaction (or bare connection).
+// Callers that already touched the post's rows in a transaction (e.g.
+// hashtag unlinking) MUST use this with that tx: the ON DELETE CASCADE
+// into post_hashtags/comments needs the same row locks, so deleting on a
+// separate connection while the tx is open blocks forever.
+func (r *PostRepository) DeleteTx(ctx context.Context, q Querier, id uuid.UUID) error {
+	_, err := q.ExecContext(ctx, `DELETE FROM posts WHERE id = $1`, id)
+	return err
+}
+
+// RecountComments recomputes posts.comment_count from the comments table.
+// Used after a comment delete: replies cascade via parent_comment_id, so
+// decrementing by one would let the counter drift upwards.
+func (r *PostRepository) RecountComments(ctx context.Context, q Querier, id uuid.UUID) error {
+	_, err := q.ExecContext(ctx,
+		`UPDATE posts SET comment_count = (SELECT COUNT(*) FROM comments WHERE post_id = $1)
+		 WHERE id = $1`, id,
+	)
 	return err
 }
 

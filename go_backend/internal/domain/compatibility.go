@@ -20,11 +20,16 @@ type SavedPerson struct {
 	CreatedAt      time.Time `db:"created_at" json:"created_at"`
 }
 
+// CompatibilityReport is one generated report. PersonName is not a
+// compatibility_reports column: reads fill it via a JOIN on saved_people
+// (aliased person_name) and GenerateReport sets it after Create. Lang is
+// the language the report was generated in, so a cached report is never
+// served to a request in another language.
 type CompatibilityReport struct {
 	ID                 uuid.UUID `db:"id" json:"id"`
 	UserID             uuid.UUID `db:"user_id" json:"user_id"`
 	SavedPersonID      uuid.UUID `db:"saved_person_id" json:"saved_person_id"`
-	PersonName         string    `db:"-" json:"person_name"`
+	PersonName         string    `db:"person_name" json:"person_name"`
 	EmotionalScore     int       `db:"emotional_score" json:"emotional_score"`
 	CommunicationScore int       `db:"communication_score" json:"communication_score"`
 	ChemistryScore     int       `db:"chemistry_score" json:"chemistry_score"`
@@ -32,7 +37,27 @@ type CompatibilityReport struct {
 	ConflictPatterns   string    `db:"conflict_patterns" json:"conflict_patterns"`
 	Advice             string    `db:"advice" json:"advice"`
 	FullReport         string    `db:"full_report" json:"full_report"`
+	Lang               string    `db:"lang" json:"lang"`
 	CreatedAt          time.Time `db:"created_at" json:"created_at"`
+}
+
+// ClampScores forces every sub-score into 0..100. The values come from an
+// LLM and the table has CHECK (… BETWEEN 0 AND 100) constraints, so an
+// out-of-range score would otherwise fail the insert after a paid call.
+func (cr *CompatibilityReport) ClampScores() {
+	cr.EmotionalScore = clampScore(cr.EmotionalScore)
+	cr.CommunicationScore = clampScore(cr.CommunicationScore)
+	cr.ChemistryScore = clampScore(cr.ChemistryScore)
+}
+
+func clampScore(v int) int {
+	switch {
+	case v < 0:
+		return 0
+	case v > 100:
+		return 100
+	}
+	return v
 }
 
 func (cr *CompatibilityReport) CalculateOverall() {

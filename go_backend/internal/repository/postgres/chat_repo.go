@@ -44,32 +44,56 @@ func (r *ChatRepository) GetThread(ctx context.Context, id uuid.UUID) (*domain.C
 	return &thread, err
 }
 
+// maxListedThreads bounds the thread list. The client shows recent
+// conversations; anything older than the newest 100 isn't listed.
+const maxListedThreads = 100
+
+// ListThreads returns the user's most recently active threads (newest
+// first, at most maxListedThreads), each with its last message, in one
+// query — a LATERAL join picks the newest message per thread via the
+// (thread_id, created_at) index instead of one query per thread.
 func (r *ChatRepository) ListThreads(ctx context.Context, userID uuid.UUID) ([]domain.ChatThread, error) {
-	var threads []domain.ChatThread
-	err := r.db.SelectContext(ctx, &threads,
-		`SELECT t.id, t.user_id, t.title, t.created_at, t.updated_at
+	rows, err := r.db.QueryxContext(ctx,
+		`SELECT t.id, t.user_id, t.title, t.created_at, t.updated_at, lm.content
 		 FROM chat_threads t
+		 LEFT JOIN LATERAL (
+		     SELECT m.content FROM chat_messages m
+		     WHERE m.thread_id = t.id
+		     ORDER BY m.created_at DESC
+		     LIMIT 1
+		 ) lm ON TRUE
 		 WHERE t.user_id = $1
-		 ORDER BY t.updated_at DESC`, userID,
+		 ORDER BY t.updated_at DESC
+		 LIMIT $2`, userID, maxListedThreads,
 	)
 	if err != nil {
 		return nil, err
 	}
+	defer rows.Close()
 
-	// Attach last message to each thread
-	for i := range threads {
+	threads := make([]domain.ChatThread, 0)
+	for rows.Next() {
+		var t domain.ChatThread
 		var lastMsg sql.NullString
-		_ = r.db.GetContext(ctx, &lastMsg,
-			`SELECT content FROM chat_messages
-			 WHERE thread_id = $1 ORDER BY created_at DESC LIMIT 1`,
-			threads[i].ID,
-		)
-		if lastMsg.Valid {
-			threads[i].LastMessage = &lastMsg.String
+		if err := rows.Scan(&t.ID, &t.UserID, &t.Title, &t.CreatedAt, &t.UpdatedAt, &lastMsg); err != nil {
+			return nil, err
 		}
+		if lastMsg.Valid {
+			t.LastMessage = &lastMsg.String
+		}
+		threads = append(threads, t)
 	}
+	return threads, rows.Err()
+}
 
-	return threads, nil
+// SetTitleIfEmpty sets the thread's title unless one is already set, so
+// concurrent first messages (or a user-chosen title) aren't overwritten.
+func (r *ChatRepository) SetTitleIfEmpty(ctx context.Context, threadID uuid.UUID, title string) error {
+	_, err := r.db.ExecContext(ctx,
+		`UPDATE chat_threads SET title = $1 WHERE id = $2 AND title IS NULL`,
+		title, threadID,
+	)
+	return err
 }
 
 func (r *ChatRepository) DeleteThread(ctx context.Context, id uuid.UUID) error {

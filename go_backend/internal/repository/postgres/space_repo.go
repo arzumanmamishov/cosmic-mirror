@@ -94,6 +94,11 @@ func (r *SpaceRepository) List(
 		// "Joined" means approved-only. Pending requests don't count
 		// because the user can't read the space's content yet.
 		condition = append(condition, "EXISTS (SELECT 1 FROM space_members m WHERE m.space_id = s.id AND m.user_id = $1 AND m.status = 'approved')")
+	} else {
+		// Discovery / search: hide spaces created by someone in a block
+		// relationship with the viewer. Spaces the viewer already joined
+		// stay in the "joined" tab so a block never strands a membership.
+		condition = append(condition, "(s.created_by IS NULL OR "+notBlockedSQL("$1", "s.created_by")+")")
 	}
 	if categoryID != nil {
 		condition = append(condition, "s.category_id = $"+itoa(idx))

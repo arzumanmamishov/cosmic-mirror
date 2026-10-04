@@ -19,6 +19,9 @@ type User struct {
 	CreatedAt       time.Time  `db:"created_at" json:"created_at"`
 	UpdatedAt       time.Time  `db:"updated_at" json:"updated_at"`
 	DeletedAt       *time.Time `db:"deleted_at" json:"-"`
+	// BannedAt is set by a moderator (admin "ban_user" action). Banned
+	// accounts get 403 on every authenticated request.
+	BannedAt *time.Time `db:"banned_at" json:"-"`
 }
 
 type BirthProfile struct {

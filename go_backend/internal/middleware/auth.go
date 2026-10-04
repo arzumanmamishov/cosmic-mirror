@@ -62,6 +62,13 @@ func (a *Auth) Verify(next http.Handler) http.Handler {
 			respondError(w, http.StatusUnauthorized, "user_not_found", "User not found")
 			return
 		}
+		// Banned by a moderator (admin "ban_user"): every authenticated
+		// request is refused. Same DB hit as above — no extra cost.
+		if user.BannedAt != nil {
+			respondError(w, http.StatusForbidden, "account_banned",
+				"This account has been suspended for violating the community guidelines.")
+			return
+		}
 
 		ctx := context.WithValue(r.Context(), userIDKey, user.ID)
 		next.ServeHTTP(w, r.WithContext(ctx))

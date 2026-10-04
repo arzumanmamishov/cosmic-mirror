@@ -41,25 +41,28 @@ var ErrInvalidTargetType = errors.New("target type must be 'post' or 'comment'")
 // assertMemberForTarget resolves the space a like target belongs to and
 // returns ErrForbidden unless the user is an approved member — liking is a
 // write into a gated space and must not be possible for non-members.
-// Returns ErrPostNotFound / ErrCommentNotFound when the target is missing.
+// Also refuses likes across a block (either direction) and on content
+// moderation hid (ErrPostNotFound / ErrCommentNotFound, as the viewer
+// can't see it). Returns ErrPostNotFound / ErrCommentNotFound when the
+// target is missing.
 func (s *LikeService) assertMemberForTarget(ctx context.Context, userID uuid.UUID, targetType string, targetID uuid.UUID) error {
-	var spaceID uuid.UUID
+	var spaceID, authorID uuid.UUID
 	switch targetType {
 	case "post":
 		post, err := s.postRepo.GetBareByID(ctx, targetID)
 		if err != nil {
 			return err
 		}
-		if post == nil {
+		if post == nil || (post.HiddenAt != nil && post.AuthorID != userID) {
 			return ErrPostNotFound
 		}
-		spaceID = post.SpaceID
+		spaceID, authorID = post.SpaceID, post.AuthorID
 	case "comment":
 		c, err := s.commentRepo.GetBareByID(ctx, targetID)
 		if err != nil {
 			return err
 		}
-		if c == nil {
+		if c == nil || (c.HiddenAt != nil && c.AuthorID != userID) {
 			return ErrCommentNotFound
 		}
 		post, err := s.postRepo.GetBareByID(ctx, c.PostID)
@@ -69,13 +72,20 @@ func (s *LikeService) assertMemberForTarget(ctx context.Context, userID uuid.UUI
 		if post == nil {
 			return ErrPostNotFound
 		}
-		spaceID = post.SpaceID
+		spaceID, authorID = post.SpaceID, c.AuthorID
 	}
 	approved, err := s.memberRepo.IsApprovedMember(ctx, spaceID, userID)
 	if err != nil {
 		return err
 	}
 	if !approved {
+		return ErrForbidden
+	}
+	blocked, err := postgres.IsBlockedEither(ctx, s.db, userID, authorID)
+	if err != nil {
+		return err
+	}
+	if blocked {
 		return ErrForbidden
 	}
 	return nil

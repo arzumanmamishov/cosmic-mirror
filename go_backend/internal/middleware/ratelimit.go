@@ -48,15 +48,11 @@ func (rl *RateLimiter) Limit(next http.Handler) http.Handler {
 		key := fmt.Sprintf("ratelimit:%s:%d", userID.String(), time.Now().Unix()/60)
 		ctx := r.Context()
 
-		count, err := rl.rdb.Incr(ctx, key).Result()
+		count, err := incrWindow(ctx, rl.rdb, key, 60*time.Second)
 		if err != nil {
 			// On Redis failure, allow the request through
 			next.ServeHTTP(w, r)
 			return
-		}
-
-		if count == 1 {
-			rl.rdb.Expire(ctx, key, 60*time.Second)
 		}
 
 		remaining := limit - int(count)
