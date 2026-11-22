@@ -5178,7 +5178,7 @@ abstract class AppLocalizations {
   /// No description provided for @destinyTapNodeHint.
   ///
   /// In en, this message translates to:
-  /// **'Tap any node to read its arcana.'**
+  /// **'Tap any node to read its arcana · tap ⤢ for full screen & pinch-to-zoom.'**
   String get destinyTapNodeHint;
 
   /// No description provided for @destinyArcanaNumber.

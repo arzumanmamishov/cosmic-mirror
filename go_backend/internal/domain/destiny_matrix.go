@@ -3,12 +3,13 @@ package domain
 // DestinyPoint is one octagram point (see internal/destinymatrix). Arcana is
 // the Major Arcana value 1..22 at that position.
 type DestinyPoint struct {
-	Key        string `json:"key"`      // "day","month","tl","center","heaven","arm_left_1","diag_tl_1",...
-	Position   string `json:"position"` // "left","top","center","top_left","arm_left","diag_tl",...
-	Title      string `json:"title"`    // e.g. "Day / Self"
-	Arcana     int    `json:"arcana"`   // 1..22
-	ArcanaName string `json:"arcana_name"`
-	Meaning    string `json:"meaning"`
+	Key             string `json:"key"`      // "day","month","tl","center","heaven","arm_left_1","diag_tl_1",...
+	Position        string `json:"position"` // "left","top","center","top_left","arm_left","diag_tl",...
+	Title           string `json:"title"`    // e.g. "Day / Self"
+	Arcana          int    `json:"arcana"`   // 1..22
+	ArcanaName      string `json:"arcana_name"`
+	Meaning         string `json:"meaning"`          // short one-liner
+	DetailedMeaning string `json:"detailed_meaning"` // long-form (gen-interpretations)
 }
 
 // DestinyLine is one interpretive line spanning an ordered list of points.

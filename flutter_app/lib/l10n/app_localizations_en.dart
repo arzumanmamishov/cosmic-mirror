@@ -2803,7 +2803,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get destinyFemaleGenerationLine => 'female generation line';
 
   @override
-  String get destinyTapNodeHint => 'Tap any node to read its arcana.';
+  String get destinyTapNodeHint =>
+      'Tap any node to read its arcana · tap ⤢ for full screen & pinch-to-zoom.';
 
   @override
   String destinyArcanaNumber(int n) {

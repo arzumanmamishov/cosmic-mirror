@@ -2781,7 +2781,7 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get destinyTapNodeHint =>
-      'Arkanasını okumak için herhangi bir noktaya dokun.';
+      'Arkanasını okumak için herhangi bir noktaya dokun · tam ekran ve yakınlaştırma için ⤢ simgesine dokun.';
 
   @override
   String destinyArcanaNumber(int n) {

@@ -1003,7 +1003,7 @@
   "destinyComfortCore": "Comfort / Core",
   "destinyMaleGenerationLine": "male generation line",
   "destinyFemaleGenerationLine": "female generation line",
-  "destinyTapNodeHint": "Tap any node to read its arcana.",
+  "destinyTapNodeHint": "Tap any node to read its arcana · tap ⤢ for full screen & pinch-to-zoom.",
   "destinyArcanaNumber": "Arcana {n}",
   "@destinyArcanaNumber": {"placeholders": {"n": {"type": "int"}}},
   "destinySkyPurpose": "Sky Purpose",

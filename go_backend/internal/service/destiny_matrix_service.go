@@ -39,12 +39,13 @@ func (s *DestinyMatrixService) GetReading(ctx context.Context, userID uuid.UUID)
 		value := res.Value(pd.Key)
 		name, meaning := destinymatrix.Arcana(lang, value)
 		points = append(points, domain.DestinyPoint{
-			Key:        pd.Key,
-			Position:   pd.Position,
-			Title:      destinymatrix.PointTitle(lang, pd.Key),
-			Arcana:     value,
-			ArcanaName: name,
-			Meaning:    meaning,
+			Key:             pd.Key,
+			Position:        pd.Position,
+			Title:           destinymatrix.PointTitle(lang, pd.Key),
+			Arcana:          value,
+			ArcanaName:      name,
+			Meaning:         meaning,
+			DetailedMeaning: destinymatrix.DetailedMeaning(lang, value),
 		})
 	}
 
