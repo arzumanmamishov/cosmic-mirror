@@ -9,6 +9,7 @@ import (
 	"testing"
 
 	"cosmic-mirror/internal/domain"
+	"cosmic-mirror/internal/service"
 )
 
 func TestRespondServiceError(t *testing.T) {
@@ -21,6 +22,7 @@ func TestRespondServiceError(t *testing.T) {
 		{fmt.Errorf("create profile: %w", fmt.Errorf("%w: şehir is required", domain.ErrValidation)), 400, "Şehir is required"},
 		{domain.ErrValidation, 400, "Invalid input"},
 		{errors.New(`pq: duplicate key value violates unique constraint "x"`), 500, "Something went wrong. Please try again."},
+		{fmt.Errorf("generate reading: %w", service.ErrBirthProfileMissing), 404, "Set your birth profile first."},
 	}
 	for _, tc := range cases {
 		rec := httptest.NewRecorder()

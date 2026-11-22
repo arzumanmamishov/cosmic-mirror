@@ -130,7 +130,7 @@ func (h *CompatibilityHandler) GenerateReport(w http.ResponseWriter, r *http.Req
 			respondError(w, http.StatusNotFound, "not_found", "Person not found")
 			return
 		}
-		respondError(w, http.StatusInternalServerError, "generate_error", err.Error())
+		respondServiceError(w, http.StatusInternalServerError, "generate_error", err)
 		return
 	}
 	respondCreated(w, report)

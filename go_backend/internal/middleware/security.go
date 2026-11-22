@@ -227,20 +227,62 @@ func (rl *RateLimiter) LoginLockout(maxFailures int, window time.Duration) func(
 			}
 			key := "loginfail:" + email
 			ctx := r.Context()
-			if n, err := rl.rdb.Get(ctx, key).Int(); err == nil && n >= maxFailures {
+			// Reserve the attempt BEFORE checking the password. Checking
+			// the counter and only counting the failure afterwards let a
+			// burst of parallel guesses (bcrypt takes ~100ms) all pass the
+			// check before any failure was recorded. The INCR is atomic,
+			// so at most maxFailures attempts are ever in flight or spent.
+			n, err := incrWindow(ctx, rl.rdb, key, window)
+			if err != nil {
+				// Redis down: fail open like the other limiters.
+				next.ServeHTTP(w, r)
+				return
+			}
+			if decision := loginLockoutDecision(n, maxFailures, 0); decision == lockoutReject {
+				rl.rdb.Decr(ctx, key) // a refused attempt isn't a guess
 				respondError(w, http.StatusTooManyRequests, "account_locked",
 					"Too many failed attempts. Try again later or sign in with a code.")
 				return
 			}
 			rec := &statusRecorder{ResponseWriter: w, status: http.StatusOK}
 			next.ServeHTTP(rec, r)
-			switch {
-			case rec.status == http.StatusUnauthorized:
-				_, _ = incrWindow(ctx, rl.rdb, key, window)
-			case rec.status < 300:
+			switch loginLockoutDecision(n, maxFailures, rec.status) {
+			case lockoutClear:
 				rl.rdb.Del(ctx, key)
+			case lockoutRefund:
+				rl.rdb.Decr(ctx, key)
 			}
 		})
+	}
+}
+
+type lockoutAction int
+
+const (
+	lockoutKeep   lockoutAction = iota // leave the reserved attempt counted
+	lockoutReject                      // over the limit: refuse the request
+	lockoutClear                       // successful login: reset the counter
+	lockoutRefund                      // not a password verdict: give the attempt back
+)
+
+// loginLockoutDecision decides what LoginLockout does with an attempt
+// whose reservation brought the counter to [n]. With status 0 the
+// handler hasn't run yet; otherwise [status] is its response code. Only
+// a 401 (wrong password) keeps the attempt counted; malformed requests
+// and server errors are refunded.
+func loginLockoutDecision(n int64, maxFailures, status int) lockoutAction {
+	switch {
+	case status == 0:
+		if n > int64(maxFailures) {
+			return lockoutReject
+		}
+		return lockoutKeep
+	case status == http.StatusUnauthorized:
+		return lockoutKeep
+	case status < 300:
+		return lockoutClear
+	default:
+		return lockoutRefund
 	}
 }
 

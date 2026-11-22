@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"io"
 	"log/slog"
@@ -117,6 +118,12 @@ func (s *UserService) DeleteUser(ctx context.Context, id uuid.UUID) error {
 	}
 	return nil
 }
+
+// ErrBirthProfileMissing is returned by the chart, Vedic, daily-reading and
+// compatibility services when the user has no birth profile yet (e.g.
+// onboarding was skipped). Handlers map it to 404 "missing_profile"
+// instead of a 500.
+var ErrBirthProfileMissing = errors.New("birth profile not found")
 
 // validateBirthData checks the user-supplied birth fields shared by birth
 // profiles and saved people, returning the parsed birth date. Failures

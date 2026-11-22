@@ -81,7 +81,7 @@ func (r *PostRepository) ListBySpace(ctx context.Context, spaceID, currentUserID
 	var posts []domain.PostWithMeta
 	err := r.db.SelectContext(ctx, &posts,
 		postWithMetaSelect+` WHERE p.space_id = $2 AND `+visibleContentSQL("p", "u", "$1")+`
-		 ORDER BY p.created_at DESC LIMIT $3 OFFSET $4`,
+		 ORDER BY p.created_at DESC, p.id DESC LIMIT $3 OFFSET $4`,
 		currentUserID, spaceID, limit, offset,
 	)
 	return posts, err
@@ -101,7 +101,7 @@ func (r *PostRepository) ListByAuthor(ctx context.Context, authorID, currentUser
 		     SELECT 1 FROM space_members vm
 		     WHERE vm.space_id = p.space_id AND vm.user_id = $1 AND vm.status = 'approved'
 		   )
-		 ORDER BY p.created_at DESC LIMIT $3 OFFSET $4`,
+		 ORDER BY p.created_at DESC, p.id DESC LIMIT $3 OFFSET $4`,
 		currentUserID, authorID, limit, offset,
 	)
 	return posts, err

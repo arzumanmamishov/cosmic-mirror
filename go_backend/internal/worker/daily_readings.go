@@ -54,7 +54,9 @@ type readingTarget struct {
 //     request with their Accept-Language) is used, defaulting to "en".
 func (w *DailyReadingsWorker) Run(ctx context.Context) error {
 	slog.Info("starting daily readings generation")
-	today := time.Now().Truncate(24 * time.Hour)
+	// UTC midnight — the same day the HTTP handler serves (see
+	// DailyReadingHandler.GetToday).
+	today := time.Now().UTC().Truncate(24 * time.Hour)
 
 	// Collect the work list first and release the connection: holding a
 	// cursor open across up to 1000 sequential LLM calls would pin a DB
@@ -71,6 +73,7 @@ func (w *DailyReadingsWorker) Run(ctx context.Context) error {
 		     LIMIT 1
 		 ) latest ON TRUE
 		 WHERE u.deleted_at IS NULL
+		   AND u.banned_at IS NULL -- every API call of theirs is refused
 		   AND (u.last_login_at > NOW() - INTERVAL '7 days'
 		        OR EXISTS (SELECT 1 FROM refresh_tokens rt
 		                   WHERE rt.user_id = u.id

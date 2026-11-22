@@ -16,7 +16,10 @@ import (
 //     other's posts, comments, membership rows or notifications;
 //   - hidden content (hidden_at set by auto-hide or a moderator) is only
 //     visible to its author;
-//   - banned authors' content is visible to nobody.
+//   - banned authors' content is visible to nobody, and neither is the
+//     content of accounts deleted by their owner (soft-deleted rows wait
+//     30 days for the cleanup worker's hard delete; until then they must
+//     not keep showing up with the person's name).
 //
 // Both directions of the block check are primary-key point lookups on
 // user_blocks(blocker_id, blocked_id), so the NOT EXISTS is cheap even
@@ -36,6 +39,7 @@ func notBlockedSQL(viewer, other string) string {
 func visibleContentSQL(alias, authorAlias, viewer string) string {
 	return `(` + alias + `.hidden_at IS NULL OR ` + alias + `.author_id = ` + viewer + `)
 	   AND ` + authorAlias + `.banned_at IS NULL
+	   AND ` + authorAlias + `.deleted_at IS NULL
 	   AND ` + notBlockedSQL(viewer, alias+`.author_id`)
 }
 

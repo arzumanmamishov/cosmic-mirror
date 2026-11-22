@@ -79,8 +79,11 @@ func AyanamsaFromString(s string) int {
 
 func (s *VedicService) loadBirthData(ctx context.Context, userID uuid.UUID) (time.Time, int, int, float64, float64, float64, error) {
 	profile, err := s.profileRepo.GetByUserID(ctx, userID)
-	if err != nil || profile == nil {
-		return time.Time{}, 0, 0, 0, 0, 0, fmt.Errorf("birth profile not found")
+	if err != nil {
+		return time.Time{}, 0, 0, 0, 0, 0, fmt.Errorf("load birth profile: %w", err)
+	}
+	if profile == nil {
+		return time.Time{}, 0, 0, 0, 0, 0, ErrBirthProfileMissing
 	}
 	hour, min := 12, 0
 	if profile.BirthTimeKnown && profile.BirthTime != nil {

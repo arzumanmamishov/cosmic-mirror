@@ -50,6 +50,14 @@ func (h *JournalHandler) List(w http.ResponseWriter, r *http.Request) {
 // maxJournalRunes caps a single journal entry.
 const maxJournalRunes = 10000
 
+// maxMoodRunes matches journal_entries.mood (VARCHAR(10), counted in
+// characters); anything longer would fail the INSERT with a 500.
+const maxMoodRunes = 10
+
+func moodTooLong(mood *string) bool {
+	return mood != nil && utf8.RuneCountInString(*mood) > maxMoodRunes
+}
+
 func (h *JournalHandler) Create(w http.ResponseWriter, r *http.Request) {
 	userID := middleware.UserIDFromContext(r.Context())
 	var input domain.CreateJournalInput
@@ -57,8 +65,7 @@ func (h *JournalHandler) Create(w http.ResponseWriter, r *http.Request) {
 		respondError(w, http.StatusBadRequest, "invalid_body", "Invalid request body")
 		return
 	}
-	if utf8.RuneCountInString(input.Content) > maxJournalRunes ||
-		(input.Mood != nil && len(*input.Mood) > 32) {
+	if utf8.RuneCountInString(input.Content) > maxJournalRunes || moodTooLong(input.Mood) {
 		respondError(w, http.StatusBadRequest, "invalid_body", "Journal entry is too long")
 		return
 	}
@@ -98,7 +105,7 @@ func (h *JournalHandler) Update(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if (input.Content != nil && utf8.RuneCountInString(*input.Content) > maxJournalRunes) ||
-		(input.Mood != nil && len(*input.Mood) > 32) {
+		moodTooLong(input.Mood) {
 		respondError(w, http.StatusBadRequest, "invalid_body", "Journal entry is too long")
 		return
 	}

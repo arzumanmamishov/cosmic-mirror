@@ -81,6 +81,18 @@ func (s *AIService) reserveMessage(ctx context.Context, userID uuid.UUID) (n int
 	return int(v), true
 }
 
+// releaseMessage gives back a slot taken by reserveMessage when the message
+// never got a reply (AI or storage failure), so a free user isn't charged
+// for an error. Best-effort.
+func (s *AIService) releaseMessage(ctx context.Context, userID uuid.UUID) {
+	if s.rdb == nil {
+		return
+	}
+	if err := s.rdb.Decr(context.WithoutCancel(ctx), usageKey(userID)).Err(); err != nil {
+		slog.Warn("failed to release chat usage slot", "user_id", userID, "error", err)
+	}
+}
+
 func NewAIService(
 	chatRepo repository.ChatRepository,
 	profileRepo repository.BirthProfileRepository,
@@ -184,7 +196,7 @@ func nextResetAt() time.Time {
 	return time.Date(now.Year(), now.Month(), now.Day()+1, 0, 0, 0, 0, time.UTC)
 }
 
-func (s *AIService) SendMessage(ctx context.Context, userID uuid.UUID, threadID uuid.UUID, content string, isPremium bool) (*domain.ChatMessage, error) {
+func (s *AIService) SendMessage(ctx context.Context, userID uuid.UUID, threadID uuid.UUID, content string, isPremium bool) (_ *domain.ChatMessage, err error) {
 	// Verify the caller owns this thread before doing anything — without
 	// this, anyone could post into another user's conversation (IDOR).
 	thread, err := s.assertThreadOwner(ctx, userID, threadID)
@@ -205,6 +217,13 @@ func (s *AIService) SendMessage(ctx context.Context, userID uuid.UUID, threadID 
 		count, ok := s.reserveMessage(ctx, userID)
 		if ok {
 			count--
+			// Any failure from here on (limit reached, AI or storage
+			// error) gives the slot back; only a delivered reply counts.
+			defer func() {
+				if err != nil {
+					s.releaseMessage(ctx, userID)
+				}
+			}()
 		} else {
 			var err error
 			count, err = s.chatRepo.CountUserMessagesToday(ctx, userID)

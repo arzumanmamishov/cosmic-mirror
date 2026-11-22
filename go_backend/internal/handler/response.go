@@ -10,6 +10,7 @@ import (
 	"unicode/utf8"
 
 	"cosmic-mirror/internal/domain"
+	"cosmic-mirror/internal/service"
 )
 
 type Handlers struct {
@@ -76,6 +77,13 @@ func respondError(w http.ResponseWriter, status int, code, message string) {
 func respondServiceError(w http.ResponseWriter, status int, code string, err error) {
 	if errors.Is(err, domain.ErrValidation) {
 		respondError(w, http.StatusBadRequest, "validation_error", validationMessage(err))
+		return
+	}
+	// A user without a birth profile (skipped onboarding) is a client
+	// state, not a server failure.
+	if errors.Is(err, service.ErrBirthProfileMissing) {
+		respondError(w, http.StatusNotFound, "missing_profile",
+			"Set your birth profile first.")
 		return
 	}
 	respondError(w, status, code, err.Error())

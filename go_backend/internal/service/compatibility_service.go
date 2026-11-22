@@ -178,8 +178,11 @@ func (s *CompatibilityService) GetReport(ctx context.Context, userID, personID u
 
 func (s *CompatibilityService) GenerateReport(ctx context.Context, userID, personID uuid.UUID) (*domain.CompatibilityReport, error) {
 	userProfile, err := s.profileRepo.GetByUserID(ctx, userID)
-	if err != nil || userProfile == nil {
-		return nil, fmt.Errorf("user birth profile not found")
+	if err != nil {
+		return nil, fmt.Errorf("load birth profile: %w", err)
+	}
+	if userProfile == nil {
+		return nil, ErrBirthProfileMissing
 	}
 
 	// Load the saved person and confirm it belongs to this user before we

@@ -27,6 +27,16 @@ func tooLong(field string, max int) error {
 	return fmt.Errorf("%w: %s must be at most %d characters", ErrInvalidInput, field, max)
 }
 
+// checkRequired rejects an empty / whitespace-only value. Create paths
+// require content up front; updates must not be able to blank it out
+// either.
+func checkRequired(field, s string) error {
+	if strings.TrimSpace(s) == "" {
+		return fmt.Errorf("%w: %s is required", ErrInvalidInput, field)
+	}
+	return nil
+}
+
 func checkRunes(field, s string, max int) error {
 	if utf8.RuneCountInString(s) > max {
 		return tooLong(field, max)
@@ -59,6 +69,9 @@ func (in CreatePostInput) Validate() error {
 
 func (in UpdatePostInput) Validate() error {
 	if in.Content != nil {
+		if err := checkRequired("content", *in.Content); err != nil {
+			return err
+		}
 		if err := checkRunes("content", *in.Content, MaxPostRunes); err != nil {
 			return err
 		}
@@ -74,10 +87,16 @@ func (in UpdateCommentInput) Validate() error {
 	if in.Content == nil {
 		return nil
 	}
+	if err := checkRequired("content", *in.Content); err != nil {
+		return err
+	}
 	return checkRunes("content", *in.Content, MaxCommentRunes)
 }
 
 func (in CreateSpaceInput) Validate() error {
+	if err := checkRequired("name", in.Name); err != nil {
+		return err
+	}
 	if err := checkRunes("name", in.Name, MaxSpaceNameRunes); err != nil {
 		return err
 	}
@@ -91,6 +110,9 @@ func (in CreateSpaceInput) Validate() error {
 
 func (in UpdateSpaceInput) Validate() error {
 	if in.Name != nil {
+		if err := checkRequired("name", *in.Name); err != nil {
+			return err
+		}
 		if err := checkRunes("name", *in.Name, MaxSpaceNameRunes); err != nil {
 			return err
 		}

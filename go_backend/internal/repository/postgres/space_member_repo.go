@@ -134,7 +134,7 @@ func (r *SpaceMemberRepository) GetMembership(ctx context.Context, spaceID, user
 // ListBySpace returns only APPROVED members. Pending rows are not part
 // of the public member list — they're surfaced via ListPending for the
 // space owner only. Members in a block relationship with [viewerID] and
-// banned accounts are left out.
+// banned or deleted accounts are left out.
 func (r *SpaceMemberRepository) ListBySpace(ctx context.Context, spaceID, viewerID uuid.UUID, limit, offset int) ([]domain.SpaceMember, error) {
 	var members []domain.SpaceMember
 	err := r.db.SelectContext(ctx, &members,
@@ -144,7 +144,7 @@ func (r *SpaceMemberRepository) ListBySpace(ctx context.Context, spaceID, viewer
 		 FROM space_members m
 		 JOIN users u ON u.id = m.user_id
 		 WHERE m.space_id = $1 AND m.status = 'approved'
-		   AND u.banned_at IS NULL
+		   AND u.banned_at IS NULL AND u.deleted_at IS NULL
 		   AND `+notBlockedSQL("$4", "m.user_id")+`
 		 ORDER BY
 		   CASE m.role WHEN 'owner' THEN 0 WHEN 'mod' THEN 1 ELSE 2 END,
@@ -166,6 +166,7 @@ func (r *SpaceMemberRepository) ListPending(ctx context.Context, spaceID uuid.UU
 		 FROM space_members m
 		 JOIN users u ON u.id = m.user_id
 		 WHERE m.space_id = $1 AND m.status = 'pending'
+		   AND u.banned_at IS NULL AND u.deleted_at IS NULL
 		 ORDER BY m.joined_at ASC
 		 LIMIT $2 OFFSET $3`,
 		spaceID, limit, offset,

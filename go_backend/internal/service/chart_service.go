@@ -60,8 +60,11 @@ func (s *ChartService) GetNatalChart(ctx context.Context, userID uuid.UUID) (*do
 	}
 
 	profile, err := s.profileRepo.GetByUserID(ctx, userID)
-	if err != nil || profile == nil {
-		return nil, fmt.Errorf("birth profile not found")
+	if err != nil {
+		return nil, fmt.Errorf("load birth profile: %w", err)
+	}
+	if profile == nil {
+		return nil, ErrBirthProfileMissing
 	}
 
 	// Parse birth time (default to noon if unknown)
@@ -174,8 +177,11 @@ func (s *ChartService) GetTimeline(ctx context.Context, userID uuid.UUID, foreca
 	}
 
 	profile, err := s.profileRepo.GetByUserID(ctx, userID)
-	if err != nil || profile == nil {
-		return nil, fmt.Errorf("birth profile not found")
+	if err != nil {
+		return nil, fmt.Errorf("load birth profile: %w", err)
+	}
+	if profile == nil {
+		return nil, ErrBirthProfileMissing
 	}
 
 	lite := transitEventsToLite(events)
@@ -238,8 +244,11 @@ func (s *ChartService) GetYearlyForecast(ctx context.Context, userID uuid.UUID, 
 	}
 
 	profile, err := s.profileRepo.GetByUserID(ctx, userID)
-	if err != nil || profile == nil {
-		return nil, fmt.Errorf("birth profile not found")
+	if err != nil {
+		return nil, fmt.Errorf("load birth profile: %w", err)
+	}
+	if profile == nil {
+		return nil, ErrBirthProfileMissing
 	}
 
 	lite := transitEventsToLite(events)

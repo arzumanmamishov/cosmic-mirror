@@ -23,6 +23,7 @@ func TestVisibleContentSQL(t *testing.T) {
 	for _, want := range []string{
 		"c.hidden_at IS NULL OR c.author_id = $1", // authors still see their hidden content
 		"u.banned_at IS NULL",
+		"u.deleted_at IS NULL", // deleted accounts vanish before the 30-day purge
 		"ub.blocked_id = c.author_id",
 	} {
 		if !strings.Contains(got, want) {

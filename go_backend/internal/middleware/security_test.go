@@ -34,3 +34,26 @@ func TestMaxBodyOnlyExemptsUploadRoute(t *testing.T) {
 		}
 	}
 }
+
+func TestLoginLockoutDecision(t *testing.T) {
+	const max = 10
+	cases := []struct {
+		name   string
+		n      int64
+		status int
+		want   lockoutAction
+	}{
+		{"first attempt runs", 1, 0, lockoutKeep},
+		{"last allowed attempt runs", max, 0, lockoutKeep},
+		{"attempt past the cap is refused", max + 1, 0, lockoutReject},
+		{"wrong password stays counted", 3, http.StatusUnauthorized, lockoutKeep},
+		{"success clears", 3, http.StatusOK, lockoutClear},
+		{"bad request is refunded", 3, http.StatusBadRequest, lockoutRefund},
+		{"server error is refunded", 3, http.StatusInternalServerError, lockoutRefund},
+	}
+	for _, tc := range cases {
+		if got := loginLockoutDecision(tc.n, max, tc.status); got != tc.want {
+			t.Errorf("%s: got %v, want %v", tc.name, got, tc.want)
+		}
+	}
+}

@@ -127,8 +127,11 @@ func stubReading(userID uuid.UUID, date time.Time, lang string) *domain.DailyRea
 
 func (s *ReadingService) generateReading(ctx context.Context, userID uuid.UUID, date time.Time) (*domain.DailyReading, error) {
 	profile, err := s.profileRepo.GetByUserID(ctx, userID)
-	if err != nil || profile == nil {
-		return nil, fmt.Errorf("birth profile not found for user %s", userID)
+	if err != nil {
+		return nil, fmt.Errorf("load birth profile: %w", err)
+	}
+	if profile == nil {
+		return nil, ErrBirthProfileMissing
 	}
 
 	prompt := openai.BuildDailyReadingPrompt(profile, date, middleware.LangFromContext(ctx))

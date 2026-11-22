@@ -73,12 +73,12 @@ func (r *CommunityNotificationRepository) CreateForSpaceMembers(
 	return res.RowsAffected()
 }
 
-// visibleNotificationSQL drops notifications whose actor is banned or in
+// visibleNotificationSQL drops notifications whose actor is banned, deleted or in
 // a block relationship with the recipient, and ones pointing at a post /
 // comment that moderation hid (unless the recipient wrote it). Expects
 // community_notifications aliased n, LEFT JOIN users u ON u.id = n.actor_id,
 // and the recipient id in $1.
-var visibleNotificationSQL = `(n.actor_id IS NULL OR (u.banned_at IS NULL AND ` + notBlockedSQL("$1", "n.actor_id") + `))
+var visibleNotificationSQL = `(n.actor_id IS NULL OR (u.banned_at IS NULL AND u.deleted_at IS NULL AND ` + notBlockedSQL("$1", "n.actor_id") + `))
 	AND NOT EXISTS (SELECT 1 FROM posts hp WHERE n.target_type = 'post' AND hp.id = n.target_id
 	                AND hp.hidden_at IS NOT NULL AND hp.author_id <> n.recipient_id)
 	AND NOT EXISTS (SELECT 1 FROM comments hc WHERE n.target_type = 'comment' AND hc.id = n.target_id
@@ -99,7 +99,7 @@ func (r *CommunityNotificationRepository) ListByUser(ctx context.Context, recipi
 	      FROM community_notifications n
 	      LEFT JOIN users u ON u.id = n.actor_id
 	      ` + where + `
-	      ORDER BY n.created_at DESC
+	      ORDER BY n.created_at DESC, n.id DESC
 	      LIMIT $` + itoa(len(args)-1) + ` OFFSET $` + itoa(len(args))
 	err := r.db.SelectContext(ctx, &out, q, args...)
 	return out, err

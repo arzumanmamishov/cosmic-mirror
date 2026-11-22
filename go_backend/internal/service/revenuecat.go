@@ -43,6 +43,15 @@ var revenueCatHandledEvents = map[string]bool{
 	"BILLING_ISSUE":         true,
 	"SUBSCRIPTION_PAUSED":   true,
 	"TRANSFER":              true,
+	// The store pushed the expiry out (Apple / Google "extend
+	// subscription"): without this the user loses premium at the old
+	// expiry until the next renewal event.
+	"SUBSCRIPTION_EXTENDED": true,
+	// Access RevenueCat grants during a store outage, before the real
+	// INITIAL_PURCHASE / RENEWAL arrives.
+	"TEMPORARY_ENTITLEMENT_GRANT": true,
+	// A refund was reversed: the entitlement is live again.
+	"REFUND_REVERSED": true,
 }
 
 // revenueCatEvent is the `event` object of a RevenueCat webhook (API v1).
@@ -185,7 +194,7 @@ func storeStateFromEvent(ev revenueCatEvent, target revenueCatTarget, entitlemen
 	st.IsTrial = strings.EqualFold(ev.PeriodType, "TRIAL")
 
 	switch ev.Type {
-	case "INITIAL_PURCHASE", "RENEWAL", "PRODUCT_CHANGE", "UNCANCELLATION":
+	case "INITIAL_PURCHASE", "RENEWAL", "PRODUCT_CHANGE", "UNCANCELLATION", "SUBSCRIPTION_EXTENDED":
 		st.WillRenew = true
 	case "NON_RENEWING_PURCHASE", "CANCELLATION", "SUBSCRIPTION_PAUSED":
 		// Access continues until expiration_at_ms; it just won't renew.

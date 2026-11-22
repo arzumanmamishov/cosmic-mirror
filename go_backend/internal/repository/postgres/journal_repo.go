@@ -61,9 +61,11 @@ func (r *JournalRepository) Update(ctx context.Context, id, userID uuid.UUID, in
 
 func (r *JournalRepository) List(ctx context.Context, userID uuid.UUID, limit, offset int) ([]domain.JournalEntry, error) {
 	var entries []domain.JournalEntry
+	// entry_date is a DATE, so several entries share it; without the
+	// tie-breakers OFFSET paging could repeat or skip entries.
 	err := r.db.SelectContext(ctx, &entries,
 		`SELECT * FROM journal_entries WHERE user_id = $1
-		 ORDER BY entry_date DESC LIMIT $2 OFFSET $3`,
+		 ORDER BY entry_date DESC, created_at DESC, id DESC LIMIT $2 OFFSET $3`,
 		userID, limit, offset,
 	)
 	return entries, err

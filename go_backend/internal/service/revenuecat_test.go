@@ -150,6 +150,18 @@ func TestStoreStateFromEvent(t *testing.T) {
 			wantOK: true, wantStatus: domain.StatusExpired, wantPremium: false, wantRenew: true, wantBilling: true,
 		},
 		{
+			name:   "subscription extended moves the expiry",
+			ev:     event("SUBSCRIPTION_EXTENDED", nil),
+			wantOK: true, wantStatus: domain.StatusActive, wantPremium: true, wantRenew: true,
+			wantExpiry: &rcFuture,
+		},
+		{
+			name:   "temporary entitlement grant gives access until it ends",
+			ev:     event("TEMPORARY_ENTITLEMENT_GRANT", nil),
+			wantOK: true, wantStatus: domain.StatusActive, wantPremium: true,
+			wantExpiry: &rcFuture,
+		},
+		{
 			name:   "subscription paused keeps access until expiry",
 			ev:     event("SUBSCRIPTION_PAUSED", nil),
 			wantOK: true, wantStatus: domain.StatusActive, wantPremium: true,

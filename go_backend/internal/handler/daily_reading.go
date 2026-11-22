@@ -20,7 +20,10 @@ func NewDailyReadingHandler(readingSvc *service.ReadingService) *DailyReadingHan
 
 func (h *DailyReadingHandler) GetToday(w http.ResponseWriter, r *http.Request) {
 	userID := middleware.UserIDFromContext(r.Context())
-	today := time.Now().Truncate(24 * time.Hour)
+	// UTC midnight, like the dates GetByDate parses and the worker
+	// pre-generates. Truncate works on absolute time, so on a host whose
+	// local zone is behind UTC a local-zone value formats as yesterday.
+	today := time.Now().UTC().Truncate(24 * time.Hour)
 
 	reading, err := h.readingSvc.GetDailyReading(r.Context(), userID, today)
 	if err != nil {
