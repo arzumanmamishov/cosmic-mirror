@@ -24,7 +24,8 @@ var gateSequence = [64]int{
 }
 
 // wheelStartLongitude is the tropical longitude (0..360) of Gate 41 line 1.
-//   Aquarius starts at 300°. 2°00'00" Aqu = 302°.
+//
+//	Aquarius starts at 300°. 2°00'00" Aqu = 302°.
 const wheelStartLongitude = 302.0
 
 // gateSpan = 360 / 64 = 5.625°

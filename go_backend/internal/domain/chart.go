@@ -1,9 +1,9 @@
 package domain
 
 type NatalChart struct {
-	Planets  []PlanetPlacement `json:"planets"`
-	Houses   []House           `json:"houses"`
-	Aspects  []Aspect          `json:"aspects"`
+	Planets  []PlanetPlacement  `json:"planets"`
+	Houses   []House            `json:"houses"`
+	Aspects  []Aspect           `json:"aspects"`
 	Elements map[string]float64 `json:"elements"`
 }
 
@@ -16,10 +16,10 @@ type PlanetPlacement struct {
 }
 
 type House struct {
-	Number      int    `json:"number"`
-	Sign        string `json:"sign"`
+	Number      int     `json:"number"`
+	Sign        string  `json:"sign"`
 	Degree      float64 `json:"degree"`
-	Description string `json:"description,omitempty"`
+	Description string  `json:"description,omitempty"`
 }
 
 type Aspect struct {
@@ -30,12 +30,12 @@ type Aspect struct {
 }
 
 type ChartSummary struct {
-	SunSign            string `json:"sun_sign"`
-	MoonSign           string `json:"moon_sign"`
-	RisingSign         string `json:"rising_sign"`
-	SunDescription     string `json:"sun_description"`
-	MoonDescription    string `json:"moon_description"`
-	RisingDescription  string `json:"rising_description"`
+	SunSign           string `json:"sun_sign"`
+	MoonSign          string `json:"moon_sign"`
+	RisingSign        string `json:"rising_sign"`
+	SunDescription    string `json:"sun_description"`
+	MoonDescription   string `json:"moon_description"`
+	RisingDescription string `json:"rising_description"`
 }
 
 type TimelineForecast struct {
@@ -51,9 +51,9 @@ type ForecastPeriod struct {
 }
 
 type YearlyForecast struct {
-	Year     int              `json:"year"`
-	Theme    string           `json:"theme"`
-	Overview string           `json:"overview"`
+	Year     int               `json:"year"`
+	Theme    string            `json:"theme"`
+	Overview string            `json:"overview"`
 	Quarters []QuarterForecast `json:"quarters"`
 }
 

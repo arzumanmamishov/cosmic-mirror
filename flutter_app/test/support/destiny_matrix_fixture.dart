@@ -165,8 +165,18 @@ DestinyMatrixReading referenceReading() =>
 /// (e.g. 22), to verify the node circles never overflow.
 DestinyMatrixReading uniformReading(int v) {
   final keys = <String>[
-    'day', 'month', 'year', 'sum', 'tl', 'tr', 'br', 'bl', 'center',
-    'heaven', 'earth', 'personal',
+    'day',
+    'month',
+    'year',
+    'sum',
+    'tl',
+    'tr',
+    'br',
+    'bl',
+    'center',
+    'heaven',
+    'earth',
+    'personal',
     for (final a in ['left', 'top', 'right', 'bottom'])
       for (var i = 1; i <= 3; i++) 'arm_${a}_$i',
     for (final d in ['tl', 'tr', 'br', 'bl'])

@@ -1,3 +1,7 @@
+// Golden images are rendered on macOS; CI (Linux) skips them via the tag.
+@Tags(['golden'])
+library;
+
 import 'package:cosmic_mirror/l10n/app_localizations.dart';
 import 'package:cosmic_mirror/features/destiny_matrix/presentation/screens/destiny_matrix_screen.dart';
 import 'package:flutter/material.dart';

@@ -3,18 +3,18 @@ package swisseph
 // signSanskrit maps each of the 12 zodiac signs to its Sanskrit (rashi) name.
 // Index matches signFromLongitude / the `signs` array (0=Aries..11=Pisces).
 var signSanskrit = [12]string{
-	"Mesha",     // Aries
-	"Vrishabha", // Taurus
-	"Mithuna",   // Gemini
-	"Karka",     // Cancer
-	"Simha",     // Leo
-	"Kanya",     // Virgo
-	"Tula",      // Libra
+	"Mesha",      // Aries
+	"Vrishabha",  // Taurus
+	"Mithuna",    // Gemini
+	"Karka",      // Cancer
+	"Simha",      // Leo
+	"Kanya",      // Virgo
+	"Tula",       // Libra
 	"Vrishchika", // Scorpio
-	"Dhanu",     // Sagittarius
-	"Makara",    // Capricorn
-	"Kumbha",    // Aquarius
-	"Meena",     // Pisces
+	"Dhanu",      // Sagittarius
+	"Makara",     // Capricorn
+	"Kumbha",     // Aquarius
+	"Meena",      // Pisces
 }
 
 // signLord returns the classical (Vedic) ruling planet of each sign.

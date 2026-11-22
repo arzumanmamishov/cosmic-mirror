@@ -15,7 +15,7 @@ export const metadata: Metadata = {
   },
 };
 
-const LAST_UPDATED = "6 July 2026";
+const LAST_UPDATED = "22 November 2026";
 
 export default function PrivacyPage() {
   return (
@@ -172,8 +172,9 @@ export default function PrivacyPage() {
           manage subscription entitlements and receipts.
         </li>
         <li>
-          <strong>Firebase (Google)</strong> — provides authentication, push
-          messaging, and crash reporting / analytics.
+          <strong>Sentry</strong> — receives crash and error reports (device
+          model, OS and app version, and the error details) so we can fix
+          problems. No account details are included.
         </li>
         <li>
           <strong>Cloud hosting providers</strong> — host the App&rsquo;s

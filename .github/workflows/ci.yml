@@ -1,0 +1,105 @@
+name: CI
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  backend:
+    name: Backend (Go)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: go_backend
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go_backend/go.mod
+          cache-dependency-path: go_backend/go.sum
+
+      # The astrology provider links against the Swiss Ephemeris C library.
+      # Same pinned release and build as the Dockerfile.
+      - name: Build Swiss Ephemeris
+        working-directory: ${{ runner.temp }}
+        run: |
+          git clone --depth 1 --branch v2.10.3final https://github.com/aloistr/swisseph.git swisseph-src
+          cd swisseph-src
+          gcc -fPIC -c -O2 swedate.c swehouse.c swejpl.c swemmoon.c swemplan.c \
+            sweph.c swephlib.c swecl.c swehel.c
+          gcc -shared -o libswe.so *.o -lm -ldl
+          sudo cp libswe.so /usr/local/lib/
+          sudo cp swephexp.h sweodef.h /usr/local/include/
+          sudo ldconfig
+
+      - name: gofmt
+        run: |
+          unformatted=$(gofmt -l .)
+          if [ -n "$unformatted" ]; then
+            echo "Run gofmt -w on:"; echo "$unformatted"; exit 1
+          fi
+
+      - run: go vet ./...
+      - run: go test -race ./...
+
+  backend-image:
+    name: Backend Docker image
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/build-push-action@v6
+        with:
+          context: go_backend
+          push: false
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  app:
+    name: App (Flutter)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: flutter_app
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - run: flutter pub get
+
+      - name: Generated localizations are up to date
+        run: |
+          flutter gen-l10n
+          git diff --exit-code -- lib/l10n
+
+      - run: flutter analyze --no-fatal-infos
+      - run: flutter test --exclude-tags golden
+
+  website:
+    name: Website (Next.js)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: website
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: website/package-lock.json
+      - run: npm ci
+      - run: npm run build

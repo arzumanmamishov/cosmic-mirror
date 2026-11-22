@@ -9,6 +9,7 @@ import 'package:cosmic_mirror/config/theme/app_theme.dart';
 import 'package:cosmic_mirror/features/destiny_matrix/domain/entities/destiny_matrix.dart';
 import 'package:cosmic_mirror/features/destiny_matrix/presentation/providers/destiny_matrix_providers.dart';
 import 'package:cosmic_mirror/features/destiny_matrix/presentation/screens/destiny_matrix_screen.dart';
+import 'package:cosmic_mirror/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -20,6 +21,8 @@ void main() {
       ],
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
         theme: CosmicTheme.lightTheme,
         darkTheme: CosmicTheme.darkTheme,
         themeMode: ThemeMode.dark,

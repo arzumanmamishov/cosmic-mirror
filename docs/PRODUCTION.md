@@ -168,6 +168,7 @@ REVENUECAT_API_KEY_IOS=appl_... REVENUECAT_API_KEY_ANDROID=goog_... ./scripts/bu
 * The RevenueCat keys are the public SDK keys from RevenueCat → Project settings → API keys. iOS keys start with `appl_` and Android keys with `goog_`. The script refuses a missing key or a key for the wrong store, because the app would otherwise ship with purchases turned off. `REVENUECAT_API_KEY` still works as a fallback if it matches the platform.
 * Release builds default to `ENVIRONMENT=prod` and `https://api.livelyapp.co`. Cleartext HTTP is only allowed in Android debug builds.
 * The script builds with `--obfuscate --split-debug-info`. Keep `build/debug-info/` privately, because you need it to symbolicate crash reports.
+* **Crash reporting (Sentry):** pass `SENTRY_DSN=https://…` (Sentry → Project settings → Client Keys). Without it the build still works but reports no crashes, and the script warns. To make obfuscated stack traces readable, also set `SENTRY_AUTH_TOKEN`, `SENTRY_ORG` and `SENTRY_PROJECT`; the script then uploads the debug symbols after building. Reports carry no account details (`sendDefaultPii` is off) and performance tracing is off.
 * **Android:** create the upload keystore and `android/key.properties` (see `key.properties.example`). Release builds fail without them.
 * **iOS:** set the signing team in Xcode and archive, or use `flutter build ipa`.
 
@@ -223,5 +224,7 @@ Sandbox and TestFlight purchases are accepted by the production server on purpos
 - [ ] Nightly backup cron is installed, off-site copy is set up, and a restore has been tested.
 - [ ] Release builds point to production. Check that login works on a real device.
 - [ ] Store listings have a privacy policy URL (`/api/v1/legal/privacy`) and a terms URL.
-- [ ] Monitoring: an uptime check on `/ready`, and a crash reporter on the apps (recommended).
+- [ ] Monitoring: an uptime check on `/ready`, and release builds made with `SENTRY_DSN` (plus the Sentry upload variables) so app crashes are reported.
+- [ ] Detailed Destiny Matrix meanings generated: `cd go_backend && OPENAI_API_KEY=sk-... go run ./cmd/gen-interpretations`, then commit `internal/destinymatrix/interpretations.json`. Until then users see the short meanings.
+- [ ] CI (`.github/workflows/ci.yml`) is green on `master`.
 - [ ] `MODERATION_EMAIL` and `ADMIN_EMAILS` are set. File a test report from the app, check that the email arrives, then resolve it with the admin API. Someone checks the inbox at least once a day.

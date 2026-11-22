@@ -47,10 +47,10 @@ type ChallengeCycle struct {
 // Pinnacles: 4 lifelong cycles with values derived from the birth date.
 // Age windows depend on the Life Path number per Pythagorean convention.
 //
-//   P1: birth → (36 - life path) reduced
-//   P2: 9 years
-//   P3: 9 years
-//   P4: rest of life
+//	P1: birth → (36 - life path) reduced
+//	P2: 9 years
+//	P3: 9 years
+//	P4: rest of life
 func Pinnacles(birthDate time.Time, lifePath Number, currentAge int) [4]PinnacleCycle {
 	m := reduceFinal(int(birthDate.Month()))
 	d := reduceFinal(birthDate.Day())

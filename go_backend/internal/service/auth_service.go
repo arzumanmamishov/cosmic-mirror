@@ -7,12 +7,13 @@
 //   - UserRepository for the user row
 //
 // Endpoints call the methods here to run the four public flows:
-//   RegisterVerify   → verify OTP + create user + issue tokens
-//   Login            → email + password → verify → issue tokens
-//   LoginVerify      → verify OTP + issue tokens (passwordless login)
-//   PasswordResetVerify → verify OTP + set new password
-//   Refresh          → rotate refresh token, issue new access
-//   Logout           → revoke supplied refresh token
+//
+//	RegisterVerify   → verify OTP + create user + issue tokens
+//	Login            → email + password → verify → issue tokens
+//	LoginVerify      → verify OTP + issue tokens (passwordless login)
+//	PasswordResetVerify → verify OTP + set new password
+//	Refresh          → rotate refresh token, issue new access
+//	Logout           → revoke supplied refresh token
 package service
 
 import (

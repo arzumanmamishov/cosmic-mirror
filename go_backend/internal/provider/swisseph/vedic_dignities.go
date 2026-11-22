@@ -98,7 +98,7 @@ var classicalFriends = map[string]map[string]string{
 	},
 	"Jupiter": {
 		"Sun": "friend", "Moon": "friend", "Mars": "friend",
-		"Saturn": "neutral",
+		"Saturn":  "neutral",
 		"Mercury": "enemy", "Venus": "enemy",
 	},
 	"Venus": {
@@ -109,7 +109,7 @@ var classicalFriends = map[string]map[string]string{
 	"Saturn": {
 		"Mercury": "friend", "Venus": "friend",
 		"Jupiter": "neutral",
-		"Sun": "enemy", "Moon": "enemy", "Mars": "enemy",
+		"Sun":     "enemy", "Moon": "enemy", "Mars": "enemy",
 	},
 }
 

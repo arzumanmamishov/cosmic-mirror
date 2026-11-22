@@ -117,7 +117,7 @@ void main() {
       find.byType(MaterialApp),
       matchesGoldenFile('goldens/octagram_fullscreen.png'),
     );
-  });
+  }, tags: ['golden']);
 
   testWidgets('worst-case all-22 values never overflow a node', (tester) async {
     await tester.binding.setSurfaceSize(const Size(360, 780));

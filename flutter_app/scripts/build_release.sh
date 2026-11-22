@@ -14,6 +14,12 @@
 #   REVENUECAT_API_KEY          optional  fallback when the per-platform var is
 #                                         unset (must still match the platform)
 #   API_BASE_URL                optional  default https://api.livelyapp.co
+#   SENTRY_DSN                  recommended  crash reporting; without it
+#                                         crashes are not reported anywhere
+#   SENTRY_AUTH_TOKEN, SENTRY_ORG, SENTRY_PROJECT
+#                               optional  when all three are set, debug
+#                                         symbols are uploaded to Sentry
+#                                         after the build
 #
 # Premium is sold only through App Store / Google Play in-app purchases
 # (RevenueCat); the app contains no Stripe SDK. RevenueCat keys are
@@ -36,6 +42,11 @@ API_BASE_URL="${API_BASE_URL:-https://api.livelyapp.co}"
 die() { echo "error: $*" >&2; exit 1; }
 
 [[ "$API_BASE_URL" == https://* ]] || die "API_BASE_URL must be https:// (got $API_BASE_URL)"
+
+SENTRY_DSN="${SENTRY_DSN:-}"
+if [[ -z "$SENTRY_DSN" ]]; then
+  echo "warning: SENTRY_DSN is not set — this build will not report crashes" >&2
+fi
 
 # rc_key_for IOS|ANDROID — the RevenueCat public SDK key for that platform.
 # The app rejects a key for the wrong store at runtime (purchases would be
@@ -66,6 +77,7 @@ common_defines() {
     --dart-define=ENVIRONMENT=prod
     "--dart-define=API_BASE_URL=$API_BASE_URL"
     "--dart-define=REVENUECAT_API_KEY=$rc_key"
+    "--dart-define=SENTRY_DSN=$SENTRY_DSN"
   )
   printf '%s\n' "${defines[@]}"
 }
@@ -92,6 +104,13 @@ build_ios() {
 flutter pub get
 [[ "$TARGET" == ios ]] || build_android
 [[ "$TARGET" == android ]] || build_ios
+
+if [[ -n "${SENTRY_AUTH_TOKEN:-}" && -n "${SENTRY_ORG:-}" && -n "${SENTRY_PROJECT:-}" ]]; then
+  echo "==> Uploading debug symbols to Sentry"
+  dart run sentry_dart_plugin
+else
+  echo "note: SENTRY_AUTH_TOKEN/SENTRY_ORG/SENTRY_PROJECT not all set — debug symbols not uploaded to Sentry" >&2
+fi
 
 echo
 echo "Done. Artifacts:"

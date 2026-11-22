@@ -1,0 +1,3 @@
+tags:
+  # Pixel goldens recorded on macOS. Run locally; CI excludes them.
+  golden:

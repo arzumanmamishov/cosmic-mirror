@@ -29,8 +29,8 @@ The notifications worker (`go_backend/internal/worker/notifications.go`) current
 
 ## 🧰 Other deferred code work
 - **Automated tests** — Go and Flutter are both ~0. Start with `compatibility_service` (people CRUD + report), auth/OTP, and a Flutter widget test for onboarding/paywall.
-- **Crash reporting** — wire Firebase Crashlytics (TODOs in `flutter_app/lib/main.dart`).
-- **CI/CD** — no `.github/workflows` yet: lint + test + Docker build for backend; `flutter analyze` + build for app; `next build` for website.
+- ~~**Crash reporting**~~ — done (2026-11-22): Sentry, enabled by `SENTRY_DSN` at build time. See `docs/PRODUCTION.md` §5.
+- ~~**CI/CD**~~ — CI done (2026-11-22): `.github/workflows/ci.yml` runs Go vet/test, the Docker image build, Flutter analyze/test (pixel goldens excluded) and the website build. No automatic deploy yet.
 
 ## 🔑 Owner setup (accounts / secrets / decisions — needed before store launch)
 - [ ] **Rotate the OpenAI key** — a live key is in plaintext in `go_backend/.env` (uncommitted, but rotate).

@@ -145,10 +145,11 @@ func kalaBalaOf(p domain.VedicPlanetPlacement, allPlanets map[string]domain.Vedi
 // chestaBalaOf — motional strength. For the Sun and Moon this is the equiv-
 // alent of solar/lunar effective speed; for the other five it's a function
 // of retrograde and proximity to the Sun. Simplified:
-//   Retrograde planet: 60 Virupas (max).
-//   Direct planet: 30 Virupas.
-//   Sun/Moon: 30 (they're never retrograde).
-//   Rahu/Ketu: 30 (always retrograde by definition; classical schools differ).
+//
+//	Retrograde planet: 60 Virupas (max).
+//	Direct planet: 30 Virupas.
+//	Sun/Moon: 30 (they're never retrograde).
+//	Rahu/Ketu: 30 (always retrograde by definition; classical schools differ).
 func chestaBalaOf(p domain.VedicPlanetPlacement) float64 {
 	if p.Name == "Sun" || p.Name == "Moon" {
 		return 30

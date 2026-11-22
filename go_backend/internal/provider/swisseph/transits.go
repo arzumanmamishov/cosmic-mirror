@@ -16,12 +16,12 @@ import (
 // never invents dates or aspects.
 type TransitEvent struct {
 	Date        time.Time `json:"date"`
-	Type        string    `json:"type"`        // ingress | lunation | retrograde | aspect
-	Body        string    `json:"body"`        // transiting planet
+	Type        string    `json:"type"` // ingress | lunation | retrograde | aspect
+	Body        string    `json:"body"` // transiting planet
 	NatalPoint  string    `json:"natal_point,omitempty"`
 	Aspect      string    `json:"aspect,omitempty"` // conjunction | sextile | square | trine | opposition
 	Sign        string    `json:"sign,omitempty"`
-	Phase       string    `json:"phase,omitempty"`  // new_moon | full_moon | retrograde | direct
+	Phase       string    `json:"phase,omitempty"` // new_moon | full_moon | retrograde | direct
 	Description string    `json:"description"`
 }
 
@@ -152,11 +152,11 @@ func ComputeTransitEvents(
 			delta1 := normalizeSignedDelta(positions["Moon"].Longitude - positions["Sun"].Longitude)
 			if crossesZero(delta0, delta1) {
 				out = append(out, TransitEvent{
-					Date:        day,
-					Type:        "lunation",
-					Body:        "Moon",
-					Phase:       "new_moon",
-					Sign:        signNameFromIndex(signIndexFromLongitude(positions["Sun"].Longitude)),
+					Date:  day,
+					Type:  "lunation",
+					Body:  "Moon",
+					Phase: "new_moon",
+					Sign:  signNameFromIndex(signIndexFromLongitude(positions["Sun"].Longitude)),
 					Description: fmt.Sprintf("New moon in %s",
 						signNameFromIndex(signIndexFromLongitude(positions["Sun"].Longitude))),
 				})
@@ -171,11 +171,11 @@ func ComputeTransitEvents(
 			fullDelta1 := normalizeSignedDelta(delta1 - 180)
 			if crossesZero(fullDelta0, fullDelta1) {
 				out = append(out, TransitEvent{
-					Date:        day,
-					Type:        "lunation",
-					Body:        "Moon",
-					Phase:       "full_moon",
-					Sign:        signNameFromIndex(signIndexFromLongitude(positions["Moon"].Longitude)),
+					Date:  day,
+					Type:  "lunation",
+					Body:  "Moon",
+					Phase: "full_moon",
+					Sign:  signNameFromIndex(signIndexFromLongitude(positions["Moon"].Longitude)),
 					Description: fmt.Sprintf("Full moon in %s",
 						signNameFromIndex(signIndexFromLongitude(positions["Moon"].Longitude))),
 				})

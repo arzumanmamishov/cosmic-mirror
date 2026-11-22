@@ -5,15 +5,15 @@ package domain
 // Type / Strategy / Authority / Profile / Definition / NotSelfTheme are
 // derived metadata from the underlying gate / channel / center mechanics.
 type HumanDesignChart struct {
-	Type             string             `json:"type"`              // Manifestor | Generator | Manifesting Generator | Projector | Reflector
+	Type             string             `json:"type"` // Manifestor | Generator | Manifesting Generator | Projector | Reflector
 	Strategy         string             `json:"strategy"`
-	Authority        string             `json:"authority"`         // Emotional | Sacral | Splenic | Ego | Self-Projected | Mental | Lunar
-	Profile          string             `json:"profile"`           // "3/5", "1/3", etc.
-	Definition       string             `json:"definition"`        // Single | Split | Triple Split | Quadruple Split | None
-	NotSelfTheme     string             `json:"not_self_theme"`    // Anger / Frustration / Bitterness / Disappointment
-	Centers          []HDCenter         `json:"centers"`           // 9 entries, canonical order
-	Gates            []HDGateActivation `json:"gates"`             // 26 = 13 personality + 13 design
-	Channels         []HDChannel        `json:"channels"`          // only those defined
+	Authority        string             `json:"authority"`      // Emotional | Sacral | Splenic | Ego | Self-Projected | Mental | Lunar
+	Profile          string             `json:"profile"`        // "3/5", "1/3", etc.
+	Definition       string             `json:"definition"`     // Single | Split | Triple Split | Quadruple Split | None
+	NotSelfTheme     string             `json:"not_self_theme"` // Anger / Frustration / Bitterness / Disappointment
+	Centers          []HDCenter         `json:"centers"`        // 9 entries, canonical order
+	Gates            []HDGateActivation `json:"gates"`          // 26 = 13 personality + 13 design
+	Channels         []HDChannel        `json:"channels"`       // only those defined
 	IncarnationCross HDCross            `json:"incarnation_cross"`
 	Variables        HDVariables        `json:"variables"`
 }
@@ -28,9 +28,9 @@ type HDCenter struct {
 // HDGateActivation is one body's gate position (and which chart it's from).
 type HDGateActivation struct {
 	Gate          int    `json:"gate"`
-	Line          int    `json:"line"`            // 1..6
-	Body          string `json:"body"`            // Sun, Moon, Earth, ...
-	IsPersonality bool   `json:"is_personality"`  // false = design (88° earlier)
+	Line          int    `json:"line"`           // 1..6
+	Body          string `json:"body"`           // Sun, Moon, Earth, ...
+	IsPersonality bool   `json:"is_personality"` // false = design (88° earlier)
 }
 
 // HDChannel is one defined channel between two centers.

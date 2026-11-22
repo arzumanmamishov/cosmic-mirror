@@ -14,7 +14,7 @@ export const metadata: Metadata = {
   },
 };
 
-const LAST_UPDATED = "6 July 2026";
+const LAST_UPDATED = "22 November 2026";
 
 export default function TermsPage() {
   return (
@@ -248,7 +248,7 @@ export default function TermsPage() {
       <h2 id="third-party">11. Third-party services</h2>
       <p>
         The Service relies on third parties such as the Apple App Store, Google
-        Play, OpenAI, Stripe/RevenueCat, and Firebase. Your use of those
+        Play, OpenAI, Stripe/RevenueCat, and Sentry. Your use of those
         services may be subject to their own terms. We are not responsible for
         third-party services, and any app store (including Apple) is a third-
         party beneficiary of these Terms and may enforce them against you.

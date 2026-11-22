@@ -19,14 +19,14 @@ import (
 // Ketu. Every nakshatra maps to one of these as its ruling planet (see
 // nakshatra.Ruler), and the dasha cycle proceeds from there.
 var vimshottariOrder = []string{
-	"Ketu",   // 7y
-	"Venus",  // 20y
-	"Sun",    // 6y
-	"Moon",   // 10y
-	"Mars",   // 7y
-	"Rahu",   // 18y
+	"Ketu",    // 7y
+	"Venus",   // 20y
+	"Sun",     // 6y
+	"Moon",    // 10y
+	"Mars",    // 7y
+	"Rahu",    // 18y
 	"Jupiter", // 16y
-	"Saturn", // 19y
+	"Saturn",  // 19y
 	"Mercury", // 17y
 }
 
@@ -99,10 +99,10 @@ func expandDasha(parentLord string, parentStart time.Time, parentYears float64, 
 // computeVimshottariFromMoon computes the full dasha tree given the Moon's
 // sidereal longitude and birth time.
 //
-//   Step 1: identify the birth nakshatra and its ruling lord (= birth dasha lord).
-//   Step 2: compute how much of the birth dasha has already elapsed at birth
-//           (proportional to the Moon's position within the nakshatra).
-//   Step 3: walk the cycle to produce 9 Mahadashas spanning 120 years.
+//	Step 1: identify the birth nakshatra and its ruling lord (= birth dasha lord).
+//	Step 2: compute how much of the birth dasha has already elapsed at birth
+//	        (proportional to the Moon's position within the nakshatra).
+//	Step 3: walk the cycle to produce 9 Mahadashas spanning 120 years.
 //
 // Returns the tree at `levels` depth (1, 2, or 3).
 func computeVimshottariFromMoon(moonSiderealLon float64, birthTime time.Time, levels int) *domain.DashaTree {

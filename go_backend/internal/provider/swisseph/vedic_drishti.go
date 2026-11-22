@@ -4,10 +4,11 @@ import "cosmic-mirror/internal/domain"
 
 // Vedic aspects (graha drishti) are sign-based, not orb-based. Each graha
 // fully aspects the 7th sign from itself. In addition:
-//   Mars    — also 4th and 8th
-//   Jupiter — also 5th and 9th
-//   Saturn  — also 3rd and 10th
-//   Rahu/Ketu — 5th, 7th, 9th (Parashara school)
+//
+//	Mars    — also 4th and 8th
+//	Jupiter — also 5th and 9th
+//	Saturn  — also 3rd and 10th
+//	Rahu/Ketu — 5th, 7th, 9th (Parashara school)
 //
 // drishtiHouses lists the house-distances each graha aspects, including the
 // universal 7th. Distances are 1-indexed: distance 1 = same sign, 7 = opposite.
@@ -60,8 +61,8 @@ func drishtiStrength(distance int) float64 {
 }
 
 // computeDrishti produces directional Vedic aspects:
-//   1. graha → graha   (when one planet's drishti reaches another planet's bhava)
-//   2. graha → bhava   (each drishti always reaches a house)
+//  1. graha → graha   (when one planet's drishti reaches another planet's bhava)
+//  2. graha → bhava   (each drishti always reaches a house)
 //
 // `planets` must already carry sidereal house numbers (1..12).
 func computeDrishti(planets []domain.VedicPlanetPlacement) []domain.VedicAspect {

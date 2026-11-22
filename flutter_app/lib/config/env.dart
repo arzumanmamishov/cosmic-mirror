@@ -86,6 +86,11 @@ class Env {
   /// is listed.
   static const appStoreId = String.fromEnvironment('APP_STORE_ID');
 
+  /// Sentry DSN for crash reporting. Empty unless provided with
+  /// `--dart-define=SENTRY_DSN=...` (scripts/build_release.sh passes it);
+  /// when empty, Sentry is never initialized and errors are only logged.
+  static const sentryDsn = String.fromEnvironment('SENTRY_DSN');
+
   static bool get isDev => current == Environment.dev;
   static bool get isProd => current == Environment.prod;
 }

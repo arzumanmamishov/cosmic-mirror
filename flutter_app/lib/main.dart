@@ -14,21 +14,52 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:purchases_flutter/purchases_flutter.dart';
+import 'package:sentry_flutter/sentry_flutter.dart';
 
 /// Single sink for every uncaught error — framework (FlutterError.onError),
 /// platform/engine (PlatformDispatcher.onError) and async zone errors
-/// (runZonedGuarded).
-// TODO(crash-reporting): forward to the crash reporter once the owner picks
-// one (Crashlytics vs Sentry), e.g. `recordError(error, stack, fatal: fatal)`.
+/// (runZonedGuarded). Forwarded to Sentry when a DSN was compiled in.
 void reportError(Object error, StackTrace? stack, {bool fatal = false}) {
   debugPrint('${fatal ? 'Fatal' : 'Uncaught'} error: $error');
   if (stack != null) debugPrint('Stack trace: $stack');
+  if (Sentry.isEnabled) {
+    unawaited(
+      Sentry.captureException(
+        error,
+        stackTrace: stack,
+        withScope: (scope) => scope.level =
+            fatal ? SentryLevel.fatal : SentryLevel.error,
+      ),
+    );
+  }
+}
+
+/// Starts Sentry when `--dart-define=SENTRY_DSN=...` was given. No PII is
+/// sent and performance tracing is off: crash reports only. Never throws,
+/// so a Sentry problem can't keep the app from starting.
+Future<void> _initCrashReporting() async {
+  if (Env.sentryDsn.isEmpty) return;
+  try {
+    await SentryFlutter.init((options) {
+      options
+        ..dsn = Env.sentryDsn
+        ..environment = Env.environment
+        ..sendDefaultPii = false
+        ..tracesSampleRate = 0;
+    });
+  } catch (e) {
+    debugPrint('Sentry init failed: $e');
+  }
 }
 
 Future<void> main() async {
   runZonedGuarded<void>(
     () async {
       WidgetsFlutterBinding.ensureInitialized();
+
+      // Sentry installs its own error hooks; the ones below replace them and
+      // forward to Sentry through reportError, so each error is sent once.
+      await _initCrashReporting();
 
       // Install the error hooks first so failures during the init below
       // are reported too.

@@ -11,8 +11,8 @@ package handler
 // change so clients can re-prompt for consent.
 
 const (
-	legalVersion       = "1.0"
-	legalEffectiveDate = "2026-07-06"
+	legalVersion       = "1.1"
+	legalEffectiveDate = "2026-11-22"
 )
 
 const privacyPolicyText = `PRIVACY POLICY — Lively
@@ -47,8 +47,9 @@ We share the minimum data necessary with vendors who process it on our behalf:
 • OpenAI — generates AI readings, forecasts, and chat replies. Relevant birth
   data and your message text are sent to produce a response.
 • Stripe and/or RevenueCat — process and validate subscription payments.
-• Firebase (Google) — authentication support, push notifications, and crash
-  reporting.
+• Sentry — receives crash and error reports (device model, OS and app
+  version, and the error details) so we can fix problems. No account details
+  are included.
 • Cloud hosting and email delivery providers.
 These vendors are contractually bound to protect your data and use it only to
 provide their service to us. We do NOT sell your personal data.

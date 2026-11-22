@@ -6,8 +6,8 @@ import "time"
 // final reduced value, the raw pre-reduction sum, master/karmic flags, and
 // a canned description for the front end.
 type NumerologyNumber struct {
-	Value        int    `json:"value"`           // 1..9 OR 11/22/33
-	Display      string `json:"display"`         // "11/2" or "5"
+	Value        int    `json:"value"`   // 1..9 OR 11/22/33
+	Display      string `json:"display"` // "11/2" or "5"
 	RawSum       int    `json:"raw_sum"`
 	IsMaster     bool   `json:"is_master"`
 	IsKarmicDebt bool   `json:"is_karmic_debt"`
@@ -31,12 +31,12 @@ type NumerologyProfile struct {
 
 // NumerologyCycles is the time-varying part — recomputed on demand.
 type NumerologyCycles struct {
-	PersonalYear  NumerologyNumber          `json:"personal_year"`
-	PersonalMonth NumerologyNumber          `json:"personal_month"`
-	PersonalDay   NumerologyNumber          `json:"personal_day"`
-	Pinnacles     [4]NumerologyPinnacle     `json:"pinnacles"`
-	Challenges    [4]NumerologyChallenge    `json:"challenges"`
-	CurrentAge    int                       `json:"current_age"`
+	PersonalYear  NumerologyNumber       `json:"personal_year"`
+	PersonalMonth NumerologyNumber       `json:"personal_month"`
+	PersonalDay   NumerologyNumber       `json:"personal_day"`
+	Pinnacles     [4]NumerologyPinnacle  `json:"pinnacles"`
+	Challenges    [4]NumerologyChallenge `json:"challenges"`
+	CurrentAge    int                    `json:"current_age"`
 }
 
 type NumerologyPinnacle struct {
@@ -69,11 +69,11 @@ type NumerologyCompatibilityRequest struct {
 
 // NumerologyCompatibility is the response shape.
 type NumerologyCompatibility struct {
-	Score           int    `json:"score"`             // 0..100
-	LifePathScore   int    `json:"life_path_score"`
-	ExpressionScore int    `json:"expression_score"`
-	SoulUrgeScore   int    `json:"soul_urge_score"`
-	Summary         string `json:"summary"`
+	Score           int               `json:"score"` // 0..100
+	LifePathScore   int               `json:"life_path_score"`
+	ExpressionScore int               `json:"expression_score"`
+	SoulUrgeScore   int               `json:"soul_urge_score"`
+	Summary         string            `json:"summary"`
 	OtherProfile    NumerologyProfile `json:"other_profile"` // for display
 }
 
@@ -88,8 +88,8 @@ type NumerologyNameRequest struct {
 // NumerologyLetter is one entry in the letter-by-letter breakdown the
 // calculator UI renders (so users can see HOW the totals were built).
 type NumerologyLetter struct {
-	Letter  string `json:"letter"`   // upper-case, single rune
-	Value   int    `json:"value"`    // 1..9
+	Letter  string `json:"letter"` // upper-case, single rune
+	Value   int    `json:"value"`  // 1..9
 	IsVowel bool   `json:"is_vowel"`
 }
 

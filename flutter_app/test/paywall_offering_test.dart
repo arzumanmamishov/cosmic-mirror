@@ -34,7 +34,8 @@ void main() {
       final p = _product(
         'yearly',
         39.99,
-        intro: const IntroductoryPrice(0, r'$0.00', 'P3D', 1, PeriodUnit.day, 3),
+        intro:
+            const IntroductoryPrice(0, r'$0.00', 'P3D', 1, PeriodUnit.day, 3),
       );
       expect(freeTrialDays(p), 3);
     });
@@ -43,7 +44,8 @@ void main() {
       final p = _product(
         'yearly',
         39.99,
-        intro: const IntroductoryPrice(0, r'$0.00', 'P1W', 1, PeriodUnit.week, 1),
+        intro:
+            const IntroductoryPrice(0, r'$0.00', 'P1W', 1, PeriodUnit.week, 1),
       );
       expect(freeTrialDays(p), 7);
     });
@@ -52,8 +54,8 @@ void main() {
       final p = _product(
         'yearly',
         39.99,
-        intro:
-            const IntroductoryPrice(0.99, r'$0.99', 'P1M', 1, PeriodUnit.month, 1),
+        intro: const IntroductoryPrice(
+            0.99, r'$0.99', 'P1M', 1, PeriodUnit.month, 1),
       );
       expect(freeTrialDays(p), isNull);
     });
