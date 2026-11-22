@@ -2,6 +2,7 @@ import 'package:cosmic_mirror/config/theme/app_palette.dart';
 import 'package:cosmic_mirror/features/chart/presentation/astro_labels.dart';
 import 'package:cosmic_mirror/features/vedic_chart/data/repositories/vedic_repository.dart';
 import 'package:cosmic_mirror/features/vedic_chart/domain/entities/vedic_chart.dart';
+import 'package:cosmic_mirror/features/vedic_chart/domain/entities/yoga.dart';
 import 'package:cosmic_mirror/features/vedic_chart/presentation/providers/vedic_providers.dart';
 import 'package:cosmic_mirror/features/vedic_chart/presentation/widgets/ashtakavarga_grid.dart';
 import 'package:cosmic_mirror/features/vedic_chart/presentation/widgets/dasha_timeline.dart';
@@ -43,13 +44,50 @@ class VedicChartScreen extends ConsumerWidget {
       body: LivelyBackdrop(
         seed: 22,
         intensity: 0.6,
-        child: chartAsync.when(
-          loading: () => const ShimmerList(itemCount: 4),
-          error: (e, _) => ErrorView(
-            error: e,
-            onRetry: () => ref.invalidate(activeChartProvider),
-          ),
-          data: (chart) => _Body(chart: chart),
+        child: Stack(
+          children: [
+            // skipLoadingOnReload: switching varga or ayanamsa keeps the
+            // current chart (and the selected tab) on screen while the new
+            // one loads, instead of collapsing everything to a shimmer and
+            // resetting the user back to the first tab.
+            chartAsync.when(
+              skipLoadingOnReload: true,
+              loading: () => ShimmerList(
+                itemCount: 4,
+                padding: EdgeInsets.fromLTRB(
+                  20,
+                  MediaQuery.of(context).padding.top + kToolbarHeight,
+                  20,
+                  0,
+                ),
+              ),
+              error: (e, _) => ErrorView(
+                error: e,
+                // activeChartProvider only re-reads its source provider, so
+                // the failed source has to be invalidated too or retry just
+                // replays the cached error.
+                onRetry: () => ref
+                  ..invalidate(vedicRasiProvider)
+                  ..invalidate(vedicDivisionalProvider)
+                  ..invalidate(activeChartProvider),
+              ),
+              data: (chart) => _Body(chart: chart),
+            ),
+            // Thin progress bar while a new varga / ayanamsa (or a retry) loads
+            // behind the content that stays on screen.
+            if (chartAsync.isLoading &&
+                (chartAsync.hasValue || chartAsync.hasError))
+              Positioned(
+                top: MediaQuery.of(context).padding.top + kToolbarHeight,
+                left: 0,
+                right: 0,
+                child: LinearProgressIndicator(
+                  minHeight: 2,
+                  color: p.primary,
+                  backgroundColor: Colors.transparent,
+                ),
+              ),
+          ],
         ),
       ),
     );
@@ -183,23 +221,25 @@ class _Hero extends ConsumerWidget {
               ),
             ],
           ),
-          const SizedBox(height: 16),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-            decoration: BoxDecoration(
-              color: p.gold.withValues(alpha: 0.15),
-              borderRadius: BorderRadius.circular(20),
-            ),
-            child: Text(
-              l.vedicAtmakarakaLabel(chartPlanetName(l, chart.atmaKaraka)),
-              style: TextStyle(
-                color: p.gold,
-                fontSize: 11,
-                fontWeight: FontWeight.w700,
-                letterSpacing: 0.8,
+          if (chart.atmaKaraka.isNotEmpty) ...[
+            const SizedBox(height: 16),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+              decoration: BoxDecoration(
+                color: p.gold.withValues(alpha: 0.15),
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: Text(
+                l.vedicAtmakarakaLabel(chartPlanetName(l, chart.atmaKaraka)),
+                style: TextStyle(
+                  color: p.gold,
+                  fontSize: 11,
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: 0.8,
+                ),
               ),
             ),
-          ),
+          ],
           const SizedBox(height: 24),
           NorthIndianChart(chart: chart),
           const SizedBox(height: 12),
@@ -300,7 +340,7 @@ class _TabBar extends StatelessWidget {
         indicatorSize: TabBarIndicatorSize.tab,
         indicatorPadding: const EdgeInsets.all(4),
         dividerColor: Colors.transparent,
-        labelColor: Colors.white,
+        labelColor: p.onPrimary,
         unselectedLabelColor: p.textSecondary,
         labelStyle: const TextStyle(
           fontSize: 12,
@@ -524,8 +564,8 @@ class _BhavasTab extends StatelessWidget {
                 ),
                 child: Text(
                   '${b.number}',
-                  style: const TextStyle(
-                    color: Colors.white,
+                  style: TextStyle(
+                    color: p.onPrimary,
                     fontSize: 14,
                     fontWeight: FontWeight.w800,
                   ),
@@ -719,25 +759,29 @@ class _VargasTab extends ConsumerWidget {
           children: _vargas.map((v) {
             final isSelected = v.$1 == selected;
             return GestureDetector(
+              behavior: HitTestBehavior.opaque,
               onTap: () =>
                   ref.read(selectedVargaProvider.notifier).state = v.$1,
               child: Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 8,
-                ),
+                // 44px min height keeps the chips comfortably tappable.
+                constraints: const BoxConstraints(minHeight: 44),
+                padding: const EdgeInsets.symmetric(horizontal: 14),
                 decoration: BoxDecoration(
                   gradient: isSelected ? p.primaryGradient : null,
                   color: isSelected ? null : p.surface,
-                  borderRadius: BorderRadius.circular(20),
+                  borderRadius: BorderRadius.circular(22),
                   border: Border.all(color: p.glassBorder),
                 ),
-                child: Text(
-                  v.$2,
-                  style: TextStyle(
-                    color: isSelected ? Colors.white : p.textSecondary,
-                    fontSize: 11,
-                    fontWeight: FontWeight.w700,
+                child: Center(
+                  widthFactor: 1,
+                  heightFactor: 1,
+                  child: Text(
+                    v.$2,
+                    style: TextStyle(
+                      color: isSelected ? p.onPrimary : p.textSecondary,
+                      fontSize: 11,
+                      fontWeight: FontWeight.w700,
+                    ),
                   ),
                 ),
               ),
@@ -823,23 +867,110 @@ class _ShadbalaTab extends ConsumerWidget {
         final entries = map.entries.toList();
         if (entries.isEmpty) {
           return Center(
-            child: Text(AppLocalizations.of(context).vedicNoShadbala),
+            child: Text(
+              AppLocalizations.of(context).vedicNoShadbala,
+              style: TextStyle(color: context.palette.textSecondary),
+            ),
           );
         }
-        return PageView.builder(
-          itemCount: entries.length,
-          itemBuilder: (context, i) {
-            final e = entries[i];
-            return Padding(
-              padding: const EdgeInsets.fromLTRB(20, 20, 20, 40),
-              child: ShadbalaRadar(
-                planet: chartPlanetName(AppLocalizations.of(context), e.key),
-                bala: e.value,
-              ),
-            );
-          },
-        );
+        // The backend map arrives alphabetically; show the grahas in their
+        // traditional order (Sun → Saturn) instead.
+        int rank(String name) {
+          final i = _grahaOrder.indexOf(name);
+          return i < 0 ? _grahaOrder.length : i;
+        }
+
+        entries.sort((a, b) => rank(a.key).compareTo(rank(b.key)));
+        return _ShadbalaPager(entries: entries);
       },
+    );
+  }
+
+  static const _grahaOrder = [
+    'Sun',
+    'Moon',
+    'Mars',
+    'Mercury',
+    'Jupiter',
+    'Venus',
+    'Saturn',
+  ];
+}
+
+/// One radar per graha in a swipeable pager, with a short explanation of
+/// what Shadbala is and page dots so it's clear there is more to swipe to.
+class _ShadbalaPager extends StatefulWidget {
+  const _ShadbalaPager({required this.entries});
+
+  final List<MapEntry<String, ShadbalaBreakdown>> entries;
+
+  @override
+  State<_ShadbalaPager> createState() => _ShadbalaPagerState();
+}
+
+class _ShadbalaPagerState extends State<_ShadbalaPager> {
+  final _controller = PageController();
+  int _page = 0;
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final p = context.palette;
+    final l = AppLocalizations.of(context);
+    final entries = widget.entries;
+    return Column(
+      children: [
+        Padding(
+          padding: const EdgeInsets.fromLTRB(20, 12, 20, 0),
+          child: Text(
+            l.chrShadbalaIntro,
+            textAlign: TextAlign.center,
+            style:
+                TextStyle(color: p.textSecondary, fontSize: 12, height: 1.45),
+          ),
+        ),
+        Expanded(
+          child: PageView.builder(
+            controller: _controller,
+            itemCount: entries.length,
+            onPageChanged: (i) => setState(() => _page = i),
+            itemBuilder: (context, i) {
+              final e = entries[i];
+              return SingleChildScrollView(
+                padding: const EdgeInsets.fromLTRB(20, 16, 20, 16),
+                child: ShadbalaRadar(
+                  planet: chartPlanetName(l, e.key),
+                  bala: e.value,
+                ),
+              );
+            },
+          ),
+        ),
+        Padding(
+          padding: const EdgeInsets.only(bottom: 32),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              for (var i = 0; i < entries.length; i++)
+                AnimatedContainer(
+                  duration: const Duration(milliseconds: 200),
+                  margin: const EdgeInsets.symmetric(horizontal: 3),
+                  width: i == _page ? 18 : 6,
+                  height: 6,
+                  decoration: BoxDecoration(
+                    color: i == _page ? p.primary : p.textTertiary,
+                    borderRadius: BorderRadius.circular(999),
+                  ),
+                ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 }

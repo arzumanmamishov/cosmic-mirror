@@ -26,19 +26,22 @@ String glyphForSign(String? sign) =>
 /// ticks, a soft central glow, and three luminary medallions (Sun, Moon,
 /// Rising) carrying their zodiac glyphs. Used as the centrepiece of the
 /// Welcome reveal.
+///
+/// A null (or unrecognised) sign renders a neutral ✵ medallion — never a
+/// made-up placement (it used to default to Leo / Pisces / Scorpio).
 class MiniWheel extends StatelessWidget {
   const MiniWheel({
     this.size = 220,
-    this.sun = 'leo',
-    this.moon = 'pisces',
-    this.rising = 'scorpio',
+    this.sun,
+    this.moon,
+    this.rising,
     super.key,
   });
 
   final double size;
-  final String sun;
-  final String moon;
-  final String rising;
+  final String? sun;
+  final String? moon;
+  final String? rising;
 
   @override
   Widget build(BuildContext context) {
@@ -70,9 +73,9 @@ class _WheelPainter extends CustomPainter {
 
   final Color primary;
   final Color medallionFill;
-  final String sun;
-  final String moon;
-  final String rising;
+  final String? sun;
+  final String? moon;
+  final String? rising;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -127,7 +130,7 @@ class _WheelPainter extends CustomPainter {
 
     // three luminary medallions
     final medR = (inner + outer) / 2 - 30;
-    final luminaries = <(double, String)>[
+    final luminaries = <(double, String?)>[
       (-math.pi / 3, sun),
       (math.pi / 2.4, moon),
       (math.pi - 0.3, rising),
@@ -158,6 +161,7 @@ class _WheelPainter extends CustomPainter {
   @override
   bool shouldRepaint(_WheelPainter old) =>
       old.primary != primary ||
+      old.medallionFill != medallionFill ||
       old.sun != sun ||
       old.moon != moon ||
       old.rising != rising;

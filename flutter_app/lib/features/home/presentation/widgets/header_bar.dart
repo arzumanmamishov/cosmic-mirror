@@ -1,5 +1,6 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cosmic_mirror/config/theme/app_palette.dart';
+import 'package:cosmic_mirror/features/community/presentation/providers/community_providers.dart';
 import 'package:cosmic_mirror/l10n/app_localizations.dart';
 import 'package:cosmic_mirror/shared/providers/user_provider.dart';
 import 'package:cosmic_mirror/shared/utils/avatar_url.dart';
@@ -14,6 +15,11 @@ class HomeHeaderBar extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final user = ref.watch(currentUserProvider);
     final p = context.palette;
+    final l10n = AppLocalizations.of(context);
+    // A registration starts with an empty name until onboarding saves one.
+    final name = user.name?.trim() ?? '';
+    // Only show the dot when there really is something unread.
+    final unread = ref.watch(unreadCountProvider).valueOrNull ?? 0;
 
     return Padding(
       padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
@@ -24,7 +30,10 @@ class HomeHeaderBar extends ConsumerWidget {
           // a tinted circle. Tapping opens Profile.
           GestureDetector(
             onTap: () => context.push('/profile'),
-            child: Container(
+            child: Semantics(
+              button: true,
+              label: l10n.communityProfile,
+              child: Container(
               width: 48,
               height: 48,
               padding: const EdgeInsets.all(2),
@@ -40,6 +49,7 @@ class HomeHeaderBar extends ConsumerWidget {
                 ),
               ),
             ),
+            ),
           ),
           const SizedBox(width: 12),
           Expanded(
@@ -47,7 +57,9 @@ class HomeHeaderBar extends ConsumerWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  user.name ?? AppLocalizations.of(context).stargazer,
+                  name.isNotEmpty ? name : l10n.stargazer,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                   style: TextStyle(
                     color: p.textPrimary,
                     fontSize: 16,
@@ -56,11 +68,15 @@ class HomeHeaderBar extends ConsumerWidget {
                 ),
                 Row(
                   children: [
-                    Text(
-                      AppLocalizations.of(context).homeWelcomeBack,
-                      style: TextStyle(
-                        color: p.textSecondary,
-                        fontSize: 13,
+                    Flexible(
+                      child: Text(
+                        l10n.homeWelcomeBack,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          color: p.textSecondary,
+                          fontSize: 13,
+                        ),
                       ),
                     ),
                     const SizedBox(width: 4),
@@ -72,8 +88,13 @@ class HomeHeaderBar extends ConsumerWidget {
           ),
           _IconButton(
             icon: Icons.notifications_rounded,
-            onTap: () => context.push('/community/notifications'),
-            hasBadge: true,
+            semanticLabel: l10n.communityNotificationsTooltip,
+            onTap: () async {
+              await context.push('/community/notifications');
+              // Refresh the dot once the user comes back.
+              if (context.mounted) ref.invalidate(unreadCountProvider);
+            },
+            hasBadge: unread > 0,
           ),
         ],
       ),
@@ -81,8 +102,11 @@ class HomeHeaderBar extends ConsumerWidget {
   }
 
   String _initial(String? name) {
-    if (name == null || name.isEmpty) return '✨';
-    return name.trim().substring(0, 1).toUpperCase();
+    // Trim before the empty check: a whitespace-only name used to crash
+    // substring(0, 1).
+    final trimmed = name?.trim() ?? '';
+    if (trimmed.isEmpty) return '✨';
+    return String.fromCharCode(trimmed.runes.first).toUpperCase();
   }
 }
 
@@ -134,24 +158,30 @@ class _IconButton extends StatelessWidget {
   const _IconButton({
     required this.icon,
     required this.onTap,
+    required this.semanticLabel,
     this.hasBadge = false,
   });
 
   final IconData icon;
   final VoidCallback onTap;
+  final String semanticLabel;
   final bool hasBadge;
 
   @override
   Widget build(BuildContext context) {
     final p = context.palette;
-    return GestureDetector(
+    return Semantics(
+      button: true,
+      label: semanticLabel,
+      child: GestureDetector(
       onTap: onTap,
+      behavior: HitTestBehavior.opaque,
       child: Stack(
         clipBehavior: Clip.none,
         children: [
           Container(
-            width: 40,
-            height: 40,
+            width: 44,
+            height: 44,
             decoration: BoxDecoration(
               color: p.surfaceElevated,
               shape: BoxShape.circle,
@@ -175,6 +205,7 @@ class _IconButton extends StatelessWidget {
               ),
             ),
         ],
+      ),
       ),
     );
   }

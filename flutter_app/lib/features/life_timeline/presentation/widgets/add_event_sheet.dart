@@ -1,4 +1,5 @@
 import 'package:cosmic_mirror/config/theme/app_palette.dart';
+import 'package:cosmic_mirror/core/utils/string_utils.dart';
 import 'package:cosmic_mirror/features/life_timeline/data/life_timeline_data.dart';
 import 'package:cosmic_mirror/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
@@ -37,8 +38,10 @@ class _AddEventSheetState extends State<AddEventSheet> {
     if (picked != null) setState(() => _date = picked);
   }
 
+  bool get _canSave => _titleCtrl.text.trim().isNotEmpty;
+
   void _save() {
-    if (_titleCtrl.text.trim().isEmpty) return;
+    if (!_canSave) return;
     Navigator.of(context).pop(
       LifeEvent(
         id: 'evt_${DateTime.now().millisecondsSinceEpoch}',
@@ -47,10 +50,9 @@ class _AddEventSheetState extends State<AddEventSheet> {
         description: _descCtrl.text.trim(),
         category: _category,
         mood: _mood,
-        // Mock transits — in production, these come from Swiss Ephemeris
-        transits: [
-          AppLocalizations.of(context).lifeTimelineTransitPending,
-        ],
+        // Transits for user moments aren't calculated yet; a "pending"
+        // line that never resolves is worse than none.
+        transits: const [],
       ),
     );
   }
@@ -109,6 +111,9 @@ class _AddEventSheetState extends State<AddEventSheet> {
                 const SizedBox(height: 6),
                 TextField(
                   controller: _titleCtrl,
+                  autofocus: true,
+                  textCapitalization: TextCapitalization.sentences,
+                  onChanged: (_) => setState(() {}),
                   style: TextStyle(color: p.textPrimary, fontSize: 15),
                   decoration: _inputDecoration(p, l.lifeTimelineFieldTitleHint),
                 ),
@@ -138,7 +143,8 @@ class _AddEventSheetState extends State<AddEventSheet> {
                           color: p.textSecondary,
                         ),
                         const SizedBox(width: 10),
-                        Text(
+                        Expanded(
+                          child: Text(
                           DateFormat(
                             'EEEE, MMM d, yyyy',
                             Localizations.localeOf(context).toString(),
@@ -148,6 +154,7 @@ class _AddEventSheetState extends State<AddEventSheet> {
                             fontSize: 14,
                             fontWeight: FontWeight.w600,
                           ),
+                        ),
                         ),
                       ],
                     ),
@@ -252,6 +259,7 @@ class _AddEventSheetState extends State<AddEventSheet> {
                 const SizedBox(height: 6),
                 TextField(
                   controller: _descCtrl,
+                  textCapitalization: TextCapitalization.sentences,
                   maxLines: 4,
                   minLines: 3,
                   style: TextStyle(color: p.textPrimary, fontSize: 14),
@@ -266,10 +274,14 @@ class _AddEventSheetState extends State<AddEventSheet> {
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
-                    onPressed: _save,
+                    // Disabled until there's a title — tapping used to
+                    // silently do nothing.
+                    onPressed: _canSave ? _save : null,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: p.primary,
-                      foregroundColor: Colors.white,
+                      foregroundColor: p.onPrimary,
+                      disabledBackgroundColor: p.surfaceElevated,
+                      disabledForegroundColor: p.textTertiary,
                       padding: const EdgeInsets.symmetric(vertical: 14),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(14),
@@ -329,7 +341,9 @@ class _Label extends StatelessWidget {
     return Row(
       children: [
         Text(
-          label.toUpperCase(),
+          label.toUpperCaseLocale(
+            Localizations.localeOf(context).languageCode,
+          ),
           style: TextStyle(
             color: p.textSecondary,
             fontSize: 10,

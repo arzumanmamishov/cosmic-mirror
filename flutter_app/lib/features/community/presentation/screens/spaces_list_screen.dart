@@ -1,7 +1,10 @@
+import 'dart:async';
+
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cosmic_mirror/config/theme/app_palette.dart';
 import 'package:cosmic_mirror/config/theme/lively_tokens.dart';
 import 'package:cosmic_mirror/config/theme/lively_type.dart';
+import 'package:cosmic_mirror/features/community/data/repositories/community_repository.dart';
 import 'package:cosmic_mirror/features/community/domain/entities/space.dart';
 import 'package:cosmic_mirror/features/community/presentation/providers/community_providers.dart';
 import 'package:cosmic_mirror/features/community/presentation/widgets/category_card.dart';
@@ -189,6 +192,9 @@ class _SearchBar extends ConsumerStatefulWidget {
 class _SearchBarState extends ConsumerState<_SearchBar> {
   late final TextEditingController _controller;
   final _focus = FocusNode();
+  // Debounces the live filter so each keystroke doesn't fire its own
+  // spaces request (and flash the list back to the loading shimmer).
+  Timer? _debounce;
 
   @override
   void initState() {
@@ -203,6 +209,7 @@ class _SearchBarState extends ConsumerState<_SearchBar> {
 
   @override
   void dispose() {
+    _debounce?.cancel();
     _controller.dispose();
     _focus.dispose();
     super.dispose();
@@ -215,6 +222,15 @@ class _SearchBarState extends ConsumerState<_SearchBar> {
   Widget build(BuildContext context) {
     final p = context.palette;
     final focused = _focus.hasFocus;
+    // Mirror queries set from elsewhere (the home top search) while this
+    // tab is already mounted; our own debounced writes match and no-op.
+    ref.listen<String>(spaceSearchQueryProvider, (_, next) {
+      if (next != _controller.text.trim()) {
+        _debounce?.cancel();
+        _controller.text = next;
+        setState(() {});
+      }
+    });
     return AnimatedContainer(
       duration: LivelyMotion.quick,
       height: 46,
@@ -251,10 +267,19 @@ class _SearchBarState extends ConsumerState<_SearchBar> {
               // the list never updated unless the user pressed
               // Enter on the keyboard, which most never do.
               onChanged: (v) {
-                _query.state = v;
+                _debounce?.cancel();
+                _debounce = Timer(
+                  const Duration(milliseconds: 350),
+                  () {
+                    if (mounted) _query.state = v.trim();
+                  },
+                );
                 setState(() {});
               },
-              onSubmitted: (v) => _query.state = v,
+              onSubmitted: (v) {
+                _debounce?.cancel();
+                _query.state = v.trim();
+              },
             ),
           ),
           if (_controller.text.isNotEmpty)
@@ -262,6 +287,7 @@ class _SearchBarState extends ConsumerState<_SearchBar> {
               visualDensity: VisualDensity.compact,
               icon: Icon(Icons.close_rounded, size: 18, color: p.textMuted),
               onPressed: () {
+                _debounce?.cancel();
                 _controller.clear();
                 _query.state = '';
                 setState(() {});
@@ -310,13 +336,22 @@ class _CreateSpaceButton extends StatelessWidget {
   }
 }
 
-class _EmptySpaces extends StatelessWidget {
+class _EmptySpaces extends ConsumerWidget {
   const _EmptySpaces();
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final p = context.palette;
     final l = AppLocalizations.of(context);
+    // "Tap + to create the first one" is wrong when the list is only
+    // empty because of the search box or the Joined filter.
+    final searching = ref.watch(spaceSearchQueryProvider).trim().isNotEmpty;
+    final joinedOnly = ref.watch(spaceFilterProvider) == SpaceFilter.joined;
+    final message = searching
+        ? l.cpsSpacesNoResults
+        : joinedOnly
+            ? l.cpsSpacesNoneJoined
+            : l.communitySpacesEmptyTap;
     return Padding(
       padding: const EdgeInsets.fromLTRB(32, 24, 32, 48),
       child: Column(
@@ -333,7 +368,7 @@ class _EmptySpaces extends StatelessWidget {
           ),
           const SizedBox(height: 16),
           Text(
-            l.communitySpacesEmptyTap,
+            message,
             style: LivelyType.small(p.textMuted),
             textAlign: TextAlign.center,
           ),
@@ -421,10 +456,12 @@ class _MyProfileAvatar extends ConsumerWidget {
           ),
         );
 
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
-      child: GestureDetector(
-        onTap: () => context.push('/community/user/me'),
+    // Padding sits inside the tap area so the target is ~44px, not 34px.
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: () => context.push('/community/user/me'),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 5),
         child: Container(
           width: 34,
           height: 34,

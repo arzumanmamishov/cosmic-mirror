@@ -202,7 +202,8 @@ class NumerologyCycles extends Equatable {
   final int currentAge;
 
   @override
-  List<Object?> get props => [personalYear, personalMonth, personalDay, currentAge];
+  List<Object?> get props =>
+      [personalYear, personalMonth, personalDay, currentAge];
 }
 
 class NumerologyReading extends Equatable {

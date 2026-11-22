@@ -47,7 +47,8 @@ class ContentMoreButton extends StatelessWidget {
       tooltip: MaterialLocalizations.of(context).moreButtonTooltip,
       visualDensity: VisualDensity.compact,
       padding: EdgeInsets.zero,
-      constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
+      // 40px: easier to hit than the old 32px without crowding rows.
+      constraints: const BoxConstraints(minWidth: 40, minHeight: 40),
       icon: Icon(Icons.more_horiz_rounded, size: size, color: p.textDim),
       onPressed: () => showContentActions(context, actions()),
     );
@@ -309,12 +310,12 @@ class _ReportSheetState extends ConsumerState<_ReportSheet> {
                 child: FilledButton(
                   onPressed: canSubmit ? _submit : null,
                   child: _busy
-                      ? const SizedBox(
+                      ? SizedBox(
                           width: 16,
                           height: 16,
                           child: CircularProgressIndicator(
                             strokeWidth: 2,
-                            color: Colors.white,
+                            color: Theme.of(context).colorScheme.onPrimary,
                           ),
                         )
                       : Text(l.reportSubmit),

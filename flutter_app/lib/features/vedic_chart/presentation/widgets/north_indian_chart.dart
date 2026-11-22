@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:cosmic_mirror/config/theme/app_palette.dart';
 import 'package:cosmic_mirror/features/chart/presentation/astro_labels.dart';
 import 'package:cosmic_mirror/features/vedic_chart/domain/entities/vedic_chart.dart';
@@ -43,6 +45,24 @@ class NorthIndianChart extends StatelessWidget {
   Widget build(BuildContext context) {
     final p = context.palette;
     final l = AppLocalizations.of(context);
+    // Shrink to the available width on narrow phones so the square stays
+    // square (and tap hit-testing uses the real side length).
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final side = constraints.maxWidth.isFinite
+            ? math.min(size, constraints.maxWidth)
+            : size;
+        return _buildChart(context, l, p, side);
+      },
+    );
+  }
+
+  Widget _buildChart(
+    BuildContext context,
+    AppLocalizations l,
+    AppPalette p,
+    double size,
+  ) {
     return SizedBox(
       width: size,
       height: size,

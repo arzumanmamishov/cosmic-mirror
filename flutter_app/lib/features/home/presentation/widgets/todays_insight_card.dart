@@ -66,10 +66,13 @@ class TodaysInsightCard extends ConsumerWidget {
                 const SizedBox(height: 14),
                 GestureDetector(
                   onTap: () => context.push('/daily-reading'),
+                  behavior: HitTestBehavior.opaque,
                   child: Container(
+                    constraints: const BoxConstraints(minHeight: 40),
+                    alignment: Alignment.center,
                     padding: const EdgeInsets.symmetric(
                       horizontal: 16,
-                      vertical: 8,
+                      vertical: 10,
                     ),
                     decoration: BoxDecoration(
                       gradient: p.premiumGradient,
@@ -84,8 +87,10 @@ class TodaysInsightCard extends ConsumerWidget {
                     ),
                     child: Text(
                       l10n.homeReadMore,
-                      style: const TextStyle(
-                        color: Colors.white,
+                      // onPrimary: readable on both the gold (dark) and
+                      // blue (light) premium gradients.
+                      style: TextStyle(
+                        color: p.onPrimary,
                         fontSize: 12,
                         fontWeight: FontWeight.w600,
                       ),

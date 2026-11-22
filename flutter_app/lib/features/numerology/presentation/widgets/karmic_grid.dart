@@ -96,7 +96,7 @@ class _Cell extends StatelessWidget {
     Color fg;
     if (isHiddenPassion) {
       bg = palette.gold;
-      fg = Colors.white;
+      fg = palette.onPrimary;
     } else if (missing) {
       bg = palette.surfaceElevated;
       fg = palette.textTertiary;

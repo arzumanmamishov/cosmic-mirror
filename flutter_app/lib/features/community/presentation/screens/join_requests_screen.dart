@@ -1,4 +1,5 @@
 import 'package:cosmic_mirror/config/theme/app_palette.dart';
+import 'package:cosmic_mirror/core/error/error_message.dart';
 import 'package:cosmic_mirror/features/community/domain/entities/space.dart';
 import 'package:cosmic_mirror/features/community/presentation/providers/community_providers.dart';
 import 'package:cosmic_mirror/l10n/app_localizations.dart';
@@ -21,6 +22,14 @@ class JoinRequestsScreen extends ConsumerWidget {
     final p = context.palette;
     final l = AppLocalizations.of(context);
     final requestsAsync = ref.watch(spaceJoinRequestsProvider(spaceId));
+    // The app bar is transparent over the body; keep content below it.
+    final topPad = MediaQuery.paddingOf(context).top + kToolbarHeight + 12;
+    Future<void> refresh() async {
+      ref.invalidate(spaceJoinRequestsProvider(spaceId));
+      try {
+        await ref.read(spaceJoinRequestsProvider(spaceId).future);
+      } catch (_) {/* shown by the error state */}
+    }
 
     return Scaffold(
       backgroundColor: p.background,
@@ -49,26 +58,40 @@ class JoinRequestsScreen extends ConsumerWidget {
             ),
             data: (requests) {
               if (requests.isEmpty) {
-                return Center(
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 36),
-                    child: Text(
-                      l.spaceRequestsEmpty,
-                      textAlign: TextAlign.center,
-                      style: TextStyle(color: p.textSecondary, fontSize: 14),
-                    ),
+                // Pull-to-refresh still works so new requests can arrive.
+                return RefreshIndicator(
+                  color: p.primary,
+                  backgroundColor: p.surface,
+                  edgeOffset: topPad,
+                  onRefresh: refresh,
+                  child: ListView(
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    padding: EdgeInsets.fromLTRB(36, topPad + 80, 36, 32),
+                    children: [
+                      Text(
+                        l.spaceRequestsEmpty,
+                        textAlign: TextAlign.center,
+                        style:
+                            TextStyle(color: p.textSecondary, fontSize: 14),
+                      ),
+                    ],
                   ),
                 );
               }
               return RefreshIndicator(
-                onRefresh: () async {
-                  ref.invalidate(spaceJoinRequestsProvider(spaceId));
-                },
+                color: p.primary,
+                backgroundColor: p.surface,
+                edgeOffset: topPad,
+                onRefresh: refresh,
                 child: ListView.separated(
-                  padding: const EdgeInsets.fromLTRB(20, 100, 20, 32),
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  padding: EdgeInsets.fromLTRB(20, topPad, 20, 32),
                   itemCount: requests.length,
                   separatorBuilder: (_, __) => const SizedBox(height: 8),
                   itemBuilder: (_, i) => _RequestTile(
+                    // Keyed by user: without it the next request reused
+                    // this row's State (and its spinner) after a refetch.
+                    key: ValueKey(requests[i].userId),
                     spaceId: spaceId,
                     request: requests[i],
                   ),
@@ -83,7 +106,11 @@ class JoinRequestsScreen extends ConsumerWidget {
 }
 
 class _RequestTile extends ConsumerStatefulWidget {
-  const _RequestTile({required this.spaceId, required this.request});
+  const _RequestTile({
+    required this.spaceId,
+    required this.request,
+    super.key,
+  });
 
   final String spaceId;
   final SpaceMember request;
@@ -115,8 +142,12 @@ class _RequestTileState extends ConsumerState<_RequestTile> {
           ..invalidate(spaceDetailProvider(widget.spaceId))
           ..invalidate(spaceMembersProvider(widget.spaceId));
       }
-    } catch (_) {
-      if (mounted) setState(() => _busy = false);
+    } catch (e) {
+      if (!mounted) return;
+      setState(() => _busy = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(FriendlyError.from(context, e).body)),
+      );
     }
   }
 
@@ -145,8 +176,8 @@ class _RequestTileState extends ConsumerState<_RequestTile> {
             ),
             child: Text(
               initial,
-              style: const TextStyle(
-                color: Colors.white,
+              style: TextStyle(
+                color: p.onPrimary,
                 fontWeight: FontWeight.w800,
               ),
             ),
@@ -154,7 +185,9 @@ class _RequestTileState extends ConsumerState<_RequestTile> {
           const SizedBox(width: 12),
           Expanded(
             child: Text(
-              m.userName.isEmpty ? '—' : m.userName,
+              m.userName.isEmpty ? l.communityUnknownMember : m.userName,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
               style: TextStyle(
                 color: p.textPrimary,
                 fontSize: 14,
@@ -163,10 +196,13 @@ class _RequestTileState extends ConsumerState<_RequestTile> {
             ),
           ),
           if (_busy)
-            const SizedBox(
+            SizedBox(
               width: 18,
               height: 18,
-              child: CircularProgressIndicator(strokeWidth: 2),
+              child: CircularProgressIndicator(
+                strokeWidth: 2,
+                color: p.primary,
+              ),
             )
           else ...[
             _ActionButton(
@@ -201,10 +237,12 @@ class _ActionButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final p = context.palette;
+    // Opaque + padded hit area so the ~30px pill is easier to tap.
     return GestureDetector(
+      behavior: HitTestBehavior.opaque,
       onTap: onPressed,
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
         decoration: BoxDecoration(
           gradient: primary ? p.primaryGradient : null,
           color: primary ? null : p.surfaceElevated,
@@ -216,7 +254,7 @@ class _ActionButton extends StatelessWidget {
         child: Text(
           label,
           style: TextStyle(
-            color: primary ? Colors.white : p.textSecondary,
+            color: primary ? p.onPrimary : p.textSecondary,
             fontSize: 12,
             fontWeight: FontWeight.w700,
           ),

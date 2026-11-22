@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:cosmic_mirror/config/theme/app_palette.dart';
+import 'package:cosmic_mirror/core/error/error_message.dart';
 import 'package:cosmic_mirror/features/community/domain/entities/notification.dart';
 import 'package:cosmic_mirror/features/community/presentation/providers/community_providers.dart';
 import 'package:cosmic_mirror/features/community/presentation/widgets/notification_tile.dart';
@@ -12,14 +13,54 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-class NotificationsScreen extends ConsumerWidget {
+class NotificationsScreen extends ConsumerStatefulWidget {
   const NotificationsScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<NotificationsScreen> createState() =>
+      _NotificationsScreenState();
+}
+
+class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
+  bool _markingAll = false;
+
+  Future<void> _markAllRead() async {
+    if (_markingAll) return;
+    setState(() => _markingAll = true);
+    try {
+      await ref.read(communityRepositoryProvider).markAllNotificationsRead();
+      ref
+        ..invalidate(notificationsProvider)
+        ..invalidate(unreadCountProvider);
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(FriendlyError.from(context, e).body)),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _markingAll = false);
+    }
+  }
+
+  Future<void> _refresh() async {
+    ref.invalidate(unreadCountProvider);
+    try {
+      ref.invalidate(notificationsProvider);
+      await ref.read(notificationsProvider.future);
+    } catch (_) {/* shown by the provider's error state */}
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final p = context.palette;
     final l = AppLocalizations.of(context);
     final notifsAsync = ref.watch(notificationsProvider);
+    final hasUnread = notifsAsync.valueOrNull
+            ?.any((n) => n.notification.isUnread) ??
+        false;
+    // The app bar is transparent over the body; keep content below it.
+    final topPad = MediaQuery.paddingOf(context).top + kToolbarHeight + 12;
     return Scaffold(
       backgroundColor: p.background,
       extendBodyBehindAppBar: true,
@@ -30,18 +71,12 @@ class NotificationsScreen extends ConsumerWidget {
         title: Text(l.communityNotifications),
         actions: [
           TextButton(
-            onPressed: () async {
-              await ref
-                  .read(communityRepositoryProvider)
-                  .markAllNotificationsRead();
-              ref
-                ..invalidate(notificationsProvider)
-                ..invalidate(unreadCountProvider);
-            },
+            // Disabled while in flight or when everything is already read.
+            onPressed: _markingAll || !hasUnread ? null : _markAllRead,
             child: Text(
               l.communityMarkAllRead,
               style: TextStyle(
-                color: p.primary,
+                color: _markingAll || !hasUnread ? p.textDim : p.primary,
                 fontSize: 12,
                 fontWeight: FontWeight.w700,
               ),
@@ -66,27 +101,35 @@ class NotificationsScreen extends ConsumerWidget {
             ),
             data: (entries) {
               if (entries.isEmpty) {
-                return Center(
-                  child: Padding(
-                    padding: const EdgeInsets.all(32),
-                    child: Text(
-                      l.notifEmptyBlurb,
-                      textAlign: TextAlign.center,
-                      style:
-                          TextStyle(color: p.textSecondary, fontSize: 13),
-                    ),
+                // Still pull-to-refreshable so new activity can be fetched.
+                return RefreshIndicator(
+                  color: p.primary,
+                  backgroundColor: p.surface,
+                  edgeOffset: topPad,
+                  onRefresh: _refresh,
+                  child: ListView(
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    padding: EdgeInsets.fromLTRB(32, topPad + 80, 32, 32),
+                    children: [
+                      Text(
+                        l.notifEmptyBlurb,
+                        textAlign: TextAlign.center,
+                        style:
+                            TextStyle(color: p.textSecondary, fontSize: 13),
+                      ),
+                    ],
                   ),
                 );
               }
               final groups = _groupByDay(l, entries);
               return RefreshIndicator(
-                onRefresh: () async {
-                  ref
-                    ..invalidate(notificationsProvider)
-                    ..invalidate(unreadCountProvider);
-                },
+                color: p.primary,
+                backgroundColor: p.surface,
+                edgeOffset: topPad,
+                onRefresh: _refresh,
                 child: ListView(
-                  padding: const EdgeInsets.fromLTRB(20, 100, 20, 32),
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  padding: EdgeInsets.fromLTRB(20, topPad, 20, 32),
                   children: [
                     for (final entry in groups.entries) ...[
                       Padding(
@@ -127,10 +170,19 @@ class NotificationsScreen extends ConsumerWidget {
   ) async {
     final n = entry.notification;
     if (n.isUnread) {
-      await ref.read(communityRepositoryProvider).markNotificationRead(n.id);
-      ref
-        ..invalidate(notificationsProvider)
-        ..invalidate(unreadCountProvider);
+      // Navigate right away; a failed mark-read must not block (or
+      // silently swallow) the tap.
+      unawaited(
+        ref
+            .read(communityRepositoryProvider)
+            .markNotificationRead(n.id)
+            .then((_) {
+          if (!mounted) return;
+          ref
+            ..invalidate(notificationsProvider)
+            ..invalidate(unreadCountProvider);
+        }).catchError((Object _) {}),
+      );
     }
     if (!context.mounted) return;
     switch (n.targetType) {

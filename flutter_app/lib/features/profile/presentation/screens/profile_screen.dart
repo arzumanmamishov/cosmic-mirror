@@ -57,7 +57,15 @@ class ProfileScreen extends ConsumerWidget {
         seed: 17,
         intensity: 0.6,
         child: ListView(
-          padding: const EdgeInsets.fromLTRB(20, 90, 20, 40),
+          // The app bar is transparent and the body extends behind it, so
+          // clear the status bar + toolbar instead of a fixed 90px (which
+          // tucked the avatar under the app bar on notched phones).
+          padding: EdgeInsets.fromLTRB(
+            20,
+            MediaQuery.paddingOf(context).top + kToolbarHeight + 8,
+            20,
+            40,
+          ),
           children: [
               FadeSlideIn(child: _ProfileHero(user: user)),
               const SizedBox(height: 24),
@@ -142,7 +150,11 @@ class ProfileScreen extends ConsumerWidget {
               const SizedBox(height: 24),
               Center(
                 child: Text(
-                  'Lively · v1.0.0',
+                  // Real installed version instead of a hard-coded string.
+                  ref.watch(appPackageInfoProvider).maybeWhen(
+                        data: (info) => 'Lively · v${info.version}',
+                        orElse: () => 'Lively',
+                      ),
                   style: LivelyType.mono(p.textTertiary),
                 ),
               ),
@@ -158,9 +170,8 @@ class ProfileScreen extends ConsumerWidget {
 Future<void> _showEditProfileSheet(BuildContext context, WidgetRef ref) async {
   final p = context.palette;
   final user = ref.read(currentUserProvider);
-  final nameCtrl = TextEditingController(text: user.name ?? '');
 
-  await showModalBottomSheet<void>(
+  final saved = await showModalBottomSheet<bool>(
     context: context,
     backgroundColor: p.surface,
     isScrollControlled: true,
@@ -176,8 +187,10 @@ Future<void> _showEditProfileSheet(BuildContext context, WidgetRef ref) async {
           MediaQuery.of(sheetContext).viewInsets.bottom + 24,
         ),
         child: _EditProfileForm(
-          nameCtrl: nameCtrl,
+          initialName: user.name ?? '',
           email: user.email,
+          // Returns an error message to show inline, or null on success.
+          // (A SnackBar here would render behind the modal sheet.)
           onSave: (newName) async {
             final apiClient = ref.read(apiClientProvider);
             try {
@@ -186,19 +199,13 @@ Future<void> _showEditProfileSheet(BuildContext context, WidgetRef ref) async {
                 data: {'name': newName},
               );
               ref.read(currentUserProvider.notifier).updateName(newName);
-              if (sheetContext.mounted) Navigator.pop(sheetContext);
+              if (sheetContext.mounted) Navigator.pop(sheetContext, true);
+              return null;
             } catch (e) {
-              if (sheetContext.mounted) {
-                ScaffoldMessenger.of(sheetContext).showSnackBar(
-                  SnackBar(
-                    content: Text(
-                      AppLocalizations.of(sheetContext).profileSaveError(
-                        FriendlyError.from(sheetContext, e).body,
-                      ),
-                    ),
-                  ),
-                );
-              }
+              if (!sheetContext.mounted) return null;
+              return AppLocalizations.of(sheetContext).profileSaveError(
+                FriendlyError.from(sheetContext, e).body,
+              );
             }
           },
           onEditBirthData: () {
@@ -209,23 +216,28 @@ Future<void> _showEditProfileSheet(BuildContext context, WidgetRef ref) async {
       );
     },
   );
-  nameCtrl.dispose();
+  if ((saved ?? false) && context.mounted) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(AppLocalizations.of(context).cpsProfileUpdated)),
+    );
+  }
 }
 
 class _EditProfileForm extends StatefulWidget {
   const _EditProfileForm({
-    required this.nameCtrl,
+    required this.initialName,
     required this.email,
     required this.onSave,
     required this.onEditBirthData,
   });
 
-  final TextEditingController nameCtrl;
+  final String initialName;
   final String? email;
   // Returns a Future so the Save button can await the network call —
   // a plain ValueChanged<String> silently discarded the async result,
   // so the spinner never showed and double-taps fired duplicate PUTs.
-  final Future<void> Function(String) onSave;
+  // Resolves to an error message to show inline, or null on success.
+  final Future<String?> Function(String) onSave;
   final VoidCallback onEditBirthData;
 
   @override
@@ -233,13 +245,27 @@ class _EditProfileForm extends StatefulWidget {
 }
 
 class _EditProfileFormState extends State<_EditProfileForm> {
+  // Owned here (not by the caller) so it is disposed only after the
+  // sheet's close animation finishes and the TextField is unmounted.
+  late final TextEditingController _nameCtrl =
+      TextEditingController(text: widget.initialName);
   bool _saving = false;
+  String? _error;
+
+  @override
+  void dispose() {
+    _nameCtrl.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     final p = context.palette;
     final l10n = AppLocalizations.of(context);
-    return Column(
+    // Scrollable so the form never overflows on small phones with the
+    // keyboard up or with large text.
+    return SingleChildScrollView(
+      child: Column(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -281,8 +307,12 @@ class _EditProfileFormState extends State<_EditProfileForm> {
             border: Border.all(color: p.glassBorder),
           ),
           child: TextField(
-            controller: widget.nameCtrl,
+            controller: _nameCtrl,
             textCapitalization: TextCapitalization.words,
+            textInputAction: TextInputAction.done,
+            onChanged: (_) {
+              if (_error != null) setState(() => _error = null);
+            },
             style: TextStyle(color: p.textPrimary, fontSize: 15),
             decoration: InputDecoration(
               hintText: l10n.yourName,
@@ -315,6 +345,8 @@ class _EditProfileFormState extends State<_EditProfileForm> {
               Expanded(
                 child: Text(
                   widget.email ?? '—',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                   style: TextStyle(color: p.textSecondary, fontSize: 14),
                 ),
               ),
@@ -361,6 +393,13 @@ class _EditProfileFormState extends State<_EditProfileForm> {
             ),
           ),
         ),
+        if (_error != null) ...[
+          const SizedBox(height: 14),
+          Text(
+            _error!,
+            style: TextStyle(color: p.error, fontSize: 13),
+          ),
+        ],
         const SizedBox(height: 22),
         SizedBox(
           width: double.infinity,
@@ -368,32 +407,38 @@ class _EditProfileFormState extends State<_EditProfileForm> {
             onPressed: _saving
                 ? null
                 : () async {
-                    final newName = widget.nameCtrl.text.trim();
+                    final newName = _nameCtrl.text.trim();
                     if (newName.isEmpty) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text(l10n.profileNameRequired)),
-                      );
+                      setState(() => _error = l10n.profileNameRequired);
                       return;
                     }
-                    setState(() => _saving = true);
-                    await widget.onSave(newName);
-                    if (mounted) setState(() => _saving = false);
+                    setState(() {
+                      _saving = true;
+                      _error = null;
+                    });
+                    final error = await widget.onSave(newName);
+                    if (mounted) {
+                      setState(() {
+                        _saving = false;
+                        _error = error;
+                      });
+                    }
                   },
             style: ElevatedButton.styleFrom(
               backgroundColor: p.primary,
-              foregroundColor: Colors.white,
+              foregroundColor: p.onPrimary,
               padding: const EdgeInsets.symmetric(vertical: 14),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(14),
               ),
             ),
             child: _saving
-                ? const SizedBox(
+                ? SizedBox(
                     width: 18,
                     height: 18,
                     child: CircularProgressIndicator(
                       strokeWidth: 2.4,
-                      valueColor: AlwaysStoppedAnimation(Colors.white),
+                      valueColor: AlwaysStoppedAnimation(p.onPrimary),
                     ),
                   )
                 : Text(
@@ -406,6 +451,7 @@ class _EditProfileFormState extends State<_EditProfileForm> {
           ),
         ),
       ],
+      ),
     );
   }
 }
@@ -473,7 +519,12 @@ class _ProfileHero extends ConsumerWidget {
     final notifier = ref.read(currentUserProvider.notifier);
 
     if (action == _AvatarAction.remove) {
-      await notifier.clearAvatar();
+      final removed = await notifier.clearAvatar();
+      if (!removed && context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(AppLocalizations.of(context).avatarSaveError)),
+        );
+      }
       return;
     }
 
@@ -510,8 +561,8 @@ class _ProfileHero extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final p = context.palette;
-    final initial =
-        (user.name?.isNotEmpty ?? false) ? user.name![0].toUpperCase() : '✦';
+    final name = user.name?.trim() ?? '';
+    final initial = name.isNotEmpty ? name[0].toUpperCase() : '✦';
 
     return Column(
       children: [
@@ -571,10 +622,10 @@ class _ProfileHero extends ConsumerWidget {
                       shape: BoxShape.circle,
                       border: Border.all(color: p.background, width: 2),
                     ),
-                    child: const Icon(
+                    child: Icon(
                       Icons.photo_camera_rounded,
                       size: 14,
-                      color: Colors.white,
+                      color: p.onPrimary,
                     ),
                   ),
                 ),
@@ -584,13 +635,18 @@ class _ProfileHero extends ConsumerWidget {
         ),
         const SizedBox(height: 16),
         Text(
-          user.name ?? AppLocalizations.of(context).stargazer,
+          name.isNotEmpty ? name : AppLocalizations.of(context).stargazer,
           style: LivelyType.d3(p.textPrimary),
+          textAlign: TextAlign.center,
+          maxLines: 2,
+          overflow: TextOverflow.ellipsis,
         ),
         const SizedBox(height: 4),
         Text(
           user.email ?? '—',
           style: LivelyType.small(p.textMuted),
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
         ),
       ],
     );
@@ -749,7 +805,7 @@ class _StatsRow extends ConsumerWidget {
             icon: Icons.local_fire_department_rounded,
             value: stats == null ? '—' : '${stats.streak}',
             label: AppLocalizations.of(context).profileDayStreak,
-            color: const Color(0xFFF07C82),
+            color: context.palette.warning,
           ),
         ),
         const SizedBox(width: 10),
@@ -758,7 +814,7 @@ class _StatsRow extends ConsumerWidget {
             icon: Icons.book_rounded,
             value: stats == null ? '—' : '${stats.journalEntries}',
             label: AppLocalizations.of(context).profileJournalEntries,
-            color: const Color(0xFF5ED39A),
+            color: context.palette.success,
           ),
         ),
         const SizedBox(width: 10),
@@ -767,7 +823,7 @@ class _StatsRow extends ConsumerWidget {
             icon: Icons.chat_bubble_outline_rounded,
             value: stats == null ? '—' : '${stats.aiChats}',
             label: AppLocalizations.of(context).profileAIChats,
-            color: const Color(0xFF7B61FF),
+            color: context.palette.accent,
           ),
         ),
       ],
@@ -815,7 +871,7 @@ class _StatPill extends StatelessWidget {
             label,
             style: TextStyle(color: p.textSecondary, fontSize: 10),
             textAlign: TextAlign.center,
-            maxLines: 1,
+            maxLines: 2,
             overflow: TextOverflow.ellipsis,
           ),
         ],
@@ -860,15 +916,17 @@ class _SubscriptionCard extends StatelessWidget {
               width: 44,
               height: 44,
               decoration: BoxDecoration(
+                // onPrimary (not white): white was unreadable on the
+                // dark theme's gold premium gradient.
                 color: isPremium
-                    ? Colors.white.withValues(alpha: 0.2)
+                    ? p.onPrimary.withValues(alpha: 0.14)
                     : p.gold.withValues(alpha: 0.15),
                 borderRadius: BorderRadius.circular(12),
               ),
               alignment: Alignment.center,
               child: Icon(
                 Icons.workspace_premium_rounded,
-                color: isPremium ? Colors.white : p.gold,
+                color: isPremium ? p.onPrimary : p.gold,
                 size: 22,
               ),
             ),
@@ -883,7 +941,7 @@ class _SubscriptionCard extends StatelessWidget {
                             .profileSubscriptionPremium
                         : AppLocalizations.of(context).profileSubscriptionFree,
                     style: TextStyle(
-                      color: isPremium ? Colors.white : p.textPrimary,
+                      color: isPremium ? p.onPrimary : p.textPrimary,
                       fontSize: 15,
                       fontWeight: FontWeight.w700,
                     ),
@@ -897,7 +955,7 @@ class _SubscriptionCard extends StatelessWidget {
                             .profileSubscriptionFreeDesc,
                     style: TextStyle(
                       color: isPremium
-                          ? Colors.white.withValues(alpha: 0.8)
+                          ? p.onPrimary.withValues(alpha: 0.8)
                           : p.textSecondary,
                       fontSize: 12,
                     ),
@@ -908,7 +966,7 @@ class _SubscriptionCard extends StatelessWidget {
             Icon(
               Icons.arrow_forward_ios_rounded,
               color: isPremium
-                  ? Colors.white.withValues(alpha: 0.8)
+                  ? p.onPrimary.withValues(alpha: 0.8)
                   : p.textTertiary,
               size: 14,
             ),
@@ -1095,15 +1153,16 @@ class _ActionRow extends StatelessWidget {
           children: [
             Icon(icon, color: primary ? p.primary : p.textSecondary, size: 18),
             const SizedBox(width: 12),
-            Text(
-              label,
-              style: TextStyle(
-                color: primary ? p.primary : p.textPrimary,
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
+            Expanded(
+              child: Text(
+                label,
+                style: TextStyle(
+                  color: primary ? p.primary : p.textPrimary,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
             ),
-            const Spacer(),
             Icon(
               Icons.arrow_forward_ios_rounded,
               color: p.textTertiary,
@@ -1161,7 +1220,23 @@ class _AccountLinks extends StatelessWidget {
           _ActionRow(
             icon: Icons.help_rounded,
             label: AppLocalizations.of(context).profileHelp,
-            onTap: () => launchUrl(Uri.parse('mailto:support@livelyapp.co')),
+            onTap: () async {
+              const email = 'support@livelyapp.co';
+              final opened = await launchUrl(Uri.parse('mailto:$email'))
+                  .catchError((Object _) => false);
+              // No mail app configured: say where to write instead of
+              // silently doing nothing.
+              if (!opened && context.mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(
+                      AppLocalizations.of(context)
+                          .cpsSupportEmailFallback(email),
+                    ),
+                  ),
+                );
+              }
+            },
           ),
           _RowDivider(p: p),
           _ActionRow(

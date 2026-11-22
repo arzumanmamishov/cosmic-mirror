@@ -84,7 +84,7 @@ class _CategoryChip extends StatelessWidget {
         child: Text(
           label,
           style: TextStyle(
-            color: active ? Colors.white : p.textSecondary,
+            color: active ? p.onPrimary : p.textSecondary,
             fontSize: 12.5,
             fontWeight: active ? FontWeight.w700 : FontWeight.w500,
             letterSpacing: 0.2,

@@ -1,5 +1,7 @@
 import 'dart:math' as math;
 
+import 'package:cosmic_mirror/config/theme/app_palette.dart';
+import 'package:cosmic_mirror/features/chart/presentation/astro_labels.dart';
 import 'package:flutter/material.dart';
 
 /// NatalChartWheel renders a circular natal chart in classic Western
@@ -33,20 +35,32 @@ class NatalChartWheel extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
-    return SizedBox(
-      width: size,
-      height: size,
-      child: CustomPaint(
-        painter: _ChartPainter(
-          planets: planets,
-          houses: houses,
-          aspects: aspectsVisible ? aspects : const [],
-          ringColor: ringColor ?? scheme.outline,
-          textColor: scheme.onSurface,
-          mutedColor: scheme.onSurface.withValues(alpha: 0.5),
-          surfaceColor: scheme.surface,
-        ),
-      ),
+    final p = context.palette;
+    // Shrink to the available width on narrow phones (iPhone SE) instead of
+    // being squashed into a non-square box.
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final side = constraints.maxWidth.isFinite
+            ? math.min(size, constraints.maxWidth)
+            : size;
+        return SizedBox(
+          width: side,
+          height: side,
+          child: CustomPaint(
+            painter: _ChartPainter(
+              planets: planets,
+              houses: houses,
+              aspects: aspectsVisible ? aspects : const [],
+              ringColor: ringColor ?? scheme.outline,
+              textColor: scheme.onSurface,
+              mutedColor: scheme.onSurface.withValues(alpha: 0.5),
+              surfaceColor: scheme.surface,
+              aspectColor: (type) => chartAspectColor(p, type),
+              retroColor: p.warning,
+            ),
+          ),
+        );
+      },
     );
   }
 }
@@ -60,6 +74,8 @@ class _ChartPainter extends CustomPainter {
     required this.textColor,
     required this.mutedColor,
     required this.surfaceColor,
+    required this.aspectColor,
+    required this.retroColor,
   });
 
   final List<Map<String, dynamic>> planets;
@@ -69,6 +85,8 @@ class _ChartPainter extends CustomPainter {
   final Color textColor;
   final Color mutedColor;
   final Color surfaceColor;
+  final Color Function(String type) aspectColor;
+  final Color retroColor;
 
   // Zodiac sign symbols (Unicode astrological characters)
   static const _signGlyphs = [
@@ -87,9 +105,18 @@ class _ChartPainter extends CustomPainter {
   ];
 
   static const _signNames = [
-    'Aries', 'Taurus', 'Gemini', 'Cancer',
-    'Leo', 'Virgo', 'Libra', 'Scorpio',
-    'Sagittarius', 'Capricorn', 'Aquarius', 'Pisces',
+    'Aries',
+    'Taurus',
+    'Gemini',
+    'Cancer',
+    'Leo',
+    'Virgo',
+    'Libra',
+    'Scorpio',
+    'Sagittarius',
+    'Capricorn',
+    'Aquarius',
+    'Pisces',
   ];
 
   // Planet symbols
@@ -106,16 +133,6 @@ class _ChartPainter extends CustomPainter {
     'Pluto': '♇',
     'North Node': '☊',
     'Chiron': '⚷',
-  };
-
-  // Aspect colors keyed by type
-  static const _aspectColors = {
-    'conjunction': Color(0xFFE6EAF2),
-    'sextile': Color(0xFF5ED39A),
-    'square': Color(0xFFF07C82),
-    'trine': Color(0xFF4DA3FF),
-    'opposition': Color(0xFFE14B8A),
-    'quincunx': Color(0xFFF2B66D),
   };
 
   @override
@@ -143,7 +160,10 @@ class _ChartPainter extends CustomPainter {
 
   double _ascendantLongitude() {
     if (houses.isEmpty) return 0;
-    final h1 = houses.first;
+    final h1 = houses.firstWhere(
+      (h) => h['number'] == 1,
+      orElse: () => houses.first,
+    );
     final sign = h1['sign'] as String? ?? 'Aries';
     final degree = (h1['degree'] as num?)?.toDouble() ?? 0.0;
     final signIndex = _signNames.indexOf(sign).clamp(0, 11);
@@ -255,8 +275,8 @@ class _ChartPainter extends CustomPainter {
 
       // Cusp line: thicker for the four angles (1, 4, 7, 10)
       final houseNum = (cusp['number'] as int?) ?? (i + 1);
-      final isAxis = houseNum == 1 || houseNum == 4 ||
-          houseNum == 7 || houseNum == 10;
+      final isAxis =
+          houseNum == 1 || houseNum == 4 || houseNum == 7 || houseNum == 10;
       dividerPaint
         ..strokeWidth = isAxis ? 1.6 : 0.8
         ..color = isAxis
@@ -307,7 +327,7 @@ class _ChartPainter extends CustomPainter {
       final p2Lon = _planetLongitude(p2Name);
       if (p1Lon == null || p2Lon == null) continue;
 
-      final color = _aspectColors[type] ?? mutedColor;
+      final color = aspectColor(type);
       final paint = Paint()
         ..color = color.withValues(alpha: 0.45)
         ..strokeWidth = 1.2
@@ -341,8 +361,8 @@ class _ChartPainter extends CustomPainter {
   ) {
     // Sort planets by longitude so we can detect collisions and offset
     final sortedPlanets = [...planets]..sort((a, b) {
-        return (_planetLongitude(a['name'] as String) ?? 0)
-            .compareTo(_planetLongitude(b['name'] as String) ?? 0);
+        return (_planetLongitude(a['name'] as String? ?? '') ?? 0)
+            .compareTo(_planetLongitude(b['name'] as String? ?? '') ?? 0);
       });
 
     double? prevDeg;
@@ -386,7 +406,7 @@ class _ChartPainter extends CustomPainter {
           canvas,
           'R',
           Offset(pos.dx + 9, pos.dy + 9),
-          color: const Color(0xFFF2B66D),
+          color: retroColor,
           size: 8,
           weight: FontWeight.w700,
         );
@@ -424,6 +444,7 @@ class _ChartPainter extends CustomPainter {
         old.houses != houses ||
         old.aspects != aspects ||
         old.ringColor != ringColor ||
-        old.textColor != textColor;
+        old.textColor != textColor ||
+        old.retroColor != retroColor;
   }
 }

@@ -31,8 +31,8 @@ class ChannelListTile extends StatelessWidget {
             ),
             child: Text(
               '${channel.gate1} — ${channel.gate2}',
-              style: const TextStyle(
-                color: Colors.white,
+              style: TextStyle(
+                color: p.onPrimary,
                 fontSize: 12,
                 fontWeight: FontWeight.w800,
               ),

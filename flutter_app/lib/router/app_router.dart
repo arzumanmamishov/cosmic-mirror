@@ -1,3 +1,4 @@
+import 'package:cosmic_mirror/config/theme/app_palette.dart';
 import 'package:cosmic_mirror/features/ai_chat/presentation/screens/chat_screen.dart';
 import 'package:cosmic_mirror/features/ai_chat/presentation/screens/chat_threads_screen.dart';
 import 'package:cosmic_mirror/features/auth/presentation/providers/auth_provider.dart';
@@ -41,9 +42,13 @@ import 'package:cosmic_mirror/features/settings/presentation/screens/settings_sc
 import 'package:cosmic_mirror/features/timeline/presentation/screens/timeline_screen.dart';
 import 'package:cosmic_mirror/features/vedic_chart/presentation/screens/vedic_chart_screen.dart';
 import 'package:cosmic_mirror/features/yearly_forecast/presentation/screens/yearly_forecast_screen.dart';
+import 'package:cosmic_mirror/l10n/app_localizations.dart';
 import 'package:cosmic_mirror/shared/providers/user_provider.dart';
 import 'package:cosmic_mirror/shared/widgets/error_page.dart';
+import 'package:cosmic_mirror/shared/widgets/error_view.dart';
+import 'package:cosmic_mirror/shared/widgets/lively/lively_backdrop.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -69,7 +74,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
 
   return GoRouter(
     initialLocation: '/',
-    debugLogDiagnostics: true,
+    debugLogDiagnostics: kDebugMode,
     refreshListenable: _routerRefresh,
     // Fallback for unknown routes + any router-level error (e.g. a
     // GoException thrown by a misconfigured deep link). Shows the
@@ -78,29 +83,53 @@ final appRouterProvider = Provider<GoRouter>((ref) {
     redirect: (context, state) {
       final userState = ref.read(currentUserProvider);
       final authState = ref.read(authControllerProvider);
-      // A signed-in user is one the AuthController currently reports as
-      // non-null. Loading = we haven't hydrated from storage yet; the
-      // redirect returns null so the current route survives the flicker.
-      final isAuthenticated = authState.valueOrNull != null;
-      final isOnAuthRoute = state.matchedLocation == '/auth' ||
-          state.matchedLocation == '/otp' ||
-          state.matchedLocation == '/forgot-password';
-      final isOnOnboarding = state.matchedLocation == '/onboarding';
+      final location = state.matchedLocation;
+      final isOnAuthRoute = location == '/auth' ||
+          location == '/otp' ||
+          location == '/forgot-password';
+      final isOnOnboarding = location == '/onboarding';
+      final isOnSplash = location == _splashPath;
       // /welcome is the post-onboarding celebratory screen — treat it as
       // part of onboarding so users freshly arriving there aren't bounced
       // back to /onboarding while their hasCompletedOnboarding flag
       // hasn't refreshed yet.
-      final isOnWelcome = state.matchedLocation == '/welcome';
+      final isOnWelcome = location == '/welcome';
+
+      // Cold start: the AuthController is still reading the stored
+      // tokens. Park on the neutral splash (remembering where we were
+      // headed, so deep links survive) instead of flashing /auth.
+      // Auth routes are left alone: a login in progress also reports
+      // loading and must not yank the user off the OTP screen.
+      final authResolving = authState.isLoading && !authState.hasValue;
+      if (authResolving) {
+        return isOnAuthRoute || isOnSplash ? null : _splashFor(state);
+      }
+
+      // A signed-in user is one the AuthController currently reports as
+      // non-null.
+      final isAuthenticated = authState.valueOrNull != null;
 
       if (!isAuthenticated && !isOnAuthRoute) return '/auth';
 
       if (isAuthenticated) {
+        // Signed in, but /users/me hasn't answered yet (cold start) or
+        // failed (offline). Onboarding status is unknown, so wait on the
+        // splash (which offers a retry on failure) rather than guessing
+        // "not onboarded" — that used to flash /onboarding on every
+        // launch and strand offline users in the onboarding flow.
+        // register/login hydrate the user synchronously, so this only
+        // applies to restored sessions.
+        final sessionPending = userState.id == null;
+        if (sessionPending) {
+          return isOnSplash ? null : _splashFor(state);
+        }
+        if (isOnSplash) {
+          final from = state.uri.queryParameters['from'];
+          return _isSafeReturnPath(from) ? from : '/home';
+        }
+
         // On an auth route (/auth /otp /forgot-password) — pick a
-        // destination based on onboarding status. `sessionReady` isn't
-        // required: a fresh register hydrated currentUserProvider
-        // synchronously, and a cold-start-with-stale-token defaults to
-        // hasCompletedOnboarding=false, which is the safe answer while
-        // bootstrap runs.
+        // destination based on onboarding status.
         if (isOnAuthRoute) {
           return userState.hasCompletedOnboarding ? '/home' : '/onboarding';
         }
@@ -108,10 +137,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         // Un-onboarded users may only sit on /onboarding (or /welcome,
         // the post-completion celebration screen). Anything else — even
         // if the user is deep-linked or navigates manually — bounces
-        // back to /onboarding. This holds regardless of whether
-        // bootstrapSession has finished, so an app-restart mid-way
-        // through onboarding lands the user back at the onboarding
-        // flow instead of a briefly-visible /home.
+        // back to /onboarding.
         if (!userState.hasCompletedOnboarding &&
             !isOnOnboarding &&
             !isOnWelcome) {
@@ -130,6 +156,13 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/',
         redirect: (_, __) => '/home',
+      ),
+      GoRoute(
+        path: _splashPath,
+        pageBuilder: (context, state) => _fadeTransition(
+          state,
+          const _SessionSplash(),
+        ),
       ),
       GoRoute(
         path: '/auth',
@@ -339,14 +372,22 @@ final appRouterProvider = Provider<GoRouter>((ref) {
             ),
           ),
           GoRoute(
+            // Space-less post link (notifications). Callers that know the
+            // space can pass it as ?space=<id> or as a String `extra`;
+            // otherwise PostDetailScreen resolves it from the loaded post.
             path: 'post/:postId',
-            pageBuilder: (context, state) => _slideTransition(
-              state,
-              PostDetailScreen(
-                spaceId: '',
-                postId: state.pathParameters['postId']!,
-              ),
-            ),
+            pageBuilder: (context, state) {
+              final extra = state.extra;
+              final spaceId = state.uri.queryParameters['space'] ??
+                  (extra is String ? extra : '');
+              return _slideTransition(
+                state,
+                PostDetailScreen(
+                  spaceId: spaceId,
+                  postId: state.pathParameters['postId']!,
+                ),
+              );
+            },
           ),
           GoRoute(
             path: ':spaceId',
@@ -510,6 +551,89 @@ final appRouterProvider = Provider<GoRouter>((ref) {
     ],
   );
 });
+
+const _splashPath = '/splash';
+
+/// Splash location that remembers the originally requested location so a
+/// deep link (e.g. /chat/<id>) still lands after the session resolves.
+String _splashFor(GoRouterState state) {
+  final target = state.uri.toString();
+  if (!_isSafeReturnPath(target)) return _splashPath;
+  return Uri(path: _splashPath, queryParameters: {'from': target}).toString();
+}
+
+bool _isSafeReturnPath(String? path) {
+  if (path == null || !path.startsWith('/') || path.startsWith('//')) {
+    return false;
+  }
+  final p = Uri.tryParse(path)?.path ?? '';
+  return p != '/' &&
+      p != _splashPath &&
+      p != '/auth' &&
+      p != '/otp' &&
+      p != '/forgot-password';
+}
+
+/// Neutral screen shown while a restored session resolves (stored tokens
+/// + GET /users/me). If the profile fetch failed (offline, 5xx) it shows
+/// the friendly error with a retry, plus a sign-out escape hatch.
+class _SessionSplash extends ConsumerWidget {
+  const _SessionSplash();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final p = context.palette;
+    final user = ref.watch(currentUserProvider);
+    final error = user.bootstrapError;
+    final showError = error != null && !user.isLoading;
+    return Scaffold(
+      backgroundColor: p.background,
+      body: LivelyBackdrop(
+        child: SafeArea(
+          child: showError
+              ? Column(
+                  children: [
+                    Expanded(
+                      child: ErrorView(
+                        error: error,
+                        onRetry: () async {
+                          try {
+                            await ref
+                                .read(currentUserProvider.notifier)
+                                .bootstrapSession();
+                          } catch (_) {/* shown via bootstrapError */}
+                        },
+                      ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 16),
+                      child: TextButton(
+                        onPressed: () =>
+                            ref.read(currentUserProvider.notifier).logout(),
+                        style: TextButton.styleFrom(
+                          foregroundColor: p.textSecondary,
+                          minimumSize: const Size(44, 44),
+                        ),
+                        child: Text(AppLocalizations.of(context).settingsSignOut),
+                      ),
+                    ),
+                  ],
+                )
+              : Center(
+                  child: SizedBox(
+                    width: 28,
+                    height: 28,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2.4,
+                      color: p.primary,
+                    ),
+                  ),
+                ),
+        ),
+      ),
+    );
+  }
+}
 
 CustomTransitionPage<void> _fadeTransition(
   GoRouterState state,

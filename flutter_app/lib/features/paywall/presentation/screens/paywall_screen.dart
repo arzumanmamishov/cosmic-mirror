@@ -1,10 +1,11 @@
-import 'package:cosmic_mirror/config/theme/colors.dart';
-import 'package:cosmic_mirror/config/theme/typography.dart';
+import 'package:cosmic_mirror/config/theme/app_palette.dart';
+import 'package:cosmic_mirror/config/theme/lively_type.dart';
 import 'package:cosmic_mirror/core/error/error_message.dart';
 import 'package:cosmic_mirror/features/paywall/presentation/providers/subscription_provider.dart';
 import 'package:cosmic_mirror/l10n/app_localizations.dart';
 import 'package:cosmic_mirror/shared/providers/subscription_state_provider.dart';
-import 'package:cosmic_mirror/shared/widgets/cosmic_button.dart';
+import 'package:cosmic_mirror/shared/widgets/lively/gold_button.dart';
+import 'package:cosmic_mirror/shared/widgets/lively/lively_backdrop.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -21,8 +22,23 @@ const _supportEmail = 'support@livelyapp.co';
 String _storeName() =>
     defaultTargetPlatform == TargetPlatform.iOS ? 'App Store' : 'Google Play';
 
-Future<void> _open(String url) =>
-    launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication);
+/// Opens [uri] externally; tells the user when nothing could handle it
+/// (e.g. no browser / mail app) instead of failing silently.
+Future<void> _open(BuildContext context, Uri uri) async {
+  final messenger = ScaffoldMessenger.maybeOf(context);
+  final failMsg = AppLocalizations.of(context).oaphCouldNotOpenLink;
+  var ok = false;
+  try {
+    ok = await launchUrl(uri, mode: LaunchMode.externalApplication);
+  } catch (_) {
+    ok = false;
+  }
+  if (!ok) {
+    messenger
+      ?..hideCurrentSnackBar()
+      ..showSnackBar(SnackBar(content: Text(failMsg)));
+  }
+}
 
 class PaywallScreen extends ConsumerWidget {
   const PaywallScreen({super.key});
@@ -31,16 +47,14 @@ class PaywallScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     // Real premium (no dev override) so dev builds can still test buying.
     final hasPremium = ref.watch(hasPremiumProvider);
+    final p = context.palette;
 
     return Scaffold(
-      body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            colors: [Color(0xFF1A1040), Color(0xFF0A0E27)],
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-          ),
-        ),
+      backgroundColor: p.background,
+      // Theme-aware Lively backdrop (was a hard-coded purple gradient that
+      // ignored the light theme and the design system).
+      body: LivelyBackdrop(
+        seed: 23,
         child: SafeArea(
           child: Column(
             children: [
@@ -48,10 +62,8 @@ class PaywallScreen extends ConsumerWidget {
                 alignment: Alignment.topRight,
                 child: IconButton(
                   padding: const EdgeInsets.all(16),
-                  icon: const Icon(
-                    Icons.close,
-                    color: CosmicColors.textSecondary,
-                  ),
+                  tooltip: MaterialLocalizations.of(context).closeButtonTooltip,
+                  icon: Icon(Icons.close, color: p.textSecondary),
                   onPressed: () => _close(context),
                 ),
               ),
@@ -87,33 +99,34 @@ class _Header extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final p = context.palette;
     return Column(
       children: [
         Container(
           width: 80,
           height: 80,
           decoration: BoxDecoration(
-            gradient: CosmicColors.premiumGradient,
+            gradient: p.premiumGradient,
             shape: BoxShape.circle,
             boxShadow: [
               BoxShadow(
-                color: CosmicColors.primary.withValues(alpha: 0.4),
+                color: p.primary.withValues(alpha: 0.4),
                 blurRadius: 24,
               ),
             ],
           ),
-          child: const Icon(Icons.auto_awesome, size: 40, color: Colors.white),
+          child: Icon(Icons.auto_awesome, size: 40, color: p.onPrimary),
         ),
         const SizedBox(height: 20),
         Text(
           title,
-          style: CosmicTypography.displayMedium,
+          style: LivelyType.d3(p.textPrimary),
           textAlign: TextAlign.center,
         ),
         const SizedBox(height: 8),
         Text(
           subtitle,
-          style: CosmicTypography.bodySmall,
+          style: LivelyType.small(p.textMuted),
           textAlign: TextAlign.center,
         ),
       ],
@@ -126,6 +139,7 @@ class _Benefits extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final p = context.palette;
     final l = AppLocalizations.of(context);
     final benefits = <(String, String, IconData)>[
       (l.paywallBenefit1Title, l.paywallBenefit1Subtitle, Icons.auto_awesome),
@@ -162,18 +176,18 @@ class _Benefits extends StatelessWidget {
                   width: 40,
                   height: 40,
                   decoration: BoxDecoration(
-                    color: CosmicColors.primary.withValues(alpha: 0.12),
+                    color: p.primary.withValues(alpha: 0.12),
                     borderRadius: BorderRadius.circular(10),
                   ),
-                  child: Icon(icon, color: CosmicColors.primaryLight, size: 20),
+                  child: Icon(icon, color: p.primary, size: 20),
                 ),
                 const SizedBox(width: 14),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(title, style: CosmicTypography.titleMedium),
-                      Text(subtitle, style: CosmicTypography.caption),
+                      Text(title, style: LivelyType.h2(p.textPrimary)),
+                      Text(subtitle, style: LivelyType.small(p.textMuted)),
                     ],
                   ),
                 ),
@@ -191,6 +205,7 @@ class _OfferView extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final p = context.palette;
     final l10n = AppLocalizations.of(context);
     final offering = ref.watch(paywallOfferingProvider);
 
@@ -220,10 +235,10 @@ class _OfferView extends ConsumerWidget {
         const _Benefits(),
         const SizedBox(height: 24),
         offering.when(
-          loading: () => const Padding(
-            padding: EdgeInsets.symmetric(vertical: 32),
+          loading: () => Padding(
+            padding: const EdgeInsets.symmetric(vertical: 32),
             child: Center(
-              child: CircularProgressIndicator(color: CosmicColors.primary),
+              child: CircularProgressIndicator(color: p.primary),
             ),
           ),
           error: (e, _) => _UnavailablePlans(
@@ -235,7 +250,7 @@ class _OfferView extends ConsumerWidget {
                 padding: const EdgeInsets.symmetric(vertical: 24),
                 child: Text(
                   l10n.subscriptionPurchasesUnsupported,
-                  style: CosmicTypography.bodySmall,
+                  style: LivelyType.small(p.textMuted),
                   textAlign: TextAlign.center,
                 ),
               );
@@ -261,24 +276,25 @@ class _UnavailablePlans extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final p = context.palette;
     final l10n = AppLocalizations.of(context);
     return Column(
       children: [
         Text(
           l10n.subscriptionPlansUnavailableTitle,
-          style: CosmicTypography.titleMedium,
+          style: LivelyType.h2(p.textPrimary),
           textAlign: TextAlign.center,
         ),
         const SizedBox(height: 6),
         Text(
           l10n.subscriptionPlansUnavailableBody,
-          style: CosmicTypography.caption,
+          style: LivelyType.small(p.textMuted),
           textAlign: TextAlign.center,
         ),
         const SizedBox(height: 16),
-        CosmicButton(
+        GoldButton(
           label: l10n.errRetry,
-          gradient: false,
+          ghost: true,
           onPressed: onRetry,
         ),
         const SizedBox(height: 12),
@@ -295,6 +311,7 @@ class _Plans extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final p = context.palette;
     final l10n = AppLocalizations.of(context);
     final state = ref.watch(paywallProvider);
     final notifier = ref.read(paywallProvider.notifier);
@@ -323,10 +340,14 @@ class _Plans extends ConsumerWidget {
         Container(
           padding: const EdgeInsets.all(4),
           decoration: BoxDecoration(
-            color: CosmicColors.surfaceLight,
+            color: p.surfaceElevated,
             borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: p.line),
           ),
-          child: Row(
+          // Equal-height tabs even when only one carries the badge.
+          child: IntrinsicHeight(
+            child: Row(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               for (final plan in offering.plans)
                 _PlanTab(
@@ -350,19 +371,19 @@ class _Plans extends ConsumerWidget {
                 ),
             ],
           ),
+          ),
         ),
         if (trialDays != null) ...[
           const SizedBox(height: 12),
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
             decoration: BoxDecoration(
-              color: CosmicColors.success.withValues(alpha: 0.1),
+              color: p.success.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(8),
             ),
             child: Text(
               l10n.paywallTrialThenPrice(trialDays, pricePerPeriod),
-              style: CosmicTypography.caption.copyWith(
-                color: CosmicColors.success,
+              style: LivelyType.small(p.success).copyWith(
                 fontWeight: FontWeight.w600,
               ),
               textAlign: TextAlign.center,
@@ -373,16 +394,16 @@ class _Plans extends ConsumerWidget {
           const SizedBox(height: 12),
           Text(
             inlineMessage,
-            style: CosmicTypography.caption.copyWith(color: CosmicColors.error),
+            style: LivelyType.small(p.error),
             textAlign: TextAlign.center,
           ),
         ],
         const SizedBox(height: 24),
-        CosmicButton(
+        GoldButton(
           label: trialDays != null
               ? l10n.paywallStartTrialCta(trialDays)
               : l10n.paywallSubscribe,
-          isLoading: state.isPurchasing,
+          loading: state.isPurchasing,
           onPressed: state.isBusy
               ? null
               : () async {
@@ -400,7 +421,7 @@ class _Plans extends ConsumerWidget {
                   _storeName(),
                 )
               : l10n.subscriptionDisclosure(pricePerPeriod, _storeName()),
-          style: CosmicTypography.caption.copyWith(fontSize: 11),
+          style: LivelyType.small(p.textMuted).copyWith(fontSize: 11),
           textAlign: TextAlign.center,
         ),
         const SizedBox(height: 12),
@@ -426,23 +447,24 @@ class _LegalLinks extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final p = context.palette;
     final l10n = AppLocalizations.of(context);
     final state = ref.watch(paywallProvider);
-    final style = CosmicTypography.caption.copyWith(
-      color: CosmicColors.textSecondary,
+    final style = LivelyType.small(p.textSecondary).copyWith(
+      fontSize: 12,
       decoration: TextDecoration.underline,
-      decorationColor: CosmicColors.textSecondary,
+      decorationColor: p.textSecondary,
     );
     return Wrap(
       alignment: WrapAlignment.center,
       crossAxisAlignment: WrapCrossAlignment.center,
       children: [
         TextButton(
-          onPressed: () => _open(_termsUrl),
+          onPressed: () => _open(context, Uri.parse(_termsUrl)),
           child: Text(l10n.paywallTermsOfUse, style: style),
         ),
         TextButton(
-          onPressed: () => _open(_privacyUrl),
+          onPressed: () => _open(context, Uri.parse(_privacyUrl)),
           child: Text(l10n.authPrivacy, style: style),
         ),
         if (showRestore)
@@ -451,10 +473,13 @@ class _LegalLinks extends ConsumerWidget {
                 ? null
                 : () => ref.read(paywallProvider.notifier).restore(),
             child: state.isRestoring
-                ? const SizedBox(
+                ? SizedBox(
                     width: 16,
                     height: 16,
-                    child: CircularProgressIndicator(strokeWidth: 2),
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: p.primary,
+                    ),
                   )
                 : Text(l10n.paywallRestoreLong, style: style),
           ),
@@ -470,6 +495,7 @@ class _PremiumActiveView extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final p = context.palette;
     final l10n = AppLocalizations.of(context);
     final locale = Localizations.localeOf(context).toLanguageTag();
     final info = ref.watch(customerInfoProvider);
@@ -522,22 +548,22 @@ class _PremiumActiveView extends ConsumerWidget {
             padding: const EdgeInsets.only(bottom: 8),
             child: Text(
               line,
-              style: CosmicTypography.bodySmall,
+              style: LivelyType.small(p.textMuted),
               textAlign: TextAlign.center,
             ),
           ),
         const SizedBox(height: 20),
         if (manageUri != null)
-          CosmicButton(
+          GoldButton(
             label: l10n.subscriptionManage,
-            onPressed: () =>
-                launchUrl(manageUri, mode: LaunchMode.externalApplication),
+            onPressed: () => _open(context, manageUri),
           )
         else if (server != null && server.isWebSubscription)
-          CosmicButton(
+          GoldButton(
             label: l10n.subscriptionContactSupport,
-            gradient: false,
-            onPressed: () => launchUrl(Uri.parse('mailto:$_supportEmail')),
+            ghost: true,
+            onPressed: () =>
+                _open(context, Uri.parse('mailto:$_supportEmail')),
           ),
         const SizedBox(height: 12),
         const _LegalLinks(),
@@ -564,32 +590,42 @@ class _PlanTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final p = context.palette;
+    // Text on the selected (gold) tab uses onPrimary — the light text
+    // colors were unreadable on gold.
+    final fg = isSelected ? p.onPrimary : p.textPrimary;
+    final fgMuted = isSelected ? p.onPrimary : p.textMuted;
     return Expanded(
-      child: GestureDetector(
+      child: Semantics(
+        button: true,
+        selected: isSelected,
+        child: GestureDetector(
         onTap: onTap,
+        behavior: HitTestBehavior.opaque,
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 200),
           padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 4),
           decoration: BoxDecoration(
-            color: isSelected ? CosmicColors.primary : Colors.transparent,
+            color: isSelected ? p.primary : Colors.transparent,
             borderRadius: BorderRadius.circular(10),
           ),
           child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
               if (badge != null) ...[
                 Container(
                   padding:
                       const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                   decoration: BoxDecoration(
-                    color: CosmicColors.gold,
+                    color: isSelected ? p.onPrimary : p.gold,
                     borderRadius: BorderRadius.circular(4),
                   ),
                   child: Text(
                     badge!,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 9,
                       fontWeight: FontWeight.w700,
-                      color: Colors.black,
+                      color: isSelected ? p.primary : p.onPrimary,
                     ),
                   ),
                 ),
@@ -597,18 +633,19 @@ class _PlanTab extends StatelessWidget {
               ],
               Text(
                 label,
-                style: CosmicTypography.labelLarge,
+                style: LivelyType.button(fg, size: 14),
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 2),
               Text(
                 price,
-                style: CosmicTypography.caption,
+                style: LivelyType.small(fgMuted).copyWith(fontSize: 12),
                 textAlign: TextAlign.center,
               ),
             ],
           ),
         ),
+      ),
       ),
     );
   }

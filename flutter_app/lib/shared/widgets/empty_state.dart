@@ -1,4 +1,4 @@
-import 'package:cosmic_mirror/config/theme/colors.dart';
+import 'package:cosmic_mirror/config/theme/app_palette.dart';
 import 'package:cosmic_mirror/config/theme/typography.dart';
 import 'package:cosmic_mirror/shared/widgets/cosmic_button.dart';
 import 'package:flutter/material.dart';
@@ -21,24 +21,27 @@ class EmptyState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final p = context.palette;
     return Center(
-      child: Padding(
+      child: SingleChildScrollView(
         padding: const EdgeInsets.all(32),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon, size: 56, color: CosmicColors.textTertiary),
+            Icon(icon, size: 56, color: p.textTertiary),
             const SizedBox(height: 16),
             Text(
               title,
-              style: CosmicTypography.headlineSmall,
+              style: CosmicTypography.headlineSmall
+                  .copyWith(color: p.textPrimary),
               textAlign: TextAlign.center,
             ),
             if (subtitle != null) ...[
               const SizedBox(height: 8),
               Text(
                 subtitle!,
-                style: CosmicTypography.bodySmall,
+                style: CosmicTypography.bodySmall
+                    .copyWith(color: p.textSecondary),
                 textAlign: TextAlign.center,
               ),
             ],

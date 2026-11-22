@@ -50,7 +50,17 @@ class _CreateSpaceScreenState extends ConsumerState<CreateSpaceScreen> {
     super.dispose();
   }
 
+  // Turkish letters are transliterated first; previously "Yıldız Kulübü"
+  // slugified to "yldz_kulb" because non-ASCII letters were just dropped.
+  static const _translit = {
+    'ç': 'c', 'Ç': 'c', 'ğ': 'g', 'Ğ': 'g', 'ı': 'i', 'İ': 'i',
+    'ö': 'o', 'Ö': 'o', 'ş': 's', 'Ş': 's', 'ü': 'u', 'Ü': 'u',
+  };
+
   static String _slugify(String s) => s
+      .split('')
+      .map((ch) => _translit[ch] ?? ch)
+      .join()
       .toLowerCase()
       .replaceAll(RegExp(r'\s+'), '_')
       .replaceAll(RegExp('[^a-z0-9_]'), '')
@@ -78,7 +88,11 @@ class _CreateSpaceScreenState extends ConsumerState<CreateSpaceScreen> {
         categoryId: _selectedCategoryId,
         isSpicy: _isSpicy,
       );
-      ref.invalidate(spacesProvider);
+      ref
+        ..invalidate(spacesProvider)
+        ..invalidate(categorySpacesProvider)
+        // The creator joins automatically: refresh "Joined spaces".
+        ..invalidate(userCommunityProfileProvider);
       if (mounted) {
         context.pop();
         unawaited(context.push('/community/${space.id}'));
@@ -154,6 +168,15 @@ class _CreateSpaceScreenState extends ConsumerState<CreateSpaceScreen> {
                       ],
                       onChanged: (_) => setState(() => _handleEdited = true),
                     ),
+                    // Explain why Create stays disabled for 1–2 chars.
+                    if (_handle.text.trim().isNotEmpty &&
+                        _handle.text.trim().length < 3) ...[
+                      const SizedBox(height: 6),
+                      Text(
+                        l.cpsHandleTooShort,
+                        style: LivelyType.small(p.warning),
+                      ),
+                    ],
                     const SizedBox(height: 16),
                     _Field(
                       label: l.editSpaceDescLabel,

@@ -3664,4 +3664,138 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get moderationHiddenNotice =>
       'Hidden while our team reviews reports. Only you can see this.';
+
+  @override
+  String get chrBirthTimeUnknownNote =>
+      'Your birth time is unknown, so your Rising sign and houses are approximate. Tap to add your birth time.';
+
+  @override
+  String get chrShadbalaIntro =>
+      'Shadbala measures each planet\'s strength from six sources, in Virupas. A planet that reaches its required total can fully deliver its results. Swipe to see each planet.';
+
+  @override
+  String get chrExpandChart => 'Expand chart';
+
+  @override
+  String get cmsChatSend => 'Send';
+
+  @override
+  String get cmsCompatRemovePerson => 'Remove person';
+
+  @override
+  String cmsCompatRemoveTitle(String name) {
+    return 'Remove $name?';
+  }
+
+  @override
+  String get cmsCompatRemoveBody =>
+      'Their birth details and compatibility report will be deleted. This can\'t be undone.';
+
+  @override
+  String get cmsCompatRemoveConfirm => 'Remove';
+
+  @override
+  String cmsCompatRemoved(String name) {
+    return '$name removed';
+  }
+
+  @override
+  String get cmsCompatGeneratingTitle => 'Reading both charts…';
+
+  @override
+  String get cmsCompatGeneratingBody =>
+      'Your first compatibility report can take up to a minute.';
+
+  @override
+  String get cmsMatrixFullScreen => 'Full screen';
+
+  @override
+  String get cmsMatrixPinchHint => 'Pinch to resize · double-tap to reset';
+
+  @override
+  String get cmsLifeExamplesBanner =>
+      'These are example moments. Add your first moment and your own timeline will take their place.';
+
+  @override
+  String get cmsLifeDeleteTitle => 'Delete this moment?';
+
+  @override
+  String cmsLifeDeleteBody(String title) {
+    return '\"$title\" will be removed from your timeline.';
+  }
+
+  @override
+  String get cmsLifeDelete => 'Delete';
+
+  @override
+  String cpsSupportEmailFallback(String email) {
+    return 'Couldn\'t open your email app. Write to us at $email';
+  }
+
+  @override
+  String get cpsProfileUpdated => 'Profile updated.';
+
+  @override
+  String get cpsBirthDataUpdated => 'Birth data updated.';
+
+  @override
+  String get cpsBirthDataLoadFailed =>
+      'We couldn\'t load your birth data. Check your connection and try again.';
+
+  @override
+  String get cpsSpacesNoResults => 'No spaces match your search.';
+
+  @override
+  String get cpsSpacesNoneJoined => 'You haven\'t joined any spaces yet.';
+
+  @override
+  String get cpsLeaveSpaceTitle => 'Leave this space?';
+
+  @override
+  String get cpsLeaveSpaceBody =>
+      'You\'ll stop seeing its posts. Members-only spaces need a new request to rejoin.';
+
+  @override
+  String get cpsPostDeleted => 'Post deleted.';
+
+  @override
+  String get cpsLinkOpenFailed => 'Couldn\'t open this link.';
+
+  @override
+  String get cpsHandleTooShort => 'The handle needs at least 3 characters.';
+
+  @override
+  String get cpsSpaceDeleted => 'Space deleted.';
+
+  @override
+  String get oaphOnboardingSaveError =>
+      'We couldn\'t save that. Check your connection and try again.';
+
+  @override
+  String get oaphWelcomeEnterFailed =>
+      'We couldn\'t load your profile. Check your connection and try again.';
+
+  @override
+  String get oaphPlaceSearchFailed =>
+      'Couldn\'t search places. Check your connection and try again.';
+
+  @override
+  String get oaphPlaceSearchNoResults =>
+      'No places found. Try a different spelling or a nearby city.';
+
+  @override
+  String get oaphCouldNotOpenLink =>
+      'Couldn\'t open the link. Please try again later.';
+
+  @override
+  String get oaphJournalDiscardTitle => 'Discard your changes?';
+
+  @override
+  String get oaphJournalKeepEditing => 'Keep editing';
+
+  @override
+  String get oaphJournalDiscard => 'Discard';
+
+  @override
+  String get oaphJournalLoadFailed => 'We couldn\'t load this entry.';
 }

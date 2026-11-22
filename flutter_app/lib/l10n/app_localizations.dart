@@ -6728,6 +6728,234 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Hidden while our team reviews reports. Only you can see this.'**
   String get moderationHiddenNotice;
+
+  /// No description provided for @chrBirthTimeUnknownNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Your birth time is unknown, so your Rising sign and houses are approximate. Tap to add your birth time.'**
+  String get chrBirthTimeUnknownNote;
+
+  /// No description provided for @chrShadbalaIntro.
+  ///
+  /// In en, this message translates to:
+  /// **'Shadbala measures each planet\'s strength from six sources, in Virupas. A planet that reaches its required total can fully deliver its results. Swipe to see each planet.'**
+  String get chrShadbalaIntro;
+
+  /// No description provided for @chrExpandChart.
+  ///
+  /// In en, this message translates to:
+  /// **'Expand chart'**
+  String get chrExpandChart;
+
+  /// No description provided for @cmsChatSend.
+  ///
+  /// In en, this message translates to:
+  /// **'Send'**
+  String get cmsChatSend;
+
+  /// No description provided for @cmsCompatRemovePerson.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove person'**
+  String get cmsCompatRemovePerson;
+
+  /// No description provided for @cmsCompatRemoveTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove {name}?'**
+  String cmsCompatRemoveTitle(String name);
+
+  /// No description provided for @cmsCompatRemoveBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Their birth details and compatibility report will be deleted. This can\'t be undone.'**
+  String get cmsCompatRemoveBody;
+
+  /// No description provided for @cmsCompatRemoveConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove'**
+  String get cmsCompatRemoveConfirm;
+
+  /// No description provided for @cmsCompatRemoved.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} removed'**
+  String cmsCompatRemoved(String name);
+
+  /// No description provided for @cmsCompatGeneratingTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Reading both charts…'**
+  String get cmsCompatGeneratingTitle;
+
+  /// No description provided for @cmsCompatGeneratingBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Your first compatibility report can take up to a minute.'**
+  String get cmsCompatGeneratingBody;
+
+  /// No description provided for @cmsMatrixFullScreen.
+  ///
+  /// In en, this message translates to:
+  /// **'Full screen'**
+  String get cmsMatrixFullScreen;
+
+  /// No description provided for @cmsMatrixPinchHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Pinch to resize · double-tap to reset'**
+  String get cmsMatrixPinchHint;
+
+  /// No description provided for @cmsLifeExamplesBanner.
+  ///
+  /// In en, this message translates to:
+  /// **'These are example moments. Add your first moment and your own timeline will take their place.'**
+  String get cmsLifeExamplesBanner;
+
+  /// No description provided for @cmsLifeDeleteTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete this moment?'**
+  String get cmsLifeDeleteTitle;
+
+  /// No description provided for @cmsLifeDeleteBody.
+  ///
+  /// In en, this message translates to:
+  /// **'\"{title}\" will be removed from your timeline.'**
+  String cmsLifeDeleteBody(String title);
+
+  /// No description provided for @cmsLifeDelete.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete'**
+  String get cmsLifeDelete;
+
+  /// No description provided for @cpsSupportEmailFallback.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t open your email app. Write to us at {email}'**
+  String cpsSupportEmailFallback(String email);
+
+  /// No description provided for @cpsProfileUpdated.
+  ///
+  /// In en, this message translates to:
+  /// **'Profile updated.'**
+  String get cpsProfileUpdated;
+
+  /// No description provided for @cpsBirthDataUpdated.
+  ///
+  /// In en, this message translates to:
+  /// **'Birth data updated.'**
+  String get cpsBirthDataUpdated;
+
+  /// No description provided for @cpsBirthDataLoadFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'We couldn\'t load your birth data. Check your connection and try again.'**
+  String get cpsBirthDataLoadFailed;
+
+  /// No description provided for @cpsSpacesNoResults.
+  ///
+  /// In en, this message translates to:
+  /// **'No spaces match your search.'**
+  String get cpsSpacesNoResults;
+
+  /// No description provided for @cpsSpacesNoneJoined.
+  ///
+  /// In en, this message translates to:
+  /// **'You haven\'t joined any spaces yet.'**
+  String get cpsSpacesNoneJoined;
+
+  /// No description provided for @cpsLeaveSpaceTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Leave this space?'**
+  String get cpsLeaveSpaceTitle;
+
+  /// No description provided for @cpsLeaveSpaceBody.
+  ///
+  /// In en, this message translates to:
+  /// **'You\'ll stop seeing its posts. Members-only spaces need a new request to rejoin.'**
+  String get cpsLeaveSpaceBody;
+
+  /// No description provided for @cpsPostDeleted.
+  ///
+  /// In en, this message translates to:
+  /// **'Post deleted.'**
+  String get cpsPostDeleted;
+
+  /// No description provided for @cpsLinkOpenFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t open this link.'**
+  String get cpsLinkOpenFailed;
+
+  /// No description provided for @cpsHandleTooShort.
+  ///
+  /// In en, this message translates to:
+  /// **'The handle needs at least 3 characters.'**
+  String get cpsHandleTooShort;
+
+  /// No description provided for @cpsSpaceDeleted.
+  ///
+  /// In en, this message translates to:
+  /// **'Space deleted.'**
+  String get cpsSpaceDeleted;
+
+  /// No description provided for @oaphOnboardingSaveError.
+  ///
+  /// In en, this message translates to:
+  /// **'We couldn\'t save that. Check your connection and try again.'**
+  String get oaphOnboardingSaveError;
+
+  /// No description provided for @oaphWelcomeEnterFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'We couldn\'t load your profile. Check your connection and try again.'**
+  String get oaphWelcomeEnterFailed;
+
+  /// No description provided for @oaphPlaceSearchFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t search places. Check your connection and try again.'**
+  String get oaphPlaceSearchFailed;
+
+  /// No description provided for @oaphPlaceSearchNoResults.
+  ///
+  /// In en, this message translates to:
+  /// **'No places found. Try a different spelling or a nearby city.'**
+  String get oaphPlaceSearchNoResults;
+
+  /// No description provided for @oaphCouldNotOpenLink.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t open the link. Please try again later.'**
+  String get oaphCouldNotOpenLink;
+
+  /// No description provided for @oaphJournalDiscardTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Discard your changes?'**
+  String get oaphJournalDiscardTitle;
+
+  /// No description provided for @oaphJournalKeepEditing.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep editing'**
+  String get oaphJournalKeepEditing;
+
+  /// No description provided for @oaphJournalDiscard.
+  ///
+  /// In en, this message translates to:
+  /// **'Discard'**
+  String get oaphJournalDiscard;
+
+  /// No description provided for @oaphJournalLoadFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'We couldn\'t load this entry.'**
+  String get oaphJournalLoadFailed;
 }
 
 class _AppLocalizationsDelegate

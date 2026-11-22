@@ -99,8 +99,8 @@ class _Bubble extends StatelessWidget {
         ),
         child: Text(
           content,
-          style: const TextStyle(
-            color: Color(0xFF1A1F2E),
+          style: TextStyle(
+            color: p.onPrimary,
             fontSize: 14.5,
             fontWeight: FontWeight.w600,
             height: 1.45,

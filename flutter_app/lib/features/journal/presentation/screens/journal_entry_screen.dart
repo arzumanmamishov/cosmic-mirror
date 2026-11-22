@@ -1,11 +1,13 @@
 import 'package:cosmic_mirror/config/theme/app_palette.dart';
 import 'package:cosmic_mirror/core/error/error_message.dart';
 import 'package:cosmic_mirror/core/network/api_endpoints.dart';
+import 'package:cosmic_mirror/features/journal/presentation/screens/journal_screen.dart';
 import 'package:cosmic_mirror/l10n/app_localizations.dart';
 import 'package:cosmic_mirror/shared/providers/user_provider.dart';
 import 'package:cosmic_mirror/shared/widgets/cosmic_starfield.dart';
 import 'package:cosmic_mirror/shared/widgets/staggered_fade_in.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
@@ -23,6 +25,16 @@ class _JournalEntryScreenState extends ConsumerState<JournalEntryScreen> {
   final _contentController = TextEditingController();
   String? _selectedMood;
   bool _isSaving = false;
+
+  // Edit mode: the existing entry has to be loaded into the editor first —
+  // previously the editor opened empty and saving overwrote the entry.
+  bool _isLoadingEntry = false;
+  bool _loadFailed = false;
+  String _initialContent = '';
+  String? _initialMood;
+
+  /// The backend caps entries at 10,000 characters.
+  static const _maxContentLength = 10000;
 
   // Emoji + label pairs feel more intentional than raw emojis. Labels are
   // localized at build time via [_moods] / [_prompts].
@@ -46,6 +58,72 @@ class _JournalEntryScreenState extends ConsumerState<JournalEntryScreen> {
 
   bool get _isEditing => widget.entryId != null;
 
+  bool get _isDirty =>
+      _contentController.text.trim() != _initialContent.trim() ||
+      _selectedMood != _initialMood;
+
+  @override
+  void initState() {
+    super.initState();
+    if (_isEditing) _loadEntry();
+  }
+
+  /// There's no single-entry GET endpoint, so pick the entry out of the
+  /// (usually already cached) journal list.
+  Future<void> _loadEntry() async {
+    setState(() {
+      _isLoadingEntry = true;
+      _loadFailed = false;
+    });
+    try {
+      final entries = await ref.read(journalEntriesProvider.future);
+      final entry = entries.where((e) => '${e['id']}' == widget.entryId);
+      if (!mounted) return;
+      if (entry.isEmpty) {
+        setState(() {
+          _isLoadingEntry = false;
+          _loadFailed = true;
+        });
+        return;
+      }
+      final e = entry.first;
+      _initialContent = e['content'] as String? ?? '';
+      _initialMood = e['mood'] as String?;
+      _contentController.text = _initialContent;
+      setState(() {
+        _selectedMood = _initialMood;
+        _isLoadingEntry = false;
+      });
+    } catch (_) {
+      if (!mounted) return;
+      setState(() {
+        _isLoadingEntry = false;
+        _loadFailed = true;
+      });
+    }
+  }
+
+  Future<void> _confirmDiscard() async {
+    final l = AppLocalizations.of(context);
+    final discard = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(l.oaphJournalDiscardTitle),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: Text(l.oaphJournalKeepEditing),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(true),
+            child: Text(l.oaphJournalDiscard),
+          ),
+        ],
+      ),
+    );
+    if ((discard ?? false) && mounted) context.pop();
+  }
+
   @override
   void dispose() {
     _contentController.dispose();
@@ -53,8 +131,10 @@ class _JournalEntryScreenState extends ConsumerState<JournalEntryScreen> {
   }
 
   Future<void> _save() async {
-    if (_contentController.text.trim().isEmpty) return;
+    if (_isSaving || _contentController.text.trim().isEmpty) return;
     setState(() => _isSaving = true);
+    // Captured up front: the user may leave while the request is in flight.
+    final container = ProviderScope.containerOf(context, listen: false);
 
     try {
       final client = ref.read(apiClientProvider);
@@ -73,6 +153,8 @@ class _JournalEntryScreenState extends ConsumerState<JournalEntryScreen> {
         await client.post<dynamic>(ApiEndpoints.journal, data: data);
       }
 
+      // Refresh the list so the new / edited entry shows up on return.
+      container.invalidate(journalEntriesProvider);
       if (mounted) context.pop();
     } catch (e) {
       if (mounted) {
@@ -100,9 +182,18 @@ class _JournalEntryScreenState extends ConsumerState<JournalEntryScreen> {
       'EEEE, MMMM d',
       Localizations.localeOf(context).toString(),
     ).format(DateTime.now());
-    final canSave = _contentController.text.trim().isNotEmpty;
+    final canSave = _contentController.text.trim().isNotEmpty &&
+        !_isLoadingEntry &&
+        !_loadFailed &&
+        (!_isEditing || _isDirty);
 
-    return Scaffold(
+    // Ask before throwing away unsaved writing on back / swipe.
+    return PopScope(
+      canPop: !_isDirty || _isSaving,
+      onPopInvokedWithResult: (didPop, _) {
+        if (!didPop) _confirmDiscard();
+      },
+      child: Scaffold(
       backgroundColor: p.background,
       extendBodyBehindAppBar: true,
       resizeToAvoidBottomInset: true,
@@ -117,7 +208,7 @@ class _JournalEntryScreenState extends ConsumerState<JournalEntryScreen> {
               onPressed: (canSave && !_isSaving) ? _save : null,
               style: ElevatedButton.styleFrom(
                 backgroundColor: p.primary,
-                foregroundColor: Colors.white,
+                foregroundColor: p.onPrimary,
                 disabledBackgroundColor: p.surfaceElevated,
                 disabledForegroundColor: p.textTertiary,
                 minimumSize: const Size(72, 36),
@@ -131,12 +222,12 @@ class _JournalEntryScreenState extends ConsumerState<JournalEntryScreen> {
                 ),
               ),
               child: _isSaving
-                  ? const SizedBox(
+                  ? SizedBox(
                       width: 14,
                       height: 14,
                       child: CircularProgressIndicator(
                         strokeWidth: 2,
-                        color: Colors.white,
+                        color: p.onPrimary,
                       ),
                     )
                   : Text(l.journalSave),
@@ -153,8 +244,42 @@ class _JournalEntryScreenState extends ConsumerState<JournalEntryScreen> {
               intensity: 0.5,
             ),
           ),
+          if (_isLoadingEntry)
+            Center(child: CircularProgressIndicator(color: p.primary))
+          else if (_loadFailed)
+            Center(
+              child: Padding(
+                padding: const EdgeInsets.all(32),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      l.oaphJournalLoadFailed,
+                      textAlign: TextAlign.center,
+                      style: TextStyle(color: p.textSecondary, fontSize: 14),
+                    ),
+                    const SizedBox(height: 12),
+                    TextButton(
+                      onPressed: () {
+                        ref.invalidate(journalEntriesProvider);
+                        _loadEntry();
+                      },
+                      child: Text(l.errRetry),
+                    ),
+                  ],
+                ),
+              ),
+            )
+          else
           ListView(
-            padding: const EdgeInsets.fromLTRB(20, 90, 20, 32),
+            keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+            // Clear the transparent app bar on any notch height.
+            padding: EdgeInsets.fromLTRB(
+              20,
+              MediaQuery.paddingOf(context).top + kToolbarHeight + 8,
+              20,
+              32,
+            ),
             children: [
               FadeSlideIn(
                 child: Text(
@@ -297,12 +422,16 @@ class _JournalEntryScreenState extends ConsumerState<JournalEntryScreen> {
                                 color: p.primary,
                               ),
                               const SizedBox(width: 6),
-                              Text(
-                                prompt,
-                                style: TextStyle(
-                                  color: p.textSecondary,
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w500,
+                              // Flexible so a long (or Turkish / scaled)
+                              // prompt wraps instead of overflowing.
+                              Flexible(
+                                child: Text(
+                                  prompt,
+                                  style: TextStyle(
+                                    color: p.textSecondary,
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w500,
+                                  ),
                                 ),
                               ),
                             ],
@@ -330,6 +459,9 @@ class _JournalEntryScreenState extends ConsumerState<JournalEntryScreen> {
                     maxLines: null,
                     minLines: 8,
                     textCapitalization: TextCapitalization.sentences,
+                    inputFormatters: [
+                      LengthLimitingTextInputFormatter(_maxContentLength),
+                    ],
                     style: TextStyle(
                       color: p.textPrimary,
                       fontSize: 15,
@@ -354,6 +486,7 @@ class _JournalEntryScreenState extends ConsumerState<JournalEntryScreen> {
           ),
         ],
       ),
+    ),
     );
   }
 }

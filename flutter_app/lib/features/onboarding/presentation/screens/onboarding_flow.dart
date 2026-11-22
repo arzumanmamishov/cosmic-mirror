@@ -31,7 +31,12 @@ class _OnboardingFlowState extends ConsumerState<OnboardingFlow> {
   @override
   void initState() {
     super.initState();
-    _pageController = PageController();
+    // Start on the provider's current step: the notifier outlives this
+    // widget, so a remount (e.g. bounced back here from /welcome) must not
+    // show page 0 while the header/CTA act on a later step.
+    _pageController = PageController(
+      initialPage: ref.read(onboardingProvider).currentStep,
+    );
   }
 
   @override
@@ -65,7 +70,14 @@ class _OnboardingFlowState extends ConsumerState<OnboardingFlow> {
 
     final isLast = state.currentStep == OnboardingState.totalSteps - 1;
 
-    return Scaffold(
+    // Android back / iOS edge-swipe steps back through the flow instead of
+    // leaving the onboarding route (which would exit the app).
+    return PopScope(
+      canPop: state.currentStep == 0,
+      onPopInvokedWithResult: (didPop, _) {
+        if (!didPop && !state.isLoading) notifier.previousStep();
+      },
+      child: Scaffold(
       resizeToAvoidBottomInset: false,
       body: LivelyBackdrop(
         seed: 5 + state.currentStep,
@@ -77,14 +89,14 @@ class _OnboardingFlowState extends ConsumerState<OnboardingFlow> {
               children: [
                 // ── header: back · progress · counter ──────────────
                 Padding(
-                  padding: const EdgeInsets.fromLTRB(24, 12, 24, 0),
+                  padding: const EdgeInsets.fromLTRB(18, 6, 24, 0),
                   child: Row(
                     children: [
                       _BackChip(
-                        enabled: state.currentStep > 0,
+                        enabled: state.currentStep > 0 && !state.isLoading,
                         onTap: notifier.previousStep,
                       ),
-                      const SizedBox(width: 14),
+                      const SizedBox(width: 8),
                       Expanded(
                         child: StepProgress(
                           step: state.currentStep,
@@ -131,6 +143,7 @@ class _OnboardingFlowState extends ConsumerState<OnboardingFlow> {
                         subtitle: l10n.onboardingBirthPlaceSubtitle,
                         child: BirthplaceSearch(
                           selectedPlace: state.birthPlace,
+                          onPlaceCleared: notifier.clearBirthPlace,
                           onPlaceSelected: (place, lat, lng, tz) {
                             notifier.setBirthPlace(
                               place: place,
@@ -141,7 +154,7 @@ class _OnboardingFlowState extends ConsumerState<OnboardingFlow> {
                           },
                         ),
                       ),
-                      _NameStep(notifier: notifier),
+                      _NameStep(notifier: notifier, initialName: state.name),
                       _FocusAreasStep(notifier: notifier, state: state),
                       _Step(
                         title: null,
@@ -151,6 +164,17 @@ class _OnboardingFlowState extends ConsumerState<OnboardingFlow> {
                     ],
                   ),
                 ),
+
+                // ── save error ──────────────────────────────────────
+                if (state.error != null)
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(24, 8, 24, 0),
+                    child: Text(
+                      l10n.oaphOnboardingSaveError,
+                      textAlign: TextAlign.center,
+                      style: LivelyType.small(p.error),
+                    ),
+                  ),
 
                 // ── CTA ─────────────────────────────────────────────
                 Padding(
@@ -171,6 +195,7 @@ class _OnboardingFlowState extends ConsumerState<OnboardingFlow> {
           ),
         ),
       ),
+    ),
     );
   }
 
@@ -186,6 +211,12 @@ class _OnboardingFlowState extends ConsumerState<OnboardingFlow> {
         final success = await notifier.submitName();
         if (success) notifier.nextStep();
       case 4:
+        // Persist the chosen focus areas (optional step — a failure here
+        // shouldn't block the reveal, so the result is ignored).
+        if (state.focusAreas.isNotEmpty) {
+          await notifier.submitFocusAreas();
+          if (!mounted) return;
+        }
         // Use the returned success flag, not state.chartReveal — `state`
         // is the snapshot captured before the await, so it never reflects
         // the chart we just loaded. Reading it here always looked "null"
@@ -221,17 +252,34 @@ class _BackChip extends StatelessWidget {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     return Opacity(
       opacity: enabled ? 1 : 0,
-      child: GestureDetector(
-        onTap: enabled ? onTap : null,
-        child: Container(
-          width: 32,
-          height: 32,
-          decoration: BoxDecoration(
-            color: isDark ? p.surfaceGlass : p.surface,
-            shape: BoxShape.circle,
-            border: Border.all(color: p.line),
+      child: Semantics(
+        button: true,
+        enabled: enabled,
+        label: MaterialLocalizations.of(context).backButtonTooltip,
+        child: GestureDetector(
+          onTap: enabled ? onTap : null,
+          // 44×44 hit area around the 32px visual chip.
+          behavior: HitTestBehavior.opaque,
+          child: SizedBox(
+            width: 44,
+            height: 44,
+            child: Center(
+              child: Container(
+                width: 32,
+                height: 32,
+                decoration: BoxDecoration(
+                  color: isDark ? p.surfaceGlass : p.surface,
+                  shape: BoxShape.circle,
+                  border: Border.all(color: p.line),
+                ),
+                child: Icon(
+                  Icons.chevron_left_rounded,
+                  color: p.textPrimary,
+                  size: 20,
+                ),
+              ),
+            ),
           ),
-          child: Icon(Icons.chevron_left_rounded, color: p.textPrimary, size: 20),
         ),
       ),
     );
@@ -278,9 +326,27 @@ class _Step extends StatelessWidget {
 // Step 4 · Name
 // ───────────────────────────────────────────────────────────────
 
-class _NameStep extends StatelessWidget {
-  const _NameStep({required this.notifier});
+class _NameStep extends StatefulWidget {
+  const _NameStep({required this.notifier, required this.initialName});
   final OnboardingNotifier notifier;
+  final String initialName;
+
+  @override
+  State<_NameStep> createState() => _NameStepState();
+}
+
+class _NameStepState extends State<_NameStep> {
+  // Seeded from the provider: PageView disposes off-screen pages, so
+  // without this, coming back to this step showed an empty field while
+  // the notifier still held (and would submit) the earlier name.
+  late final TextEditingController _controller =
+      TextEditingController(text: widget.initialName);
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -289,15 +355,21 @@ class _NameStep extends StatelessWidget {
     return _Step(
       title: l10n.onboardingNameTitle,
       subtitle: l10n.onboardingNameSubtitle,
-      child: Column(
+      // Scrollable so the field + note stay reachable above the keyboard
+      // on short screens / large text.
+      child: SingleChildScrollView(
+        physics: const ClampingScrollPhysics(),
+        child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           LivelyField(
+            controller: _controller,
             hint: l10n.onboardingNameHint,
             large: true,
             autofocus: true,
             textCapitalization: TextCapitalization.words,
-            onChanged: notifier.setName,
+            autofillHints: const [AutofillHints.givenName],
+            onChanged: widget.notifier.setName,
           ),
           const SizedBox(height: 12),
           Padding(
@@ -308,6 +380,7 @@ class _NameStep extends StatelessWidget {
             ),
           ),
         ],
+      ),
       ),
     );
   }
@@ -378,20 +451,31 @@ class _FocusAreasStep extends StatelessWidget {
             GridView.builder(
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              // Fixed row height sized for a two-line, text-scaled chip
+              // label — an aspect ratio squeezed the chips on narrow
+              // phones and clipped wrapped labels ("Love & Relationships").
+              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                 crossAxisCount: 2,
                 mainAxisSpacing: 10,
                 crossAxisSpacing: 10,
-                childAspectRatio: 2.6,
+                mainAxisExtent:
+                    30 + 2 * MediaQuery.textScalerOf(context).scale(14) * 22 / 15,
               ),
               itemCount: _areaKeys.length,
               itemBuilder: (context, i) {
                 final key = _areaKeys[i];
-                return LivelyChip(
-                  label: _label(i, l10n),
-                  icon: _areaIcons[i],
-                  selected: state.focusAreas.contains(key),
-                  onTap: () => notifier.toggleFocusArea(key),
+                final selected = state.focusAreas.contains(key);
+                final full = state.focusAreas.length >=
+                    OnboardingNotifier.maxFocusAreas;
+                return Opacity(
+                  // Dim the unselected chips once the limit is reached.
+                  opacity: !selected && full ? 0.5 : 1,
+                  child: LivelyChip(
+                    label: _label(i, l10n),
+                    icon: _areaIcons[i],
+                    selected: selected,
+                    onTap: () => notifier.toggleFocusArea(key),
+                  ),
                 );
               },
             ),

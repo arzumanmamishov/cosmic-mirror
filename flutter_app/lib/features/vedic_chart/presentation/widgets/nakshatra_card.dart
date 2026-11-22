@@ -53,8 +53,8 @@ class NakshatraCard extends StatelessWidget {
                 ),
                 child: Text(
                   '${nakshatra.index}',
-                  style: const TextStyle(
-                    color: Colors.white,
+                  style: TextStyle(
+                    color: p.onPrimary,
                     fontSize: 14,
                     fontWeight: FontWeight.w800,
                   ),

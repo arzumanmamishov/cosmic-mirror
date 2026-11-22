@@ -11,6 +11,10 @@ class PremiumUpgradeCard extends StatelessWidget {
     final p = context.palette;
     final l = AppLocalizations.of(context);
 
+    // Foreground on the premium gradient: onPrimary is dark on the gold
+    // (dark theme) and white on the blue (light theme). Plain white was
+    // low-contrast on the gold gradient.
+    final fg = p.onPrimary;
     return Container(
       padding: const EdgeInsets.fromLTRB(20, 20, 20, 20),
       decoration: BoxDecoration(
@@ -27,7 +31,7 @@ class PremiumUpgradeCard extends StatelessWidget {
       child: Stack(
         children: [
           // Decorative cosmic watermark
-          const Positioned(
+          Positioned(
             right: -24,
             top: -16,
             child: Opacity(
@@ -35,7 +39,7 @@ class PremiumUpgradeCard extends StatelessWidget {
               child: Icon(
                 Icons.workspace_premium_rounded,
                 size: 130,
-                color: Colors.white,
+                color: fg,
               ),
             ),
           ),
@@ -44,8 +48,8 @@ class PremiumUpgradeCard extends StatelessWidget {
             children: [
               Text(
                 l.homePremiumPlanTitle,
-                style: const TextStyle(
-                  color: Colors.white,
+                style: TextStyle(
+                  color: fg,
                   fontSize: 22,
                   fontWeight: FontWeight.w700,
                 ),
@@ -54,32 +58,38 @@ class PremiumUpgradeCard extends StatelessWidget {
               Text(
                 l.homePremiumPlanBody,
                 style: TextStyle(
-                  color: Colors.white.withValues(alpha: 0.85),
+                  color: fg.withValues(alpha: 0.85),
                   fontSize: 13,
                   height: 1.4,
                 ),
               ),
               const SizedBox(height: 16),
-              GestureDetector(
+              Semantics(
+                button: true,
+                child: GestureDetector(
                 onTap: () => context.push('/paywall'),
+                behavior: HitTestBehavior.opaque,
                 child: Container(
+                  constraints: const BoxConstraints(minHeight: 44),
+                  alignment: Alignment.center,
                   padding: const EdgeInsets.symmetric(
                     horizontal: 18,
                     vertical: 10,
                   ),
                   decoration: BoxDecoration(
-                    color: Colors.black.withValues(alpha: 0.35),
+                    color: fg,
                     borderRadius: BorderRadius.circular(14),
                   ),
                   child: Text(
                     l.homePremiumPlanCta,
-                    style: const TextStyle(
-                      color: Colors.white,
+                    style: TextStyle(
+                      color: p.primary,
                       fontSize: 13,
                       fontWeight: FontWeight.w600,
                     ),
                   ),
                 ),
+              ),
               ),
             ],
           ),

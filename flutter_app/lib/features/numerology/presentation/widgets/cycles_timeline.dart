@@ -119,12 +119,16 @@ class _CycleBand extends StatelessWidget {
               color: accent.withValues(alpha: 0.18),
               borderRadius: BorderRadius.circular(10),
             ),
-            child: Text(
-              number.display,
-              style: TextStyle(
-                color: accent,
-                fontSize: 16,
-                fontWeight: FontWeight.w800,
+            padding: const EdgeInsets.symmetric(horizontal: 3),
+            child: FittedBox(
+              fit: BoxFit.scaleDown,
+              child: Text(
+                number.display,
+                style: TextStyle(
+                  color: accent,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w800,
+                ),
               ),
             ),
           ),

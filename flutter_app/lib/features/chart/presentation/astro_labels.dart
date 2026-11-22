@@ -1,3 +1,4 @@
+import 'package:cosmic_mirror/config/theme/app_palette.dart';
 import 'package:cosmic_mirror/core/utils/string_utils.dart';
 import 'package:cosmic_mirror/l10n/app_localizations.dart';
 import 'package:flutter/widgets.dart';
@@ -127,6 +128,38 @@ String chartAspectName(AppLocalizations l, String type) {
       return l.chartAspectQuincunx;
     default:
       return type.capitalizeFirst();
+  }
+}
+
+/// Aspect types the backend emits, in legend order.
+const chartAspectTypes = [
+  'conjunction',
+  'sextile',
+  'square',
+  'trine',
+  'opposition',
+  'quincunx',
+];
+
+/// One color per aspect type, shared by the wheel, its legend and the
+/// aspect list so all three agree. Palette-based where possible so the
+/// conjunction line stays visible on the light theme.
+Color chartAspectColor(AppPalette p, String type) {
+  switch (type.toLowerCase()) {
+    case 'conjunction':
+      return p.textPrimary;
+    case 'sextile':
+      return p.success;
+    case 'square':
+      return p.error;
+    case 'trine':
+      return const Color(0xFF4DA3FF);
+    case 'opposition':
+      return const Color(0xFFE14B8A);
+    case 'quincunx':
+      return p.warning;
+    default:
+      return p.textSecondary;
   }
 }
 

@@ -104,7 +104,7 @@ class _AshtakavargaGridState extends State<AshtakavargaGrid> {
       'Saturn',
     ];
     return SizedBox(
-      height: 36,
+      height: 44,
       child: ListView(
         scrollDirection: Axis.horizontal,
         children: [
@@ -135,6 +135,7 @@ class _AshtakavargaGridState extends State<AshtakavargaGrid> {
     return Padding(
       padding: const EdgeInsets.only(right: 8),
       child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
         onTap: onTap,
         child: Container(
           alignment: Alignment.center,
@@ -148,7 +149,7 @@ class _AshtakavargaGridState extends State<AshtakavargaGrid> {
           child: Text(
             label,
             style: TextStyle(
-              color: selected ? Colors.white : p.textSecondary,
+              color: selected ? p.onPrimary : p.textSecondary,
               fontSize: 12,
               fontWeight: FontWeight.w700,
             ),

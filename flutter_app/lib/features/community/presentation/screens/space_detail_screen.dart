@@ -4,6 +4,7 @@ import 'package:cosmic_mirror/config/theme/lively_tokens.dart';
 import 'package:cosmic_mirror/config/theme/lively_type.dart';
 import 'package:cosmic_mirror/config/theme/macos_colors.dart';
 import 'package:cosmic_mirror/features/community/data/repositories/community_repository.dart';
+import 'package:cosmic_mirror/features/community/domain/entities/post.dart';
 import 'package:cosmic_mirror/features/community/domain/entities/space.dart';
 import 'package:cosmic_mirror/features/community/presentation/providers/community_providers.dart';
 import 'package:cosmic_mirror/features/community/presentation/screens/compose_post_sheet.dart';
@@ -29,13 +30,18 @@ class SpaceDetailScreen extends ConsumerWidget {
   final String spaceId;
 
   Future<void> _compose(BuildContext context, WidgetRef ref) async {
-    await showModalBottomSheet<void>(
+    final posted = await showModalBottomSheet<bool>(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (_) => ComposePostSheet(spaceId: spaceId),
     );
-    ref.invalidate(spacePostsProvider(spaceId));
+    if (posted ?? false) {
+      ref
+        ..invalidate(spacePostsProvider(spaceId))
+        // "Recent posts" on the community profile.
+        ..invalidate(userCommunityProfileProvider);
+    }
   }
 
   @override
@@ -100,11 +106,17 @@ class SpaceDetailScreen extends ConsumerWidget {
             color: p.primary,
             backgroundColor: p.surface,
             edgeOffset: 100,
+            // Await the refetch so the spinner stays up until data lands.
             onRefresh: () async {
-              ref.invalidate(spaceDetailProvider(spaceId));
-              if (s.isJoined) {
-                ref.invalidate(spacePostsProvider(spaceId));
-              }
+              await Future.wait<Object?>([
+                ref
+                    .refresh(spaceDetailProvider(spaceId).future)
+                    .catchError((Object _) => s),
+                if (s.isJoined)
+                  ref
+                      .refresh(spacePostsProvider(spaceId).future)
+                      .catchError((Object _) => <PostWithMeta>[]),
+              ]);
             },
             child: CustomScrollView(
               physics: const BouncingScrollPhysics(
@@ -329,6 +341,7 @@ class _Header extends ConsumerWidget {
                     spaceId: s.id,
                     initialJoined: space.isJoined,
                     initialPending: space.isPending,
+                    ownerId: s.createdBy,
                     compact: false,
                     // Re-fetch so the feed / locked placeholder below
                     // follows the new membership state.

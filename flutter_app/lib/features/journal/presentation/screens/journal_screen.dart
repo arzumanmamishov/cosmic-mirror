@@ -38,7 +38,7 @@ class JournalScreen extends ConsumerWidget {
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => context.push('/journal/new'),
         backgroundColor: p.primary,
-        foregroundColor: Colors.white,
+        foregroundColor: p.onPrimary,
         icon: const Icon(Icons.edit_rounded),
         label: Text(
           AppLocalizations.of(context).journalNewEntry,
@@ -56,8 +56,18 @@ class JournalScreen extends ConsumerWidget {
           ),
           data: (entries) {
             if (entries.isEmpty) return _EmptyState();
-            return ListView.separated(
-              padding: const EdgeInsets.fromLTRB(20, 100, 20, 100),
+            return RefreshIndicator(
+              color: p.primary,
+              onRefresh: () => ref.refresh(journalEntriesProvider.future),
+              child: ListView.separated(
+              physics: const AlwaysScrollableScrollPhysics(),
+              // Clear the transparent app bar on any notch height.
+              padding: EdgeInsets.fromLTRB(
+                20,
+                MediaQuery.paddingOf(context).top + kToolbarHeight + 8,
+                20,
+                100,
+              ),
               itemCount: entries.length + 1,
               separatorBuilder: (_, __) => const SizedBox(height: 12),
               itemBuilder: (context, i) {
@@ -72,6 +82,7 @@ class JournalScreen extends ConsumerWidget {
                   child: _EntryCard(entry: entry),
                 );
               },
+              ),
             );
           },
         ),
@@ -133,6 +144,9 @@ class _EntryCard extends StatelessWidget {
             : weekday)
         .toUpperCase();
     final dayOfMonth = DateFormat('d', locale).format(date);
+    // onPrimary reads on the date pill's gradient in both themes (white
+    // was low-contrast on the light-gold dark-theme gradient).
+    final onPill = p.onPrimary;
     final monthYear = DateFormat('MMM y', locale).format(date);
 
     return InkWell(
@@ -160,8 +174,8 @@ class _EntryCard extends StatelessWidget {
                 children: [
                   Text(
                     dayOfWeek,
-                    style: const TextStyle(
-                      color: Colors.white,
+                    style: TextStyle(
+                      color: onPill,
                       fontSize: 9,
                       letterSpacing: 1,
                       fontWeight: FontWeight.w700,
@@ -169,8 +183,8 @@ class _EntryCard extends StatelessWidget {
                   ),
                   Text(
                     dayOfMonth,
-                    style: const TextStyle(
-                      color: Colors.white,
+                    style: TextStyle(
+                      color: onPill,
                       fontSize: 22,
                       fontWeight: FontWeight.w800,
                       height: 1.1,
@@ -179,7 +193,7 @@ class _EntryCard extends StatelessWidget {
                   Text(
                     monthYear,
                     style: TextStyle(
-                      color: Colors.white.withValues(alpha: 0.85),
+                      color: onPill.withValues(alpha: 0.85),
                       fontSize: 9,
                       fontWeight: FontWeight.w600,
                     ),
@@ -269,9 +283,9 @@ class _EmptyState extends StatelessWidget {
                 ],
               ),
               alignment: Alignment.center,
-              child: const Icon(
+              child: Icon(
                 Icons.auto_stories_rounded,
-                color: Colors.white,
+                color: p.onPrimary,
                 size: 38,
               ),
             ),

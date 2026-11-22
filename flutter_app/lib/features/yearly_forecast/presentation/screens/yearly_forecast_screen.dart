@@ -1,5 +1,6 @@
 import 'package:cosmic_mirror/config/theme/app_palette.dart';
 import 'package:cosmic_mirror/core/network/api_endpoints.dart';
+import 'package:cosmic_mirror/core/utils/string_utils.dart';
 import 'package:cosmic_mirror/l10n/app_localizations.dart';
 import 'package:cosmic_mirror/shared/providers/user_provider.dart';
 import 'package:cosmic_mirror/shared/widgets/error_view.dart';
@@ -46,7 +47,8 @@ class YearlyForecastScreen extends ConsumerWidget {
             final overview = data['overview'] as String? ?? '';
             final quarters =
                 (data['quarters'] as List<dynamic>? ?? const [])
-                    .cast<Map<String, dynamic>>();
+                    .whereType<Map<String, dynamic>>()
+                    .toList();
 
             if (theme.isEmpty && quarters.isEmpty) {
               return Center(
@@ -77,7 +79,9 @@ class YearlyForecastScreen extends ConsumerWidget {
                       ),
                       const SizedBox(width: 8),
                       Text(
-                        l.yfQuarterBreakdown.toUpperCase(),
+                        l.yfQuarterBreakdown.toUpperCaseLocale(
+                          Localizations.localeOf(context).languageCode,
+                        ),
                         style: TextStyle(
                           color: p.gold,
                           fontSize: 11,
@@ -217,10 +221,11 @@ class _QuarterCard extends StatelessWidget {
     final l = AppLocalizations.of(context);
     final accent = _quarterColors[index.clamp(0, 3)];
     final icon = _quarterIcons[index.clamp(0, 3)];
-    final label = quarter['label'] as String? ?? l.yfQuarterLabel(index + 1);
+    final label = quarter['label'] as String? ?? '';
     final description = quarter['description'] as String? ?? '';
     final months = (quarter['months'] as List<dynamic>? ?? const [])
-        .cast<String>()
+        // whereType, not cast: a non-string entry would throw mid-build.
+        .whereType<String>()
         .take(3)
         .toList();
 
@@ -260,6 +265,9 @@ class _QuarterCard extends StatelessWidget {
                         fontWeight: FontWeight.w800,
                       ),
                     ),
+                    // Without a server label the caption above already
+                    // says "Q1" — don't repeat it as the title.
+                    if (label.isNotEmpty) ...[
                     const SizedBox(height: 2),
                     Text(
                       label,
@@ -269,6 +277,7 @@ class _QuarterCard extends StatelessWidget {
                         fontWeight: FontWeight.w700,
                       ),
                     ),
+                    ],
                   ],
                 ),
               ),
@@ -278,6 +287,7 @@ class _QuarterCard extends StatelessWidget {
             const SizedBox(height: 12),
             Wrap(
               spacing: 6,
+              runSpacing: 6,
               children: [
                 for (final m in months)
                   Container(

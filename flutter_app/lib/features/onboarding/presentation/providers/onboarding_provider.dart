@@ -100,7 +100,19 @@ class OnboardingState {
 
 class OnboardingNotifier extends StateNotifier<OnboardingState> {
   OnboardingNotifier(this._repository)
-      : super(OnboardingState(birthDate: DateTime(1995, 6, 15)));
+      : super(
+          OnboardingState(
+            birthDate: DateTime(1995, 6, 15),
+            // Matches the time wheel's initial position, so "Next" is
+            // enabled for someone born at noon without nudging the wheel.
+            birthTime: _defaultBirthTime,
+          ),
+        );
+
+  /// The focus-areas step copy reads "{count} of 3 selected".
+  static const int maxFocusAreas = 3;
+
+  static final DateTime _defaultBirthTime = DateTime(2000, 1, 1, 12);
 
   final OnboardingRepository _repository;
 
@@ -113,7 +125,12 @@ class OnboardingNotifier extends StateNotifier<OnboardingState> {
   }
 
   void setBirthTimeKnown({required bool known}) {
-    state = state.copyWith(birthTimeKnown: known);
+    // copyWith drops the time when unknown; when switching back to known,
+    // re-seed it with the value the wheel shows so the step stays valid.
+    state = state.copyWith(
+      birthTimeKnown: known,
+      birthTime: known ? (state.birthTime ?? _defaultBirthTime) : null,
+    );
   }
 
   void setBirthPlace({
@@ -130,6 +147,24 @@ class OnboardingNotifier extends StateNotifier<OnboardingState> {
     );
   }
 
+  /// Drops the selected birthplace — called when the user edits the
+  /// search text after picking a place, so "Next" can't submit a place
+  /// that no longer matches what's on screen.
+  void clearBirthPlace() {
+    if (state.birthPlace == null && state.latitude == null) return;
+    final s = state;
+    state = OnboardingState(
+      currentStep: s.currentStep,
+      birthDate: s.birthDate,
+      birthTime: s.birthTime,
+      birthTimeKnown: s.birthTimeKnown,
+      name: s.name,
+      focusAreas: s.focusAreas,
+      chartReveal: s.chartReveal,
+      isLoading: s.isLoading,
+    );
+  }
+
   void setName(String name) {
     state = state.copyWith(name: name);
   }
@@ -138,8 +173,10 @@ class OnboardingNotifier extends StateNotifier<OnboardingState> {
     final areas = List<String>.from(state.focusAreas);
     if (areas.contains(area)) {
       areas.remove(area);
-    } else {
+    } else if (areas.length < maxFocusAreas) {
       areas.add(area);
+    } else {
+      return;
     }
     state = state.copyWith(focusAreas: areas);
   }
@@ -194,6 +231,14 @@ class OnboardingNotifier extends StateNotifier<OnboardingState> {
         return false;
       },
     );
+  }
+
+  /// Best-effort save of the optional focus areas.
+  Future<bool> submitFocusAreas() async {
+    state = state.copyWith(isLoading: true);
+    final result = await _repository.saveFocusAreas(state.focusAreas);
+    state = state.copyWith(isLoading: false);
+    return result.when(success: (_) => true, failure: (_) => false);
   }
 
   Future<bool> loadChartReveal() async {

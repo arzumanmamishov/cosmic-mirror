@@ -1,5 +1,6 @@
 import 'package:cosmic_mirror/config/theme/app_palette.dart';
 import 'package:cosmic_mirror/config/theme/lively_type.dart';
+import 'package:cosmic_mirror/core/utils/string_utils.dart';
 import 'package:cosmic_mirror/features/ai_chat/presentation/screens/chat_threads_screen.dart';
 import 'package:cosmic_mirror/features/community/presentation/providers/community_providers.dart';
 import 'package:cosmic_mirror/features/community/presentation/screens/spaces_list_screen.dart';
@@ -9,6 +10,7 @@ import 'package:cosmic_mirror/features/home/presentation/widgets/premium_upgrade
 import 'package:cosmic_mirror/features/home/presentation/widgets/today_in_the_sky_card.dart';
 import 'package:cosmic_mirror/features/home/presentation/widgets/todays_insight_card.dart';
 import 'package:cosmic_mirror/l10n/app_localizations.dart';
+import 'package:cosmic_mirror/shared/providers/subscription_state_provider.dart';
 import 'package:cosmic_mirror/shared/widgets/category_chip_bar.dart';
 import 'package:cosmic_mirror/shared/widgets/lively/lively_backdrop.dart';
 import 'package:cosmic_mirror/shared/widgets/pill_search_bar.dart';
@@ -34,7 +36,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   Widget build(BuildContext context) {
     final p = context.palette;
 
-    return Scaffold(
+    // Android back on a secondary tab returns to Discover first instead
+    // of closing the app.
+    return PopScope(
+      canPop: _currentIndex == 0,
+      onPopInvokedWithResult: (didPop, _) {
+        if (!didPop) setState(() => _currentIndex = 0);
+      },
+      child: Scaffold(
       backgroundColor: p.background,
       body: LivelyBackdrop(
         seed: 3,
@@ -53,6 +62,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         currentIndex: _currentIndex,
         onTap: (i) => setState(() => _currentIndex = i),
       ),
+    ),
     );
   }
 }
@@ -65,14 +75,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 // Stable keys — never user-facing. Display labels come from AppLocalizations.
 const _discoverCategoryKeys = ['All', 'Daily', 'Sky', 'Community'];
 
-class _DiscoverTab extends StatefulWidget {
+class _DiscoverTab extends ConsumerStatefulWidget {
   const _DiscoverTab();
 
   @override
-  State<_DiscoverTab> createState() => _DiscoverTabState();
+  ConsumerState<_DiscoverTab> createState() => _DiscoverTabState();
 }
 
-class _DiscoverTabState extends State<_DiscoverTab> {
+class _DiscoverTabState extends ConsumerState<_DiscoverTab> {
   String _category = 'All';
   final _searchCtrl = TextEditingController();
 
@@ -97,6 +107,9 @@ class _DiscoverTabState extends State<_DiscoverTab> {
       l10n.categoryCommunity,
     ];
     final selectedIndex = _discoverCategoryKeys.indexOf(_category);
+    // Subscribers shouldn't be asked to upgrade. Real entitlement (no dev
+    // override) so dev builds still show the card.
+    final hasPremium = ref.watch(hasPremiumProvider);
     return SafeArea(
       bottom: false,
       child: ListView(
@@ -141,7 +154,7 @@ class _DiscoverTabState extends State<_DiscoverTab> {
             ),
           ),
           const SizedBox(height: 18),
-          if (_showFor('All')) ...[
+          if (_showFor('All') && !hasPremium) ...[
             const FadeSlideIn(
               delay: Duration(milliseconds: 180),
               child: Padding(
@@ -394,7 +407,7 @@ class _ChartsTabState extends State<_ChartsTab> {
               child: Text(
                 AppLocalizations.of(context).chartsNothingMatches,
                 textAlign: TextAlign.center,
-                style: TextStyle(color: p.textSecondary, fontSize: 13),
+                style: LivelyType.small(p.textSecondary),
               ),
             )
           else
@@ -448,7 +461,9 @@ class _ChartFeatureCard extends StatelessWidget {
                 ],
               ),
               alignment: Alignment.center,
-              child: Icon(feature.icon, color: Colors.white, size: 26),
+              // onPrimary reads on every tile gradient in both themes
+              // (white was near-invisible on the light-gold tiles).
+              child: Icon(feature.icon, color: p.onPrimary, size: 26),
             ),
             const SizedBox(width: 14),
             Expanded(
@@ -475,7 +490,10 @@ class _ChartFeatureCard extends StatelessWidget {
                             borderRadius: BorderRadius.circular(8),
                           ),
                           child: Text(
-                            feature.badge!.toUpperCase(),
+                            // Locale-aware: Turkish "Yeni" → "YENİ".
+                            feature.badge!.toUpperCaseLocale(
+                              Localizations.localeOf(context).languageCode,
+                            ),
                             style: LivelyType.caption(p.primary)
                                 .copyWith(fontSize: 9),
                           ),
@@ -619,6 +637,8 @@ class _NavItem extends StatelessWidget {
             const SizedBox(height: 4),
             Text(
               label,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
               style: LivelyType.caption(
                 active ? activeColor : inactiveColor,
               ).copyWith(

@@ -165,7 +165,9 @@ String _categoryLabel(AppLocalizations l, String category) {
 
 const Map<String, Color> _categoryColors = {
   'Pancha Mahapurusha': Color(0xFFFFB347),
-  'Lunar': Color(0xFFE8E8E8),
+  // Mid silver rather than near-white so the chip and strength bar stay
+  // visible on the light theme's white cards.
+  'Lunar': Color(0xFF8FA3B8),
   'Solar': Color(0xFFF4C542),
   'Wealth': Color(0xFF34D399),
   'Power': Color(0xFFE14B8A),

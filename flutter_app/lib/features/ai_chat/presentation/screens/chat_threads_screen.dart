@@ -3,7 +3,6 @@ import 'package:cosmic_mirror/core/error/error_message.dart';
 import 'package:cosmic_mirror/core/utils/date_utils.dart';
 import 'package:cosmic_mirror/features/ai_chat/domain/entities/chat_entities.dart';
 import 'package:cosmic_mirror/features/ai_chat/presentation/providers/chat_provider.dart';
-import 'package:cosmic_mirror/features/ai_chat/presentation/widgets/cosmic_memory_panel.dart';
 import 'package:cosmic_mirror/l10n/app_localizations.dart';
 import 'package:cosmic_mirror/shared/widgets/cosmic_pulse.dart';
 import 'package:cosmic_mirror/shared/widgets/error_view.dart';
@@ -46,11 +45,11 @@ class ChatThreadsScreen extends ConsumerWidget {
           backgroundColor: Colors.transparent,
           elevation: 0,
           highlightElevation: 0,
-          icon: const Icon(Icons.auto_awesome_rounded, color: Colors.white),
+          icon: Icon(Icons.auto_awesome_rounded, color: p.onPrimary),
           label: Text(
             AppLocalizations.of(context).chatThreadsNew,
-            style: const TextStyle(
-              color: Colors.white,
+            style: TextStyle(
+              color: p.onPrimary,
               fontWeight: FontWeight.w600,
             ),
           ),
@@ -73,9 +72,18 @@ class ChatThreadsScreen extends ConsumerWidget {
             if (threads.isEmpty) {
               return _EmptyState(onStart: startNew);
             }
-            return ListView.separated(
-              padding: const EdgeInsets.fromLTRB(20, 100, 20, 100),
-              itemCount: threads.length + 2,
+            return RefreshIndicator(
+              color: p.primary,
+              onRefresh: () => ref.refresh(chatThreadsProvider.future),
+              child: ListView.separated(
+              physics: const AlwaysScrollableScrollPhysics(),
+              padding: EdgeInsets.fromLTRB(
+                20,
+                MediaQuery.paddingOf(context).top + kToolbarHeight + 12,
+                20,
+                100,
+              ),
+              itemCount: threads.length + 1,
               separatorBuilder: (_, __) => const SizedBox(height: 12),
               itemBuilder: (context, i) {
                   if (i == 0) {
@@ -83,15 +91,16 @@ class ChatThreadsScreen extends ConsumerWidget {
                       child: _Header(threadCount: threads.length),
                     );
                   }
-                  if (i == 1) {
-                    return const FadeSlideIn(
-                      delay: Duration(milliseconds: 80),
-                      child: CosmicMemoryPanel(),
-                    );
-                  }
-                  final t = threads[i - 2];
+                  // CosmicMemoryPanel is not shown: its "memories" are
+                  // hard-coded placeholders (Saturn return, partner…),
+                  // not data extracted from this user's chats. Re-add it
+                  // (and bump the index offset) once the backend serves
+                  // real memory items.
+                  final t = threads[i - 1];
                   return FadeSlideIn(
-                    delay: Duration(milliseconds: 120 + i * 40),
+                    // Capped: rows built lazily on scroll shouldn't wait
+                    // seconds to fade in.
+                    delay: Duration(milliseconds: 120 + (i * 40).clamp(0, 360)),
                     child: _ThreadCard(
                       thread: t,
                       onOpen: () => context.push('/chat/${t.id}'),
@@ -115,6 +124,7 @@ class ChatThreadsScreen extends ConsumerWidget {
                     ),
                   );
                 },
+              ),
               );
             },
           ),
@@ -357,9 +367,9 @@ class _EmptyState extends StatelessWidget {
                   ],
                 ),
                 alignment: Alignment.center,
-                child: const Icon(
+                child: Icon(
                   Icons.auto_awesome_rounded,
-                  color: Colors.white,
+                  color: p.onPrimary,
                   size: 38,
                 ),
               ),
@@ -390,7 +400,7 @@ class _EmptyState extends StatelessWidget {
               label: Text(l.chatThreadsStart),
               style: ElevatedButton.styleFrom(
                 backgroundColor: p.primary,
-                foregroundColor: Colors.white,
+                foregroundColor: p.onPrimary,
                 padding: const EdgeInsets.symmetric(
                   horizontal: 22,
                   vertical: 14,

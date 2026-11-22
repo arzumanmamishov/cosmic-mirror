@@ -114,11 +114,26 @@ class CommunityProfileScreen extends ConsumerWidget {
                   ref.invalidate(userCommunityProfileProvider(userIdOrMe)),
             ),
             data: (profile) => RefreshIndicator(
+              color: p.primary,
+              backgroundColor: p.surface,
+              edgeOffset: MediaQuery.paddingOf(context).top + kToolbarHeight,
+              // Await the refetch so the spinner stays until data lands.
               onRefresh: () async {
                 ref.invalidate(userCommunityProfileProvider(userIdOrMe));
+                try {
+                  await ref
+                      .read(userCommunityProfileProvider(userIdOrMe).future);
+                } catch (_) {/* shown by the error state */}
               },
               child: ListView(
-                padding: const EdgeInsets.fromLTRB(20, 100, 20, 32),
+                physics: const AlwaysScrollableScrollPhysics(),
+                // Clear the transparent app bar on every device.
+                padding: EdgeInsets.fromLTRB(
+                  20,
+                  MediaQuery.paddingOf(context).top + kToolbarHeight + 12,
+                  20,
+                  32,
+                ),
                 children: [
                   _ProfileHero(name: profile.name, palette: p),
                   if (profile.isBlockedByMe) ...[
@@ -140,7 +155,7 @@ class CommunityProfileScreen extends ConsumerWidget {
                     )
                   else ...[
                     for (final s in profile.joinedSpaces) ...[
-                      SpaceCard(space: s),
+                      SpaceCard(key: ValueKey(s.space.id), space: s),
                       const SizedBox(height: 8),
                     ],
                   ],
@@ -156,7 +171,7 @@ class CommunityProfileScreen extends ConsumerWidget {
                     _EmptyHint(message: l.communityProfileNoPosts, palette: p)
                   else ...[
                     for (final post in profile.recentPosts) ...[
-                      PostCard(post: post),
+                      PostCard(key: ValueKey(post.post.id), post: post),
                       const SizedBox(height: 8),
                     ],
                   ],
@@ -190,8 +205,10 @@ class _ProfileHero extends StatelessWidget {
           ),
           child: Text(
             initial,
-            style: const TextStyle(
-              color: Colors.white,
+            style: TextStyle(
+              // onPrimary: white on the gold gradient was unreadable in
+              // the dark theme.
+              color: palette.onPrimary,
               fontSize: 36,
               fontWeight: FontWeight.w800,
             ),
@@ -202,6 +219,9 @@ class _ProfileHero extends StatelessWidget {
           name.isEmpty
               ? AppLocalizations.of(context).communityUnknownUser
               : name,
+          textAlign: TextAlign.center,
+          maxLines: 2,
+          overflow: TextOverflow.ellipsis,
           style: TextStyle(
             color: palette.textPrimary,
             fontSize: 22,

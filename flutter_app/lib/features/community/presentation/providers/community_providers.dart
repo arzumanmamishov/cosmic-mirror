@@ -33,6 +33,15 @@ final spacesProvider =
   );
 });
 
+/// Spaces in one category (category detail screen). Its own family so the
+/// category screen never rewrites the main list's global filter state.
+final categorySpacesProvider = FutureProvider.autoDispose
+    .family<List<SpaceWithMeta>, String>((ref, categoryId) async {
+  return ref
+      .read(communityRepositoryProvider)
+      .listSpaces(categoryId: categoryId);
+});
+
 /// Single space detail — family by spaceId.
 final spaceDetailProvider =
     FutureProvider.autoDispose.family<SpaceWithMeta, String>((ref, id) async {

@@ -37,6 +37,7 @@ class _NumerologyNameCalculatorScreenState
   void _calculate() {
     final value = _controller.text.trim();
     if (value.isEmpty) return;
+    FocusScope.of(context).unfocus();
     setState(() => _submitted = value);
   }
 
@@ -94,7 +95,7 @@ class _NumerologyNameCalculatorScreenState
                   label: Text(l.numerologyNameCalculate),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: p.primary,
-                    foregroundColor: Colors.white,
+                    foregroundColor: p.onPrimary,
                     padding: const EdgeInsets.symmetric(vertical: 14),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(14),
@@ -169,8 +170,7 @@ class _Results extends ConsumerWidget {
       loading: () => const ShimmerList(),
       error: (e, _) => ErrorView(
         error: e,
-        onRetry: () =>
-            ref.invalidate(numerologyNameAnalysisProvider(name)),
+        onRetry: () => ref.invalidate(numerologyNameAnalysisProvider(name)),
       ),
       data: (analysis) {
         if (analysis == null) return const SizedBox.shrink();
@@ -245,8 +245,7 @@ class _LetterBreakdownPanel extends StatelessWidget {
             spacing: 8,
             runSpacing: 8,
             children: [
-              for (final letter in letters)
-                _LetterChip(letter: letter),
+              for (final letter in letters) _LetterChip(letter: letter),
             ],
           ),
           const SizedBox(height: 10),
@@ -355,7 +354,8 @@ class _PassionAndKarmaPanel extends StatelessWidget {
         children: [
           _Row(
             label: l.numerologyNameHiddenPassion,
-            value: '${analysis.hiddenPassion}',
+            value:
+                analysis.hiddenPassion == 0 ? '—' : '${analysis.hiddenPassion}',
             valueColor: p.gold,
           ),
           const SizedBox(height: 12),

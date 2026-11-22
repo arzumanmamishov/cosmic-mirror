@@ -49,6 +49,13 @@ class PostCard extends ConsumerWidget {
               container
                 ..invalidate(spacePostsProvider(pst.spaceId))
                 ..invalidate(userCommunityProfileProvider);
+              if (context.mounted) {
+                messenger.showSnackBar(
+                  SnackBar(
+                    content: Text(AppLocalizations.of(context).cpsPostDeleted),
+                  ),
+                );
+              }
             } catch (e) {
               if (context.mounted) {
                 messenger.showSnackBar(
@@ -186,9 +193,10 @@ class PostCard extends ConsumerWidget {
                     onTap: open,
                     borderRadius: BorderRadius.circular(LivelyRadius.sm),
                     child: Padding(
+                      // Same ~34px tap height as the like button.
                       padding: const EdgeInsets.symmetric(
                         horizontal: 6,
-                        vertical: 4,
+                        vertical: 8,
                       ),
                       child: Row(
                         children: [

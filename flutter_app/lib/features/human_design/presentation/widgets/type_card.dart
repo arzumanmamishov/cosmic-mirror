@@ -16,6 +16,9 @@ class TypeCard extends StatelessWidget {
     final p = context.palette;
     final l = AppLocalizations.of(context);
     final hd = HDLabels(l);
+    // On-gradient ink: dark on the gold dark-theme gradient, white on the
+    // blue light-theme gradient.
+    final fg = p.onPrimary;
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -27,8 +30,8 @@ class TypeCard extends StatelessWidget {
         children: [
           Text(
             l.hdYouAre,
-            style: const TextStyle(
-              color: Colors.white70,
+            style: TextStyle(
+              color: fg.withValues(alpha: 0.7),
               fontSize: 11,
               letterSpacing: 1.6,
               fontWeight: FontWeight.w800,
@@ -37,32 +40,32 @@ class TypeCard extends StatelessWidget {
           const SizedBox(height: 6),
           Text(
             hd.type(chart.type),
-            style: const TextStyle(
-              color: Colors.white,
+            style: TextStyle(
+              color: fg,
               fontSize: 28,
               fontWeight: FontWeight.w900,
               height: 1.1,
             ),
           ),
           const SizedBox(height: 14),
-          _row(l.hdStrategy, hd.strategy(chart.strategy)),
+          _row(l.hdStrategy, hd.strategy(chart.strategy), fg),
           const SizedBox(height: 10),
-          _row(l.hdAuthority, hd.authority(chart.authority)),
+          _row(l.hdAuthority, hd.authority(chart.authority), fg),
           const SizedBox(height: 10),
-          _row(l.humanDesignTabProfile, chart.profile),
+          _row(l.humanDesignTabProfile, chart.profile, fg),
           const SizedBox(height: 10),
-          _row(l.hdDefinition, hd.definition(chart.definition)),
+          _row(l.hdDefinition, hd.definition(chart.definition), fg),
           const SizedBox(height: 14),
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
             decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.15),
+              color: fg.withValues(alpha: 0.12),
               borderRadius: BorderRadius.circular(8),
             ),
             child: Text(
               l.hdNotSelfTheme(hd.notSelf(chart.notSelfTheme)),
-              style: const TextStyle(
-                color: Colors.white,
+              style: TextStyle(
+                color: fg,
                 fontSize: 11,
                 fontWeight: FontWeight.w700,
                 letterSpacing: 0.5,
@@ -74,15 +77,16 @@ class TypeCard extends StatelessWidget {
     );
   }
 
-  Widget _row(String label, String value) {
+  Widget _row(String label, String value, Color fg) {
     return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         SizedBox(
           width: 90,
           child: Text(
             label,
-            style: const TextStyle(
-              color: Colors.white70,
+            style: TextStyle(
+              color: fg.withValues(alpha: 0.7),
               fontSize: 11,
               letterSpacing: 1.2,
               fontWeight: FontWeight.w700,
@@ -91,9 +95,9 @@ class TypeCard extends StatelessWidget {
         ),
         Expanded(
           child: Text(
-            value,
-            style: const TextStyle(
-              color: Colors.white,
+            value.isEmpty ? '—' : value,
+            style: TextStyle(
+              color: fg,
               fontSize: 14,
               fontWeight: FontWeight.w700,
             ),

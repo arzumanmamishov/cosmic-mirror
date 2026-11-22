@@ -47,6 +47,7 @@ class NumberCard extends StatelessWidget {
             width: 60,
             height: 60,
             alignment: Alignment.center,
+            padding: const EdgeInsets.symmetric(horizontal: 6),
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 colors: [accent, accent.withValues(alpha: 0.6)],
@@ -55,12 +56,16 @@ class NumberCard extends StatelessWidget {
               ),
               borderRadius: BorderRadius.circular(14),
             ),
-            child: Text(
-              number.display,
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 22,
-                fontWeight: FontWeight.w800,
+            // "11/2" / "33/6" shrink instead of wrapping at large text sizes.
+            child: FittedBox(
+              fit: BoxFit.scaleDown,
+              child: Text(
+                number.display,
+                style: TextStyle(
+                  color: p.onPrimary,
+                  fontSize: 22,
+                  fontWeight: FontWeight.w800,
+                ),
               ),
             ),
           ),
@@ -75,13 +80,19 @@ class NumberCard extends StatelessWidget {
                       Icon(icon, size: 14, color: p.textSecondary),
                       const SizedBox(width: 6),
                     ],
-                    Text(
-                      numerologyUpper(context, title),
-                      style: TextStyle(
-                        color: p.textSecondary,
-                        fontSize: 11,
-                        letterSpacing: 1.2,
-                        fontWeight: FontWeight.w800,
+                    // Flexible so title + Master/Karmic badges never overflow
+                    // on narrow phones or with long Turkish titles.
+                    Flexible(
+                      child: Text(
+                        numerologyUpper(context, title),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          color: p.textSecondary,
+                          fontSize: 11,
+                          letterSpacing: 1.2,
+                          fontWeight: FontWeight.w800,
+                        ),
                       ),
                     ),
                     if (number.isMaster) ...[
@@ -90,7 +101,11 @@ class NumberCard extends StatelessWidget {
                     ],
                     if (number.isKarmicDebt) ...[
                       const SizedBox(width: 6),
-                      _badge(l.numerologyKarmicChip(number.rawSum), p.warning, p),
+                      _badge(
+                        l.numerologyKarmicChip(number.rawSum),
+                        p.warning,
+                        p,
+                      ),
                     ],
                   ],
                 ),

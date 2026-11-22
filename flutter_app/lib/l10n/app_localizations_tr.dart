@@ -3647,4 +3647,139 @@ class AppLocalizationsTr extends AppLocalizations {
   @override
   String get moderationHiddenNotice =>
       'Ekibimiz şikâyetleri incelerken gizlendi. Bunu yalnızca sen görebilirsin.';
+
+  @override
+  String get chrBirthTimeUnknownNote =>
+      'Doğum saatin bilinmediği için Yükselen burcun ve evlerin yaklaşık hesaplandı. Doğum saatini eklemek için dokun.';
+
+  @override
+  String get chrShadbalaIntro =>
+      'Shadbala, her gezegenin altı farklı kaynaktan gelen gücünü Virupa cinsinden ölçer. Gereken toplama ulaşan gezegen, etkilerini tam olarak gösterebilir. Diğer gezegenleri görmek için kaydır.';
+
+  @override
+  String get chrExpandChart => 'Haritayı tam ekran aç';
+
+  @override
+  String get cmsChatSend => 'Gönder';
+
+  @override
+  String get cmsCompatRemovePerson => 'Kişiyi kaldır';
+
+  @override
+  String cmsCompatRemoveTitle(String name) {
+    return '$name kaldırılsın mı?';
+  }
+
+  @override
+  String get cmsCompatRemoveBody =>
+      'Doğum bilgileri ve uyum raporu silinecek. Bu işlem geri alınamaz.';
+
+  @override
+  String get cmsCompatRemoveConfirm => 'Kaldır';
+
+  @override
+  String cmsCompatRemoved(String name) {
+    return '$name kaldırıldı';
+  }
+
+  @override
+  String get cmsCompatGeneratingTitle => 'İki harita da okunuyor…';
+
+  @override
+  String get cmsCompatGeneratingBody =>
+      'İlk uyum raporunun hazırlanması bir dakikayı bulabilir.';
+
+  @override
+  String get cmsMatrixFullScreen => 'Tam ekran';
+
+  @override
+  String get cmsMatrixPinchHint =>
+      'Boyutlandırmak için iki parmakla sıkıştırın · sıfırlamak için çift dokunun';
+
+  @override
+  String get cmsLifeExamplesBanner =>
+      'Bunlar örnek anlar. İlk anını eklediğinde kendi zaman çizelgen bunların yerini alacak.';
+
+  @override
+  String get cmsLifeDeleteTitle => 'Bu an silinsin mi?';
+
+  @override
+  String cmsLifeDeleteBody(String title) {
+    return '\"$title\" zaman çizelgenden kaldırılacak.';
+  }
+
+  @override
+  String get cmsLifeDelete => 'Sil';
+
+  @override
+  String cpsSupportEmailFallback(String email) {
+    return 'E-posta uygulaman açılamadı. Bize $email adresinden yazabilirsin';
+  }
+
+  @override
+  String get cpsProfileUpdated => 'Profil güncellendi.';
+
+  @override
+  String get cpsBirthDataUpdated => 'Doğum bilgileri güncellendi.';
+
+  @override
+  String get cpsBirthDataLoadFailed =>
+      'Doğum bilgilerin yüklenemedi. Bağlantını kontrol edip tekrar dene.';
+
+  @override
+  String get cpsSpacesNoResults => 'Aramanla eşleşen alan yok.';
+
+  @override
+  String get cpsSpacesNoneJoined => 'Henüz hiçbir alana katılmadın.';
+
+  @override
+  String get cpsLeaveSpaceTitle => 'Bu alandan ayrılmak istiyor musun?';
+
+  @override
+  String get cpsLeaveSpaceBody =>
+      'Gönderilerini artık görmeyeceksin. Yalnızca üyelere açık alanlara yeniden katılmak için yeni bir istek göndermen gerekir.';
+
+  @override
+  String get cpsPostDeleted => 'Gönderi silindi.';
+
+  @override
+  String get cpsLinkOpenFailed => 'Bu bağlantı açılamadı.';
+
+  @override
+  String get cpsHandleTooShort => 'Kullanıcı adı en az 3 karakter olmalı.';
+
+  @override
+  String get cpsSpaceDeleted => 'Alan silindi.';
+
+  @override
+  String get oaphOnboardingSaveError =>
+      'Bu bilgiyi kaydedemedik. Bağlantını kontrol edip tekrar dene.';
+
+  @override
+  String get oaphWelcomeEnterFailed =>
+      'Profilini yükleyemedik. Bağlantını kontrol edip tekrar dene.';
+
+  @override
+  String get oaphPlaceSearchFailed =>
+      'Yer araması yapılamadı. Bağlantını kontrol edip tekrar dene.';
+
+  @override
+  String get oaphPlaceSearchNoResults =>
+      'Yer bulunamadı. Farklı bir yazım ya da yakındaki bir şehri dene.';
+
+  @override
+  String get oaphCouldNotOpenLink =>
+      'Bağlantı açılamadı. Lütfen daha sonra tekrar dene.';
+
+  @override
+  String get oaphJournalDiscardTitle => 'Değişikliklerin silinsin mi?';
+
+  @override
+  String get oaphJournalKeepEditing => 'Düzenlemeye devam et';
+
+  @override
+  String get oaphJournalDiscard => 'Sil';
+
+  @override
+  String get oaphJournalLoadFailed => 'Bu kayıt yüklenemedi.';
 }

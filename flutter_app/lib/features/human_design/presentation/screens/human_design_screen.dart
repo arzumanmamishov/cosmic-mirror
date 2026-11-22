@@ -35,7 +35,16 @@ class HumanDesignScreen extends ConsumerWidget {
         seed: 24,
         intensity: 0.6,
         child: chartAsync.when(
-          loading: () => const ShimmerList(itemCount: 5),
+          // Pushed below the transparent app bar instead of sliding under it.
+          loading: () => ShimmerList(
+            itemCount: 5,
+            padding: EdgeInsets.fromLTRB(
+              20,
+              MediaQuery.of(context).padding.top + kToolbarHeight,
+              20,
+              0,
+            ),
+          ),
           error: (e, _) => ErrorView(
             error: e,
             onRetry: () => ref.invalidate(humanDesignProvider),
@@ -105,7 +114,7 @@ class _TabBar extends StatelessWidget {
         indicatorSize: TabBarIndicatorSize.tab,
         indicatorPadding: const EdgeInsets.all(4),
         dividerColor: Colors.transparent,
-        labelColor: Colors.white,
+        labelColor: p.onPrimary,
         unselectedLabelColor: p.textSecondary,
         labelStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
         tabs: [

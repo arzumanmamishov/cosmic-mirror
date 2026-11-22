@@ -1,6 +1,6 @@
 import 'dart:ui';
 
-import 'package:cosmic_mirror/config/theme/colors.dart';
+import 'package:cosmic_mirror/config/theme/app_palette.dart';
 import 'package:flutter/material.dart';
 
 class CosmicCard extends StatelessWidget {
@@ -27,6 +27,9 @@ class CosmicCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Palette-driven so the card reads in both themes (the old
+    // CosmicColors constants were dark-only).
+    final p = context.palette;
     Widget card;
 
     if (glassmorphism) {
@@ -37,9 +40,9 @@ class CosmicCard extends StatelessWidget {
           child: Container(
             padding: padding,
             decoration: BoxDecoration(
-              color: CosmicColors.glassBackground,
+              color: p.surfaceGlass,
               borderRadius: BorderRadius.circular(borderRadius),
-              border: Border.all(color: CosmicColors.glassBorder),
+              border: Border.all(color: p.glassBorder),
             ),
             child: child,
           ),
@@ -48,14 +51,14 @@ class CosmicCard extends StatelessWidget {
     } else if (showGradientBorder) {
       card = Container(
         decoration: BoxDecoration(
-          gradient: CosmicColors.primaryGradient,
+          gradient: p.primaryGradient,
           borderRadius: BorderRadius.circular(borderRadius),
         ),
         padding: const EdgeInsets.all(1.5),
         child: Container(
           padding: padding,
           decoration: BoxDecoration(
-            color: CosmicColors.surface,
+            color: p.surface,
             borderRadius: BorderRadius.circular(borderRadius - 1.5),
           ),
           child: child,
@@ -65,9 +68,9 @@ class CosmicCard extends StatelessWidget {
       card = Container(
         padding: padding,
         decoration: BoxDecoration(
-          gradient: gradient ?? CosmicColors.cardGradient,
+          gradient: gradient ?? p.cardGradient,
           borderRadius: BorderRadius.circular(borderRadius),
-          border: Border.all(color: CosmicColors.glassBorder),
+          border: Border.all(color: p.glassBorder),
         ),
         child: child,
       );

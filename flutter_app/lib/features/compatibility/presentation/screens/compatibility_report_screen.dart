@@ -1,22 +1,34 @@
 import 'package:cosmic_mirror/config/theme/app_palette.dart';
+import 'package:cosmic_mirror/core/error/exceptions.dart';
 import 'package:cosmic_mirror/core/network/api_endpoints.dart';
+import 'package:cosmic_mirror/features/compatibility/presentation/screens/compatibility_screen.dart';
 import 'package:cosmic_mirror/l10n/app_localizations.dart';
 import 'package:cosmic_mirror/shared/providers/user_provider.dart';
 import 'package:cosmic_mirror/shared/widgets/cosmic_pulse.dart';
 import 'package:cosmic_mirror/shared/widgets/cosmic_starfield.dart';
 import 'package:cosmic_mirror/shared/widgets/error_view.dart';
-import 'package:cosmic_mirror/shared/widgets/loading_shimmer.dart';
 import 'package:cosmic_mirror/shared/widgets/staggered_fade_in.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:share_plus/share_plus.dart';
 
 final compatibilityReportProvider = FutureProvider.autoDispose
     .family<Map<String, dynamic>, String>((ref, personId) async {
   final client = ref.read(apiClientProvider);
-  return client.get<Map<String, dynamic>>(
-    ApiEndpoints.compatibility(personId),
-  );
+  try {
+    return await client.get<Map<String, dynamic>>(
+      ApiEndpoints.compatibility(personId),
+    );
+  } on ServerException catch (e) {
+    // GET 404s until a report has been generated — i.e. for every newly
+    // added person. Generate one (POST reuses a recent report server-side,
+    // so repeating this is cheap). A missing person 404s again on POST.
+    if (e.statusCode != 404) rethrow;
+    return client.post<Map<String, dynamic>>(
+      ApiEndpoints.compatibility(personId),
+    );
+  }
 });
 
 class CompatibilityReportScreen extends ConsumerWidget {
@@ -39,15 +51,31 @@ class CompatibilityReportScreen extends ConsumerWidget {
         actions: [
           IconButton(
             icon: const Icon(Icons.ios_share_rounded),
-            onPressed: () {
-              final report = reportAsync.valueOrNull;
-              if (report != null) {
-                final l = AppLocalizations.of(context);
-                final name =
-                    report['person_name'] as String? ?? l.compatSomeone;
-                final score = (report['overall_score'] as num?)?.toInt() ?? 0;
-                Share.share(l.compatShareText(name, score));
-              }
+            tooltip: AppLocalizations.of(context).communityShare,
+            onPressed: reportAsync.valueOrNull == null
+                ? null
+                : () {
+                    final report = reportAsync.valueOrNull!;
+                    final l = AppLocalizations.of(context);
+                    final name =
+                        report['person_name'] as String? ?? l.compatSomeone;
+                    final score =
+                        (report['overall_score'] as num?)?.toInt() ?? 0;
+                    Share.share(l.compatShareText(name, score));
+                  },
+          ),
+          IconButton(
+            icon: const Icon(Icons.delete_outline_rounded),
+            tooltip: AppLocalizations.of(context).cmsCompatRemovePerson,
+            onPressed: () async {
+              final name = reportAsync.valueOrNull?['person_name'] as String?;
+              final removed = await confirmAndRemovePerson(
+                context,
+                ref,
+                personId: personId,
+                name: name,
+              );
+              if (removed && context.mounted) context.pop();
             },
           ),
         ],
@@ -62,15 +90,97 @@ class CompatibilityReportScreen extends ConsumerWidget {
             ),
           ),
           reportAsync.when(
-            loading: () => const ShimmerList(itemCount: 4),
-            error: (e, _) => ErrorView(
-              error: e,
-              onRetry: () =>
-                  ref.invalidate(compatibilityReportProvider(personId)),
-            ),
+            loading: () => const _GeneratingState(),
+            error: (e, _) => e is RateLimitException
+                // Free daily generation cap — offer the way forward
+                // instead of a dead-end error.
+                ? Center(
+                    child: SingleChildScrollView(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          ErrorView(error: e),
+                          FilledButton(
+                            onPressed: () async {
+                              await context.push('/paywall');
+                              if (context.mounted) {
+                                ref.invalidate(
+                                  compatibilityReportProvider(personId),
+                                );
+                              }
+                            },
+                            style: FilledButton.styleFrom(
+                              backgroundColor: p.primary,
+                              foregroundColor: p.onPrimary,
+                              minimumSize: const Size(160, 48),
+                            ),
+                            child: Text(
+                              AppLocalizations.of(context).premiumViewPlans,
+                            ),
+                          ),
+                          const SizedBox(height: 24),
+                        ],
+                      ),
+                    ),
+                  )
+                : ErrorView(
+                    error: e,
+                    onRetry: () =>
+                        ref.invalidate(compatibilityReportProvider(personId)),
+                  ),
             data: (report) => _ReportBody(report: report),
           ),
         ],
+      ),
+    );
+  }
+}
+
+/// Loading state. A first report is generated by the AI on demand, which
+/// can take up to a minute — say so instead of an unexplained shimmer.
+class _GeneratingState extends StatelessWidget {
+  const _GeneratingState();
+
+  @override
+  Widget build(BuildContext context) {
+    final p = context.palette;
+    final l = AppLocalizations.of(context);
+    return Center(
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.all(32),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            SizedBox(
+              width: 32,
+              height: 32,
+              child: CircularProgressIndicator(
+                strokeWidth: 2.5,
+                color: p.primary,
+              ),
+            ),
+            const SizedBox(height: 20),
+            Text(
+              l.cmsCompatGeneratingTitle,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: p.textPrimary,
+                fontSize: 17,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+            const SizedBox(height: 6),
+            Text(
+              l.cmsCompatGeneratingBody,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: p.textSecondary,
+                fontSize: 13,
+                height: 1.45,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -86,12 +196,21 @@ class _ReportBody extends StatelessWidget {
         AppLocalizations.of(context).compatSomeone;
     final overall = (report['overall_score'] as num?)?.toInt() ?? 0;
     final emotional = (report['emotional_score'] as num?)?.toInt() ?? 0;
-    final communication =
-        (report['communication_score'] as num?)?.toInt() ?? 0;
+    final communication = (report['communication_score'] as num?)?.toInt() ?? 0;
     final chemistry = (report['chemistry_score'] as num?)?.toInt() ?? 0;
+    // The backend sends the long-form text as `full_report`; `summary` is
+    // kept as a fallback for older payloads.
+    final summary = _text(report['full_report']) ?? _text(report['summary']);
+    final conflicts = _text(report['conflict_patterns']);
+    final advice = _text(report['advice']);
 
     return ListView(
-      padding: const EdgeInsets.fromLTRB(20, 90, 20, 40),
+      padding: EdgeInsets.fromLTRB(
+        20,
+        MediaQuery.paddingOf(context).top + kToolbarHeight + 8,
+        20,
+        40 + MediaQuery.paddingOf(context).bottom,
+      ),
       children: [
         FadeSlideIn(
           child: _Hero(name: name, overallScore: overall),
@@ -106,44 +225,49 @@ class _ReportBody extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 24),
-        if (report['summary'] != null) ...[
+        if (summary != null) ...[
           FadeSlideIn(
             delay: const Duration(milliseconds: 180),
             child: _ReportSection(
               title: AppLocalizations.of(context).compatReportSummary,
               icon: Icons.auto_awesome_rounded,
               iconColor: const Color(0xFF7B61FF),
-              content: report['summary']?.toString() ?? '',
+              content: summary,
             ),
           ),
           const SizedBox(height: 12),
         ],
-        if (report['conflict_patterns'] != null) ...[
+        if (conflicts != null) ...[
           FadeSlideIn(
             delay: const Duration(milliseconds: 240),
             child: _ReportSection(
               title: AppLocalizations.of(context).compatReportConflictPatterns,
               icon: Icons.bolt_rounded,
               iconColor: const Color(0xFFF07C82),
-              content: report['conflict_patterns']?.toString() ?? '',
+              content: conflicts,
             ),
           ),
           const SizedBox(height: 12),
         ],
-        if (report['advice'] != null) ...[
+        if (advice != null) ...[
           FadeSlideIn(
             delay: const Duration(milliseconds: 300),
             child: _ReportSection(
               title: AppLocalizations.of(context).compatReportAdvice,
               icon: Icons.lightbulb_rounded,
               iconColor: const Color(0xFFB8860B),
-              content: report['advice']?.toString() ?? '',
+              content: advice,
             ),
           ),
           const SizedBox(height: 12),
         ],
       ],
     );
+  }
+
+  static String? _text(Object? v) {
+    final s = v?.toString().trim();
+    return s == null || s.isEmpty ? null : s;
   }
 }
 
@@ -234,6 +358,7 @@ class _Hero extends StatelessWidget {
         const SizedBox(height: 16),
         Text(
           AppLocalizations.of(context).compatYouAnd(name),
+          textAlign: TextAlign.center,
           style: TextStyle(
             color: p.textPrimary,
             fontSize: 24,
@@ -297,15 +422,21 @@ class _Avatar extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 4),
-        Text(
-          label,
-          style: TextStyle(
-            color: p.textSecondary,
-            fontSize: 11,
-            fontWeight: FontWeight.w500,
+        // Fixed width: an unconstrained long name widened the column and
+        // pushed the circle off-centre into the score pill.
+        SizedBox(
+          width: 72,
+          child: Text(
+            label,
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              color: p.textSecondary,
+              fontSize: 11,
+              fontWeight: FontWeight.w500,
+            ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
           ),
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
         ),
       ],
     );
@@ -475,12 +606,14 @@ class _ReportSection extends StatelessWidget {
                 child: Icon(icon, color: iconColor, size: 18),
               ),
               const SizedBox(width: 12),
-              Text(
-                title,
-                style: TextStyle(
-                  color: p.textPrimary,
-                  fontSize: 15,
-                  fontWeight: FontWeight.w700,
+              Expanded(
+                child: Text(
+                  title,
+                  style: TextStyle(
+                    color: p.textPrimary,
+                    fontSize: 15,
+                    fontWeight: FontWeight.w700,
+                  ),
                 ),
               ),
             ],

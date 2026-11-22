@@ -6,6 +6,7 @@ import 'package:cosmic_mirror/core/network/api_client.dart';
 import 'package:cosmic_mirror/features/auth/data/auth_api.dart';
 import 'package:cosmic_mirror/features/auth/data/models/auth_tokens.dart';
 import 'package:cosmic_mirror/features/auth/domain/entities/user.dart';
+import 'package:cosmic_mirror/features/onboarding/presentation/providers/onboarding_provider.dart';
 import 'package:cosmic_mirror/shared/providers/user_provider.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -144,12 +145,21 @@ class AuthController extends AsyncNotifier<AppUser?> {
       }
     }
     await authStorage.clear();
+    _resetSessionScopedState();
     state = const AsyncValue.data(null);
   }
 
   /// Called by the API interceptor when a refresh terminally fails.
   void sessionExpired() {
+    _resetSessionScopedState();
     state = const AsyncValue.data(null);
+  }
+
+  /// The onboarding notifier isn't autoDispose, so without this the next
+  /// account to sign up on this device would start onboarding on the
+  /// previous user's last step with their birth data pre-filled.
+  void _resetSessionScopedState() {
+    ref.invalidate(onboardingProvider);
   }
 
   void _rethrowOnError() {

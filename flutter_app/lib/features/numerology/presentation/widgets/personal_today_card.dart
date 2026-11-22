@@ -24,41 +24,48 @@ class PersonalTodayCard extends StatelessWidget {
         children: [
           Text(
             l.numerologyTodayHeader,
-            style: const TextStyle(
-              color: Colors.white70,
+            style: TextStyle(
+              color: p.onPrimary.withValues(alpha: 0.7),
               fontSize: 10,
               letterSpacing: 1.6,
               fontWeight: FontWeight.w800,
             ),
           ),
           const SizedBox(height: 10),
-          _row(l.numerologyPersonalYear, cycles.personalYear),
+          _row(l.numerologyPersonalYear, cycles.personalYear, p.onPrimary),
           const SizedBox(height: 12),
-          _row(l.numerologyPersonalMonth, cycles.personalMonth),
+          _row(l.numerologyPersonalMonth, cycles.personalMonth, p.onPrimary),
           const SizedBox(height: 12),
-          _row(l.numerologyPersonalDay, cycles.personalDay),
+          _row(l.numerologyPersonalDay, cycles.personalDay, p.onPrimary),
         ],
       ),
     );
   }
 
-  Widget _row(String label, NumerologyNumber n) {
+  /// [fg] is the on-gradient ink (palette.onPrimary).
+  Widget _row(String label, NumerologyNumber n, Color fg) {
     return Row(
       children: [
         Container(
           width: 44,
           height: 44,
           alignment: Alignment.center,
+          padding: const EdgeInsets.symmetric(horizontal: 4),
           decoration: BoxDecoration(
-            color: Colors.white.withValues(alpha: 0.18),
+            color: fg.withValues(alpha: 0.14),
             borderRadius: BorderRadius.circular(12),
           ),
-          child: Text(
-            n.display,
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 18,
-              fontWeight: FontWeight.w800,
+          // Master numbers ("11/2") shrink instead of wrapping inside the
+          // fixed tile at large text sizes.
+          child: FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Text(
+              n.display,
+              style: TextStyle(
+                color: fg,
+                fontSize: 18,
+                fontWeight: FontWeight.w800,
+              ),
             ),
           ),
         ),
@@ -69,8 +76,8 @@ class PersonalTodayCard extends StatelessWidget {
             children: [
               Text(
                 label,
-                style: const TextStyle(
-                  color: Colors.white70,
+                style: TextStyle(
+                  color: fg.withValues(alpha: 0.7),
                   fontSize: 10,
                   letterSpacing: 1.2,
                   fontWeight: FontWeight.w700,
@@ -79,8 +86,8 @@ class PersonalTodayCard extends StatelessWidget {
               const SizedBox(height: 2),
               Text(
                 n.description,
-                style: const TextStyle(
-                  color: Colors.white,
+                style: TextStyle(
+                  color: fg,
                   fontSize: 12,
                   height: 1.3,
                 ),

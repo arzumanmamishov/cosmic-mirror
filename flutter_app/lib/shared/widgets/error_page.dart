@@ -117,7 +117,7 @@ class ErrorPage extends StatelessWidget {
                   label: Text(l.errGoHome),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: p.primary,
-                    foregroundColor: Colors.white,
+                    foregroundColor: p.onPrimary,
                     padding: const EdgeInsets.symmetric(vertical: 14),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(100),

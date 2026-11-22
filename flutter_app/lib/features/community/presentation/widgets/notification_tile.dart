@@ -21,7 +21,8 @@ class NotificationTile extends StatelessWidget {
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(14),
-      child: Container(
+      // Ink (not Container) so the tap ripple is visible over the fill.
+      child: Ink(
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
           color: n.isUnread ? p.primary.withValues(alpha: 0.08) : p.surface,

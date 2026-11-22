@@ -74,14 +74,24 @@ class ChatInputNotifier extends StateNotifier<ChatInputState> {
   final Ref _ref;
   final ApiClient _client;
 
+  // The threads list reads this notifier with ref.read (no listener), so
+  // an autoDispose instance can be disposed while a call is in flight.
+  // Writing state after dispose throws, which used to turn a failed
+  // delete into an unhandled error instead of a snackbar.
+  void _set(ChatInputState next) {
+    if (mounted) state = next;
+  }
+
   Future<String?> createThread() async {
+    _set(const ChatInputState(isSending: true));
     try {
       final data = await _client.post<Map<String, dynamic>>(
         ApiEndpoints.chatThreads,
       );
+      _set(const ChatInputState());
       return data['id'] as String;
     } catch (e) {
-      state = ChatInputState(error: e);
+      _set(ChatInputState(error: e));
       return null;
     }
   }
@@ -94,38 +104,51 @@ class ChatInputNotifier extends StateNotifier<ChatInputState> {
       await _client.delete(ApiEndpoints.chatThread(threadId));
       return null;
     } catch (e) {
-      state = ChatInputState(error: e);
       return e;
     }
   }
 
   Future<ChatMessage?> sendMessage(String threadId, String content) async {
-    state = const ChatInputState(isSending: true);
+    _set(const ChatInputState(isSending: true));
     try {
       final data = await _client.post<Map<String, dynamic>>(
         ApiEndpoints.chatMessages(threadId),
         data: {'content': content},
       );
-      state = const ChatInputState();
-      // Bump the usage counter so the UI updates immediately.
-      _ref.invalidate(chatUsageProvider);
+      _set(const ChatInputState());
+      if (mounted) {
+        // Bump the usage counter so the UI updates immediately, and the
+        // threads list so its preview / timestamp aren't stale.
+        _ref
+          ..invalidate(chatUsageProvider)
+          ..invalidate(chatThreadsProvider);
+      }
       return ChatMessageModel.fromJson(data);
     } on RateLimitException catch (e) {
-      state = ChatInputState(
-        error: e,
-        limitReached: true,
+      _set(
+        ChatInputState(
+          error: e,
+          limitReached: true,
+        ),
       );
       // Refresh usage so the counter shows the cap.
-      _ref.invalidate(chatUsageProvider);
+      if (mounted) _ref.invalidate(chatUsageProvider);
       return null;
     } catch (e) {
-      state = ChatInputState(error: e);
+      _set(ChatInputState(error: e));
       return null;
     }
   }
 
   void clearLimitReached() {
     if (state.limitReached) {
+      state = const ChatInputState();
+    }
+  }
+
+  /// Dismisses the last error (e.g. before a retry).
+  void clearError() {
+    if (state.error != null && !state.limitReached) {
       state = const ChatInputState();
     }
   }

@@ -13,6 +13,8 @@ import 'package:cosmic_mirror/shared/widgets/error_view.dart';
 import 'package:cosmic_mirror/shared/widgets/loading_shimmer.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class PostDetailScreen extends ConsumerStatefulWidget {
   const PostDetailScreen({
@@ -30,6 +32,7 @@ class PostDetailScreen extends ConsumerStatefulWidget {
 
 class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
   final _comment = TextEditingController();
+  final _commentFocus = FocusNode();
   String? _replyToCommentId;
   String? _replyToName;
   bool _busy = false;
@@ -37,7 +40,36 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
   @override
   void dispose() {
     _comment.dispose();
+    _commentFocus.dispose();
     super.dispose();
+  }
+
+  /// Opens a post's link in the browser. Links are stored as typed, so
+  /// add a scheme when the author left it out.
+  Future<void> _openLink(String raw) async {
+    final trimmed = raw.trim();
+    final uri = Uri.tryParse(
+      trimmed.contains('://') ? trimmed : 'https://$trimmed',
+    );
+    final opened = uri != null &&
+        await launchUrl(uri, mode: LaunchMode.externalApplication)
+            .catchError((Object _) => false);
+    if (!opened && mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(AppLocalizations.of(context).cpsLinkOpenFailed)),
+      );
+    }
+  }
+
+  /// Pull-to-refresh: awaits both fetches so the spinner stays up until
+  /// data lands. Errors are rendered by the providers' error states.
+  Future<void> _refresh() async {
+    try {
+      await Future.wait<Object?>([
+        ref.refresh(postDetailProvider(widget.postId).future),
+        ref.refresh(commentsProvider(widget.postId).future),
+      ]);
+    } catch (_) {}
   }
 
   Future<void> _send() async {
@@ -53,7 +85,18 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
       _comment.clear();
       ref
         ..invalidate(commentsProvider(widget.postId))
-        ..invalidate(postDetailProvider(widget.postId));
+        ..invalidate(postDetailProvider(widget.postId))
+        // Comment count on the space feed card. widget.spaceId is empty
+        // when opened from a notification, so prefer the loaded post's.
+        ..invalidate(
+          spacePostsProvider(
+            ref.read(postDetailProvider(widget.postId)).valueOrNull?.post
+                    .spaceId ??
+                widget.spaceId,
+          ),
+        );
+      if (!mounted) return;
+      _commentFocus.unfocus();
       setState(() {
         _replyToCommentId = null;
         _replyToName = null;
@@ -89,11 +132,14 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
               return;
             }
             if (!mounted) return;
+            final messenger = ScaffoldMessenger.of(context);
+            final deleted = l.cpsPostDeleted;
             try {
               await ref.read(communityRepositoryProvider).deletePost(pst.id);
               ref
                 ..invalidate(spacePostsProvider(pst.spaceId))
                 ..invalidate(userCommunityProfileProvider);
+              messenger.showSnackBar(SnackBar(content: Text(deleted)));
               leave();
             } catch (e) {
               if (!mounted) return;
@@ -175,11 +221,31 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                                 ?.space
                                 .createdBy ==
                             myId;
-                    return ListView(
-                      padding: const EdgeInsets.fromLTRB(20, 100, 20, 16),
+                    return RefreshIndicator(
+                      color: p.primary,
+                      backgroundColor: p.surface,
+                      edgeOffset: MediaQuery.paddingOf(context).top +
+                          kToolbarHeight,
+                      onRefresh: _refresh,
+                      child: ListView(
+                      physics: const AlwaysScrollableScrollPhysics(),
+                      // Clear the transparent app bar + status bar on
+                      // every device instead of a fixed 100px.
+                      padding: EdgeInsets.fromLTRB(
+                        20,
+                        MediaQuery.paddingOf(context).top +
+                            kToolbarHeight +
+                            12,
+                        20,
+                        16,
+                      ),
                       children: [
-                        // Author + handle
-                        Row(
+                        // Author + handle — tap opens their profile.
+                        InkWell(
+                          onTap: () => context
+                              .push('/community/user/${pst.authorId}'),
+                          borderRadius: BorderRadius.circular(8),
+                          child: Row(
                           children: [
                             Container(
                               width: 36,
@@ -206,6 +272,8 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                                 children: [
                                   Text(
                                     post.authorName,
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
                                     style: TextStyle(
                                       color: p.textPrimary,
                                       fontSize: 14,
@@ -224,6 +292,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                             ),
                           ],
                         ),
+                        ),
                         if (pst.isHidden) ...[
                           const SizedBox(height: 12),
                           const HiddenContentNotice(),
@@ -237,6 +306,52 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                             height: 1.5,
                           ),
                         ),
+                        // The link was shown on the feed card but could
+                        // not be opened anywhere; make it tappable here.
+                        if (pst.linkUrl != null &&
+                            pst.linkUrl!.trim().isNotEmpty) ...[
+                          const SizedBox(height: 12),
+                          Material(
+                            color: p.primary.withValues(alpha: 0.08),
+                            borderRadius: BorderRadius.circular(12),
+                            child: InkWell(
+                              onTap: () => _openLink(pst.linkUrl!),
+                              borderRadius: BorderRadius.circular(12),
+                              child: Padding(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 12,
+                                  vertical: 12,
+                                ),
+                                child: Row(
+                                  children: [
+                                    Icon(
+                                      Icons.link_rounded,
+                                      size: 16,
+                                      color: p.primary,
+                                    ),
+                                    const SizedBox(width: 8),
+                                    Expanded(
+                                      child: Text(
+                                        pst.linkUrl!,
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: TextStyle(
+                                          color: p.primary,
+                                          fontSize: 13,
+                                        ),
+                                      ),
+                                    ),
+                                    Icon(
+                                      Icons.open_in_new_rounded,
+                                      size: 15,
+                                      color: p.primary,
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
                         const SizedBox(height: 14),
                         Row(
                           children: [
@@ -275,9 +390,27 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                         ),
                         commentsAsync.when(
                           loading: () => const ShimmerList(),
-                          error: (e, _) => Text(
-                            FriendlyError.from(context, e).body,
-                            style: TextStyle(color: p.error, fontSize: 12),
+                          error: (e, _) => Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 12),
+                            child: Row(
+                              children: [
+                                Expanded(
+                                  child: Text(
+                                    FriendlyError.from(context, e).body,
+                                    style: TextStyle(
+                                      color: p.error,
+                                      fontSize: 12,
+                                    ),
+                                  ),
+                                ),
+                                TextButton(
+                                  onPressed: () => ref.invalidate(
+                                    commentsProvider(widget.postId),
+                                  ),
+                                  child: Text(l.errRetry),
+                                ),
+                              ],
+                            ),
                           ),
                           data: (comments) => comments.isEmpty
                               ? Padding(
@@ -294,17 +427,24 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                                   children: [
                                     for (final c in comments)
                                       CommentTile(
+                                        key: ValueKey(c.comment.id),
                                         comment: c,
                                         canModerate: ownsSpace,
-                                        onReply: () => setState(() {
-                                          _replyToCommentId = c.comment.id;
-                                          _replyToName = c.authorName;
-                                        }),
+                                        onReply: () {
+                                          setState(() {
+                                            _replyToCommentId = c.comment.id;
+                                            _replyToName = c.authorName;
+                                          });
+                                          // Bring up the keyboard so the
+                                          // reply can be typed right away.
+                                          _commentFocus.requestFocus();
+                                        },
                                       ),
                                   ],
                                 ),
                         ),
                       ],
+                      ),
                     );
                   },
                 ),
@@ -330,24 +470,32 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                         padding: const EdgeInsets.only(bottom: 6),
                         child: Row(
                           children: [
-                            Text(
-                              l.postReplyingTo(_replyToName!),
-                              style: TextStyle(
-                                color: p.textSecondary,
-                                fontSize: 11,
-                                fontWeight: FontWeight.w600,
+                            Expanded(
+                              child: Text(
+                                l.postReplyingTo(_replyToName!),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: TextStyle(
+                                  color: p.textSecondary,
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w600,
+                                ),
                               ),
                             ),
-                            const Spacer(),
+                            // Padded so the 14px icon has a usable target.
                             GestureDetector(
+                              behavior: HitTestBehavior.opaque,
                               onTap: () => setState(() {
                                 _replyToCommentId = null;
                                 _replyToName = null;
                               }),
-                              child: Icon(
-                                Icons.close_rounded,
-                                size: 14,
-                                color: p.textSecondary,
+                              child: Padding(
+                                padding: const EdgeInsets.all(8),
+                                child: Icon(
+                                  Icons.close_rounded,
+                                  size: 14,
+                                  color: p.textSecondary,
+                                ),
                               ),
                             ),
                           ],
@@ -367,6 +515,9 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                             ),
                             child: TextField(
                               controller: _comment,
+                              focusNode: _commentFocus,
+                              textCapitalization:
+                                  TextCapitalization.sentences,
                               minLines: 1,
                               maxLines: 4,
                               style: TextStyle(
@@ -388,12 +539,22 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                         ),
                         const SizedBox(width: 8),
                         IconButton(
-                          icon: Icon(
-                            Icons.send_rounded,
-                            color: _comment.text.trim().isEmpty
-                                ? p.textTertiary
-                                : p.primary,
-                          ),
+                          tooltip: l.communityComment,
+                          icon: _busy
+                              ? SizedBox(
+                                  width: 20,
+                                  height: 20,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    color: p.primary,
+                                  ),
+                                )
+                              : Icon(
+                                  Icons.send_rounded,
+                                  color: _comment.text.trim().isEmpty
+                                      ? p.textTertiary
+                                      : p.primary,
+                                ),
                           onPressed: _busy ? null : _send,
                         ),
                       ],

@@ -67,10 +67,13 @@ class _OtpScreenState extends ConsumerState<OtpScreen>
       vsync: this,
       duration: const Duration(milliseconds: 420),
     );
-    // Kick off the initial code request in the next frame so the user
-    // sees the screen render first — then the "resend in 30s" timer
-    // appears with a clear sense of what just happened.
-    WidgetsBinding.instance.addPostFrameCallback((_) => _requestCode());
+    // Every caller (auth / forgot-password) has already requested the
+    // code before pushing here, so only start the resend cooldown —
+    // requesting again would send a second email and could invalidate
+    // the first code or trip the backend rate limit.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _startCooldown();
+    });
     // Auto-verify once the code is 6 digits (except for password_reset,
     // which needs the new-password field filled first).
     _codeCtrl.addListener(_onCodeChanged);
@@ -107,9 +110,19 @@ class _OtpScreenState extends ConsumerState<OtpScreen>
           .read(authControllerProvider.notifier)
           .requestOtp(widget.email, widget.purpose);
       _startCooldown();
-    } catch (_) {
-      // Silent: even if the email doesn't exist we don't tell the user
-      // via a hard error here (backend already handles that decision).
+    } catch (e) {
+      // Surface the failure (rate limit / offline) so a resend tap
+      // doesn't look like it silently did nothing.
+      if (mounted) {
+        final l = AppLocalizations.of(context);
+        setState(
+          () => _error = e is RateLimitException || '$e'.contains('rate_limit')
+              ? l.authTooManyCodeRequests
+              : e is NetworkException
+                  ? l.authErrorNetwork
+                  : l.commonSomethingWentWrong,
+        );
+      }
     } finally {
       if (mounted) setState(() => _busy = false);
     }
@@ -117,6 +130,7 @@ class _OtpScreenState extends ConsumerState<OtpScreen>
 
   void _startCooldown() {
     _cooldownTimer?.cancel();
+    if (!mounted) return;
     setState(() => _cooldown = 30);
     _cooldownTimer = Timer.periodic(const Duration(seconds: 1), (t) {
       if (_cooldown <= 1) {
@@ -210,6 +224,7 @@ class _OtpScreenState extends ConsumerState<OtpScreen>
     if (e is RateLimitException || s.contains('rate_limit')) {
       return l.authTooManyAttemptsWait;
     }
+    if (e is NetworkException) return l.authErrorNetwork;
     return l.commonSomethingWentWrong;
   }
 
@@ -270,6 +285,7 @@ class _OtpScreenState extends ConsumerState<OtpScreen>
                     hint: '••••••••',
                     obscure: true,
                     autofillHints: const [AutofillHints.newPassword],
+                    onSubmitted: (_) => _busy ? null : _verify(),
                   ),
                 ],
                 if (_error != null) ...[
@@ -281,7 +297,11 @@ class _OtpScreenState extends ConsumerState<OtpScreen>
                   GoldButton(
                     label: l.authResetPasswordButton,
                     loading: _busy,
-                    onPressed: _busy ? null : _verify,
+                    // Disabled until all 6 digits are in — _verify would
+                    // otherwise return silently on a partial code.
+                    onPressed: _busy || _codeCtrl.text.length != 6
+                        ? null
+                        : _verify,
                   ),
                 const SizedBox(height: 12),
                 Center(
@@ -344,6 +364,7 @@ class _CodeCells extends StatelessWidget {
               focusNode: focus,
               autofocus: true,
               keyboardType: TextInputType.number,
+              autofillHints: const [AutofillHints.oneTimeCode],
               inputFormatters: [
                 FilteringTextInputFormatter.digitsOnly,
                 LengthLimitingTextInputFormatter(6),

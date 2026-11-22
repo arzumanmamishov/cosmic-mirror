@@ -1294,5 +1294,71 @@
   "moderationDeletePostConfirm": "Delete this post?",
   "moderationDeleteCommentConfirm": "Delete this comment?",
   "moderationDeleteBody": "This can't be undone.",
-  "moderationHiddenNotice": "Hidden while our team reviews reports. Only you can see this."
+  "moderationHiddenNotice": "Hidden while our team reviews reports. Only you can see this.",
+  "chrBirthTimeUnknownNote": "Your birth time is unknown, so your Rising sign and houses are approximate. Tap to add your birth time.",
+  "chrShadbalaIntro": "Shadbala measures each planet's strength from six sources, in Virupas. A planet that reaches its required total can fully deliver its results. Swipe to see each planet.",
+  "chrExpandChart": "Expand chart",
+  "cmsChatSend": "Send",
+  "cmsCompatRemovePerson": "Remove person",
+  "cmsCompatRemoveTitle": "Remove {name}?",
+  "@cmsCompatRemoveTitle": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "cmsCompatRemoveBody": "Their birth details and compatibility report will be deleted. This can't be undone.",
+  "cmsCompatRemoveConfirm": "Remove",
+  "cmsCompatRemoved": "{name} removed",
+  "@cmsCompatRemoved": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "cmsCompatGeneratingTitle": "Reading both charts…",
+  "cmsCompatGeneratingBody": "Your first compatibility report can take up to a minute.",
+  "cmsMatrixFullScreen": "Full screen",
+  "cmsMatrixPinchHint": "Pinch to resize · double-tap to reset",
+  "cmsLifeExamplesBanner": "These are example moments. Add your first moment and your own timeline will take their place.",
+  "cmsLifeDeleteTitle": "Delete this moment?",
+  "cmsLifeDeleteBody": "\"{title}\" will be removed from your timeline.",
+  "@cmsLifeDeleteBody": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "cmsLifeDelete": "Delete",
+  "cpsSupportEmailFallback": "Couldn't open your email app. Write to us at {email}",
+  "@cpsSupportEmailFallback": {
+    "placeholders": {
+      "email": {
+        "type": "String"
+      }
+    }
+  },
+  "cpsProfileUpdated": "Profile updated.",
+  "cpsBirthDataUpdated": "Birth data updated.",
+  "cpsBirthDataLoadFailed": "We couldn't load your birth data. Check your connection and try again.",
+  "cpsSpacesNoResults": "No spaces match your search.",
+  "cpsSpacesNoneJoined": "You haven't joined any spaces yet.",
+  "cpsLeaveSpaceTitle": "Leave this space?",
+  "cpsLeaveSpaceBody": "You'll stop seeing its posts. Members-only spaces need a new request to rejoin.",
+  "cpsPostDeleted": "Post deleted.",
+  "cpsLinkOpenFailed": "Couldn't open this link.",
+  "cpsHandleTooShort": "The handle needs at least 3 characters.",
+  "cpsSpaceDeleted": "Space deleted.",
+  "oaphOnboardingSaveError": "We couldn't save that. Check your connection and try again.",
+  "oaphWelcomeEnterFailed": "We couldn't load your profile. Check your connection and try again.",
+  "oaphPlaceSearchFailed": "Couldn't search places. Check your connection and try again.",
+  "oaphPlaceSearchNoResults": "No places found. Try a different spelling or a nearby city.",
+  "oaphCouldNotOpenLink": "Couldn't open the link. Please try again later.",
+  "oaphJournalDiscardTitle": "Discard your changes?",
+  "oaphJournalKeepEditing": "Keep editing",
+  "oaphJournalDiscard": "Discard",
+  "oaphJournalLoadFailed": "We couldn't load this entry."
 }

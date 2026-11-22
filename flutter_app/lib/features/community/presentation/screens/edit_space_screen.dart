@@ -32,7 +32,12 @@ class _EditSpaceScreenState extends ConsumerState<EditSpaceScreen> {
   }
 
   Future<void> _save() async {
-    if (_busy) return;
+    // Not loaded yet (or failed): saving would blank the name/description.
+    if (_busy || !_initialized) return;
+    if (_name.text.trim().isEmpty) {
+      setState(() => _error = AppLocalizations.of(context).profileNameRequired);
+      return;
+    }
     setState(() {
       _busy = true;
       _error = null;
@@ -45,7 +50,9 @@ class _EditSpaceScreenState extends ConsumerState<EditSpaceScreen> {
           );
       ref
         ..invalidate(spaceDetailProvider(widget.spaceId))
-        ..invalidate(spacesProvider);
+        ..invalidate(spacesProvider)
+        ..invalidate(categorySpacesProvider)
+        ..invalidate(userCommunityProfileProvider);
       if (mounted) context.pop();
     } catch (e) {
       if (!mounted) return;
@@ -70,18 +77,30 @@ class _EditSpaceScreenState extends ConsumerState<EditSpaceScreen> {
             ),
             TextButton(
               onPressed: () => Navigator.pop(dialogCtx, true),
+              style: TextButton.styleFrom(
+                foregroundColor: dialogCtx.palette.error,
+              ),
               child: Text(dl.settingsDelete),
             ),
           ],
         );
       },
     );
-    if (confirm != true) return;
+    if (confirm != true || !mounted) return;
     setState(() => _busy = true);
     try {
       await ref.read(communityRepositoryProvider).deleteSpace(widget.spaceId);
-      ref.invalidate(spacesProvider);
+      ref
+        ..invalidate(spacesProvider)
+        ..invalidate(categorySpacesProvider)
+        ..invalidate(userCommunityProfileProvider);
       if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(AppLocalizations.of(context).cpsSpaceDeleted),
+          ),
+        );
+        // Leave both this screen and the (now deleted) space.
         context
           ..pop()
           ..pop();
@@ -109,7 +128,7 @@ class _EditSpaceScreenState extends ConsumerState<EditSpaceScreen> {
         title: Text(AppLocalizations.of(context).communityEditSpace),
         actions: [
           TextButton(
-            onPressed: _busy ? null : _save,
+            onPressed: _busy || !_initialized ? null : _save,
             child: Text(
               _busy
                   ? AppLocalizations.of(context).editSpaceSaving
@@ -146,7 +165,15 @@ class _EditSpaceScreenState extends ConsumerState<EditSpaceScreen> {
                 _initialized = true;
               }
               return ListView(
-                padding: const EdgeInsets.fromLTRB(20, 100, 20, 32),
+                keyboardDismissBehavior:
+                    ScrollViewKeyboardDismissBehavior.onDrag,
+                // Clear the transparent app bar on every device.
+                padding: EdgeInsets.fromLTRB(
+                  20,
+                  MediaQuery.paddingOf(context).top + kToolbarHeight + 12,
+                  20,
+                  32,
+                ),
                 children: [
                   _readOnly(
                     p,

@@ -47,16 +47,16 @@ class _NumerologyCompatScreenState
 
   Future<void> _submit() async {
     if (!_canSubmit) return;
+    FocusScope.of(context).unfocus();
     setState(() {
       _busy = true;
       _error = null;
     });
     try {
-      final result =
-          await ref.read(numerologyRepositoryProvider).compareWith(
-                fullName: _name.text.trim(),
-                birthDate: _birthDate!,
-              );
+      final result = await ref.read(numerologyRepositoryProvider).compareWith(
+            fullName: _name.text.trim(),
+            birthDate: _birthDate!,
+          );
       if (mounted) setState(() => _result = result);
     } catch (e) {
       if (mounted) {
@@ -111,7 +111,7 @@ class _NumerologyCompatScreenState
                   onPressed: _canSubmit ? _submit : null,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: p.primary,
-                    foregroundColor: Colors.white,
+                    foregroundColor: p.onPrimary,
                     padding: const EdgeInsets.symmetric(vertical: 14),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(14),
@@ -207,8 +207,11 @@ class _NumerologyCompatScreenState
             ),
             child: Row(
               children: [
-                Icon(Icons.calendar_today_rounded,
-                    color: p.textSecondary, size: 16,),
+                Icon(
+                  Icons.calendar_today_rounded,
+                  color: p.textSecondary,
+                  size: 16,
+                ),
                 const SizedBox(width: 10),
                 Text(
                   _birthDate == null
@@ -217,8 +220,7 @@ class _NumerologyCompatScreenState
                           Localizations.localeOf(context).toString(),
                         ).format(_birthDate!),
                   style: TextStyle(
-                    color:
-                        _birthDate == null ? p.textTertiary : p.textPrimary,
+                    color: _birthDate == null ? p.textTertiary : p.textPrimary,
                     fontSize: 14,
                   ),
                 ),

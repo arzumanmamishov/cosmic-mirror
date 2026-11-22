@@ -2,6 +2,7 @@ import 'package:cosmic_mirror/config/theme/app_palette.dart';
 import 'package:cosmic_mirror/core/network/api_endpoints.dart';
 import 'package:cosmic_mirror/features/chart/presentation/astro_labels.dart';
 import 'package:cosmic_mirror/features/chart/presentation/widgets/natal_chart_wheel.dart';
+import 'package:cosmic_mirror/features/profile/presentation/providers/profile_providers.dart';
 import 'package:cosmic_mirror/l10n/app_localizations.dart';
 import 'package:cosmic_mirror/shared/providers/user_provider.dart';
 import 'package:cosmic_mirror/shared/widgets/cosmic_pulse.dart';
@@ -40,7 +41,16 @@ class ChartScreen extends ConsumerWidget {
         seed: 21,
         intensity: 0.6,
         child: chartAsync.when(
-          loading: () => const ShimmerList(itemCount: 4),
+          // Pushed below the transparent app bar instead of sliding under it.
+          loading: () => ShimmerList(
+            itemCount: 4,
+            padding: EdgeInsets.fromLTRB(
+              20,
+              MediaQuery.of(context).padding.top + kToolbarHeight,
+              20,
+              0,
+            ),
+          ),
           error: (error, _) => ErrorView(
             error: error,
             onRetry: () => ref.invalidate(chartProvider),
@@ -111,8 +121,11 @@ class _ChartContent extends StatelessWidget {
       if (p['name'] == 'Sun') sunSign = p['sign'] as String?;
       if (p['name'] == 'Moon') moonSign = p['sign'] as String?;
     }
-    final risingSign =
-        houses.isNotEmpty ? houses.first['sign'] as String? : null;
+    // The Ascendant is the 1st-house cusp; look it up by number rather than
+    // trusting list order.
+    final firstHouse =
+        houses.where((h) => h['number'] == 1).firstOrNull ?? houses.firstOrNull;
+    final risingSign = firstHouse?['sign'] as String?;
     return _BigThree(sun: sunSign, moon: moonSign, rising: risingSign);
   }
 }
@@ -182,6 +195,7 @@ class _Hero extends StatelessWidget {
               ),
             ],
           ),
+          const _BirthTimeNote(),
           const SizedBox(height: 28),
           // The wheel itself, with a subtle breathing glow
           CosmicPulse(
@@ -199,6 +213,58 @@ class _Hero extends StatelessWidget {
           const SizedBox(height: 16),
           _VedicChartLink(),
         ],
+      ),
+    );
+  }
+}
+
+/// Shown when the stored birth time is unknown: the backend then computes
+/// the chart for noon, so the Rising sign and house cusps are only
+/// approximate. Tapping opens the birth-data editor.
+class _BirthTimeNote extends ConsumerWidget {
+  const _BirthTimeNote();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final profile = ref.watch(birthProfileProvider).valueOrNull;
+    if (profile == null || profile.birthTimeKnown) {
+      return const SizedBox.shrink();
+    }
+    final p = context.palette;
+    return Padding(
+      padding: const EdgeInsets.only(top: 12),
+      child: Material(
+        color: p.warning.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(14),
+        child: InkWell(
+          borderRadius: BorderRadius.circular(14),
+          onTap: () => context.push('/profile/edit-birth-data'),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+            child: Row(
+              children: [
+                Icon(Icons.schedule_rounded, color: p.warning, size: 18),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Text(
+                    AppLocalizations.of(context).chrBirthTimeUnknownNote,
+                    style: TextStyle(
+                      color: p.textPrimary,
+                      fontSize: 12,
+                      height: 1.4,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 6),
+                Icon(
+                  Icons.chevron_right_rounded,
+                  color: p.textTertiary,
+                  size: 18,
+                ),
+              ],
+            ),
+          ),
+        ),
       ),
     );
   }
@@ -328,16 +394,14 @@ class _LegendRow extends StatelessWidget {
           ),
         );
     final l = AppLocalizations.of(context);
+    // Same colors as the wheel lines and the Aspects tab.
     return Wrap(
       alignment: WrapAlignment.center,
       spacing: 6,
       runSpacing: 6,
       children: [
-        chip(l.chartLegendConjunction, p.textPrimary),
-        chip(l.chartLegendSextile, p.success),
-        chip(l.chartLegendSquare, p.error),
-        chip(l.chartLegendTrine, p.accent),
-        chip(l.chartLegendOpposition, const Color(0xFFE14B8A)),
+        for (final type in chartAspectTypes)
+          chip(chartAspectName(l, type), chartAspectColor(p, type)),
       ],
     );
   }
@@ -363,7 +427,7 @@ class _DetailTabs extends StatelessWidget {
         indicatorSize: TabBarIndicatorSize.tab,
         indicatorPadding: const EdgeInsets.all(4),
         dividerColor: Colors.transparent,
-        labelColor: Colors.white,
+        labelColor: p.onPrimary,
         unselectedLabelColor: p.textSecondary,
         labelStyle: const TextStyle(
           fontSize: 12,
@@ -584,8 +648,8 @@ class _HousesTab extends StatelessWidget {
                 alignment: Alignment.center,
                 child: Text(
                   '$houseNum',
-                  style: const TextStyle(
-                    color: Colors.white,
+                  style: TextStyle(
+                    color: p.onPrimary,
                     fontSize: 14,
                     fontWeight: FontWeight.w700,
                   ),
@@ -630,15 +694,6 @@ class _AspectsTab extends StatelessWidget {
   const _AspectsTab({required this.aspects});
   final List<Map<String, dynamic>> aspects;
 
-  static const _typeColor = {
-    'conjunction': Color(0xFFE6EAF2),
-    'sextile': Color(0xFF5ED39A),
-    'square': Color(0xFFF07C82),
-    'trine': Color(0xFF4DA3FF),
-    'opposition': Color(0xFFE14B8A),
-    'quincunx': Color(0xFFF2B66D),
-  };
-
   static const _typeSymbol = {
     'conjunction': '☌',
     'sextile': '⚹',
@@ -666,7 +721,7 @@ class _AspectsTab extends StatelessWidget {
       itemBuilder: (context, i) {
         final a = aspects[i];
         final type = a['type'] as String? ?? '';
-        final color = _typeColor[type] ?? p.textSecondary;
+        final color = chartAspectColor(p, type);
         return Container(
           padding: const EdgeInsets.all(14),
           decoration: BoxDecoration(
@@ -768,7 +823,7 @@ class _ElementsTab extends StatelessWidget {
       separatorBuilder: (_, __) => const SizedBox(height: 12),
       itemBuilder: (context, i) {
         final e = entries[i];
-        final pct = (e.value as num).toDouble();
+        final pct = ((e.value as num?)?.toDouble() ?? 0).clamp(0.0, 100.0);
         final color = _colors[e.key.toLowerCase()]!;
         final icon = _icons[e.key.toLowerCase()]!;
         return Container(

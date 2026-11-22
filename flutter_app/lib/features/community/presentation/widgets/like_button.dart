@@ -30,6 +30,20 @@ class _LikeButtonState extends ConsumerState<LikeButton> {
   late int _count = widget.initialCount;
   bool _busy = false;
 
+  @override
+  void didUpdateWidget(covariant LikeButton oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // List items are reused by position: after a refresh or a delete this
+    // State can be handed a different post, so re-sync from the new data.
+    if (!_busy &&
+        (oldWidget.targetId != widget.targetId ||
+            oldWidget.initialLiked != widget.initialLiked ||
+            oldWidget.initialCount != widget.initialCount)) {
+      _liked = widget.initialLiked;
+      _count = widget.initialCount;
+    }
+  }
+
   Future<void> _toggle() async {
     if (_busy) return;
     final wasLiked = _liked;
@@ -48,6 +62,7 @@ class _LikeButtonState extends ConsumerState<LikeButton> {
       widget.onChanged?.call(_liked);
     } catch (_) {
       // Revert on error.
+      if (!mounted) return;
       setState(() {
         _liked = wasLiked;
         _count += wasLiked ? 1 : -1;
@@ -65,7 +80,8 @@ class _LikeButtonState extends ConsumerState<LikeButton> {
       onTap: _toggle,
       borderRadius: BorderRadius.circular(8),
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+        // ~34px tall tap target (was 26px).
+        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 8),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [

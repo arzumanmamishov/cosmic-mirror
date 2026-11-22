@@ -1,11 +1,11 @@
 import 'package:cosmic_mirror/config/theme/app_palette.dart';
+import 'package:cosmic_mirror/config/theme/lively_type.dart';
 import 'package:cosmic_mirror/features/community/domain/entities/space.dart';
 import 'package:cosmic_mirror/features/community/presentation/providers/community_providers.dart';
 import 'package:cosmic_mirror/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 /// Featured Discussions on the home Discover tab — pulls real Community
 /// spaces from the backend and shows the top few as glass cards. Tapping
@@ -27,37 +27,46 @@ class DiscussionsSection extends ConsumerWidget {
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 20),
           child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
+              Expanded(
+                child: Text(
                 l10n.homeFeaturedDiscussions,
-                style: GoogleFonts.poppins(
+                style: TextStyle(
+                  fontFamily: LivelyType.ui,
                   color: p.textPrimary,
                   fontSize: 16,
                   fontWeight: FontWeight.w700,
                 ),
               ),
+              ),
               GestureDetector(
                 onTap: () => context.push('/community'),
                 behavior: HitTestBehavior.opaque,
-                child: Text(
+                // Vertical padding grows the tap target without moving
+                // the label.
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(12, 10, 0, 10),
+                  child: Text(
                   l10n.homeSeeAll,
-                  style: GoogleFonts.poppins(
+                  style: TextStyle(
+                  fontFamily: LivelyType.ui,
                     color: p.primary,
                     fontSize: 13,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
+                ),
               ),
             ],
           ),
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: 4),
         spacesAsync.when(
           loading: () => const _SpacesSkeleton(),
           error: (e, _) => _Message(
             text: l10n.discussionsLoadError,
             palette: p,
+            onRetry: () => ref.invalidate(spacesProvider),
           ),
           data: (spaces) {
             if (spaces.isEmpty) {
@@ -119,7 +128,8 @@ class _SpaceCard extends StatelessWidget {
                       ),
                       child: Text(
                         item.categoryName!,
-                        style: GoogleFonts.poppins(
+                        style: TextStyle(
+                  fontFamily: LivelyType.ui,
                           color: p.primary,
                           fontSize: 10,
                           fontWeight: FontWeight.w700,
@@ -139,7 +149,8 @@ class _SpaceCard extends StatelessWidget {
                   if (item.isJoined)
                     Text(
                       AppLocalizations.of(context).discussionsJoined,
-                      style: GoogleFonts.poppins(
+                      style: TextStyle(
+                  fontFamily: LivelyType.ui,
                         color: p.textTertiary,
                         fontSize: 11,
                         fontWeight: FontWeight.w600,
@@ -150,7 +161,8 @@ class _SpaceCard extends StatelessWidget {
               const SizedBox(height: 8),
               Text(
                 s.name,
-                style: GoogleFonts.poppins(
+                style: TextStyle(
+                  fontFamily: LivelyType.ui,
                   color: p.textPrimary,
                   fontSize: 14,
                   fontWeight: FontWeight.w700,
@@ -163,7 +175,8 @@ class _SpaceCard extends StatelessWidget {
                 const SizedBox(height: 4),
                 Text(
                   s.description!,
-                  style: GoogleFonts.poppins(
+                  style: TextStyle(
+                  fontFamily: LivelyType.ui,
                     color: p.textSecondary,
                     fontSize: 12,
                     fontWeight: FontWeight.w400,
@@ -185,7 +198,8 @@ class _SpaceCard extends StatelessWidget {
                   Text(
                     AppLocalizations.of(context)
                         .discussionsMembersCount(_compactCount(s.memberCount)),
-                    style: GoogleFonts.poppins(
+                    style: TextStyle(
+                  fontFamily: LivelyType.ui,
                       color: p.textSecondary,
                       fontSize: 11,
                       fontWeight: FontWeight.w500,
@@ -201,7 +215,8 @@ class _SpaceCard extends StatelessWidget {
                   Expanded(
                     child: Text(
                       s.handle,
-                      style: GoogleFonts.poppins(
+                      style: TextStyle(
+                  fontFamily: LivelyType.ui,
                         color: p.textSecondary,
                         fontSize: 11,
                         fontWeight: FontWeight.w500,
@@ -253,22 +268,39 @@ class _SpacesSkeleton extends StatelessWidget {
 }
 
 class _Message extends StatelessWidget {
-  const _Message({required this.text, required this.palette});
+  const _Message({required this.text, required this.palette, this.onRetry});
   final String text;
   final AppPalette palette;
+  final VoidCallback? onRetry;
 
   @override
   Widget build(BuildContext context) {
+    final message = Text(
+      text,
+      style: TextStyle(
+        fontFamily: LivelyType.ui,
+        color: palette.textSecondary,
+        fontSize: 12,
+        fontWeight: FontWeight.w500,
+      ),
+    );
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-      child: Text(
-        text,
-        style: GoogleFonts.poppins(
-          color: palette.textSecondary,
-          fontSize: 12,
-          fontWeight: FontWeight.w500,
-        ),
-      ),
+      child: onRetry == null
+          ? message
+          : Row(
+              children: [
+                Expanded(child: message),
+                TextButton(
+                  onPressed: onRetry,
+                  child: Text(
+                    AppLocalizations.of(context).errRetry,
+                    style: LivelyType.small(palette.primary)
+                        .copyWith(fontWeight: FontWeight.w600),
+                  ),
+                ),
+              ],
+            ),
     );
   }
 }

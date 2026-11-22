@@ -51,6 +51,14 @@ class _CurrentCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context);
+    // Text sits on the primary gradient, so it uses onPrimary (dark ink on
+    // the gold dark-theme gradient, white on the blue light-theme one).
+    final fg = palette.onPrimary;
+    // Skip missing levels instead of rendering dangling "—" separators.
+    final levels = [path.maha, path.antar, path.pratyantar]
+        .where((e) => e.isNotEmpty)
+        .map((e) => chartPlanetName(l, e))
+        .toList();
     return Container(
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
@@ -62,8 +70,8 @@ class _CurrentCard extends StatelessWidget {
         children: [
           Text(
             l.vedicCurrentDasha,
-            style: const TextStyle(
-              color: Colors.white70,
+            style: TextStyle(
+              color: fg.withValues(alpha: 0.7),
               fontSize: 10,
               letterSpacing: 1.6,
               fontWeight: FontWeight.w700,
@@ -71,11 +79,9 @@ class _CurrentCard extends StatelessWidget {
           ),
           const SizedBox(height: 10),
           Text(
-            '${chartPlanetName(l, path.maha)} — '
-            '${chartPlanetName(l, path.antar)} — '
-            '${chartPlanetName(l, path.pratyantar)}',
-            style: const TextStyle(
-              color: Colors.white,
+            levels.isEmpty ? '—' : levels.join(' — '),
+            style: TextStyle(
+              color: fg,
               fontSize: 18,
               fontWeight: FontWeight.w700,
             ),
@@ -84,7 +90,7 @@ class _CurrentCard extends StatelessWidget {
           Text(
             l.vedicDashaLevels,
             style: TextStyle(
-              color: Colors.white.withValues(alpha: 0.7),
+              color: fg.withValues(alpha: 0.7),
               fontSize: 11,
             ),
           ),

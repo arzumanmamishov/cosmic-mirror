@@ -13,11 +13,16 @@ class BirthplaceSearch extends StatefulWidget {
     required this.onPlaceSelected,
     super.key,
     this.selectedPlace,
+    this.onPlaceCleared,
   });
 
   final String? selectedPlace;
   final void Function(String place, double lat, double lng, String timezone)
       onPlaceSelected;
+
+  /// Called when the user edits or clears the text after a place was
+  /// selected — the old selection no longer matches the field.
+  final VoidCallback? onPlaceCleared;
 
   @override
   State<BirthplaceSearch> createState() => _BirthplaceSearchState();
@@ -30,6 +35,13 @@ class _BirthplaceSearchState extends State<BirthplaceSearch> {
   List<_PlaceSuggestion> _suggestions = [];
   bool _isLoading = false;
   bool _showSuggestions = true;
+  // Set when the last search failed or returned nothing, so the user gets
+  // feedback instead of a silently empty list.
+  bool _searchFailed = false;
+  bool _noResults = false;
+  // Monotonic id of the latest search — responses from older, slower
+  // requests are dropped so they can't overwrite newer results.
+  int _searchSeq = 0;
 
   @override
   void initState() {
@@ -48,12 +60,18 @@ class _BirthplaceSearchState extends State<BirthplaceSearch> {
     super.dispose();
   }
 
-  void _onSearchChanged(String query) {
+  void _onSearchChanged(String rawQuery) {
     _debounce?.cancel();
+    if (widget.selectedPlace != null) widget.onPlaceCleared?.call();
+    final query = rawQuery.trim();
     if (query.length < 3) {
+      _searchSeq++;
       setState(() {
         _suggestions = [];
         _showSuggestions = false;
+        _isLoading = false;
+        _searchFailed = false;
+        _noResults = false;
       });
       return;
     }
@@ -64,7 +82,12 @@ class _BirthplaceSearchState extends State<BirthplaceSearch> {
   }
 
   Future<void> _searchPlaces(String query) async {
-    setState(() => _isLoading = true);
+    final seq = ++_searchSeq;
+    setState(() {
+      _isLoading = true;
+      _searchFailed = false;
+      _noResults = false;
+    });
     try {
       final client = ApiClient();
       final results = await client.get<Map<String, dynamic>>(
@@ -83,28 +106,35 @@ class _BirthplaceSearchState extends State<BirthplaceSearch> {
               )
               .toList() ??
           [];
-      if (mounted) {
+      if (mounted && seq == _searchSeq) {
         setState(() {
           _suggestions = places;
           _showSuggestions = places.isNotEmpty;
+          _noResults = places.isEmpty;
           _isLoading = false;
         });
       }
     } catch (_) {
-      if (mounted) {
+      if (mounted && seq == _searchSeq) {
         setState(() {
           _isLoading = false;
           _suggestions = [];
+          _searchFailed = true;
         });
       }
     }
   }
 
   void _selectPlace(_PlaceSuggestion place) {
+    _debounce?.cancel();
+    _searchSeq++;
     _controller.text = place.name;
     setState(() {
       _showSuggestions = false;
       _suggestions = [];
+      _isLoading = false;
+      _noResults = false;
+      _searchFailed = false;
     });
     _focusNode.unfocus();
     widget.onPlaceSelected(
@@ -144,6 +174,9 @@ class _BirthplaceSearchState extends State<BirthplaceSearch> {
                   controller: _controller,
                   focusNode: _focusNode,
                   cursorColor: p.primary,
+                  textInputAction: TextInputAction.search,
+                  textCapitalization: TextCapitalization.words,
+                  autocorrect: false,
                   onChanged: (value) {
                     _showSuggestions = true;
                     _onSearchChanged(value);
@@ -176,13 +209,20 @@ class _BirthplaceSearchState extends State<BirthplaceSearch> {
                 GestureDetector(
                   onTap: () {
                     _controller.clear();
-                    setState(() {
-                      _suggestions = [];
-                      _showSuggestions = false;
-                    });
+                    _onSearchChanged('');
                   },
                   behavior: HitTestBehavior.opaque,
-                  child: Icon(Icons.close_rounded, color: p.textMuted, size: 18),
+                  // Padded so the clear "x" is a comfortable tap target.
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(12, 12, 0, 12),
+                    child: Icon(
+                      Icons.close_rounded,
+                      color: p.textMuted,
+                      size: 18,
+                      semanticLabel:
+                          MaterialLocalizations.of(context).deleteButtonTooltip,
+                    ),
+                  ),
                 ),
             ],
           ),
@@ -235,9 +275,18 @@ class _BirthplaceSearchState extends State<BirthplaceSearch> {
                               overflow: TextOverflow.ellipsis,
                             ),
                           ),
-                          Text(
-                            place.timezone,
-                            style: LivelyType.mono(p.textMuted, size: 10),
+                          const SizedBox(width: 8),
+                          // Capped so long zone ids (America/Argentina/…)
+                          // can't push the row past narrow screens.
+                          ConstrainedBox(
+                            constraints: const BoxConstraints(maxWidth: 96),
+                            child: Text(
+                              place.timezone,
+                              style: LivelyType.mono(p.textMuted, size: 10),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              textAlign: TextAlign.end,
+                            ),
                           ),
                         ],
                       ),
@@ -245,6 +294,19 @@ class _BirthplaceSearchState extends State<BirthplaceSearch> {
                   );
                 },
               ),
+            ),
+          ),
+        ],
+
+        if (!_isLoading && (_searchFailed || _noResults)) ...[
+          const SizedBox(height: 12),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 4),
+            child: Text(
+              _searchFailed
+                  ? l10n.oaphPlaceSearchFailed
+                  : l10n.oaphPlaceSearchNoResults,
+              style: LivelyType.small(_searchFailed ? p.error : p.textMuted),
             ),
           ),
         ],

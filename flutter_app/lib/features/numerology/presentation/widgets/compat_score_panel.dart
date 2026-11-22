@@ -23,7 +23,7 @@ class CompatScorePanel extends StatelessWidget {
               width: 130,
               height: 130,
               child: CircularProgressIndicator(
-                value: report.score / 100,
+                value: (report.score / 100).clamp(0.0, 1.0),
                 strokeWidth: 12,
                 backgroundColor: p.surfaceElevated,
                 valueColor: AlwaysStoppedAnimation<Color>(
@@ -36,7 +36,8 @@ class CompatScorePanel extends StatelessWidget {
             Column(
               children: [
                 Text(
-                  '${report.score}%',
+                  // Locale-aware: "85%" in English, "%85" in Turkish.
+                  l.chartPercent('${report.score}'),
                   style: TextStyle(
                     color: p.textPrimary,
                     fontSize: 28,
@@ -86,7 +87,7 @@ class CompatScorePanel extends StatelessWidget {
           child: ClipRRect(
             borderRadius: BorderRadius.circular(100),
             child: LinearProgressIndicator(
-              value: score / 100,
+              value: (score / 100).clamp(0.0, 1.0),
               minHeight: 6,
               backgroundColor: p.surfaceElevated,
               color: color,

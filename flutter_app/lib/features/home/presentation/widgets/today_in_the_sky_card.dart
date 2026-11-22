@@ -1,16 +1,10 @@
 import 'dart:math' as math;
 
 import 'package:cosmic_mirror/config/theme/app_palette.dart';
+import 'package:cosmic_mirror/config/theme/lively_type.dart';
 import 'package:cosmic_mirror/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
-
-const _kSurface = Color(0xFF1A1F2E);
-const _kSurfaceElevated = Color(0xFF1F2436);
-const _kBorder = Color(0xFF2A2F3E);
-const _kTextSecondary = Color(0xFFB6BAC4);
-const _kTextTertiary = Color(0xFF7E8290);
 
 /// Today in the Sky — daily cosmic snapshot card.
 ///
@@ -35,28 +29,32 @@ class TodayInTheSkyCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-        color: _kSurface,
+        color: p.surface,
         borderRadius: BorderRadius.circular(22),
-        border: Border.all(color: _kBorder),
+        border: Border.all(color: p.glassBorder),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              Text(
+              Expanded(
+                child: Text(
                 AppLocalizations.of(context).homeTodayInTheSky,
-                style: GoogleFonts.poppins(
-                  color: Colors.white,
+                style: TextStyle(
+                  fontFamily: LivelyType.ui,
+                  color: p.textPrimary,
                   fontSize: 16,
                   fontWeight: FontWeight.w700,
                 ),
               ),
-              const Spacer(),
+              ),
+              const SizedBox(width: 8),
               Text(
                 _shortDate(now, locale),
-                style: GoogleFonts.poppins(
-                  color: _kTextTertiary,
+                style: TextStyle(
+                  fontFamily: LivelyType.ui,
+                  color: p.textTertiary,
                   fontSize: 11,
                   fontWeight: FontWeight.w500,
                   letterSpacing: 0.4,
@@ -78,7 +76,8 @@ class TodayInTheSkyCard extends StatelessWidget {
                   children: [
                     Text(
                       phase.name,
-                      style: GoogleFonts.poppins(
+                      style: TextStyle(
+                  fontFamily: LivelyType.ui,
                         color: p.primaryHi,
                         fontSize: 15,
                         fontWeight: FontWeight.w700,
@@ -89,8 +88,9 @@ class TodayInTheSkyCard extends StatelessWidget {
                       l10n.todaySkyIlluminated(
                         '${(phase.illumination * 100).round()}',
                       ),
-                      style: GoogleFonts.poppins(
-                        color: _kTextSecondary,
+                      style: TextStyle(
+                  fontFamily: LivelyType.ui,
+                        color: p.textSecondary,
                         fontSize: 12,
                         fontWeight: FontWeight.w500,
                       ),
@@ -98,8 +98,9 @@ class TodayInTheSkyCard extends StatelessWidget {
                     const SizedBox(height: 6),
                     Text(
                       l10n.todaySkySunIn('${sun.glyph}  ${sun.name}'),
-                      style: GoogleFonts.poppins(
-                        color: Colors.white,
+                      style: TextStyle(
+                  fontFamily: LivelyType.ui,
+                        color: p.textPrimary,
                         fontSize: 13,
                         fontWeight: FontWeight.w600,
                       ),
@@ -112,7 +113,7 @@ class TodayInTheSkyCard extends StatelessWidget {
           const SizedBox(height: 18),
           Container(
             height: 1,
-            color: _kBorder,
+            color: p.line,
           ),
           const SizedBox(height: 14),
           for (var i = 0; i < highlights.length; i++) ...[
@@ -146,9 +147,9 @@ class _HighlightRow extends StatelessWidget {
           width: 30,
           height: 30,
           decoration: BoxDecoration(
-            color: _kSurfaceElevated,
+            color: p.surfaceElevated,
             borderRadius: BorderRadius.circular(9),
-            border: Border.all(color: _kBorder),
+            border: Border.all(color: p.glassBorder),
           ),
           alignment: Alignment.center,
           child: Icon(highlight.icon, color: p.primary, size: 14),
@@ -160,8 +161,9 @@ class _HighlightRow extends StatelessWidget {
             children: [
               Text(
                 highlight.title,
-                style: GoogleFonts.poppins(
-                  color: Colors.white,
+                style: TextStyle(
+                  fontFamily: LivelyType.ui,
+                  color: p.textPrimary,
                   fontSize: 12.5,
                   fontWeight: FontWeight.w600,
                   height: 1.3,
@@ -170,8 +172,9 @@ class _HighlightRow extends StatelessWidget {
               const SizedBox(height: 1),
               Text(
                 highlight.body,
-                style: GoogleFonts.poppins(
-                  color: _kTextSecondary,
+                style: TextStyle(
+                  fontFamily: LivelyType.ui,
+                  color: p.textSecondary,
                   fontSize: 11.5,
                   fontWeight: FontWeight.w400,
                   height: 1.35,
@@ -205,6 +208,9 @@ class _MoonGlyph extends StatelessWidget {
           waxing: waxing,
           color: p.primary,
           highlightColor: p.primaryHi,
+          shadowColor: Theme.of(context).brightness == Brightness.dark
+              ? const Color(0xFF2D324A)
+              : const Color(0xFFD5D7DE),
         ),
       ),
     );
@@ -217,12 +223,17 @@ class _MoonPainter extends CustomPainter {
     required this.waxing,
     required this.color,
     required this.highlightColor,
+    required this.shadowColor,
   });
 
   final double illumination;
   final bool waxing;
   final Color color;
   final Color highlightColor;
+
+  /// Unlit side of the disk — dark on the cosmic theme, a soft grey on
+  /// light so the moon doesn't read as a dark blot on a white card.
+  final Color shadowColor;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -242,7 +253,7 @@ class _MoonPainter extends CustomPainter {
       ..drawCircle(
         center,
         r,
-        Paint()..color = const Color(0xFF2D324A),
+        Paint()..color = shadowColor,
       )
       ..save()
       ..clipPath(
@@ -275,7 +286,7 @@ class _MoonPainter extends CustomPainter {
         shadowRect.deflate(0),
         Paint()
           ..color =
-              isShadowOnLitSide ? const Color(0xFF2D324A) : highlightColor,
+              isShadowOnLitSide ? shadowColor : highlightColor,
       );
     }
 
@@ -297,7 +308,8 @@ class _MoonPainter extends CustomPainter {
       oldDelegate.illumination != illumination ||
       oldDelegate.waxing != waxing ||
       oldDelegate.color != color ||
-      oldDelegate.highlightColor != highlightColor;
+      oldDelegate.highlightColor != highlightColor ||
+      oldDelegate.shadowColor != shadowColor;
 }
 
 // ============================================================================

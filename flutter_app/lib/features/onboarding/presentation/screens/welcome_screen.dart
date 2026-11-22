@@ -29,6 +29,22 @@ class WelcomeScreen extends ConsumerStatefulWidget {
 class _WelcomeScreenState extends ConsumerState<WelcomeScreen> {
   bool _entering = false;
 
+  @override
+  void initState() {
+    super.initState();
+    // The Big Three normally come from the onboarding reveal; if that
+    // request failed (the flow then skips straight here) try once more so
+    // the wheel and cards show the user's real signs.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      final user = ref.read(currentUserProvider);
+      final onb = ref.read(onboardingProvider);
+      if (user.sunSign == null && onb.chartReveal == null && !onb.isLoading) {
+        ref.read(onboardingProvider.notifier).loadChartReveal();
+      }
+    });
+  }
+
   Future<void> _enter() async {
     if (_entering) return;
     setState(() => _entering = true);
@@ -36,7 +52,18 @@ class _WelcomeScreenState extends ConsumerState<WelcomeScreen> {
     // is reflected — otherwise the router bounces the user to /onboarding.
     try {
       await ref.read(currentUserProvider.notifier).bootstrapSession();
-    } catch (_) {/* fall through — /home will surface its own error */}
+    } catch (_) {
+      // Navigating anyway would bounce the user back into onboarding
+      // (the flag is still false locally) — stay here and let them retry.
+      if (!mounted) return;
+      setState(() => _entering = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(AppLocalizations.of(context).oaphWelcomeEnterFailed),
+        ),
+      );
+      return;
+    }
     if (mounted) context.go('/home');
   }
 
@@ -48,13 +75,23 @@ class _WelcomeScreenState extends ConsumerState<WelcomeScreen> {
     final user = ref.watch(currentUserProvider);
     final onb = ref.watch(onboardingProvider);
 
-    final name = (user.name?.trim().isNotEmpty ?? false)
-        ? user.name!.trim().split(' ').first
-        : l10n.stargazer;
+    // currentUserProvider isn't refreshed until "Enter" re-bootstraps, so
+    // fall back to what onboarding just collected / revealed.
+    final rawName = (user.name?.trim().isNotEmpty ?? false)
+        ? user.name!.trim()
+        : onb.name.trim();
+    final name =
+        rawName.isNotEmpty ? rawName.split(' ').first : l10n.stargazer;
 
-    final sun = user.sunSign;
-    final moon = user.moonSign;
-    final rising = user.risingSign;
+    String? sign(String? fromUser, String key) {
+      if (fromUser != null && fromUser.trim().isNotEmpty) return fromUser;
+      final v = onb.chartReveal?[key];
+      return v is String && v.trim().isNotEmpty ? v : null;
+    }
+
+    final sun = sign(user.sunSign, 'sun_sign');
+    final moon = sign(user.moonSign, 'moon_sign');
+    final rising = sign(user.risingSign, 'rising_sign');
 
     final dateLine = _dateLine(onb, locale);
 
@@ -63,7 +100,14 @@ class _WelcomeScreenState extends ConsumerState<WelcomeScreen> {
         seed: 42,
         intensity: 1.4,
         child: SafeArea(
-          child: Padding(
+          // Scrolls on short screens (iPhone SE) / large text instead of
+          // overflowing; on tall screens the Spacer still pins the CTA
+          // to the bottom.
+          child: CustomScrollView(
+            slivers: [
+              SliverFillRemaining(
+                hasScrollBody: false,
+                child: Padding(
             padding: const EdgeInsets.fromLTRB(24, 8, 24, 24),
             child: Column(
               children: [
@@ -126,9 +170,9 @@ class _WelcomeScreenState extends ConsumerState<WelcomeScreen> {
                     builder: (_, scale, child) =>
                         Transform.scale(scale: scale, child: child),
                     child: MiniWheel(
-                      sun: sun ?? 'leo',
-                      moon: moon ?? 'pisces',
-                      rising: rising ?? 'scorpio',
+                      sun: sun,
+                      moon: moon,
+                      rising: rising,
                     ),
                   ),
                 ),
@@ -195,6 +239,9 @@ class _WelcomeScreenState extends ConsumerState<WelcomeScreen> {
                 ),
               ],
             ),
+          ),
+              ),
+            ],
           ),
         ),
       ),

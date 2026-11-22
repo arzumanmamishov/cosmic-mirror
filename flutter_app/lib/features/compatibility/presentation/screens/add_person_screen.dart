@@ -1,13 +1,16 @@
 import 'package:cosmic_mirror/config/theme/app_palette.dart';
 import 'package:cosmic_mirror/core/error/error_message.dart';
 import 'package:cosmic_mirror/core/network/api_endpoints.dart';
+import 'package:cosmic_mirror/core/utils/string_utils.dart';
 import 'package:cosmic_mirror/features/compatibility/presentation/relationship_labels.dart';
+import 'package:cosmic_mirror/features/compatibility/presentation/screens/compatibility_screen.dart';
 import 'package:cosmic_mirror/features/onboarding/presentation/widgets/birthplace_search.dart';
 import 'package:cosmic_mirror/l10n/app_localizations.dart';
 import 'package:cosmic_mirror/shared/providers/user_provider.dart';
 import 'package:cosmic_mirror/shared/widgets/cosmic_starfield.dart';
 import 'package:cosmic_mirror/shared/widgets/staggered_fade_in.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
@@ -62,7 +65,8 @@ class _AddPersonScreenState extends ConsumerState<AddPersonScreen> {
   }
 
   Future<void> _save() async {
-    if (!_canSave) return;
+    if (!_canSave || _isLoading) return;
+    FocusScope.of(context).unfocus();
     setState(() {
       _isLoading = true;
       _error = null;
@@ -70,7 +74,7 @@ class _AddPersonScreenState extends ConsumerState<AddPersonScreen> {
 
     try {
       final client = ref.read(apiClientProvider);
-      await client.post<dynamic>(
+      final created = await client.post<dynamic>(
         ApiEndpoints.people,
         data: {
           'name': _nameController.text.trim(),
@@ -78,14 +82,25 @@ class _AddPersonScreenState extends ConsumerState<AddPersonScreen> {
           'birth_date': _formatDate(_birthDate!),
           if (_birthTimeKnown && _birthTime != null)
             'birth_time': _formatTime(_birthTime!),
-          'birth_time_known': _birthTimeKnown,
+          // "Known" without an actual time picked is treated as unknown,
+          // otherwise the backend gets birth_time_known=true and no time.
+          'birth_time_known': _birthTimeKnown && _birthTime != null,
           'birth_place': _birthPlace,
           'latitude': _lat,
           'longitude': _lng,
           'timezone': _tz,
         },
       );
-      if (mounted) context.pop();
+      if (!mounted) return;
+      ref.invalidate(savedPeopleProvider);
+      // The button promises a report — go straight to it (it generates
+      // on first open) instead of dropping the user back on the list.
+      final id = created is Map ? created['id']?.toString() : null;
+      if (id != null && id.isNotEmpty) {
+        context.pushReplacement('/compatibility/$id');
+      } else {
+        context.pop();
+      }
     } catch (e) {
       if (!mounted) return;
       setState(() {
@@ -123,7 +138,13 @@ class _AddPersonScreenState extends ConsumerState<AddPersonScreen> {
             ),
           ),
           ListView(
-            padding: const EdgeInsets.fromLTRB(20, 90, 20, 32),
+            keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+            padding: EdgeInsets.fromLTRB(
+              20,
+              MediaQuery.paddingOf(context).top + kToolbarHeight + 8,
+              20,
+              32 + MediaQuery.paddingOf(context).bottom,
+            ),
             children: [
               FadeSlideIn(
                 child: Text(
@@ -155,6 +176,9 @@ class _AddPersonScreenState extends ConsumerState<AddPersonScreen> {
                 child: TextField(
                   controller: _nameController,
                   textCapitalization: TextCapitalization.words,
+                  textInputAction: TextInputAction.done,
+                  // Backend rejects names over 50 characters.
+                  inputFormatters: [LengthLimitingTextInputFormatter(50)],
                   style: TextStyle(color: p.textPrimary, fontSize: 15),
                   decoration: _decoration(p, l.addPersonNameHint),
                   onChanged: (_) => setState(() {}),
@@ -180,7 +204,7 @@ class _AddPersonScreenState extends ConsumerState<AddPersonScreen> {
                         duration: const Duration(milliseconds: 180),
                         padding: const EdgeInsets.symmetric(
                           horizontal: 14,
-                          vertical: 8,
+                          vertical: 11,
                         ),
                         decoration: BoxDecoration(
                           color: selected
@@ -252,13 +276,16 @@ class _AddPersonScreenState extends ConsumerState<AddPersonScreen> {
                     ),
                     const SizedBox(width: 10),
                     GestureDetector(
-                      onTap: () => setState(
-                        () => _birthTimeKnown = !_birthTimeKnown,
-                      ),
+                      onTap: () {
+                        setState(() => _birthTimeKnown = !_birthTimeKnown);
+                        // Turning "known" on without a time is a dead end —
+                        // open the picker right away.
+                        if (_birthTimeKnown && _birthTime == null) _pickTime();
+                      },
                       child: Container(
                         padding: const EdgeInsets.symmetric(
                           horizontal: 14,
-                          vertical: 12,
+                          vertical: 14,
                         ),
                         decoration: BoxDecoration(
                           color: _birthTimeKnown
@@ -357,19 +384,21 @@ class _AddPersonScreenState extends ConsumerState<AddPersonScreen> {
                   child: ElevatedButton.icon(
                     onPressed: (_canSave && !_isLoading) ? _save : null,
                     icon: _isLoading
-                        ? const SizedBox(
+                        // The button is disabled while saving, so it sits on
+                        // the disabled (surface) background — not primary.
+                        ? SizedBox(
                             width: 16,
                             height: 16,
                             child: CircularProgressIndicator(
                               strokeWidth: 2,
-                              color: Colors.white,
+                              color: p.primary,
                             ),
                           )
                         : const Icon(Icons.auto_awesome_rounded),
                     label: Text(l.addPersonGenerate),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: p.primary,
-                      foregroundColor: Colors.white,
+                      foregroundColor: p.onPrimary,
                       disabledBackgroundColor: p.surfaceElevated,
                       disabledForegroundColor: p.textTertiary,
                       padding: const EdgeInsets.symmetric(vertical: 16),
@@ -423,10 +452,13 @@ class _SectionLabel extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final p = context.palette;
-    return Row(
+    return Wrap(
+      crossAxisAlignment: WrapCrossAlignment.center,
       children: [
         Text(
-          label.toUpperCase(),
+          label.toUpperCaseLocale(
+            Localizations.localeOf(context).languageCode,
+          ),
           style: TextStyle(
             color: p.textSecondary,
             fontSize: 10,

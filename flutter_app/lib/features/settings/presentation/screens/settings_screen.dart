@@ -1,7 +1,6 @@
 import 'package:cosmic_mirror/config/api_url_override.dart';
 import 'package:cosmic_mirror/config/env.dart';
 import 'package:cosmic_mirror/config/theme/app_palette.dart';
-import 'package:cosmic_mirror/config/theme/colors.dart';
 import 'package:cosmic_mirror/config/theme/lively_type.dart';
 import 'package:cosmic_mirror/config/theme/typography.dart';
 import 'package:cosmic_mirror/core/error/error_message.dart';
@@ -20,6 +19,8 @@ import 'package:go_router/go_router.dart';
 import 'package:in_app_review/in_app_review.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
+
+const _supportEmail = 'support@livelyapp.co';
 
 /// Installed app version + build number, read once from the platform.
 final _packageInfoProvider = FutureProvider<PackageInfo>(
@@ -62,7 +63,7 @@ class SettingsScreen extends ConsumerWidget {
           ListTile(
             leading: Icon(
               Icons.auto_awesome,
-              color: isPremium ? CosmicColors.gold : CosmicColors.textSecondary,
+              color: isPremium ? p.gold : p.textSecondary,
             ),
             title: Text(
               isPremium ? l10n.settingsPremiumActive : l10n.settingsFreePlan,
@@ -110,10 +111,19 @@ class SettingsScreen extends ConsumerWidget {
           ListTile(
             leading: const Icon(Icons.help_outline),
             title: Text(l10n.profileHelp),
-            onTap: () {
-              launchUrl(
-                Uri.parse('mailto:support@livelyapp.co'),
-              );
+            onTap: () async {
+              final opened = await launchUrl(
+                Uri.parse('mailto:$_supportEmail'),
+              ).catchError((Object _) => false);
+              // No mail app configured: tell the user where to write
+              // instead of silently doing nothing.
+              if (!opened && context.mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(l10n.cpsSupportEmailFallback(_supportEmail)),
+                  ),
+                );
+              }
             },
           ),
           ListTile(
@@ -193,10 +203,10 @@ class SettingsScreen extends ConsumerWidget {
             },
           ),
           ListTile(
-            leading: const Icon(Icons.delete_outline, color: CosmicColors.error),
+            leading: Icon(Icons.delete_outline, color: p.error),
             title: Text(
               l10n.settingsDeleteAccount,
-              style: const TextStyle(color: CosmicColors.error),
+              style: TextStyle(color: p.error),
             ),
             onTap: () async {
               final confirmed = await showDialog<bool>(
@@ -219,7 +229,7 @@ class SettingsScreen extends ConsumerWidget {
                       TextButton(
                         onPressed: () => Navigator.pop(dialogCtx, true),
                         style: TextButton.styleFrom(
-                          foregroundColor: CosmicColors.error,
+                          foregroundColor: dialogCtx.palette.error,
                         ),
                         child: Text(dl10n.settingsDelete),
                       ),
@@ -244,7 +254,8 @@ class SettingsScreen extends ConsumerWidget {
                         ),
                         orElse: () => '',
                       ),
-                  style: CosmicTypography.caption,
+                  style: CosmicTypography.caption
+                      .copyWith(color: p.textSecondary),
                 ),
               ),
               const SizedBox(height: 32),
@@ -484,7 +495,8 @@ class _ApiUrlOverrideTile extends ConsumerWidget {
         current,
         maxLines: 1,
         overflow: TextOverflow.ellipsis,
-        style: CosmicTypography.caption,
+        style: CosmicTypography.caption
+            .copyWith(color: context.palette.textSecondary),
       ),
       trailing: const Icon(Icons.edit_outlined, size: 18),
       onTap: () => _showEditDialog(context, ref, current),

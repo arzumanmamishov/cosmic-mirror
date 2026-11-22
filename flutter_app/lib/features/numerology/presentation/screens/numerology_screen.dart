@@ -33,7 +33,16 @@ class NumerologyScreen extends ConsumerWidget {
         seed: 23,
         intensity: 0.6,
         child: readingAsync.when(
-          loading: () => const ShimmerList(itemCount: 5),
+          // Pushed below the transparent app bar instead of sliding under it.
+          loading: () => ShimmerList(
+            itemCount: 5,
+            padding: EdgeInsets.fromLTRB(
+              20,
+              MediaQuery.of(context).padding.top + kToolbarHeight,
+              20,
+              0,
+            ),
+          ),
           error: (e, _) => ErrorView(
             error: e,
             onRetry: () => ref.invalidate(numerologyReadingProvider),
@@ -80,6 +89,9 @@ class _Hero extends StatelessWidget {
   Widget build(BuildContext context) {
     final p = context.palette;
     final lp = reading.profile.lifePath;
+    // Text sits on the primary gradient → onPrimary keeps it legible on the
+    // light-gold dark-theme gradient as well as the blue light-theme one.
+    final fg = p.onPrimary;
     return Padding(
       padding: EdgeInsets.fromLTRB(
         20,
@@ -98,8 +110,8 @@ class _Hero extends StatelessWidget {
           children: [
             Text(
               AppLocalizations.of(context).numerologyLifePathBadge,
-              style: const TextStyle(
-                color: Colors.white70,
+              style: TextStyle(
+                color: fg.withValues(alpha: 0.7),
                 fontSize: 11,
                 letterSpacing: 1.6,
                 fontWeight: FontWeight.w800,
@@ -109,9 +121,9 @@ class _Hero extends StatelessWidget {
             Row(
               children: [
                 Text(
-                  lp.display,
-                  style: const TextStyle(
-                    color: Colors.white,
+                  lp.display.isNotEmpty ? lp.display : '—',
+                  style: TextStyle(
+                    color: fg,
                     fontSize: 64,
                     fontWeight: FontWeight.w900,
                     height: 1,
@@ -125,13 +137,13 @@ class _Hero extends StatelessWidget {
                       vertical: 4,
                     ),
                     decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.25),
+                      color: fg.withValues(alpha: 0.18),
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Text(
                       AppLocalizations.of(context).numerologyMasterBadge,
-                      style: const TextStyle(
-                        color: Colors.white,
+                      style: TextStyle(
+                        color: fg,
                         fontSize: 11,
                         letterSpacing: 1.4,
                         fontWeight: FontWeight.w800,
@@ -144,7 +156,7 @@ class _Hero extends StatelessWidget {
             Text(
               lp.description,
               style: TextStyle(
-                color: Colors.white.withValues(alpha: 0.9),
+                color: fg.withValues(alpha: 0.9),
                 fontSize: 14,
                 height: 1.5,
               ),
@@ -177,7 +189,7 @@ class _TabBar extends StatelessWidget {
         indicatorSize: TabBarIndicatorSize.tab,
         indicatorPadding: const EdgeInsets.all(4),
         dividerColor: Colors.transparent,
-        labelColor: Colors.white,
+        labelColor: p.onPrimary,
         unselectedLabelColor: p.textSecondary,
         labelStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
         tabs: [
@@ -372,9 +384,8 @@ class _CompatTab extends StatelessWidget {
             onPressed: () => context.push('/numerology/compatibility'),
             style: ElevatedButton.styleFrom(
               backgroundColor: p.primary,
-              foregroundColor: Colors.white,
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+              foregroundColor: p.onPrimary,
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(20),
               ),

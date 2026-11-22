@@ -1,5 +1,6 @@
 import 'package:cosmic_mirror/config/theme/app_palette.dart';
 import 'package:cosmic_mirror/core/network/api_endpoints.dart';
+import 'package:cosmic_mirror/core/utils/string_utils.dart';
 import 'package:cosmic_mirror/l10n/app_localizations.dart';
 import 'package:cosmic_mirror/shared/providers/user_provider.dart';
 import 'package:cosmic_mirror/shared/widgets/error_view.dart';
@@ -100,7 +101,9 @@ class _TimelineHero extends StatelessWidget {
               Icon(Icons.wb_twilight_rounded, color: p.gold, size: 16),
               const SizedBox(width: 6),
               Text(
-                l.transitHeroTitle.toUpperCase(),
+                l.transitHeroTitle.toUpperCaseLocale(
+                  Localizations.localeOf(context).languageCode,
+                ),
                 style: TextStyle(
                   color: p.gold,
                   fontSize: 11,
@@ -166,7 +169,7 @@ class _PillTab extends StatelessWidget {
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 180),
         alignment: Alignment.center,
-        padding: const EdgeInsets.symmetric(vertical: 10),
+        padding: const EdgeInsets.symmetric(vertical: 12),
         decoration: BoxDecoration(
           gradient: active
               ? LinearGradient(
@@ -185,8 +188,10 @@ class _PillTab extends StatelessWidget {
         ),
         child: Text(
           label,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
           style: TextStyle(
-            color: active ? const Color(0xFF1A1F2E) : p.textSecondary,
+            color: active ? p.onPrimary : p.textSecondary,
             fontSize: 12.5,
             fontWeight: FontWeight.w800,
           ),
@@ -233,7 +238,7 @@ class _TimelineTab extends ConsumerWidget {
           itemCount: periods.length,
           itemBuilder: (context, index) {
             return FadeSlideIn(
-              delay: Duration(milliseconds: 80 + index * 60),
+              delay: Duration(milliseconds: 80 + (index * 60).clamp(0, 420)),
               child: _TimelinePeriod(
                 period: periods[index],
                 isFirst: index == 0,
@@ -353,16 +358,22 @@ class _TimelinePeriod extends StatelessWidget {
                             ],
                           ),
                         ),
-                        const Spacer(),
-                        if (dateRange.isNotEmpty)
-                          Text(
+                        const SizedBox(width: 8),
+                        // Expanded so a long localized range can't push the
+                        // row past the card on narrow phones.
+                        Expanded(
+                          child: Text(
                             dateRange,
+                            textAlign: TextAlign.right,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
                             style: TextStyle(
                               color: p.textTertiary,
                               fontSize: 11,
                               fontWeight: FontWeight.w500,
                             ),
                           ),
+                        ),
                       ],
                     ),
                     if (title.isNotEmpty) ...[

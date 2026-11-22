@@ -22,6 +22,8 @@ class BlockedUsersScreen extends ConsumerWidget {
     final p = context.palette;
     final l = AppLocalizations.of(context);
     final blockedAsync = ref.watch(blockedUsersProvider);
+    // The app bar is transparent over the body; keep content below it.
+    final topPad = MediaQuery.paddingOf(context).top + kToolbarHeight + 12;
     return Scaffold(
       backgroundColor: p.background,
       extendBodyBehindAppBar: true,
@@ -40,19 +42,29 @@ class BlockedUsersScreen extends ConsumerWidget {
             ),
           ),
           blockedAsync.when(
-            loading: () => const Padding(
-              padding: EdgeInsets.only(top: 100),
-              child: ShimmerList(itemCount: 4),
+            loading: () => Padding(
+              padding: EdgeInsets.only(top: topPad),
+              child: const ShimmerList(itemCount: 4),
             ),
             error: (e, _) => ErrorView(
               error: e,
               onRetry: () => ref.invalidate(blockedUsersProvider),
             ),
             data: (users) => RefreshIndicator(
-              onRefresh: () async => ref.invalidate(blockedUsersProvider),
+              color: p.primary,
+              backgroundColor: p.surface,
+              edgeOffset: topPad,
+              // Await the refetch so the spinner stays until data lands.
+              onRefresh: () async {
+                ref.invalidate(blockedUsersProvider);
+                try {
+                  await ref.read(blockedUsersProvider.future);
+                } catch (_) {/* shown by the error state */}
+              },
               child: users.isEmpty
                   ? ListView(
-                      padding: const EdgeInsets.fromLTRB(32, 160, 32, 32),
+                      physics: const AlwaysScrollableScrollPhysics(),
+                      padding: EdgeInsets.fromLTRB(32, topPad + 60, 32, 32),
                       children: [
                         Icon(Icons.block_rounded, size: 40, color: p.textDim),
                         const SizedBox(height: 14),
@@ -70,10 +82,17 @@ class BlockedUsersScreen extends ConsumerWidget {
                       ],
                     )
                   : ListView.separated(
-                      padding: const EdgeInsets.fromLTRB(20, 100, 20, 32),
+                      physics: const AlwaysScrollableScrollPhysics(),
+                      padding: EdgeInsets.fromLTRB(20, topPad, 20, 32),
                       itemCount: users.length,
                       separatorBuilder: (_, __) => const SizedBox(height: 8),
-                      itemBuilder: (_, i) => _BlockedUserTile(user: users[i]),
+                      // Keyed: on success the tile stays busy until the
+                      // list refetches, and without a key the next user's
+                      // row inherited that spinner.
+                      itemBuilder: (_, i) => _BlockedUserTile(
+                        key: ValueKey(users[i].userId),
+                        user: users[i],
+                      ),
                     ),
             ),
           ),
@@ -84,7 +103,7 @@ class BlockedUsersScreen extends ConsumerWidget {
 }
 
 class _BlockedUserTile extends StatefulWidget {
-  const _BlockedUserTile({required this.user});
+  const _BlockedUserTile({required this.user, super.key});
   final BlockedUser user;
 
   @override
@@ -95,6 +114,7 @@ class _BlockedUserTileState extends State<_BlockedUserTile> {
   bool _busy = false;
 
   Future<void> _unblock() async {
+    if (_busy) return;
     setState(() => _busy = true);
     // On success the list refetches and this tile goes away.
     final ok = await unblockUser(
@@ -120,8 +140,8 @@ class _BlockedUserTileState extends State<_BlockedUserTile> {
           ),
           child: Text(
             name[0].toUpperCase(),
-            style: const TextStyle(
-              color: Colors.white,
+            style: TextStyle(
+              color: p.onPrimary,
               fontWeight: FontWeight.w800,
             ),
           ),

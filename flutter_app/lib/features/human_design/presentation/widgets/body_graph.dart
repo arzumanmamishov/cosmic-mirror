@@ -50,6 +50,7 @@ class BodyGraph extends StatelessWidget {
           bottom: 10,
           child: _RoundIconButton(
             icon: Icons.open_in_full_rounded,
+            tooltip: AppLocalizations.of(context).chrExpandChart,
             onPressed: () => _openFullScreen(context),
           ),
         ),
@@ -271,10 +272,11 @@ class _RoundIconButton extends StatelessWidget {
       child: InkWell(
         customBorder: const CircleBorder(),
         onTap: onPressed,
+        // 44px: minimum comfortable tap target.
         child: SizedBox(
-          width: 38,
-          height: 38,
-          child: Icon(icon, size: 19, color: BodyGraph.personalityInk),
+          width: 44,
+          height: 44,
+          child: Icon(icon, size: 20, color: BodyGraph.personalityInk),
         ),
       ),
     );

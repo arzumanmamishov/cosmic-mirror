@@ -82,15 +82,17 @@ class BirthTimePicker extends StatelessWidget {
         const SizedBox(height: 20),
 
         if (birthTimeKnown) ...[
-          Container(
-            padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
-            decoration: BoxDecoration(
-              color: isDark ? p.surfaceGlass : p.surface,
-              borderRadius: BorderRadius.circular(18),
-              border: Border.all(color: p.line),
-            ),
-            child: SizedBox(
-              height: 180,
+          // Flexible + max height: the wheel gives up height on short
+          // screens / large text instead of overflowing the step.
+          Flexible(
+            child: Container(
+              constraints: const BoxConstraints(maxHeight: 196),
+              padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+              decoration: BoxDecoration(
+                color: isDark ? p.surfaceGlass : p.surface,
+                borderRadius: BorderRadius.circular(18),
+                border: Border.all(color: p.line),
+              ),
               child: Stack(
                 alignment: Alignment.center,
                 children: [
@@ -120,29 +122,8 @@ class BirthTimePicker extends StatelessWidget {
               ),
             ),
           ),
-          const SizedBox(height: 16),
-          // Why birth time matters.
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-            decoration: BoxDecoration(
-              color: p.primary.withValues(alpha: isDark ? 0.07 : 0.08),
-              borderRadius: BorderRadius.circular(14),
-              border: Border.all(color: p.glassBorder),
-            ),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Icon(Icons.auto_awesome_rounded, color: p.primary, size: 16),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: Text(
-                    l10n.onboardingDontKnowTimeHelp,
-                    style: LivelyType.small(p.textMuted),
-                  ),
-                ),
-              ],
-            ),
-          ),
+          // (The toggle above already carries the "why it matters" help
+          // text — the duplicate info card that repeated it was removed.)
         ] else
           Expanded(
             child: Center(

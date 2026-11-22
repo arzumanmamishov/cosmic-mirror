@@ -82,7 +82,14 @@ class _Arrow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isLeft = dir.toLowerCase() == 'left';
-    final color = isLeft ? const Color(0xFF4DA3FF) : const Color(0xFFE45A5A);
+    final isRight = dir.toLowerCase() == 'right';
+    // Unknown / missing direction renders neutral instead of a red
+    // "Right" arrow the chart doesn't actually have.
+    final color = isLeft
+        ? const Color(0xFF4DA3FF)
+        : isRight
+            ? const Color(0xFFE45A5A)
+            : palette.textTertiary;
     return Expanded(
       child: Column(
         children: [
@@ -96,23 +103,35 @@ class _Arrow extends StatelessWidget {
             ),
             alignment: Alignment.center,
             child: Icon(
-              isLeft ? Icons.arrow_back_rounded : Icons.arrow_forward_rounded,
+              isLeft
+                  ? Icons.arrow_back_rounded
+                  : isRight
+                      ? Icons.arrow_forward_rounded
+                      : Icons.remove_rounded,
               color: color,
               size: 22,
             ),
           ),
           const SizedBox(height: 6),
-          Text(
-            label,
-            style: TextStyle(
-              color: palette.textSecondary,
-              fontSize: 10,
-              letterSpacing: 0.8,
-              fontWeight: FontWeight.w700,
+          // Four labels share the row: shrink long ones ("Environment",
+          // "Farkındalık") instead of breaking them mid-word.
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Text(
+              label,
+              maxLines: 1,
+              style: TextStyle(
+                color: palette.textSecondary,
+                fontSize: 10,
+                letterSpacing: 0.8,
+                fontWeight: FontWeight.w700,
+              ),
             ),
           ),
           Text(
-            HDLabels(AppLocalizations.of(context)).direction(dir),
+            dir.isEmpty
+                ? '—'
+                : HDLabels(AppLocalizations.of(context)).direction(dir),
             style: TextStyle(
               color: color,
               fontSize: 11,

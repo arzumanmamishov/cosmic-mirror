@@ -3,6 +3,12 @@ import 'package:cosmic_mirror/features/onboarding/data/models/birth_profile_mode
 import 'package:cosmic_mirror/features/onboarding/domain/entities/birth_profile.dart';
 import 'package:cosmic_mirror/shared/providers/user_provider.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:package_info_plus/package_info_plus.dart';
+
+/// Installed app version + build number, read once from the platform.
+final appPackageInfoProvider = FutureProvider<PackageInfo>(
+  (ref) => PackageInfo.fromPlatform(),
+);
 
 /// Loads the user's stored birth profile so the profile screen can render
 /// real birth date / time / place rather than placeholder dashes. Refresh

@@ -24,9 +24,14 @@ class LivelyChip extends StatelessWidget {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     return GestureDetector(
       onTap: onTap,
+      behavior: HitTestBehavior.opaque,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 150),
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
+        // Minimum (not padding-derived) height: one-line chips stay a
+        // 48px tap target and two-line labels grow without extra slack.
+        constraints: const BoxConstraints(minHeight: 48),
+        alignment: Alignment.centerLeft,
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
         decoration: BoxDecoration(
           color: selected
               ? p.primary.withValues(alpha: isDark ? 0.14 : 0.12)

@@ -1,4 +1,4 @@
-import 'package:cosmic_mirror/config/theme/colors.dart';
+import 'package:cosmic_mirror/config/theme/app_palette.dart';
 import 'package:cosmic_mirror/config/theme/typography.dart';
 import 'package:cosmic_mirror/l10n/app_localizations.dart';
 import 'package:cosmic_mirror/shared/providers/subscription_state_provider.dart';
@@ -56,28 +56,29 @@ class _UpgradePrompt extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context);
+    final p = context.palette;
     final name = featureName;
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
-            CosmicColors.primary.withValues(alpha: 0.15),
-            CosmicColors.accent.withValues(alpha: 0.1),
+            p.primary.withValues(alpha: 0.15),
+            p.accent.withValues(alpha: 0.1),
           ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: CosmicColors.primary.withValues(alpha: 0.3),
+          color: p.primary.withValues(alpha: 0.3),
         ),
       ),
       child: Column(
         children: [
-          const Icon(
+          Icon(
             Icons.auto_awesome,
-            color: CosmicColors.gold,
+            color: p.gold,
             size: 32,
           ),
           const SizedBox(height: 12),
@@ -85,13 +86,17 @@ class _UpgradePrompt extends StatelessWidget {
             name == null
                 ? l.premiumUnlockThisFeature
                 : l.premiumUnlockFeature(name),
-            style: CosmicTypography.headlineSmall,
+            // The static typography styles carry the dark theme's cream
+            // text color — unreadable on the light theme.
+            style: CosmicTypography.headlineSmall
+                .copyWith(color: p.textPrimary),
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 8),
           Text(
             l.premiumUpgradeBody,
-            style: CosmicTypography.bodySmall,
+            style: CosmicTypography.bodySmall
+                .copyWith(color: p.textSecondary),
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 16),

@@ -40,8 +40,25 @@ class MembersScreen extends ConsumerWidget {
               error: e,
               onRetry: () => ref.invalidate(spaceMembersProvider(spaceId)),
             ),
-            data: (members) => ListView.separated(
-              padding: const EdgeInsets.fromLTRB(20, 100, 20, 32),
+            data: (members) => RefreshIndicator(
+              color: p.primary,
+              backgroundColor: p.surface,
+              edgeOffset: MediaQuery.paddingOf(context).top + kToolbarHeight,
+              onRefresh: () async {
+                ref.invalidate(spaceMembersProvider(spaceId));
+                try {
+                  await ref.read(spaceMembersProvider(spaceId).future);
+                } catch (_) {/* shown by the error state */}
+              },
+              child: ListView.separated(
+              physics: const AlwaysScrollableScrollPhysics(),
+              // Clear the transparent app bar on every device.
+              padding: EdgeInsets.fromLTRB(
+                20,
+                MediaQuery.paddingOf(context).top + kToolbarHeight + 12,
+                20,
+                32,
+              ),
               itemCount: members.length,
               separatorBuilder: (_, __) => const SizedBox(height: 8),
               itemBuilder: (_, i) {
@@ -49,7 +66,8 @@ class MembersScreen extends ConsumerWidget {
                 return InkWell(
                   onTap: () => context.push('/community/user/${m.userId}'),
                   borderRadius: BorderRadius.circular(14),
-                  child: Container(
+                  // Ink so the tap ripple shows over the card fill.
+                  child: Ink(
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
                       color: p.surface,
@@ -70,8 +88,8 @@ class MembersScreen extends ConsumerWidget {
                             m.userName.isNotEmpty
                                 ? m.userName[0].toUpperCase()
                                 : '?',
-                            style: const TextStyle(
-                              color: Colors.white,
+                            style: TextStyle(
+                              color: p.onPrimary,
                               fontWeight: FontWeight.w800,
                             ),
                           ),
@@ -80,6 +98,8 @@ class MembersScreen extends ConsumerWidget {
                         Expanded(
                           child: Text(
                             m.userName.isEmpty ? l.communityUnknownMember : m.userName,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
                             style: TextStyle(
                               color: p.textPrimary,
                               fontSize: 14,
@@ -93,6 +113,7 @@ class MembersScreen extends ConsumerWidget {
                   ),
                 );
               },
+            ),
             ),
           ),
         ],

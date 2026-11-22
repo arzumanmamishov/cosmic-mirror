@@ -57,7 +57,8 @@ class _ComposePostSheetState extends ConsumerState<ComposePostSheet> {
         content: text,
         linkUrl: _link.text.trim().isEmpty ? null : _link.text.trim(),
       );
-      if (mounted) Navigator.of(context).pop();
+      // Pop with `true` so the caller only refetches on a real post.
+      if (mounted) Navigator.of(context).pop(true);
     } catch (e) {
       if (!mounted) return;
       setState(() => _error = FriendlyError.from(context, e).body);
@@ -70,7 +71,10 @@ class _ComposePostSheetState extends ConsumerState<ComposePostSheet> {
   Widget build(BuildContext context) {
     final p = context.palette;
     final l = AppLocalizations.of(context);
-    final bottomInset = MediaQuery.of(context).viewInsets.bottom;
+    // Clear the keyboard when it's up, otherwise the home indicator.
+    final keyboard = MediaQuery.viewInsetsOf(context).bottom;
+    final safeBottom = MediaQuery.paddingOf(context).bottom;
+    final bottomInset = keyboard > safeBottom ? keyboard : safeBottom;
     return Container(
       padding: EdgeInsets.fromLTRB(20, 18, 20, 18 + bottomInset),
       decoration: BoxDecoration(
@@ -78,7 +82,10 @@ class _ComposePostSheetState extends ConsumerState<ComposePostSheet> {
         borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
         border: Border.all(color: p.glassBorder),
       ),
-      child: Column(
+      // Scrollable so the 8-line composer + link row never overflow on a
+      // small phone with the keyboard up.
+      child: SingleChildScrollView(
+        child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -110,12 +117,12 @@ class _ComposePostSheetState extends ConsumerState<ComposePostSheet> {
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: _busy
-                      ? const SizedBox(
+                      ? SizedBox(
                           width: 14,
                           height: 14,
                           child: CircularProgressIndicator(
                             strokeWidth: 2,
-                            color: Colors.white,
+                            color: p.onPrimary,
                           ),
                         )
                       : Text(
@@ -123,7 +130,7 @@ class _ComposePostSheetState extends ConsumerState<ComposePostSheet> {
                           style: TextStyle(
                             color: _content.text.trim().isEmpty
                                 ? p.textSecondary
-                                : Colors.white,
+                                : p.onPrimary,
                             fontSize: 13,
                             fontWeight: FontWeight.w800,
                           ),
@@ -145,6 +152,7 @@ class _ComposePostSheetState extends ConsumerState<ComposePostSheet> {
             ),
           ],
         ],
+        ),
       ),
     );
   }

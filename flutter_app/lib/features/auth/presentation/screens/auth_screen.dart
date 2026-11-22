@@ -86,6 +86,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
         );
       }
     } catch (e) {
+      if (!mounted) return;
       setState(() => _error = _prettyError(e));
     } finally {
       if (mounted) setState(() => _busy = false);
@@ -137,6 +138,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
     if (e is RateLimitException || s.contains('rate_limit')) {
       return l.authTooManyCodeRequests;
     }
+    if (e is NetworkException) return l.authErrorNetwork;
     return l.commonSomethingWentWrong;
   }
 
@@ -155,6 +157,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
     if (e is RateLimitException || s.contains('rate_limit')) {
       return l.authTooManyAttemptsShort;
     }
+    if (e is NetworkException) return l.authErrorNetwork;
     return l.commonSomethingWentWrong;
   }
 
@@ -227,6 +230,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                     hint: 'you@example.com',
                     keyboardType: TextInputType.emailAddress,
                     autofillHints: const [AutofillHints.email],
+                    onSubmitted: (_) => _busy ? null : _submit(),
                   ),
                   const SizedBox(height: 14),
                   LivelyField(
@@ -234,7 +238,13 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                     label: l.authPassword,
                     hint: '••••••••',
                     obscure: true,
-                    autofillHints: const [AutofillHints.password],
+                    autofillHints: [
+                      if (isLogin)
+                        AutofillHints.password
+                      else
+                        AutofillHints.newPassword,
+                    ],
+                    onSubmitted: (_) => _busy ? null : _submit(),
                   ),
 
                   if (_error != null) ...[
@@ -248,13 +258,16 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                     loading: _busy,
                     onPressed: _busy ? null : _submit,
                   ),
-                  const SizedBox(height: 12),
-                  GoldButton(
-                    label: l.authSignInWithCode,
-                    ghost: true,
-                    onPressed: _busy ? null : _signInWithCode,
-                  ),
+                  // "Sign in with a code" only makes sense for an existing
+                  // account; in register mode it would just answer "no
+                  // account — tap Create account" on the tab already open.
                   if (isLogin) ...[
+                    const SizedBox(height: 12),
+                    GoldButton(
+                      label: l.authSignInWithCode,
+                      ghost: true,
+                      onPressed: _busy ? null : _signInWithCode,
+                    ),
                     const SizedBox(height: 6),
                     Center(
                       child: TextButton(
@@ -361,7 +374,9 @@ class _ModeToggle extends StatelessWidget {
           behavior: HitTestBehavior.opaque,
           child: AnimatedContainer(
             duration: const Duration(milliseconds: 200),
-            padding: const EdgeInsets.symmetric(vertical: 10),
+            constraints: const BoxConstraints(minHeight: 40),
+            alignment: Alignment.center,
+            padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 6),
             decoration: BoxDecoration(
               color:
                   active ? p.gold.withValues(alpha: 0.85) : Colors.transparent,
@@ -371,7 +386,7 @@ class _ModeToggle extends StatelessWidget {
               label,
               textAlign: TextAlign.center,
               style: TextStyle(
-                color: active ? p.background : p.textSecondary,
+                color: active ? p.onPrimary : p.textSecondary,
                 fontSize: 13,
                 fontWeight: FontWeight.w700,
               ),

@@ -4,9 +4,9 @@ import 'package:cosmic_mirror/features/human_design/presentation/hd_labels.dart'
 import 'package:cosmic_mirror/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 
-/// Two columns of gate activations: Personality (red dot) on the left,
-/// Design (black dot) on the right, each grouped by body and labelled
-/// "Sun · 41.3" style.
+/// Two columns of gate activations: Personality (black/ink dot) on the
+/// left, Design (red dot) on the right — the same convention as the
+/// BodyGraph — each grouped by body and labelled "Sun · 41.3" style.
 class GateList extends StatelessWidget {
   const GateList({required this.gates, super.key});
 
@@ -24,7 +24,7 @@ class GateList extends StatelessWidget {
         Expanded(
           child: _Column(
             label: l.hdPersonalityHeader,
-            dotColor: p.error,
+            dotColor: p.textPrimary,
             items: personality,
           ),
         ),
@@ -32,7 +32,7 @@ class GateList extends StatelessWidget {
         Expanded(
           child: _Column(
             label: l.hdDesignHeader,
-            dotColor: p.textPrimary,
+            dotColor: p.error,
             items: design,
           ),
         ),
@@ -68,13 +68,17 @@ class _Column extends StatelessWidget {
                   BoxDecoration(color: dotColor, shape: BoxShape.circle),
             ),
             const SizedBox(width: 6),
-            Text(
-              label,
-              style: TextStyle(
-                color: p.textSecondary,
-                fontSize: 10,
-                letterSpacing: 1.4,
-                fontWeight: FontWeight.w800,
+            Flexible(
+              child: Text(
+                label,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  color: p.textSecondary,
+                  fontSize: 10,
+                  letterSpacing: 1.4,
+                  fontWeight: FontWeight.w800,
+                ),
               ),
             ),
           ],

@@ -99,7 +99,7 @@ class _Body extends StatelessWidget {
         16,
         MediaQuery.of(context).padding.top + kToolbarHeight + 24,
         16,
-        0,
+        MediaQuery.of(context).padding.bottom,
       ),
       itemCount: children.length,
       itemBuilder: (context, i) => _FadeIn(
@@ -128,6 +128,9 @@ class _Hero extends StatelessWidget {
         ? reading.birthDate
         : DateFormat.yMMMd(Localizations.localeOf(context).toString())
             .format(parsedBirth);
+    // Text sits on the primary gradient: onPrimary keeps it readable in
+    // both themes (white was illegible on the dark theme's light gold).
+    final on = p.onPrimary;
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -139,8 +142,8 @@ class _Hero extends StatelessWidget {
         children: [
           Text(
             l.destinyYourCoreArcana,
-            style: const TextStyle(
-              color: Colors.white70,
+            style: TextStyle(
+              color: on.withValues(alpha: 0.7),
               fontSize: 11,
               letterSpacing: 1.6,
               fontWeight: FontWeight.w800,
@@ -151,7 +154,7 @@ class _Hero extends StatelessWidget {
             Text(
               l.destinyBirthDate(birthLabel),
               style: TextStyle(
-                color: Colors.white.withValues(alpha: 0.8),
+                color: on.withValues(alpha: 0.8),
                 fontSize: 12,
               ),
             ),
@@ -164,13 +167,13 @@ class _Hero extends StatelessWidget {
                 height: 60,
                 alignment: Alignment.center,
                 decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.18),
+                  color: on.withValues(alpha: 0.14),
                   shape: BoxShape.circle,
                 ),
                 child: Text(
                   '${core?.arcana ?? 0}',
-                  style: const TextStyle(
-                    color: Colors.white,
+                  style: TextStyle(
+                    color: on,
                     fontSize: 28,
                     fontWeight: FontWeight.w900,
                     height: 1,
@@ -184,8 +187,8 @@ class _Hero extends StatelessWidget {
                   children: [
                     Text(
                       core?.arcanaName ?? '',
-                      style: const TextStyle(
-                        color: Colors.white,
+                      style: TextStyle(
+                        color: on,
                         fontSize: 20,
                         fontWeight: FontWeight.w900,
                       ),
@@ -194,7 +197,7 @@ class _Hero extends StatelessWidget {
                     Text(
                       core?.title ?? l.destinyComfortCore,
                       style: TextStyle(
-                        color: Colors.white.withValues(alpha: 0.85),
+                        color: on.withValues(alpha: 0.85),
                         fontSize: 13,
                         fontWeight: FontWeight.w600,
                       ),
@@ -250,7 +253,7 @@ class _OctagramCard extends StatelessWidget {
               child: IconButton(
                 iconSize: 20,
                 visualDensity: VisualDensity.compact,
-                tooltip: 'Full screen',
+                tooltip: AppLocalizations.of(context).cmsMatrixFullScreen,
                 icon: Icon(Icons.fullscreen_rounded, color: p.textSecondary),
                 onPressed: () => Navigator.of(context).push(
                   MaterialPageRoute<void>(
@@ -346,7 +349,8 @@ class _OctagramFullScreenState extends State<_OctagramFullScreen> {
                       shape: const CircleBorder(),
                       clipBehavior: Clip.antiAlias,
                       child: IconButton(
-                        tooltip: 'Close',
+                        tooltip:
+                            MaterialLocalizations.of(context).closeButtonTooltip,
                         icon: Icon(Icons.close_rounded, color: p.textPrimary),
                         onPressed: () => Navigator.of(context).pop(),
                       ),
@@ -364,7 +368,7 @@ class _OctagramFullScreenState extends State<_OctagramFullScreen> {
                           borderRadius: BorderRadius.circular(100),
                         ),
                         child: Text(
-                          'Pinch to resize · double-tap to reset',
+                          AppLocalizations.of(context).cmsMatrixPinchHint,
                           overflow: TextOverflow.ellipsis,
                           style: TextStyle(color: p.textSecondary, fontSize: 11),
                         ),
@@ -575,7 +579,12 @@ class _OctagramBoard extends StatelessWidget {
       ),
     ]);
 
-    return Stack(clipBehavior: Clip.none, children: children);
+    // The board is fixed geometry (labels sit in fixed-size slots), so cap
+    // accessibility text scaling here rather than let labels collide.
+    return MediaQuery.withClampedTextScaling(
+      maxScaleFactor: 1.15,
+      child: Stack(clipBehavior: Clip.none, children: children),
+    );
   }
 
   /// Returns 3 nodes laid along the edge from [from] to [center] at the given
@@ -1051,13 +1060,18 @@ void _showPointSheet(BuildContext context, DestinyPoint point) {
     backgroundColor: p.surface,
     showDragHandle: true,
     isScrollControlled: true,
+    // The detailed meaning can run several paragraphs — cap the sheet and
+    // scroll its content instead of overflowing off-screen.
+    constraints: BoxConstraints(
+      maxHeight: MediaQuery.sizeOf(context).height * 0.85,
+    ),
     shape: const RoundedRectangleBorder(
       borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
     ),
     builder: (context) {
       final hasName = point.arcanaName.isNotEmpty;
       return SafeArea(
-        child: Padding(
+        child: SingleChildScrollView(
           padding: const EdgeInsets.fromLTRB(24, 0, 24, 28),
           child: Column(
             mainAxisSize: MainAxisSize.min,

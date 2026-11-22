@@ -53,8 +53,10 @@ class ErrorView extends StatelessWidget {
             icon: icon ?? Icons.error_outline_rounded,
           );
 
+    // Scrollable so a tall message + large text scaling inside a short
+    // area (sheet, card, small phone) can't overflow.
     return Center(
-      child: Padding(
+      child: SingleChildScrollView(
         padding: const EdgeInsets.all(28),
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -101,7 +103,7 @@ class ErrorView extends StatelessWidget {
                 label: Text(l.errRetry),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: p.primary,
-                  foregroundColor: Colors.white,
+                  foregroundColor: p.onPrimary,
                   padding: const EdgeInsets.symmetric(
                     horizontal: 20,
                     vertical: 12,

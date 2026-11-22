@@ -8,10 +8,11 @@ import 'package:cosmic_mirror/shared/widgets/loading_shimmer.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-/// Spaces filtered by a single category. We push the categoryId into the
-/// existing `selectedCategoryIdProvider` on entry, then read `spacesProvider`
-/// (which keys off it). On pop we clear the filter so the main list isn't
-/// stuck on this category.
+/// Spaces filtered by a single category. Reads its own
+/// [categorySpacesProvider] family: the old approach rewrote the global
+/// category / search filters on entry and restored them on dispose, which
+/// briefly showed unfiltered spaces, inherited the All/Joined toggle, and
+/// wiped the main list's search while this screen was open.
 class CategoryDetailScreen extends ConsumerStatefulWidget {
   const CategoryDetailScreen({required this.categoryId, super.key});
   final String categoryId;
@@ -22,53 +23,32 @@ class CategoryDetailScreen extends ConsumerStatefulWidget {
 }
 
 class _CategoryDetailScreenState extends ConsumerState<CategoryDetailScreen> {
-  String? _previousCategory;
-  String? _previousQuery;
-
-  // Captured up front: `ref` can't be used once the widget is disposed,
-  // and the restore below runs after that.
-  late final StateController<String?> _categoryCtrl;
-  late final StateController<String> _queryCtrl;
-
-  @override
-  void initState() {
-    super.initState();
-    _categoryCtrl = ref.read(selectedCategoryIdProvider.notifier);
-    _queryCtrl = ref.read(spaceSearchQueryProvider.notifier);
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _previousCategory = ref.read(selectedCategoryIdProvider);
-      _previousQuery = ref.read(spaceSearchQueryProvider);
-      ref.read(selectedCategoryIdProvider.notifier).state = widget.categoryId;
-      ref.read(spaceSearchQueryProvider.notifier).state = '';
-    });
-  }
-
-  @override
-  void dispose() {
-    Future.microtask(() {
-      _categoryCtrl.state = _previousCategory;
-      _queryCtrl.state = _previousQuery ?? '';
-    });
-    super.dispose();
-  }
-
   @override
   Widget build(BuildContext context) {
     final p = context.palette;
     final l = AppLocalizations.of(context);
+    final spacesProvider = categorySpacesProvider(widget.categoryId);
     final spacesAsync = ref.watch(spacesProvider);
     final categoriesAsync = ref.watch(categoriesProvider);
+    // Unknown id / empty list → generic title (previously showed another
+    // category's name, or threw while building).
     final categoryName = categoriesAsync.maybeWhen(
       orElse: () => l.communityCategoryFallback,
-      data: (cats) => cats
-          .firstWhere(
-            (c) => c.id == widget.categoryId,
-            orElse: () => cats.isNotEmpty
-                ? cats.first
-                : (throw StateError('no categories')),
-          )
-          .name,
+      data: (cats) {
+        for (final c in cats) {
+          if (c.id == widget.categoryId) return c.name;
+        }
+        return l.communityCategoryFallback;
+      },
     );
+    // The app bar is transparent over the body; keep content below it.
+    final topPad = MediaQuery.paddingOf(context).top + kToolbarHeight + 12;
+    Future<void> refresh() async {
+      ref.invalidate(spacesProvider);
+      try {
+        await ref.read(spacesProvider.future);
+      } catch (_) {/* shown by the error state */}
+    }
 
     return Scaffold(
       backgroundColor: p.background,
@@ -93,23 +73,35 @@ class _CategoryDetailScreenState extends ConsumerState<CategoryDetailScreen> {
               error: e,
               onRetry: () => ref.invalidate(spacesProvider),
             ),
-            data: (spaces) => spaces.isEmpty
-                ? Center(
-                    child: Padding(
-                      padding: const EdgeInsets.all(32),
-                      child: Text(
-                        l.communityCategoryEmpty,
-                        textAlign: TextAlign.center,
-                        style: TextStyle(color: p.textSecondary, fontSize: 13),
+            data: (spaces) => RefreshIndicator(
+              color: p.primary,
+              backgroundColor: p.surface,
+              edgeOffset: topPad,
+              onRefresh: refresh,
+              child: spaces.isEmpty
+                  ? ListView(
+                      physics: const AlwaysScrollableScrollPhysics(),
+                      padding: EdgeInsets.fromLTRB(32, topPad + 80, 32, 32),
+                      children: [
+                        Text(
+                          l.communityCategoryEmpty,
+                          textAlign: TextAlign.center,
+                          style:
+                              TextStyle(color: p.textSecondary, fontSize: 13),
+                        ),
+                      ],
+                    )
+                  : ListView.separated(
+                      physics: const AlwaysScrollableScrollPhysics(),
+                      padding: EdgeInsets.fromLTRB(20, topPad, 20, 32),
+                      itemCount: spaces.length,
+                      separatorBuilder: (_, __) => const SizedBox(height: 10),
+                      itemBuilder: (_, i) => SpaceCard(
+                        key: ValueKey(spaces[i].space.id),
+                        space: spaces[i],
                       ),
                     ),
-                  )
-                : ListView.separated(
-                    padding: const EdgeInsets.fromLTRB(20, 100, 20, 32),
-                    itemCount: spaces.length,
-                    separatorBuilder: (_, __) => const SizedBox(height: 10),
-                    itemBuilder: (_, i) => SpaceCard(space: spaces[i]),
-                  ),
+            ),
           ),
         ],
       ),

@@ -87,7 +87,7 @@ class _GateBlock extends StatelessWidget {
   Widget build(BuildContext context) {
     return Expanded(
       child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 10),
+        padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 4),
         decoration: BoxDecoration(
           color: palette.surfaceElevated,
           borderRadius: BorderRadius.circular(10),
@@ -96,6 +96,7 @@ class _GateBlock extends StatelessWidget {
           children: [
             Text(
               label,
+              textAlign: TextAlign.center,
               style: TextStyle(
                 color: palette.textTertiary,
                 fontSize: 9,
@@ -105,7 +106,7 @@ class _GateBlock extends StatelessWidget {
             ),
             const SizedBox(height: 4),
             Text(
-              '$gate',
+              gate == 0 ? '—' : '$gate',
               style: TextStyle(
                 color: palette.textPrimary,
                 fontSize: 18,

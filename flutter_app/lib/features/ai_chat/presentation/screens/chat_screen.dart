@@ -55,9 +55,19 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     // Rebuild on every keystroke so the send button enable-state
     // (and its color) reflect the current text.
     _controller.addListener(_onTextChanged);
+    _focusNode.addListener(_onFocusChanged);
   }
 
   void _onTextChanged() => setState(() {});
+
+  /// When the keyboard opens the list viewport shrinks — keep the latest
+  /// message in view once the keyboard animation has settled.
+  void _onFocusChanged() {
+    if (!_focusNode.hasFocus) return;
+    Future<void>.delayed(const Duration(milliseconds: 320), () {
+      if (mounted) _scrollToBottom();
+    });
+  }
 
   @override
   void dispose() {
@@ -65,15 +75,19 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
       ..removeListener(_onTextChanged)
       ..dispose();
     _scrollController.dispose();
-    _focusNode.dispose();
+    _focusNode
+      ..removeListener(_onFocusChanged)
+      ..dispose();
     super.dispose();
   }
 
+  /// The message list is reversed (newest at offset 0), so "bottom" is
+  /// offset 0 — exact even before lazily-built items have been measured.
   void _scrollToBottom() {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (_scrollController.hasClients) {
         _scrollController.animateTo(
-          _scrollController.position.maxScrollExtent,
+          0,
           duration: const Duration(milliseconds: 280),
           curve: Curves.easeOutCubic,
         );
@@ -84,6 +98,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   Future<void> _sendMessage(String content) async {
     final text = content.trim();
     if (text.isEmpty || _isSubmitting) return;
+    final notifier = ref.read(chatInputProvider.notifier);
     _isSubmitting = true;
     try {
       // For a fresh chat we lazily create the thread on the backend
@@ -91,8 +106,10 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
       // pollute the threads list.
       var threadId = _threadId;
       if (threadId == null) {
-        final newId = await ref.read(chatInputProvider.notifier).createThread();
-        if (newId == null) return; // error already surfaced via state.error
+        final newId = await notifier.createThread();
+        // On failure the error is surfaced via state.error and the text
+        // is still in the input, so the user can simply retry.
+        if (newId == null || !mounted) return;
         threadId = newId;
         setState(() => _threadId = newId);
         // Refresh the threads list so the new conversation shows up.
@@ -111,22 +128,49 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
       _controller.clear();
       _scrollToBottom();
 
-      final response = await ref
-          .read(chatInputProvider.notifier)
-          .sendMessage(threadId, text);
+      final response = await notifier.sendMessage(threadId, text);
+      if (!mounted) return;
 
-      if (response != null) {
-        // The server now holds both the user message and the AI reply.
-        // Drop the local optimistic copies and refetch so the bubbles
-        // we just showed don't sit on top of the freshly-fetched
-        // server list — that's what was producing doubled prompts.
-        setState(() => _localMessages = const []);
-        ref.invalidate(chatMessagesProvider(threadId));
-        _scrollToBottom();
+      if (response == null) {
+        // Send failed (offline, server error, daily cap). Take the
+        // optimistic bubble back out and return the text to the input so
+        // nothing the user typed is lost — the error strip offers a retry.
+        setState(() {
+          _localMessages =
+              _localMessages.where((m) => m.id != userMessage.id).toList();
+        });
+        if (_controller.text.trim().isEmpty) {
+          _controller.value = TextEditingValue(
+            text: text,
+            selection: TextSelection.collapsed(offset: text.length),
+          );
+        }
+        return;
       }
+
+      // Show the reply right away, then reconcile with the server copy
+      // (which now holds both the prompt and the reply) before dropping
+      // the local copies — clearing first made the user's own message
+      // vanish until the refetch landed.
+      setState(() => _localMessages = [..._localMessages, response]);
+      _scrollToBottom();
+      try {
+        ref.invalidate(chatMessagesProvider(threadId));
+        await ref.read(chatMessagesProvider(threadId).future);
+      } catch (_) {
+        // The provider now holds the error; its ErrorView offers a retry.
+      }
+      if (!mounted) return;
+      setState(() => _localMessages = const []);
+      _scrollToBottom();
     } finally {
       _isSubmitting = false;
     }
+  }
+
+  void _retryLastSend() {
+    ref.read(chatInputProvider.notifier).clearError();
+    _sendMessage(_controller.text);
   }
 
   @override
@@ -149,7 +193,13 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
               child: threadId == null
                   ? _buildBody(<ChatMessage>[], chatState)
                   : ref.watch(chatMessagesProvider(threadId)).when(
-                        loading: () => const ShimmerList(),
+                        // A freshly created thread starts loading right
+                        // after the first send — keep showing the
+                        // optimistic bubble + typing indicator instead of
+                        // swapping the conversation for a shimmer.
+                        loading: () => _localMessages.isNotEmpty
+                            ? _buildBody(const <ChatMessage>[], chatState)
+                            : const ShimmerList(),
                         error: (e, _) => ErrorView(
                           error: e,
                           onRetry: () => ref.invalidate(
@@ -160,9 +210,17 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                             _buildBody(serverMessages, chatState),
                       ),
             ),
-            if (chatState.error != null)
+            // The daily-cap 429 is rendered by the paywall card instead.
+            if (chatState.error != null && !chatState.limitReached)
               _ErrorStrip(
                 message: FriendlyError.from(context, chatState.error).body,
+                onRetry: _controller.text.trim().isNotEmpty &&
+                        !chatState.isSending &&
+                        FriendlyError.from(context, chatState.error).retryable
+                    ? _retryLastSend
+                    : null,
+                onDismiss: () =>
+                    ref.read(chatInputProvider.notifier).clearError(),
               ),
             const _UsageStrip(),
             _InputBar(
@@ -186,15 +244,19 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   ) {
     final all = [...serverMessages, ..._localMessages];
     if (all.isEmpty) return _EmptyState(onPrompt: _sendMessage);
+    final typing = chatState.isSending ? 1 : 0;
+    // Reversed so the newest message sits at offset 0: the thread opens
+    // at the latest message and stays pinned there when the keyboard
+    // opens or a reply arrives.
     return ListView.builder(
       controller: _scrollController,
+      reverse: true,
+      keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
       padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-      itemCount: all.length + (chatState.isSending ? 1 : 0),
+      itemCount: all.length + typing,
       itemBuilder: (context, i) {
-        if (i == all.length && chatState.isSending) {
-          return const TypingIndicator();
-        }
-        return MessageBubble(message: all[i]);
+        if (i < typing) return const TypingIndicator();
+        return MessageBubble(message: all[all.length - 1 - (i - typing)]);
       },
     );
   }
@@ -221,7 +283,11 @@ class _ChatHeader extends StatelessWidget {
         children: [
           IconButton(
             icon: Icon(Icons.arrow_back_ios_new_rounded, color: p.textPrimary),
-            onPressed: () => Navigator.of(context).maybePop(),
+            tooltip: MaterialLocalizations.of(context).backButtonTooltip,
+            // A deep link / notification can open a chat with nothing
+            // underneath it — fall back to the threads list.
+            onPressed: () =>
+                context.canPop() ? context.pop() : context.go('/chat'),
           ),
           Container(
             width: 40,
@@ -254,6 +320,8 @@ class _ChatHeader extends StatelessWidget {
               children: [
                 Text(
                   l.aiChatAstrologer,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                   style: TextStyle(
                     color: p.textPrimary,
                     fontSize: 15,
@@ -380,23 +448,36 @@ class _UsageStrip extends ConsumerWidget {
     final usage = usageAsync.asData?.value;
     if (usage == null) return const SizedBox.shrink();
 
+    // After the paywall closes, re-read usage so a fresh purchase
+    // unlocks the input without leaving the screen.
+    Future<void> openPaywall() async {
+      await context.push('/paywall');
+      if (context.mounted) ref.invalidate(chatUsageProvider);
+    }
+
     if (input.limitReached) {
       return _PaywallCard(
         onTap: () {
           ref.read(chatInputProvider.notifier).clearLimitReached();
-          context.push('/paywall');
+          openPaywall();
         },
       );
     }
     if (usage.isPremium) return const _PremiumBadge();
-    return _CounterPill(used: usage.used, limit: usage.limit);
+    return _CounterPill(
+      used: usage.used,
+      limit: usage.limit,
+      // At the cap the input is locked — give the user a way forward.
+      onTap: usage.atLimit ? openPaywall : null,
+    );
   }
 }
 
 class _CounterPill extends StatelessWidget {
-  const _CounterPill({required this.used, required this.limit});
+  const _CounterPill({required this.used, required this.limit, this.onTap});
   final int used;
   final int limit;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
@@ -406,33 +487,47 @@ class _CounterPill extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 6, 16, 0),
       child: Center(
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-          decoration: BoxDecoration(
-            color: atLimit ? p.primary.withValues(alpha: 0.14) : p.surface,
-            borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: atLimit ? p.primary : p.glassBorder),
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(
-                atLimit ? Icons.lock_outline_rounded : Icons.bolt_rounded,
-                size: 14,
-                color: atLimit ? p.primary : p.textSecondary,
-              ),
-              const SizedBox(width: 6),
-              Text(
-                atLimit
-                    ? l.aiChatLimitReached
-                    : l.aiChatMessagesToday(used, limit),
-                style: TextStyle(
+        child: GestureDetector(
+          onTap: onTap,
+          behavior: HitTestBehavior.opaque,
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+            decoration: BoxDecoration(
+              color: atLimit ? p.primary.withValues(alpha: 0.14) : p.surface,
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(color: atLimit ? p.primary : p.glassBorder),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  atLimit ? Icons.lock_outline_rounded : Icons.bolt_rounded,
+                  size: 14,
                   color: atLimit ? p.primary : p.textSecondary,
-                  fontSize: 12,
-                  fontWeight: FontWeight.w600,
                 ),
-              ),
-            ],
+                const SizedBox(width: 6),
+                Flexible(
+                  child: Text(
+                    atLimit
+                        ? l.aiChatLimitReached
+                        : l.aiChatMessagesToday(used, limit),
+                    style: TextStyle(
+                      color: atLimit ? p.primary : p.textSecondary,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+                if (onTap != null) ...[
+                  const SizedBox(width: 4),
+                  Icon(
+                    Icons.arrow_forward_ios_rounded,
+                    size: 11,
+                    color: p.primary,
+                  ),
+                ],
+              ],
+            ),
           ),
         ),
       ),
@@ -552,8 +647,14 @@ class _PaywallCard extends StatelessWidget {
 }
 
 class _ErrorStrip extends StatelessWidget {
-  const _ErrorStrip({required this.message});
+  const _ErrorStrip({
+    required this.message,
+    this.onRetry,
+    this.onDismiss,
+  });
   final String message;
+  final VoidCallback? onRetry;
+  final VoidCallback? onDismiss;
 
   @override
   Widget build(BuildContext context) {
@@ -571,6 +672,28 @@ class _ErrorStrip extends StatelessWidget {
               style: TextStyle(color: p.error, fontSize: 12),
             ),
           ),
+          if (onRetry != null)
+            TextButton(
+              onPressed: onRetry,
+              style: TextButton.styleFrom(
+                foregroundColor: p.error,
+                minimumSize: const Size(44, 36),
+                padding: const EdgeInsets.symmetric(horizontal: 10),
+                textStyle: const TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+              child: Text(AppLocalizations.of(context).errRetry),
+            ),
+          if (onDismiss != null)
+            IconButton(
+              onPressed: onDismiss,
+              tooltip: MaterialLocalizations.of(context).closeButtonTooltip,
+              icon: Icon(Icons.close_rounded, color: p.error, size: 16),
+              constraints: const BoxConstraints(minWidth: 40, minHeight: 40),
+              padding: EdgeInsets.zero,
+            ),
         ],
       ),
     );
@@ -580,6 +703,9 @@ class _ErrorStrip extends StatelessWidget {
 // ============================================================================
 // Input bar
 // ============================================================================
+
+/// Mirrors the backend's maxChatMessageRunes.
+const _maxMessageChars = 500;
 
 class _InputBar extends ConsumerWidget {
   const _InputBar({
@@ -605,11 +731,13 @@ class _InputBar extends ConsumerWidget {
     final canSend = hasText && !disabled;
 
     return Container(
+      // padding (not viewPadding): it drops to 0 while the keyboard is
+      // up, so the bar doesn't float a home-indicator gap above it.
       padding: EdgeInsets.fromLTRB(
         12,
         10,
         12,
-        10 + MediaQuery.of(context).viewPadding.bottom,
+        10 + MediaQuery.paddingOf(context).bottom,
       ),
       decoration: BoxDecoration(
         color: p.background,
@@ -634,6 +762,27 @@ class _InputBar extends ConsumerWidget {
                 minLines: 1,
                 textCapitalization: TextCapitalization.sentences,
                 enabled: !atLimit,
+                // Backend rejects messages over 500 characters; enforce
+                // it here and show the counter only when it's close.
+                maxLength: _maxMessageChars,
+                buildCounter: (
+                  context, {
+                  required currentLength,
+                  required isFocused,
+                  maxLength,
+                }) =>
+                    currentLength < _maxMessageChars - 50
+                        ? null
+                        : Padding(
+                            padding: const EdgeInsets.only(bottom: 6),
+                            child: Text(
+                              '$currentLength/$_maxMessageChars',
+                              style: TextStyle(
+                                color: p.textTertiary,
+                                fontSize: 11,
+                              ),
+                            ),
+                          ),
                 style: TextStyle(
                   color: p.textPrimary,
                   fontSize: 14.5,
@@ -677,39 +826,44 @@ class _SendButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final p = context.palette;
-    return GestureDetector(
-      onTap: enabled ? onTap : null,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        width: 46,
-        height: 46,
-        decoration: BoxDecoration(
-          gradient: enabled
-              ? LinearGradient(
-                  colors: [p.primaryHi, p.primary, p.primaryDim],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                )
-              : null,
-          color: enabled ? null : p.surface,
-          shape: BoxShape.circle,
-          border: Border.all(
-            color: enabled ? Colors.transparent : p.glassBorder,
+    return Semantics(
+      button: true,
+      enabled: enabled,
+      label: AppLocalizations.of(context).cmsChatSend,
+      child: GestureDetector(
+        onTap: enabled ? onTap : null,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          width: 46,
+          height: 46,
+          decoration: BoxDecoration(
+            gradient: enabled
+                ? LinearGradient(
+                    colors: [p.primaryHi, p.primary, p.primaryDim],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  )
+                : null,
+            color: enabled ? null : p.surface,
+            shape: BoxShape.circle,
+            border: Border.all(
+              color: enabled ? Colors.transparent : p.glassBorder,
+            ),
+            boxShadow: enabled
+                ? [
+                    BoxShadow(
+                      color: p.gold.withValues(alpha: 0.35),
+                      blurRadius: 14,
+                      offset: const Offset(0, 4),
+                    ),
+                  ]
+                : null,
           ),
-          boxShadow: enabled
-              ? [
-                  BoxShadow(
-                    color: p.gold.withValues(alpha: 0.35),
-                    blurRadius: 14,
-                    offset: const Offset(0, 4),
-                  ),
-                ]
-              : null,
-        ),
-        child: Icon(
-          atLimit ? Icons.lock_outline_rounded : Icons.arrow_upward_rounded,
-          color: enabled ? const Color(0xFF1A1F2E) : p.textTertiary,
-          size: 22,
+          child: Icon(
+            atLimit ? Icons.lock_outline_rounded : Icons.arrow_upward_rounded,
+            color: enabled ? p.onPrimary : p.textTertiary,
+            size: 22,
+          ),
         ),
       ),
     );

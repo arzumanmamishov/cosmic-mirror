@@ -170,11 +170,19 @@ class UserNotifier extends StateNotifier<UserState> {
     }
   }
 
-  Future<void> clearAvatar() async {
+  /// Deletes the avatar on the server. Returns true on success; on failure
+  /// the local avatar is left untouched (it still exists server-side, so
+  /// clearing it here would just reappear on the next /users/me) and false
+  /// is returned so the caller can show an error.
+  Future<bool> clearAvatar() async {
     try {
       await _apiClient.delete(ApiEndpoints.avatar);
-    } catch (_) {/* surface via UI if needed */}
+    } catch (e) {
+      debugPrint('[Avatar] delete failed: $e');
+      return false;
+    }
     state = state.copyWith(clearAvatar: true);
+    return true;
   }
 
   void markOnboardingComplete({

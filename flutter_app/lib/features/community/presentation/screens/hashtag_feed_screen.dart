@@ -49,8 +49,8 @@ class HashtagFeedScreen extends ConsumerWidget {
                     ),
                     child: Text(
                       '#$tag',
-                      style: const TextStyle(
-                        color: Colors.white,
+                      style: TextStyle(
+                        color: p.onPrimary,
                         fontSize: 16,
                         fontWeight: FontWeight.w800,
                       ),

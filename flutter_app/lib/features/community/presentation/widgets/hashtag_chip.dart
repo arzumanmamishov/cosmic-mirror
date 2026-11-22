@@ -15,7 +15,8 @@ class HashtagChip extends StatelessWidget {
       color: p.surface,
       borderRadius: BorderRadius.circular(LivelyRadius.full),
       child: InkWell(
-        onTap: () => context.push('/community/hashtag/$tag'),
+        onTap: () =>
+            context.push('/community/hashtag/${Uri.encodeComponent(tag)}'),
         borderRadius: BorderRadius.circular(LivelyRadius.full),
         child: Ink(
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),

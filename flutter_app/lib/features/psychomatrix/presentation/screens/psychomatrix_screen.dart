@@ -38,7 +38,16 @@ class PsychomatrixScreen extends ConsumerWidget {
         seed: 41,
         intensity: 0.6,
         child: readingAsync.when(
-          loading: () => const ShimmerList(itemCount: 5),
+          // Pushed below the transparent app bar instead of sliding under it.
+          loading: () => ShimmerList(
+            itemCount: 5,
+            padding: EdgeInsets.fromLTRB(
+              20,
+              MediaQuery.of(context).padding.top + kToolbarHeight,
+              20,
+              0,
+            ),
+          ),
           error: (e, _) => ErrorView(
             error: e,
             onRetry: () => ref.invalidate(psychomatrixReadingProvider),
@@ -107,6 +116,9 @@ class _Hero extends StatelessWidget {
         ? reading.birthDate
         : DateFormat.yMMMd(Localizations.localeOf(context).toString())
             .format(parsedBirth);
+    // On-gradient ink: dark on the gold dark-theme gradient, white on the
+    // blue light-theme one.
+    final fg = p.onPrimary;
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -118,8 +130,8 @@ class _Hero extends StatelessWidget {
         children: [
           Text(
             l.psychoWorkingNumbers,
-            style: const TextStyle(
-              color: Colors.white70,
+            style: TextStyle(
+              color: fg.withValues(alpha: 0.7),
               fontSize: 11,
               letterSpacing: 1.6,
               fontWeight: FontWeight.w800,
@@ -130,7 +142,7 @@ class _Hero extends StatelessWidget {
             Text(
               l.psychoBirthDate(birthLabel),
               style: TextStyle(
-                color: Colors.white.withValues(alpha: 0.8),
+                color: fg.withValues(alpha: 0.8),
                 fontSize: 12,
               ),
             ),
@@ -160,32 +172,37 @@ class _WorkingChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final fg = context.palette.onPrimary;
     return Expanded(
       child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 12),
+        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 4),
         decoration: BoxDecoration(
-          color: Colors.white.withValues(alpha: 0.18),
+          color: fg.withValues(alpha: 0.12),
           borderRadius: BorderRadius.circular(14),
         ),
         child: Column(
           children: [
             Text(
               '$value',
-              style: const TextStyle(
-                color: Colors.white,
+              style: TextStyle(
+                color: fg,
                 fontSize: 24,
                 fontWeight: FontWeight.w900,
                 height: 1,
               ),
             ),
             const SizedBox(height: 4),
-            Text(
-              label,
-              style: const TextStyle(
-                color: Colors.white70,
-                fontSize: 11,
-                letterSpacing: 1.2,
-                fontWeight: FontWeight.w700,
+            FittedBox(
+              fit: BoxFit.scaleDown,
+              child: Text(
+                label,
+                maxLines: 1,
+                style: TextStyle(
+                  color: fg.withValues(alpha: 0.7),
+                  fontSize: 11,
+                  letterSpacing: 1.2,
+                  fontWeight: FontWeight.w700,
+                ),
               ),
             ),
           ],
@@ -254,7 +271,10 @@ class _GridCell extends StatelessWidget {
       aspectRatio: 1,
       child: InkWell(
         borderRadius: BorderRadius.circular(16),
-        onTap: () => _showCellSheet(context, cell),
+        // A cell the API didn't send has nothing to show in the sheet.
+        onTap: cell.title.isEmpty && cell.meaning.isEmpty
+            ? null
+            : () => _showCellSheet(context, cell),
         child: Container(
           padding: const EdgeInsets.all(8),
           decoration: BoxDecoration(
@@ -275,7 +295,9 @@ class _GridCell extends StatelessWidget {
                 child: Center(
                   child: FittedBox(
                     child: Text(
-                      empty ? '${cell.digit}' : cell.repeated,
+                      empty || cell.repeated.isEmpty
+                          ? '${cell.digit}'
+                          : cell.repeated,
                       style: TextStyle(
                         color: empty
                             ? p.textTertiary.withValues(alpha: 0.5)
@@ -332,8 +354,10 @@ void _showCellSheet(BuildContext context, PsychomatrixCell cell) {
       borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
     ),
     builder: (context) {
+      // Scrollable so long meanings don't overflow on small phones or with
+      // large text.
       return SafeArea(
-        child: Padding(
+        child: SingleChildScrollView(
           padding: const EdgeInsets.fromLTRB(24, 0, 24, 28),
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -533,8 +557,7 @@ class _FadeIn extends StatefulWidget {
   State<_FadeIn> createState() => _FadeInState();
 }
 
-class _FadeInState extends State<_FadeIn>
-    with SingleTickerProviderStateMixin {
+class _FadeInState extends State<_FadeIn> with SingleTickerProviderStateMixin {
   late final AnimationController _ctrl = AnimationController(
     vsync: this,
     duration: const Duration(milliseconds: 420),

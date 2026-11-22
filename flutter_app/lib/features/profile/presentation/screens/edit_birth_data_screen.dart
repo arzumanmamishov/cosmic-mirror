@@ -1,30 +1,36 @@
 import 'package:cosmic_mirror/config/theme/app_palette.dart';
+import 'package:cosmic_mirror/config/theme/lively_type.dart';
 import 'package:cosmic_mirror/core/error/error_message.dart';
 import 'package:cosmic_mirror/core/network/api_endpoints.dart';
 import 'package:cosmic_mirror/features/chart/presentation/screens/chart_screen.dart'
     show chartProvider;
 import 'package:cosmic_mirror/features/human_design/presentation/providers/human_design_providers.dart'
     show humanDesignProvider;
+import 'package:cosmic_mirror/features/numerology/presentation/providers/numerology_providers.dart'
+    show numerologyReadingProvider;
 import 'package:cosmic_mirror/features/onboarding/data/models/birth_profile_model.dart';
 import 'package:cosmic_mirror/features/onboarding/domain/entities/birth_profile.dart';
 import 'package:cosmic_mirror/features/onboarding/presentation/widgets/birth_date_picker.dart';
 import 'package:cosmic_mirror/features/onboarding/presentation/widgets/birth_time_picker.dart';
 import 'package:cosmic_mirror/features/onboarding/presentation/widgets/birthplace_search.dart';
 import 'package:cosmic_mirror/features/profile/presentation/providers/profile_providers.dart';
+import 'package:cosmic_mirror/features/psychomatrix/presentation/providers/psychomatrix_providers.dart'
+    show psychomatrixReadingProvider;
 import 'package:cosmic_mirror/features/vedic_chart/presentation/providers/vedic_providers.dart'
     show
         activeChartProvider,
         vedicAshtakavargaProvider,
         vedicDashaProvider,
+        vedicDivisionalProvider,
         vedicRasiProvider,
         vedicShadbalaProvider,
         vedicYogasProvider;
 import 'package:cosmic_mirror/l10n/app_localizations.dart';
 import 'package:cosmic_mirror/shared/providers/user_provider.dart';
+import 'package:cosmic_mirror/shared/widgets/error_view.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 /// Targeted birth-data editor — pre-populates with the user's existing
 /// profile and PUTs only this slice, instead of forcing them through
@@ -108,13 +114,24 @@ class _EditBirthDataScreenState extends ConsumerState<EditBirthDataScreen> {
         ..invalidate(vedicDashaProvider)
         ..invalidate(vedicYogasProvider)
         ..invalidate(vedicShadbalaProvider)
-        ..invalidate(vedicAshtakavargaProvider);
+        ..invalidate(vedicAshtakavargaProvider)
+        // Whole family: every divisional chart (D2..D60) is stale.
+        ..invalidate(vedicDivisionalProvider)
+        // Numerology / psychomatrix are derived from the birth date too.
+        ..invalidate(numerologyReadingProvider)
+        ..invalidate(psychomatrixReadingProvider);
       // Sun/moon/rising are derived from birth data and arrive via the
       // session response, so refresh the user state too.
       try {
         await ref.read(currentUserProvider.notifier).bootstrapSession();
       } catch (_) {/* non-fatal */}
-      if (mounted) context.pop();
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(AppLocalizations.of(context).cpsBirthDataUpdated),
+        ),
+      );
+      context.pop();
     } catch (e) {
       if (mounted) {
         setState(() {
@@ -148,7 +165,11 @@ class _EditBirthDataScreenState extends ConsumerState<EditBirthDataScreen> {
       appBar: AppBar(
         title: Text(
           AppLocalizations.of(context).editBirthDataTitle,
-          style: GoogleFonts.poppins(fontWeight: FontWeight.w700),
+          style: TextStyle(
+            fontFamily: LivelyType.ui,
+            fontWeight: FontWeight.w700,
+            color: p.textPrimary,
+          ),
         ),
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -156,19 +177,19 @@ class _EditBirthDataScreenState extends ConsumerState<EditBirthDataScreen> {
       body: profileAsync.when(
         loading: () =>
             Center(child: CircularProgressIndicator(color: p.primary)),
-        error: (e, _) => Center(
-          child: Padding(
-            padding: const EdgeInsets.all(24),
-            child: Text(
-              AppLocalizations.of(context).profileBirthDataLoadError(
-                FriendlyError.from(context, e).body,
-              ),
-              style: TextStyle(color: p.error),
-              textAlign: TextAlign.center,
-            ),
-          ),
+        error: (e, _) => ErrorView(
+          error: e,
+          onRetry: () => ref.invalidate(birthProfileProvider),
         ),
-        data: (_) {
+        data: (profile) {
+          // birthProfileProvider maps any load failure (and 404) to null.
+          // Without this branch the screen spun forever; offer a retry.
+          if (profile == null) {
+            return ErrorView(
+              message: AppLocalizations.of(context).cpsBirthDataLoadFailed,
+              onRetry: () => ref.invalidate(birthProfileProvider),
+            );
+          }
           if (!_initialized) {
             return Center(child: CircularProgressIndicator(color: p.primary));
           }
@@ -259,7 +280,8 @@ class _SectionLabel extends StatelessWidget {
   Widget build(BuildContext context) {
     return Text(
       label,
-      style: GoogleFonts.poppins(
+      style: TextStyle(
+        fontFamily: LivelyType.ui,
         color: palette.textTertiary,
         fontSize: 11,
         letterSpacing: 1.4,
@@ -296,18 +318,19 @@ class _SaveButton extends StatelessWidget {
           ),
           child: Center(
             child: loading
-                ? const SizedBox(
+                ? SizedBox(
                     width: 22,
                     height: 22,
                     child: CircularProgressIndicator(
                       strokeWidth: 2.4,
-                      valueColor: AlwaysStoppedAnimation(Colors.white),
+                      valueColor: AlwaysStoppedAnimation(p.onPrimary),
                     ),
                   )
                 : Text(
                     AppLocalizations.of(context).editSaveChanges,
-                    style: GoogleFonts.poppins(
-                      color: Colors.white,
+                    style: TextStyle(
+                      fontFamily: LivelyType.ui,
+                      color: p.onPrimary,
                       fontSize: 15,
                       fontWeight: FontWeight.w800,
                       letterSpacing: 0.4,

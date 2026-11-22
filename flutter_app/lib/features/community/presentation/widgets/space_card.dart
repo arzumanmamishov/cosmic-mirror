@@ -130,6 +130,7 @@ class SpaceCard extends StatelessWidget {
                     spaceId: s.id,
                     initialJoined: space.isJoined,
                     initialPending: space.isPending,
+                    ownerId: s.createdBy,
                   ),
                 ],
               ),

@@ -1,4 +1,6 @@
 import 'package:cosmic_mirror/config/theme/app_palette.dart';
+import 'package:cosmic_mirror/core/utils/string_utils.dart';
+import 'package:cosmic_mirror/features/chart/presentation/astro_labels.dart';
 import 'package:cosmic_mirror/features/daily_reading/domain/entities/daily_reading.dart';
 import 'package:cosmic_mirror/features/daily_reading/presentation/providers/daily_reading_provider.dart';
 import 'package:cosmic_mirror/l10n/app_localizations.dart';
@@ -30,7 +32,11 @@ class DailyReadingScreen extends ConsumerWidget {
         actions: [
           IconButton(
             icon: const Icon(Icons.ios_share_rounded),
-            onPressed: () {
+            tooltip: AppLocalizations.of(context).communityShare,
+            // Disabled until there's a reading to share.
+            onPressed: readingAsync.valueOrNull == null
+                ? null
+                : () {
               final reading = readingAsync.valueOrNull;
               if (reading != null) {
                 Share.share(
@@ -73,6 +79,46 @@ class _ReadingBody extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
+    // The model defaults missing fields to '' — skip those sections
+    // instead of rendering a titled card with no body.
+    final sections = <(String, IconData, Color, String)>[
+      (
+        l10n.dailyReadingEmotional,
+        Icons.favorite_rounded,
+        const Color(0xFFE14B8A),
+        reading.emotional,
+      ),
+      (
+        l10n.dailyReadingLove,
+        Icons.auto_awesome_rounded,
+        const Color(0xFFC76E5E),
+        reading.love,
+      ),
+      (
+        l10n.dailyReadingCareer,
+        Icons.work_rounded,
+        const Color(0xFFB8860B),
+        reading.career,
+      ),
+      (
+        l10n.dailyReadingHealth,
+        Icons.spa_rounded,
+        const Color(0xFF5ED39A),
+        reading.health,
+      ),
+      (
+        l10n.dailyReadingCaution,
+        Icons.shield_moon_rounded,
+        const Color(0xFFF2B66D),
+        reading.caution,
+      ),
+      (
+        l10n.dailyReadingAction,
+        Icons.bolt_rounded,
+        const Color(0xFF7B61FF),
+        reading.action,
+      ),
+    ].where((s) => s.$4.trim().isNotEmpty).toList();
     return CustomScrollView(
       slivers: [
         SliverToBoxAdapter(child: _Hero(reading: reading)),
@@ -80,49 +126,22 @@ class _ReadingBody extends StatelessWidget {
           padding: const EdgeInsets.fromLTRB(20, 4, 20, 40),
           sliver: SliverList.list(
             children: [
-              _staggered(0, _SectionCard(
-                title: l10n.dailyReadingEmotional,
-                icon: Icons.favorite_rounded,
-                iconColor: const Color(0xFFE14B8A),
-                content: reading.emotional,
-              ),),
-              const SizedBox(height: 12),
-              _staggered(1, _SectionCard(
-                title: l10n.dailyReadingLove,
-                icon: Icons.auto_awesome_rounded,
-                iconColor: const Color(0xFFC76E5E),
-                content: reading.love,
-              ),),
-              const SizedBox(height: 12),
-              _staggered(2, _SectionCard(
-                title: l10n.dailyReadingCareer,
-                icon: Icons.work_rounded,
-                iconColor: const Color(0xFFB8860B),
-                content: reading.career,
-              ),),
-              const SizedBox(height: 12),
-              _staggered(3, _SectionCard(
-                title: l10n.dailyReadingHealth,
-                icon: Icons.spa_rounded,
-                iconColor: const Color(0xFF5ED39A),
-                content: reading.health,
-              ),),
-              const SizedBox(height: 12),
-              _staggered(4, _SectionCard(
-                title: l10n.dailyReadingCaution,
-                icon: Icons.shield_moon_rounded,
-                iconColor: const Color(0xFFF2B66D),
-                content: reading.caution,
-              ),),
-              const SizedBox(height: 12),
-              _staggered(5, _SectionCard(
-                title: l10n.dailyReadingAction,
-                icon: Icons.bolt_rounded,
-                iconColor: const Color(0xFF7B61FF),
-                content: reading.action,
-              ),),
-              const SizedBox(height: 24),
-              _staggered(6, _AffirmationCard(text: reading.affirmation)),
+              for (var i = 0; i < sections.length; i++) ...[
+                if (i > 0) const SizedBox(height: 12),
+                _staggered(
+                  i,
+                  _SectionCard(
+                    title: sections[i].$1,
+                    icon: sections[i].$2,
+                    iconColor: sections[i].$3,
+                    content: sections[i].$4,
+                  ),
+                ),
+              ],
+              if (reading.affirmation.trim().isNotEmpty) ...[
+                const SizedBox(height: 24),
+                _staggered(6, _AffirmationCard(text: reading.affirmation)),
+              ],
               const SizedBox(height: 16),
               _staggered(7, _LuckyRow(
                 color: reading.luckyColor,
@@ -145,6 +164,9 @@ class _Hero extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final p = context.palette;
+    // Clear the transparent app bar + status bar / Dynamic Island; a fixed
+    // 100px put the date under the app bar on taller notches.
+    final topInset = MediaQuery.paddingOf(context).top + kToolbarHeight + 16;
     final dateLine = DateFormat(
       'EEEE, MMMM d',
       Localizations.localeOf(context).toString(),
@@ -156,7 +178,7 @@ class _Hero extends StatelessWidget {
         children: [
           // Hero gradient background
           Container(
-            padding: const EdgeInsets.fromLTRB(20, 100, 20, 28),
+            padding: EdgeInsets.fromLTRB(20, topInset, 20, 28),
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 begin: Alignment.topCenter,
@@ -180,7 +202,7 @@ class _Hero extends StatelessWidget {
           ),
           // Foreground hero content with staggered entrance
           Padding(
-            padding: const EdgeInsets.fromLTRB(20, 100, 20, 28),
+            padding: EdgeInsets.fromLTRB(20, topInset, 20, 28),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -331,6 +353,15 @@ class _SignChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final p = context.palette;
+    // Backend sends English identifiers in any casing ("leo") — normalise
+    // and map to the localized sign name.
+    final raw = sign.trim();
+    final signLabel = raw.isEmpty
+        ? raw
+        : chartSignName(
+            AppLocalizations.of(context),
+            '${raw[0].toUpperCase()}${raw.substring(1).toLowerCase()}',
+          );
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
@@ -350,13 +381,16 @@ class _SignChip extends StatelessWidget {
             ),
           ),
           const SizedBox(width: 6),
-          Text(
-            sign,
+          Flexible(
+            child: Text(
+            signLabel,
+            overflow: TextOverflow.ellipsis,
             style: TextStyle(
               color: p.textPrimary,
               fontSize: 12,
               fontWeight: FontWeight.w600,
             ),
+          ),
           ),
         ],
       ),
@@ -403,12 +437,14 @@ class _SectionCard extends StatelessWidget {
                 child: Icon(icon, color: iconColor, size: 18),
               ),
               const SizedBox(width: 12),
-              Text(
-                title,
-                style: TextStyle(
-                  color: p.textPrimary,
-                  fontSize: 15,
-                  fontWeight: FontWeight.w700,
+              Expanded(
+                child: Text(
+                  title,
+                  style: TextStyle(
+                    color: p.textPrimary,
+                    fontSize: 15,
+                    fontWeight: FontWeight.w700,
+                  ),
                 ),
               ),
             ],
@@ -435,6 +471,10 @@ class _AffirmationCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final p = context.palette;
+    final lang = Localizations.localeOf(context).languageCode;
+    // onPrimary: white was low-contrast on the light-gold dark-theme
+    // gradient.
+    final fg = p.onPrimary;
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(24),
@@ -451,16 +491,16 @@ class _AffirmationCard extends StatelessWidget {
       ),
       child: Column(
         children: [
-          const Icon(
+          Icon(
             Icons.format_quote_rounded,
-            color: Colors.white,
+            color: fg,
             size: 32,
           ),
           const SizedBox(height: 8),
           Text(
             text,
-            style: const TextStyle(
-              color: Colors.white,
+            style: TextStyle(
+              color: fg,
               fontSize: 17,
               height: 1.5,
               fontWeight: FontWeight.w500,
@@ -470,9 +510,11 @@ class _AffirmationCard extends StatelessWidget {
           ),
           const SizedBox(height: 12),
           Text(
-            AppLocalizations.of(context).dailyReadingAffirmation.toUpperCase(),
+            AppLocalizations.of(context)
+                .dailyReadingAffirmation
+                .toUpperCaseLocale(lang),
             style: TextStyle(
-              color: Colors.white.withValues(alpha: 0.7),
+              color: fg.withValues(alpha: 0.7),
               fontSize: 10,
               letterSpacing: 2,
               fontWeight: FontWeight.w600,
@@ -493,7 +535,10 @@ class _LuckyRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final p = context.palette;
+    final lang = Localizations.localeOf(context).languageCode;
     return Row(
+      // Top-align the tiles when one label wraps to two lines.
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Expanded(
           child: Container(
@@ -521,7 +566,10 @@ class _LuckyRow extends StatelessWidget {
                 ),
                 const SizedBox(height: 10),
                 Text(
-                  AppLocalizations.of(context).dailyReadingLuckyColor.toUpperCase(),
+                  AppLocalizations.of(context)
+                      .dailyReadingLuckyColor
+                      .toUpperCaseLocale(lang),
+                  textAlign: TextAlign.center,
                   style: TextStyle(
                     color: p.textTertiary,
                     fontSize: 10,
@@ -564,7 +612,10 @@ class _LuckyRow extends StatelessWidget {
                 ),
                 const SizedBox(height: 10),
                 Text(
-                  AppLocalizations.of(context).dailyReadingLuckyNumber.toUpperCase(),
+                  AppLocalizations.of(context)
+                      .dailyReadingLuckyNumber
+                      .toUpperCaseLocale(lang),
+                  textAlign: TextAlign.center,
                   style: TextStyle(
                     color: p.textTertiary,
                     fontSize: 10,
