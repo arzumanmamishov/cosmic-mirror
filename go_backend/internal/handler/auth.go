@@ -296,7 +296,7 @@ func (h *AuthHandler) PrivacyPolicy(w http.ResponseWriter, r *http.Request) {
 		"content":   privacyPolicyText,
 		"version":   legalVersion,
 		"effective": legalEffectiveDate,
-		"web_url":   "https://livelyapp.co/privacy",
+		"web_url":   legalSiteURL + "/privacy",
 	})
 }
 
@@ -305,7 +305,7 @@ func (h *AuthHandler) TermsOfService(w http.ResponseWriter, r *http.Request) {
 		"content":   termsOfServiceText,
 		"version":   legalVersion,
 		"effective": legalEffectiveDate,
-		"web_url":   "https://livelyapp.co/terms",
+		"web_url":   legalSiteURL + "/terms",
 	})
 }
 

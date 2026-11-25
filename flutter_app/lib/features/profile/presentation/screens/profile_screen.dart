@@ -1,4 +1,5 @@
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:cosmic_mirror/config/constants.dart';
 import 'package:cosmic_mirror/config/theme/app_palette.dart';
 import 'package:cosmic_mirror/config/theme/lively_type.dart';
 import 'package:cosmic_mirror/core/error/error_message.dart';
@@ -1213,14 +1214,14 @@ class _AccountLinks extends StatelessWidget {
           _ActionRow(
             icon: Icons.shield_rounded,
             label: AppLocalizations.of(context).profilePrivacy,
-            onTap: () => launchUrl(Uri.parse('https://livelyapp.co/privacy')),
+            onTap: () => launchUrl(Uri.parse(AppLinks.privacy)),
           ),
           _RowDivider(p: p),
           _ActionRow(
             icon: Icons.help_rounded,
             label: AppLocalizations.of(context).profileHelp,
             onTap: () async {
-              const email = 'support@livelyapp.co';
+              const email = AppLinks.supportEmail;
               final opened = await launchUrl(Uri.parse('mailto:$email'))
                   .catchError((Object _) => false);
               // No mail app configured: say where to write instead of

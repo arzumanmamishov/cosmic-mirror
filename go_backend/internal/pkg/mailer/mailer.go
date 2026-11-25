@@ -88,7 +88,7 @@ func New(cfg Config) Mailer {
 		cfg.Port = 587
 	}
 	if cfg.FromEmail == "" {
-		cfg.FromEmail = "no-reply@livelyapp.co"
+		cfg.FromEmail = "lively@cofinden.co"
 	}
 	if cfg.FromName == "" {
 		cfg.FromName = "Lively"

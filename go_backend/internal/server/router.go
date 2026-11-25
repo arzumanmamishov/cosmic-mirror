@@ -85,6 +85,15 @@ func NewRouter(h *handler.Handlers, auth *middleware.Auth, rl *middleware.RateLi
 	)
 	r.Get("/uploads/*", uploadsServer.ServeHTTP)
 
+	// Public pages the app and the store listings link to (privacy policy,
+	// terms, support with the Impressum, account deletion). Served here so
+	// they live on the API's domain without a separate website.
+	r.Get("/", handler.HomePage)
+	r.Get("/privacy", handler.PrivacyPage)
+	r.Get("/terms", handler.TermsPage)
+	r.Get("/support", handler.SupportPage)
+	r.Get("/delete-account", handler.DeleteAccountPage)
+
 	// Web admin panel: static files embedded in the binary, served with
 	// their own CSP. Sign-in and data go through /api/v1 (same origin, so
 	// no CORS); only ADMIN_EMAILS accounts get past /api/v1/admin/me.

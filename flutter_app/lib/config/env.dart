@@ -38,7 +38,7 @@ class Env {
       case Environment.prod:
         return const String.fromEnvironment(
           'API_BASE_URL',
-          defaultValue: 'https://api.livelyapp.co',
+          defaultValue: 'https://lively.cofinden.co',
         );
       case Environment.staging:
         return const String.fromEnvironment(

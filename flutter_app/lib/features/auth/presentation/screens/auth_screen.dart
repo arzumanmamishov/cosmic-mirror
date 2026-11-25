@@ -2,6 +2,7 @@
 // register) swap via a small segmented toggle so a returning user doesn't
 // have to dig for the register link.
 
+import 'package:cosmic_mirror/config/constants.dart';
 import 'package:cosmic_mirror/config/theme/app_palette.dart';
 import 'package:cosmic_mirror/config/theme/lively_type.dart';
 import 'package:cosmic_mirror/core/error/exceptions.dart';
@@ -340,8 +341,8 @@ class _TermsNotice extends StatefulWidget {
 }
 
 class _TermsNoticeState extends State<_TermsNotice> {
-  static final _termsUrl = Uri.parse('https://livelyapp.co/terms');
-  static final _privacyUrl = Uri.parse('https://livelyapp.co/privacy');
+  static final _termsUrl = Uri.parse(AppLinks.terms);
+  static final _privacyUrl = Uri.parse(AppLinks.privacy);
 
   late final TapGestureRecognizer _termsTap = TapGestureRecognizer()
     ..onTap = () => launchUrl(_termsUrl);

@@ -13,7 +13,7 @@
 #                                                     SDK key (goog_…)
 #   REVENUECAT_API_KEY          optional  fallback when the per-platform var is
 #                                         unset (must still match the platform)
-#   API_BASE_URL                optional  default https://api.livelyapp.co
+#   API_BASE_URL                optional  default https://lively.cofinden.co
 #   SENTRY_DSN                  recommended  crash reporting; without it
 #                                         crashes are not reported anywhere
 #   SENTRY_AUTH_TOKEN, SENTRY_ORG, SENTRY_PROJECT
@@ -37,7 +37,7 @@ case "$TARGET" in android|ios|all) ;; *)
   echo "usage: $0 [android|ios|all]" >&2; exit 64 ;;
 esac
 
-API_BASE_URL="${API_BASE_URL:-https://api.livelyapp.co}"
+API_BASE_URL="${API_BASE_URL:-https://lively.cofinden.co}"
 
 die() { echo "error: $*" >&2; exit 1; }
 

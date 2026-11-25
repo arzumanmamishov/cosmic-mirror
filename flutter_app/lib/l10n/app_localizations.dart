@@ -6534,7 +6534,7 @@ abstract class AppLocalizations {
   /// No description provided for @subscriptionManagedOnWeb.
   ///
   /// In en, this message translates to:
-  /// **'Your subscription was purchased on our website. To change or cancel it, contact support@livelyapp.co.'**
+  /// **'Your subscription was purchased on our website. To change or cancel it, contact lively@cofinden.co.'**
   String get subscriptionManagedOnWeb;
 
   /// No description provided for @subscriptionContactSupport.

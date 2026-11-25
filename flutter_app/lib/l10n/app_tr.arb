@@ -1192,7 +1192,7 @@
   "subscriptionActiveUntil": "{date} tarihine kadar aktif.",
   "subscriptionBillingIssue": "Ödeme yönteminde bir sorun var. Premium'u korumak için mağaza hesabından güncelle.",
   "subscriptionManage": "Aboneliği yönet",
-  "subscriptionManagedOnWeb": "Aboneliğin web sitemizden satın alındı. Değiştirmek veya iptal etmek için support@livelyapp.co adresine yaz.",
+  "subscriptionManagedOnWeb": "Aboneliğin web sitemizden satın alındı. Değiştirmek veya iptal etmek için lively@cofinden.co adresine yaz.",
   "subscriptionContactSupport": "Destekle iletişime geç",
   "subscriptionDeleteAccountStoreNote": "App Store veya Google Play üzerinden abone olduysan, hesabını silmek bu aboneliği iptal etmez. Gelecekteki ödemeleri durdurmak için aboneliğini App Store veya Google Play abonelik ayarlarından iptal et.",
 

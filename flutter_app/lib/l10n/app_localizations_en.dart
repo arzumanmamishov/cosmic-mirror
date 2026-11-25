@@ -3557,7 +3557,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get subscriptionManagedOnWeb =>
-      'Your subscription was purchased on our website. To change or cancel it, contact support@livelyapp.co.';
+      'Your subscription was purchased on our website. To change or cancel it, contact lively@cofinden.co.';
 
   @override
   String get subscriptionContactSupport => 'Contact support';

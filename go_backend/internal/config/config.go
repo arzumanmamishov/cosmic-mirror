@@ -102,7 +102,7 @@ func Load() (*Config, error) {
 		SMTPPort:                getEnvInt("SMTP_PORT", 587),
 		SMTPUsername:            getEnv("SMTP_USERNAME", ""),
 		SMTPPassword:            getEnv("SMTP_PASSWORD", ""),
-		SMTPFrom:                getEnv("SMTP_FROM_EMAIL", "no-reply@livelyapp.co"),
+		SMTPFrom:                getEnv("SMTP_FROM_EMAIL", "lively@cofinden.co"),
 		SMTPFromName:            getEnv("SMTP_FROM_NAME", "Lively"),
 		SMTPUseTLS:              getEnvBool("SMTP_USE_TLS", true),
 		JWTSecret:               getEnv("JWT_SECRET", ""),

@@ -3540,7 +3540,7 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get subscriptionManagedOnWeb =>
-      'Aboneliğin web sitemizden satın alındı. Değiştirmek veya iptal etmek için support@livelyapp.co adresine yaz.';
+      'Aboneliğin web sitemizden satın alındı. Değiştirmek veya iptal etmek için lively@cofinden.co adresine yaz.';
 
   @override
   String get subscriptionContactSupport => 'Destekle iletişime geç';

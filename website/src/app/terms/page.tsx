@@ -305,9 +305,9 @@ export default function TermsPage() {
 
       <h2 id="governing-law">17. Governing law and disputes</h2>
       <p>
-        These Terms are governed by the laws of <strong>[Jurisdiction]</strong>,
-        without regard to its conflict-of-laws rules, and the courts of{" "}
-        <strong>[Jurisdiction]</strong> will have jurisdiction over any dispute,
+        These Terms are governed by the laws of the Federal Republic of
+        Germany, without regard to its conflict-of-laws rules, and the courts of
+        Germany will have jurisdiction over any dispute,
         except where mandatory consumer-protection laws of your country of
         residence provide otherwise. Nothing in this section deprives you of the
         protection of the mandatory consumer laws that apply where you live.

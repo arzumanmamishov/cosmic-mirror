@@ -1,4 +1,5 @@
 import 'package:cosmic_mirror/config/api_url_override.dart';
+import 'package:cosmic_mirror/config/constants.dart';
 import 'package:cosmic_mirror/config/env.dart';
 import 'package:cosmic_mirror/config/theme/app_palette.dart';
 import 'package:cosmic_mirror/config/theme/lively_type.dart';
@@ -19,7 +20,7 @@ import 'package:in_app_review/in_app_review.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-const _supportEmail = 'support@livelyapp.co';
+const _supportEmail = AppLinks.supportEmail;
 
 /// Installed app version + build number, read once from the platform.
 final _packageInfoProvider = FutureProvider<PackageInfo>(
@@ -138,18 +139,14 @@ class SettingsScreen extends ConsumerWidget {
             leading: const Icon(Icons.privacy_tip_outlined),
             title: Text(l10n.authPrivacy),
             onTap: () {
-              launchUrl(
-                Uri.parse('https://livelyapp.co/privacy'),
-              );
+              launchUrl(Uri.parse(AppLinks.privacy));
             },
           ),
           ListTile(
             leading: const Icon(Icons.description_outlined),
             title: Text(l10n.settingsTermsOfService),
             onTap: () {
-              launchUrl(
-                Uri.parse('https://livelyapp.co/terms'),
-              );
+              launchUrl(Uri.parse(AppLinks.terms));
             },
           ),
 

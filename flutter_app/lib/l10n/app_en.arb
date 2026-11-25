@@ -1258,7 +1258,7 @@
   "@subscriptionActiveUntil": {"placeholders": {"date": {"type": "String"}}},
   "subscriptionBillingIssue": "There's a problem with your payment method. Update it in your store account to keep Premium.",
   "subscriptionManage": "Manage subscription",
-  "subscriptionManagedOnWeb": "Your subscription was purchased on our website. To change or cancel it, contact support@livelyapp.co.",
+  "subscriptionManagedOnWeb": "Your subscription was purchased on our website. To change or cancel it, contact lively@cofinden.co.",
   "subscriptionContactSupport": "Contact support",
   "subscriptionDeleteAccountStoreNote": "If you subscribed through the App Store or Google Play, deleting your account doesn't cancel that subscription. Cancel it in your App Store or Google Play subscription settings to stop future charges.",
 

@@ -6,7 +6,7 @@ How to run the Lively backend in production and ship the mobile apps.
 
 Any Linux VPS with Docker and Docker Compose works. Minimum: 2 vCPU, 4 GB RAM, 40 GB disk.
 
-1. Point DNS: an `A` record (plus `AAAA` for IPv6) for your API domain, such as `api.livelyapp.co`, to the server.
+1. Point DNS: an `A` record (plus `AAAA` for IPv6) for your API domain, `lively.cofinden.co`, to the server.
 2. Open the firewall for ports 22, 80 and 443 only. Postgres and Redis are never published.
 3. Clone the repository to `/srv/cosmic-mirror`.
 
@@ -58,7 +58,7 @@ curl https://$API_DOMAIN/ready    # {"status":"ready"} once Postgres and Redis a
 
 The birthplace search (`/api/v1/places/search`) proxies the public OpenStreetMap Nominatim server. Its [usage policy](https://operations.osmfoundation.org/policies/nominatim/) allows at most 1 request per second for the whole app, requires an identifying User-Agent, and requires caching. The API handles this in four ways:
 
-* It sends `User-Agent: Lively/1.0 (+https://livelyapp.co; hello@livelyapp.co)`.
+* It sends `User-Agent: Lively/1.0 (+https://lively.cofinden.co; lively@cofinden.co)`.
 * It caches results for 30 days, or 1 day for empty results.
 * It throttles upstream calls to 1 per second. If more than 3 seconds of requests are already queued, the user gets a 503 "try again" response instead.
 * It limits each IP to 30 searches per minute and requires queries of at least 3 characters.
@@ -194,7 +194,7 @@ REVENUECAT_API_KEY_IOS=appl_... REVENUECAT_API_KEY_ANDROID=goog_... ./scripts/bu
 ```
 
 * The RevenueCat keys are the public SDK keys from RevenueCat → Project settings → API keys. iOS keys start with `appl_` and Android keys with `goog_`. The script refuses a missing key or a key for the wrong store, because the app would otherwise ship with purchases turned off. `REVENUECAT_API_KEY` still works as a fallback if it matches the platform.
-* Release builds default to `ENVIRONMENT=prod` and `https://api.livelyapp.co`. Cleartext HTTP is only allowed in Android debug builds.
+* Release builds default to `ENVIRONMENT=prod` and `https://lively.cofinden.co`. Cleartext HTTP is only allowed in Android debug builds.
 * The script builds with `--obfuscate --split-debug-info`. Keep `build/debug-info/` privately, because you need it to symbolicate crash reports.
 * **Crash reporting (Sentry):** pass `SENTRY_DSN=https://…` (Sentry → Project settings → Client Keys). Without it the build still works but reports no crashes, and the script warns. To make obfuscated stack traces readable, also set `SENTRY_AUTH_TOKEN`, `SENTRY_ORG` and `SENTRY_PROJECT`; the script then uploads the debug symbols after building. Reports carry no account details (`sendDefaultPii` is off) and performance tracing is off.
 * **Android:** create the upload keystore and `android/key.properties` (see `key.properties.example`). Release builds fail without them.
@@ -219,7 +219,7 @@ How it works:
 3. On `lively_premium_yearly`, add an introductory offer: **Free trial, 3 days**, for all territories. Apple applies its own eligibility rules: a user gets one introductory offer per subscription group.
 4. Create an In-App Purchase key (Users and Access → Integrations) and upload it to RevenueCat. Also set the App Store Server Notifications URL to the one RevenueCat gives you.
 5. Submit both products with the app version the first time you submit it. Add a screenshot of the paywall for review.
-6. In the app's metadata, set the Privacy Policy URL to `https://livelyapp.co/privacy`. For the Terms of Use, either use Apple's standard EULA or link `https://livelyapp.co/terms` in the description or the EULA field. The paywall links both pages.
+6. In the app's metadata, set the Privacy Policy URL to `https://lively.cofinden.co/privacy` and the Support URL to `https://lively.cofinden.co/support`. For the Terms of Use, either use Apple's standard EULA or link `https://lively.cofinden.co/terms` in the description or the EULA field. The paywall links both pages.
 
 **2. Google Play Console**
 
@@ -251,7 +251,7 @@ Sandbox and TestFlight purchases are accepted by the production server on purpos
 - [ ] Release builds were made with `REVENUECAT_API_KEY_IOS` (`appl_…`) and `REVENUECAT_API_KEY_ANDROID` (`goog_…`).
 - [ ] Nightly backup cron is installed, off-site copy is set up, and a restore has been tested.
 - [ ] Release builds point to production. Check that login works on a real device.
-- [ ] Store listings have a privacy policy URL (`/api/v1/legal/privacy`) and a terms URL.
+- [ ] Store listings use `https://lively.cofinden.co/privacy` (privacy policy), `/support` (support URL) and, on Google Play, `/delete-account` (account deletion URL). The operator name and address are filled in (`legalOperator` and `legalOperatorAddress` in `internal/handler/legal_text.go`).
 - [ ] Monitoring: an uptime check on `/ready`, and release builds made with `SENTRY_DSN` (plus the Sentry upload variables) so app crashes are reported.
 - [ ] Detailed Destiny Matrix meanings generated: `cd go_backend && OPENAI_API_KEY=sk-... go run ./cmd/gen-interpretations`, then commit `internal/destinymatrix/interpretations.json`. Until then users see the short meanings.
 - [ ] CI (`.github/workflows/ci.yml`) is green on `master`.

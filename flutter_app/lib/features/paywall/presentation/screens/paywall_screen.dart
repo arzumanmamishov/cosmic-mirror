@@ -1,3 +1,4 @@
+import 'package:cosmic_mirror/config/constants.dart';
 import 'package:cosmic_mirror/config/theme/app_palette.dart';
 import 'package:cosmic_mirror/config/theme/lively_type.dart';
 import 'package:cosmic_mirror/core/error/error_message.dart';
@@ -14,9 +15,9 @@ import 'package:intl/intl.dart';
 import 'package:purchases_flutter/purchases_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-const _termsUrl = 'https://livelyapp.co/terms';
-const _privacyUrl = 'https://livelyapp.co/privacy';
-const _supportEmail = 'support@livelyapp.co';
+const _termsUrl = AppLinks.terms;
+const _privacyUrl = AppLinks.privacy;
+const _supportEmail = AppLinks.supportEmail;
 
 /// "App Store" / "Google Play" — proper nouns, not localized.
 String _storeName() =>

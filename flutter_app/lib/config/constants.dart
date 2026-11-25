@@ -42,3 +42,16 @@ class AppConstants {
   static const String cacheBox = 'cache_box';
   static const String settingsBox = 'settings_box';
 }
+
+/// Public web pages and the support mailbox. The pages are served by the
+/// API server itself (go_backend/internal/handler/legal_pages.go), so they
+/// live on the same domain as the production API.
+class AppLinks {
+  AppLinks._();
+
+  static const String site = 'https://lively.cofinden.co';
+  static const String privacy = '$site/privacy';
+  static const String terms = '$site/terms';
+  static const String support = '$site/support';
+  static const String supportEmail = 'lively@cofinden.co';
+}

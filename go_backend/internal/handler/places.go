@@ -28,7 +28,7 @@ import (
 // instance is a stop-gap — switch to a paid or self-hosted geocoder before
 // traffic grows.
 const (
-	nominatimUserAgent = "Lively/1.0 (+https://livelyapp.co; hello@livelyapp.co)"
+	nominatimUserAgent = "Lively/1.0 (+" + legalSiteURL + "; " + legalContactEmail + ")"
 	// placesCacheTTL: place coordinates practically never change.
 	placesCacheTTL = 30 * 24 * time.Hour
 	// placesEmptyCacheTTL: a miss may be fixed by an OSM edit; retry sooner.

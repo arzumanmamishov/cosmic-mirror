@@ -1,26 +1,62 @@
 package handler
 
-// Legal copy served by GET /legal/privacy and GET /legal/terms. This is the
-// source of truth the mobile app renders in-app; the marketing site mirrors it
-// at livelyapp.co/privacy and /terms.
-//
-// TEMPLATE NOTICE: This is a good-faith, tailored draft — NOT a substitute for
-// review by qualified legal counsel. Before production launch, have counsel
-// review it and replace the bracketed placeholders ([Company Legal Entity],
-// [Jurisdiction]). Bump legalVersion + legalEffectiveDate on any material
-// change so clients can re-prompt for consent.
-
-const (
-	legalVersion       = "1.1"
-	legalEffectiveDate = "2026-11-22"
+import (
+	"strings"
+	"time"
 )
 
-const privacyPolicyText = `PRIVACY POLICY — Lively
-Effective: 6 July 2026 · Version 1.0
+// Legal copy served as JSON by GET /api/v1/legal/privacy and /legal/terms
+// (the app renders it in-app) and as web pages at /privacy and /terms (the
+// URLs the store listings and the app link to; see legal_pages.go).
+//
+// TEMPLATE NOTICE: This is a good-faith, tailored draft — NOT a substitute for
+// review by qualified legal counsel. Have counsel review it before launch.
+// Bump legalVersion + legalEffectiveDate on any material change so clients
+// can re-prompt for consent.
 
-Lively ("Lively", "we", "us"), operated by [Company Legal Entity], provides an
+const (
+	legalVersion       = "1.2"
+	legalEffectiveDate = "2026-11-25"
+
+	// legalOperator is the person or company that runs Lively (named in the
+	// privacy policy, the terms and the Impressum). legalOperatorAddress is
+	// its postal address (required for the Impressum under German law).
+	legalOperator        = "[Company Legal Entity]"
+	legalOperatorAddress = ""
+
+	// legalSiteURL hosts the public pages (privacy, terms, support) — the
+	// API server itself, see legal_pages.go. legalContactEmail is the
+	// support and privacy contact.
+	legalSiteURL      = "https://lively.cofinden.co"
+	legalContactEmail = "lively@cofinden.co"
+)
+
+// fillLegal replaces the {{…}} tokens in the legal templates.
+func fillLegal(s string) string {
+	effective := legalEffectiveDate
+	if t, err := time.Parse("2006-01-02", legalEffectiveDate); err == nil {
+		effective = t.Format("2 January 2006")
+	}
+	return strings.NewReplacer(
+		"{{OPERATOR}}", legalOperator,
+		"{{EMAIL}}", legalContactEmail,
+		"{{SITE}}", legalSiteURL,
+		"{{VERSION}}", legalVersion,
+		"{{EFFECTIVE}}", effective,
+	).Replace(s)
+}
+
+var (
+	privacyPolicyText  = fillLegal(privacyPolicyTemplate)
+	termsOfServiceText = fillLegal(termsOfServiceTemplate)
+)
+
+const privacyPolicyTemplate = `PRIVACY POLICY — Lively
+Effective: {{EFFECTIVE}} · Version {{VERSION}}
+
+Lively ("Lively", "we", "us"), operated by {{OPERATOR}}, provides an
 astrology and self-guidance mobile application. This policy explains what we
-collect, why, and the choices you have. Questions: privacy@livelyapp.co.
+collect, why, and the choices you have. Questions: {{EMAIL}}.
 
 1. DATA WE COLLECT
 • Account data: email address and (optionally) your name.
@@ -64,7 +100,7 @@ required by law (e.g. tax/payment records).
 Subject to applicable law, you may access, correct, export, or delete your data,
 and object to or restrict certain processing. You can delete your account and
 all associated personal data from within the app (Settings → Delete Account),
-or email privacy@livelyapp.co. EU/EEA/UK users may lodge a complaint with their
+or email {{EMAIL}}. EU/EEA/UK users may lodge a complaint with their
 local supervisory authority.
 
 6. SECURITY
@@ -85,15 +121,15 @@ We may update this policy; we will revise the version and effective date above
 and, for material changes, notify you in the app.
 
 10. CONTACT
-[Company Legal Entity] · privacy@livelyapp.co · https://livelyapp.co/privacy
+{{OPERATOR}} · {{EMAIL}} · {{SITE}}/privacy
 
 Astrology content in Lively is provided for entertainment and self-reflection
 and is not professional advice. See our Terms of Service.`
 
-const termsOfServiceText = `TERMS OF SERVICE — Lively
-Effective: 6 July 2026 · Version 1.0
+const termsOfServiceTemplate = `TERMS OF SERVICE — Lively
+Effective: {{EFFECTIVE}} · Version {{VERSION}}
 
-These Terms are a legal agreement between you and [Company Legal Entity]
+These Terms are a legal agreement between you and {{OPERATOR}}
 ("Lively", "we", "us") governing your use of the Lively app. By creating an
 account or using the app, you agree to these Terms.
 
@@ -148,7 +184,7 @@ deliberately misleading; or illegal or infringing on anyone's rights.
 • Enforcement: we remove content that breaks these rules and suspend or
   permanently ban accounts responsible, without notice where appropriate.
   Space owners and moderators may also remove comments in their spaces.
-To report a concern directly, email support@livelyapp.co.
+To report a concern directly, email {{EMAIL}}.
 
 7. USER CONTENT
 You retain ownership of content you create (journal entries, messages, saved
@@ -178,9 +214,9 @@ You may stop using the app and delete your account at any time. We may suspend
 or terminate access for breach of these Terms or to comply with law.
 
 12. GOVERNING LAW
-These Terms are governed by the laws of [Jurisdiction], without regard to its
-conflict-of-laws rules, subject to any mandatory consumer protections in your
-country of residence.
+These Terms are governed by the laws of the Federal Republic of Germany,
+without regard to its conflict-of-laws rules, subject to any mandatory consumer
+protections in your country of residence.
 
 13. CHANGES
 We may update these Terms; we will revise the version and effective date above
@@ -188,4 +224,4 @@ and, for material changes, notify you in the app. Continued use means you accept
 the updated Terms.
 
 14. CONTACT
-[Company Legal Entity] · support@livelyapp.co · https://livelyapp.co/terms`
+{{OPERATOR}} · {{EMAIL}} · {{SITE}}/terms`
