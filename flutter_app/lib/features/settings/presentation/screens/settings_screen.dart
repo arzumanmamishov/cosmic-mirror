@@ -4,7 +4,6 @@ import 'package:cosmic_mirror/config/theme/app_palette.dart';
 import 'package:cosmic_mirror/config/theme/lively_type.dart';
 import 'package:cosmic_mirror/config/theme/typography.dart';
 import 'package:cosmic_mirror/core/error/error_message.dart';
-import 'package:cosmic_mirror/core/network/api_endpoints.dart';
 import 'package:cosmic_mirror/features/auth/presentation/providers/auth_provider.dart';
 import 'package:cosmic_mirror/l10n/app_localizations.dart';
 import 'package:cosmic_mirror/shared/providers/locale_provider.dart';
@@ -197,7 +196,6 @@ class SettingsScreen extends ConsumerWidget {
 
               if (confirmed ?? false) {
                 await ref.read(authControllerProvider.notifier).logout();
-                ref.read(currentUserProvider.notifier).clear();
                 if (context.mounted) context.go('/auth');
               }
             },
@@ -284,11 +282,12 @@ Future<void> _rateApp() async {
   } catch (_) {/* nothing useful to show the user */}
 }
 
-/// Hard-deletes the account on the backend (DELETE /users/me), then clears
-/// every local trace of the session. On failure the user stays signed in
-/// and sees a localized error.
+/// Deletes the account on the backend (DELETE /users/me), then clears every
+/// local trace of it (AuthController.deleteAccount). On failure the user
+/// stays signed in and sees a localized error.
 Future<void> _deleteAccount(BuildContext context, WidgetRef ref) async {
   final navigator = Navigator.of(context, rootNavigator: true);
+  final messenger = ScaffoldMessenger.of(context);
   unawaited(
     showDialog<void>(
       context: context,
@@ -300,21 +299,19 @@ Future<void> _deleteAccount(BuildContext context, WidgetRef ref) async {
     ),
   );
   try {
-    await ref.read(apiClientProvider).delete(ApiEndpoints.me);
+    await ref.read(authControllerProvider.notifier).deleteAccount();
   } catch (e) {
     navigator.pop();
     if (context.mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
+      messenger.showSnackBar(
         SnackBar(content: Text(FriendlyError.from(context, e).body)),
       );
     }
     return;
   }
+  // Still in the same frame as the sign-out, so the progress dialog is
+  // the top route; the router moves to /auth on the next frame.
   navigator.pop();
-  // logout() also revokes the refresh token server-side (best-effort) and
-  // wipes the stored tokens.
-  await ref.read(authControllerProvider.notifier).logout();
-  ref.read(currentUserProvider.notifier).clear();
   if (context.mounted) context.go('/auth');
 }
 

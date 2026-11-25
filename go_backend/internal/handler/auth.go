@@ -117,6 +117,14 @@ func (h *AuthHandler) RequestOTP(w http.ResponseWriter, r *http.Request) {
 				"No account with that email. Please sign up.")
 			return
 		}
+		if errors.Is(err, service.ErrAuthEmailInUse) {
+			respondEmailInUse(w)
+			return
+		}
+		if errors.Is(err, service.ErrAuthAccountBanned) {
+			respondAccountBanned(w)
+			return
+		}
 		respondServiceError(w, http.StatusInternalServerError, "otp_request_failed", err)
 		return
 	}
@@ -188,6 +196,10 @@ func (h *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 				"Email or password is incorrect")
 			return
 		}
+		if errors.Is(err, service.ErrAuthAccountBanned) {
+			respondAccountBanned(w)
+			return
+		}
 		respondServiceError(w, http.StatusInternalServerError, "login_failed", err)
 		return
 	}
@@ -244,6 +256,10 @@ func (h *AuthHandler) Refresh(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		if errors.Is(err, service.ErrAuthInvalidRefresh) {
 			respondError(w, http.StatusUnauthorized, "invalid_refresh", "Refresh token is invalid or expired")
+			return
+		}
+		if errors.Is(err, service.ErrAuthAccountBanned) {
+			respondAccountBanned(w)
 			return
 		}
 		respondServiceError(w, http.StatusInternalServerError, "refresh_failed", err)
@@ -330,12 +346,29 @@ func (h *AuthHandler) writeAuthError(w http.ResponseWriter, err error) {
 	case errors.Is(err, service.ErrOTPLocked):
 		respondOTPLocked(w)
 	case errors.Is(err, service.ErrAuthEmailInUse):
-		respondError(w, http.StatusConflict, "email_in_use", "That email is already registered")
+		respondEmailInUse(w)
+	case errors.Is(err, service.ErrAuthAccountBanned):
+		respondAccountBanned(w)
 	case errors.Is(err, service.ErrAuthUserNotFound):
 		respondError(w, http.StatusNotFound, "user_not_found", "No account for that email")
 	default:
 		respondServiceError(w, http.StatusInternalServerError, "auth_error", err)
 	}
+}
+
+// respondAccountBanned is the 403 for a banned account: the same code and
+// message the auth middleware sends on every request of an existing
+// session, so the app handles both the same way.
+func respondAccountBanned(w http.ResponseWriter) {
+	respondError(w, http.StatusForbidden, "account_banned",
+		"This account has been suspended for violating the community guidelines.")
+}
+
+// respondEmailInUse is the 409 for "Create account" with an address that
+// already has an account.
+func respondEmailInUse(w http.ResponseWriter) {
+	respondError(w, http.StatusConflict, "email_in_use",
+		"That email is already registered. Sign in instead.")
 }
 
 // respondOTPLocked is the 429 for an email whose code verification is

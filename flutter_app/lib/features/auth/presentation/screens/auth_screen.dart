@@ -5,10 +5,10 @@
 import 'package:cosmic_mirror/config/theme/app_palette.dart';
 import 'package:cosmic_mirror/config/theme/lively_type.dart';
 import 'package:cosmic_mirror/core/error/exceptions.dart';
+import 'package:cosmic_mirror/features/auth/presentation/auth_errors.dart';
 import 'package:cosmic_mirror/features/auth/presentation/providers/auth_provider.dart';
 import 'package:cosmic_mirror/features/auth/presentation/screens/otp_screen.dart';
 import 'package:cosmic_mirror/l10n/app_localizations.dart';
-import 'package:cosmic_mirror/shared/providers/user_provider.dart';
 import 'package:cosmic_mirror/shared/widgets/lively/gold_button.dart';
 import 'package:cosmic_mirror/shared/widgets/lively/lively_backdrop.dart';
 import 'package:cosmic_mirror/shared/widgets/lively/lively_field.dart';
@@ -55,16 +55,21 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
       setState(() => _error = l.authPasswordTooShort);
       return;
     }
+    if (isPasswordTooLong(_password.text)) {
+      setState(() => _error = l.authPasswordTooLong);
+      return;
+    }
     setState(() {
       _busy = true;
       _error = null;
     });
     try {
       if (_mode == _Mode.login) {
+        // The controller seeds the profile and loads the rest in the
+        // background; the router then picks /home or /onboarding.
         await ref
             .read(authControllerProvider.notifier)
             .login(email: email, password: _password.text);
-        await ref.read(currentUserProvider.notifier).bootstrapSession();
         if (mounted) context.go('/');
       } else {
         // Register: kick off OTP + push to /otp with the pending name +
@@ -87,7 +92,12 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
       }
     } catch (e) {
       if (!mounted) return;
-      setState(() => _error = _prettyError(e));
+      setState(() {
+        _error = _prettyError(e);
+        // "Create account" with a registered address: switch to Sign in
+        // with the email and password kept, so one tap signs them in.
+        if (apiErrorCode(e) == 'email_in_use') _mode = _Mode.login;
+      });
     } finally {
       if (mounted) setState(() => _busy = false);
     }
@@ -130,16 +140,12 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
 
   String _prettyOtpRequestError(Object e) {
     final l = AppLocalizations.of(context);
-    final s = e.toString();
-    if (s.contains('user_not_found') ||
-        s.contains('No account with that email')) {
-      return l.authNoAccountTapCreate;
-    }
-    if (e is RateLimitException || s.contains('rate_limit')) {
-      return l.authTooManyCodeRequests;
-    }
-    if (e is NetworkException) return l.authErrorNetwork;
-    return l.commonSomethingWentWrong;
+    return authErrorMessage(
+      l,
+      e,
+      noAccount: l.authNoAccountTapCreate,
+      rateLimited: l.authTooManyCodeRequests,
+    );
   }
 
   bool _looksLikeEmail(String s) {
@@ -147,19 +153,9 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
     return s.length >= 5 && at > 0 && s.substring(at + 1).contains('.');
   }
 
-  String _prettyError(Object e) {
-    final l = AppLocalizations.of(context);
-    final s = e.toString();
-    if (s.contains('invalid_credentials')) {
-      return l.authErrorInvalidCredential;
-    }
-    // 429 — per-IP rate limit or the per-account login lockout.
-    if (e is RateLimitException || s.contains('rate_limit')) {
-      return l.authTooManyAttemptsShort;
-    }
-    if (e is NetworkException) return l.authErrorNetwork;
-    return l.commonSomethingWentWrong;
-  }
+  // 429 here is the per-IP limit or the per-account login lockout.
+  String _prettyError(Object e) =>
+      authErrorMessage(AppLocalizations.of(context), e);
 
   @override
   Widget build(BuildContext context) {
@@ -167,6 +163,10 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
     final l = AppLocalizations.of(context);
     final isLogin = _mode == _Mode.login;
     final bottomInset = MediaQuery.of(context).viewInsets.bottom;
+    // Set when the app signed the user out because the account was
+    // banned; cleared by the next successful sign-in.
+    final suspended = ref.watch(signOutReasonProvider) ==
+        SignOutReason.accountSuspended;
     return Scaffold(
       backgroundColor: p.background,
       resizeToAvoidBottomInset: false,
@@ -190,6 +190,10 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                   const SizedBox(height: 8),
                   const Center(child: LivelyLogo(size: 108)),
                   const SizedBox(height: 26),
+                  if (suspended) ...[
+                    _SuspendedNotice(message: l.authAccountSuspended),
+                    const SizedBox(height: 22),
+                  ],
 
                   // hero
                   Text(
@@ -287,6 +291,39 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
               ),
             ),
           ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Shown on the sign-in screen after the app signed the user out because a
+/// moderator banned the account.
+class _SuspendedNotice extends StatelessWidget {
+  const _SuspendedNotice({required this.message});
+  final String message;
+
+  @override
+  Widget build(BuildContext context) {
+    final p = context.palette;
+    return Semantics(
+      liveRegion: true,
+      child: Container(
+        padding: const EdgeInsets.all(14),
+        decoration: BoxDecoration(
+          color: p.error.withValues(alpha: 0.12),
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: p.error.withValues(alpha: 0.45)),
+        ),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Icon(Icons.block_rounded, color: p.error, size: 20),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Text(message, style: LivelyType.small(p.textPrimary)),
+            ),
+          ],
         ),
       ),
     );

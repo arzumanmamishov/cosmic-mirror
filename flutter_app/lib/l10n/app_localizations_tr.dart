@@ -1967,6 +1967,18 @@ class AppLocalizationsTr extends AppLocalizations {
       'Bu kod işe yaramadı. Tekrar dene ya da yeniden gönder.';
 
   @override
+  String get authAccountSuspended =>
+      'Bu hesap topluluk kurallarını ihlal ettiği için askıya alındı.';
+
+  @override
+  String get authEmailAlreadyRegistered =>
+      'Bu e-posta ile zaten bir hesap var. Bunun yerine giriş yap.';
+
+  @override
+  String get authPasswordTooLong =>
+      'Bu şifre çok uzun. En fazla 72 karakter kullan.';
+
+  @override
   String get authOtpKickerConfirmEmail => 'E-POSTANI DOĞRULA';
 
   @override

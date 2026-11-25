@@ -5,7 +5,7 @@
 
 import 'package:cosmic_mirror/config/theme/app_palette.dart';
 import 'package:cosmic_mirror/config/theme/lively_type.dart';
-import 'package:cosmic_mirror/core/error/exceptions.dart';
+import 'package:cosmic_mirror/features/auth/presentation/auth_errors.dart';
 import 'package:cosmic_mirror/features/auth/presentation/providers/auth_provider.dart';
 import 'package:cosmic_mirror/features/auth/presentation/screens/auth_screen.dart';
 import 'package:cosmic_mirror/l10n/app_localizations.dart';
@@ -72,15 +72,12 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
 
   String _prettyError(Object e) {
     final l = AppLocalizations.of(context);
-    final s = e.toString();
-    if (s.contains('user_not_found') ||
-        s.contains('No account with that email')) {
-      return l.authNoAccountCheckAddress;
-    }
-    if (e is RateLimitException || s.contains('rate_limit')) {
-      return l.authTooManyCodeRequests;
-    }
-    return l.commonSomethingWentWrong;
+    return authErrorMessage(
+      l,
+      e,
+      noAccount: l.authNoAccountCheckAddress,
+      rateLimited: l.authTooManyCodeRequests,
+    );
   }
 
   @override

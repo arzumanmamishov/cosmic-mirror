@@ -72,3 +72,16 @@ class RateLimitException implements Exception {
   @override
   String toString() => 'RateLimitException: $message';
 }
+
+/// The backend's machine-readable error code (`{"error": {"code": …}}`)
+/// carried by an API exception, or null. Match on this rather than on
+/// `toString()`: the exceptions' string forms only include the message.
+String? apiErrorCode(Object error) => switch (error) {
+      ServerException(:final code) => code,
+      AuthException(:final code) => code,
+      RateLimitException(:final code) => code,
+      _ => null,
+    };
+
+/// The backend refused because a moderator banned the account.
+bool isAccountBanned(Object error) => apiErrorCode(error) == 'account_banned';

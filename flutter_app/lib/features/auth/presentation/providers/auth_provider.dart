@@ -3,9 +3,12 @@
 // and call methods on the controller for every /auth/* endpoint.
 
 import 'package:cosmic_mirror/core/network/api_client.dart';
+import 'package:cosmic_mirror/core/network/api_endpoints.dart';
 import 'package:cosmic_mirror/features/auth/data/auth_api.dart';
 import 'package:cosmic_mirror/features/auth/data/models/auth_tokens.dart';
 import 'package:cosmic_mirror/features/auth/domain/entities/user.dart';
+import 'package:cosmic_mirror/features/community/presentation/providers/community_providers.dart';
+import 'package:cosmic_mirror/features/life_timeline/data/life_timeline_storage.dart';
 import 'package:cosmic_mirror/features/onboarding/presentation/providers/onboarding_provider.dart';
 import 'package:cosmic_mirror/shared/providers/user_provider.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -14,18 +17,25 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 // layer directly.
 export 'package:cosmic_mirror/features/auth/data/auth_api.dart' show OtpPurpose;
 
-/// The API client. Constructed with an `onSessionExpired` callback that
-/// asks the AuthController to flip to signed-out — the router redirect
-/// picks it up on the next frame.
+/// The API client. Its callbacks ask the AuthController to flip to
+/// signed-out when the session dies (refresh rejected) or the account is
+/// banned — the router redirect picks it up on the next frame.
 final apiClientProvider = Provider<ApiClient>((ref) {
   return ApiClient(
-    onSessionExpired: () {
-      // Best-effort: also called from ApiClient's own catch block, so a
-      // no-op when the controller was already reset is fine.
-      ref.read(authControllerProvider.notifier).sessionExpired();
-    },
+    // Both may fire once per failing request; ending an already-ended
+    // session is a no-op.
+    onSessionExpired: () =>
+        ref.read(authControllerProvider.notifier).sessionExpired(),
+    onAccountSuspended: () =>
+        ref.read(authControllerProvider.notifier).accountSuspended(),
   );
 });
+
+/// Why the app signed the user out on its own, shown on the sign-in
+/// screen. Cleared on the next successful sign-in.
+enum SignOutReason { accountSuspended }
+
+final signOutReasonProvider = StateProvider<SignOutReason?>((ref) => null);
 
 final authApiProvider = Provider<AuthApi>((ref) {
   return AuthApi(ref.read(apiClientProvider));
@@ -66,9 +76,8 @@ class AuthController extends AsyncNotifier<AppUser?> {
             name: name,
             password: password,
           );
-      await authStorage.write(result.tokens);
-      _hydrateUserProvider(result.user);
-      return result.user;
+      // A brand-new account has no chart yet: nothing more to fetch.
+      return _startSession(result);
     });
     _rethrowOnError();
   }
@@ -80,11 +89,10 @@ class AuthController extends AsyncNotifier<AppUser?> {
             email: email,
             password: password,
           );
-      await authStorage.write(result.tokens);
-      _hydrateUserProvider(result.user);
-      return result.user;
+      return _startSession(result);
     });
     _rethrowOnError();
+    _loadFullProfile();
   }
 
   Future<void> loginWithOtp({
@@ -97,11 +105,28 @@ class AuthController extends AsyncNotifier<AppUser?> {
             email: email,
             code: code,
           );
-      await authStorage.write(result.tokens);
-      _hydrateUserProvider(result.user);
-      return result.user;
+      return _startSession(result);
     });
     _rethrowOnError();
+    _loadFullProfile();
+  }
+
+  /// Persists the new session and seeds the profile from the sign-in
+  /// response.
+  Future<AppUser> _startSession(AuthResult result) async {
+    await authStorage.write(result.tokens);
+    ref.read(signOutReasonProvider.notifier).state = null;
+    _hydrateUserProvider(result.user);
+    return result.user;
+  }
+
+  /// Fills in the rest of the profile (sun / moon / rising) after a
+  /// sign-in, without holding up navigation. A failure is harmless: the
+  /// sign-in response already has what the router needs.
+  void _loadFullProfile() {
+    if (state.valueOrNull == null) return;
+    // user_provider's unawaited() swallows the error.
+    unawaited(ref.read(currentUserProvider.notifier).bootstrapSession());
   }
 
   /// Populate currentUserProvider from the AuthResult synchronously so the
@@ -133,6 +158,8 @@ class AuthController extends AsyncNotifier<AppUser?> {
         );
   }
 
+  /// Signs out: revokes the refresh token on the server (best-effort) and
+  /// wipes the session from this device. The router then shows /auth.
   Future<void> logout() async {
     final tokens = await authStorage.read();
     if (tokens != null) {
@@ -145,21 +172,49 @@ class AuthController extends AsyncNotifier<AppUser?> {
       }
     }
     await authStorage.clear();
-    _resetSessionScopedState();
-    state = const AsyncValue.data(null);
+    _endSession();
   }
 
-  /// Called by the API interceptor when a refresh terminally fails.
-  void sessionExpired() {
-    _resetSessionScopedState();
-    state = const AsyncValue.data(null);
+  /// Deletes the account (DELETE /users/me), then wipes it from this
+  /// device. The server cancels a web subscription, revokes every session
+  /// and erases the data after 30 days. Throws — leaving the user signed
+  /// in — when the server refuses, so the caller can show the error.
+  Future<void> deleteAccount() async {
+    final userId = ref.read(currentUserProvider).id;
+    await ref.read(apiClientProvider).delete(ApiEndpoints.me);
+    // On-device data the server doesn't have.
+    if (userId != null) await LifeTimelineStorage(userId).clear();
+    // Every refresh token is already revoked server-side; no /auth/logout.
+    await authStorage.clear();
+    _endSession();
   }
 
-  /// The onboarding notifier isn't autoDispose, so without this the next
-  /// account to sign up on this device would start onboarding on the
-  /// previous user's last step with their birth data pre-filled.
-  void _resetSessionScopedState() {
-    ref.invalidate(onboardingProvider);
+  /// Called by the API interceptor when a refresh terminally fails. The
+  /// interceptor has already wiped the stored tokens.
+  void sessionExpired() => _endSession();
+
+  /// Called by the API interceptor when the server answers
+  /// `account_banned`. The sign-in screen explains why.
+  void accountSuspended() {
+    ref.read(signOutReasonProvider.notifier).state =
+        SignOutReason.accountSuspended;
+    _endSession();
+  }
+
+  /// Drops everything tied to the signed-in account, so the next account
+  /// on this device starts clean: the profile (which also logs RevenueCat
+  /// out, see bindRevenueCatIdentity), the onboarding draft (not
+  /// autoDispose — the next sign-up would otherwise resume the previous
+  /// user's birth data) and the community list filters. Data screens use
+  /// autoDispose providers and are dropped when the router leaves them.
+  void _endSession() {
+    ref
+      ..invalidate(onboardingProvider)
+      ..invalidate(spaceFilterProvider)
+      ..invalidate(spaceSearchQueryProvider)
+      ..invalidate(selectedCategoryIdProvider);
+    ref.read(currentUserProvider.notifier).reset();
+    state = const AsyncValue.data(null);
   }
 
   void _rethrowOnError() {

@@ -89,12 +89,20 @@ class UserNotifier extends StateNotifier<UserState> {
   final ApiClient _apiClient;
   final Ref _ref;
 
+  /// Bumped on every [reset] and [hydrateFromAuth], so a /users/me
+  /// response that arrives after the session changed (signed out, or
+  /// another account signed in) is dropped instead of bringing the old
+  /// user back.
+  int _session = 0;
+
   /// Fetches /users/me and populates the state. Only makes the network
   /// call when we have a token to authenticate with — otherwise the
   /// call would 401 and cascade into signed-out state.
   Future<void> bootstrapSession() async {
+    final session = _session;
     state = state.copyWith(isLoading: true, clearBootstrapError: true);
     final tokens = await authStorage.read();
+    if (session != _session) return;
     if (tokens == null || tokens.refreshExpired) {
       // No signed-in session — leave the state cleared and don't call
       // the backend. Callers (main, welcome) should route to /auth.
@@ -103,6 +111,7 @@ class UserNotifier extends StateNotifier<UserState> {
     }
     try {
       final data = await _apiClient.get<Map<String, dynamic>>(ApiEndpoints.me);
+      if (session != _session) return;
       final user = data['user'] as Map<String, dynamic>? ?? data;
       final chart = data['chart_summary'] as Map<String, dynamic>?;
       final rawAvatarUrl = user['avatar_url'] as String?;
@@ -120,14 +129,19 @@ class UserNotifier extends StateNotifier<UserState> {
         isLoading: false,
       );
     } catch (e) {
+      if (session != _session) return;
       state = state.copyWith(isLoading: false, bootstrapError: e);
       rethrow;
     }
   }
 
-  /// Called by the register/login screens right after a successful auth
-  /// call — it seeds the state from the /auth/register envelope so the
-  /// UI doesn't need to wait for a follow-up /users/me round-trip.
+  /// Called by the AuthController right after a successful sign-in /
+  /// registration — it seeds the state from the auth response so the UI
+  /// doesn't need to wait for a follow-up /users/me round-trip.
+  ///
+  /// Builds a fresh state rather than merging into the old one: merging
+  /// kept the previous account's sun / moon / rising (and name, when the
+  /// new one is blank) when a second account signed in on this device.
   void hydrateFromAuth({
     required String id,
     required String? name,
@@ -135,16 +149,21 @@ class UserNotifier extends StateNotifier<UserState> {
     required String? avatarUrl,
     required bool hasCompletedOnboarding,
   }) {
-    state = state.copyWith(
+    _session++;
+    state = UserState(
       id: id,
       name: name,
       email: email,
       avatarUrl: avatarUrl,
-      clearAvatar: avatarUrl == null,
       hasCompletedOnboarding: hasCompletedOnboarding,
-      isLoading: false,
-      clearBootstrapError: true,
     );
+  }
+
+  /// Forgets the signed-in user (sign-out, account deletion, expired or
+  /// suspended session). Called by the AuthController.
+  void reset() {
+    _session++;
+    state = const UserState();
   }
 
   void updateName(String name) {
@@ -198,20 +217,10 @@ class UserNotifier extends StateNotifier<UserState> {
     );
   }
 
-  /// Wipe local user state. Also asks the AuthController to sign out
-  /// (revoke the refresh token) so the /auth redirect happens.
-  Future<void> logout() async {
-    await _ref.read(authControllerProvider.notifier).logout();
-    state = const UserState();
-  }
-
-  /// Legacy — kept for the callers (main.dart auth-state listener, some
-  /// screens) that still call .clear(). Delegates to logout() so the
-  /// server-side session is revoked, then wipes local state.
-  void clear() {
-    unawaited(_ref.read(authControllerProvider.notifier).logout());
-    state = const UserState();
-  }
+  /// Signs out. The AuthController revokes the refresh token, wipes the
+  /// stored session and resets this state.
+  Future<void> logout() =>
+      _ref.read(authControllerProvider.notifier).logout();
 }
 
 /// Local helper — Dart 3's `unawaited` lives in dart:async but the file

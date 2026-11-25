@@ -8,10 +8,9 @@ import 'dart:math' as math;
 
 import 'package:cosmic_mirror/config/theme/app_palette.dart';
 import 'package:cosmic_mirror/config/theme/lively_type.dart';
-import 'package:cosmic_mirror/core/error/exceptions.dart';
+import 'package:cosmic_mirror/features/auth/presentation/auth_errors.dart';
 import 'package:cosmic_mirror/features/auth/presentation/providers/auth_provider.dart';
 import 'package:cosmic_mirror/l10n/app_localizations.dart';
-import 'package:cosmic_mirror/shared/providers/user_provider.dart';
 import 'package:cosmic_mirror/shared/widgets/lively/gold_button.dart';
 import 'package:cosmic_mirror/shared/widgets/lively/lively_backdrop.dart';
 import 'package:cosmic_mirror/shared/widgets/lively/lively_field.dart';
@@ -116,11 +115,8 @@ class _OtpScreenState extends ConsumerState<OtpScreen>
       if (mounted) {
         final l = AppLocalizations.of(context);
         setState(
-          () => _error = e is RateLimitException || '$e'.contains('rate_limit')
-              ? l.authTooManyCodeRequests
-              : e is NetworkException
-                  ? l.authErrorNetwork
-                  : l.commonSomethingWentWrong,
+          () => _error =
+              authErrorMessage(l, e, rateLimited: l.authTooManyCodeRequests),
         );
       }
     } finally {
@@ -145,12 +141,16 @@ class _OtpScreenState extends ConsumerState<OtpScreen>
   Future<void> _verify() async {
     final code = _codeCtrl.text;
     if (code.length != 6) return;
-    if (widget.purpose == OtpPurpose.passwordReset &&
-        _newPasswordCtrl.text.length < 8) {
-      setState(
-        () => _error = AppLocalizations.of(context).authPasswordTooShort,
-      );
-      return;
+    if (widget.purpose == OtpPurpose.passwordReset) {
+      final l = AppLocalizations.of(context);
+      final pw = _newPasswordCtrl.text;
+      if (pw.length < 8 || isPasswordTooLong(pw)) {
+        setState(
+          () => _error =
+              pw.length < 8 ? l.authPasswordTooShort : l.authPasswordTooLong,
+        );
+        return;
+      }
     }
     setState(() {
       _busy = true;
@@ -185,18 +185,14 @@ class _OtpScreenState extends ConsumerState<OtpScreen>
         context.go('/auth');
       } else {
         // register / login: AuthController.register/login already seeded
-        // currentUserProvider synchronously, so the router redirect fired
-        // by the state change will move us off /otp on its own. We still
-        // call context.go as a belt-and-braces so the transition is
+        // currentUserProvider synchronously (and, for login, loads the
+        // rest of the profile in the background), so the router redirect
+        // fired by the state change will move us off /otp on its own. We
+        // still call context.go as a belt-and-braces so the transition is
         // deterministic even if the router debounces its refresh pulse.
         context.go(
           widget.purpose == OtpPurpose.register ? '/onboarding' : '/',
         );
-        if (widget.purpose == OtpPurpose.login) {
-          // Kick a full bootstrap for the chart summary fields, but
-          // don't block navigation on it — the router already moved.
-          unawaited(ref.read(currentUserProvider.notifier).bootstrapSession());
-        }
       }
     } catch (e) {
       // Guard: user may have tapped Back while _verify awaited; the
@@ -217,15 +213,7 @@ class _OtpScreenState extends ConsumerState<OtpScreen>
 
   String _prettyError(Object e) {
     final l = AppLocalizations.of(context);
-    final s = e.toString();
-    if (s.contains('invalid_code') || s.contains('Invalid or expired code')) {
-      return l.authOtpInvalidCode;
-    }
-    if (e is RateLimitException || s.contains('rate_limit')) {
-      return l.authTooManyAttemptsWait;
-    }
-    if (e is NetworkException) return l.authErrorNetwork;
-    return l.commonSomethingWentWrong;
+    return authErrorMessage(l, e, rateLimited: l.authTooManyAttemptsWait);
   }
 
   @override

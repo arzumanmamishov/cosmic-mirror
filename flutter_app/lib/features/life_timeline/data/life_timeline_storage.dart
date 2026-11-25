@@ -45,6 +45,16 @@ class LifeTimelineStorage {
     }
   }
 
+  /// Removes this user's moments from the device (account deletion).
+  Future<void> clear() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.remove(_key);
+    } catch (e) {
+      debugPrint('[LifeTimeline] clear failed: $e');
+    }
+  }
+
   static Map<String, dynamic> _toJson(LifeEvent e) => {
         'id': e.id,
         'date': e.date.toIso8601String(),

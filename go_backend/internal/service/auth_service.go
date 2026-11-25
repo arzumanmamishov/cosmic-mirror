@@ -48,7 +48,14 @@ var (
 	// ErrAuthInvalidRefresh is the single sentinel for any refresh failure
 	// (unknown / revoked / expired / rotated).
 	ErrAuthInvalidRefresh = errors.New("auth: invalid refresh token")
+	// ErrAuthAccountBanned: the account was banned by a moderator. No new
+	// session is issued (sign-in, code sign-in, registration, refresh); the
+	// handler answers 403 account_banned, the same code the auth
+	// middleware uses for an existing session.
+	ErrAuthAccountBanned = errors.New("auth: account banned")
 )
+
+func isBanned(u *domain.User) bool { return u != nil && u.BannedAt != nil }
 
 // AuthService owns the register/login/refresh/reset flows for local auth.
 type AuthService struct {
@@ -86,16 +93,24 @@ type Session struct {
 // tell "registered" from "unregistered" by watching for a 404 vs 200.
 // That's an acceptable price for consumer-app UX; a stricter posture
 // would keep the response silent and rely on the rate limit alone.
+//
+// For register the opposite holds: an address that already has an account
+// gets ErrAuthEmailInUse, so "Create account" can't quietly sign in to the
+// existing account and drop the password the user just chose. Banned
+// accounts get ErrAuthAccountBanned for every purpose (no code is sent).
 func (s *AuthService) RequestOTP(ctx context.Context, email string, purpose otp.Purpose, ip string) (time.Duration, error) {
-	if purpose == otp.PurposeLogin || purpose == otp.PurposePasswordReset {
-		normalized := strings.ToLower(strings.TrimSpace(email))
-		user, err := s.userRepo.GetByEmail(ctx, normalized)
-		if err != nil {
-			return 0, err
-		}
-		if user == nil {
-			return 0, ErrAuthUserNotFound
-		}
+	normalized := strings.ToLower(strings.TrimSpace(email))
+	user, err := s.userRepo.GetByEmail(ctx, normalized)
+	if err != nil {
+		return 0, err
+	}
+	switch {
+	case isBanned(user):
+		return 0, ErrAuthAccountBanned
+	case purpose == otp.PurposeRegister && user != nil:
+		return 0, ErrAuthEmailInUse
+	case (purpose == otp.PurposeLogin || purpose == otp.PurposePasswordReset) && user == nil:
+		return 0, ErrAuthUserNotFound
 	}
 	return s.otp.Request(ctx, email, purpose, ip)
 }
@@ -117,9 +132,13 @@ func (s *AuthService) RegisterVerify(
 		return nil, err
 	}
 	if existing != nil {
-		// Treat as a passwordless sign-in — the OTP verified control of
-		// the inbox. This makes the endpoint idempotent so a double-tap
-		// on "Verify" doesn't 400.
+		// Only reachable when the account was created after the code was
+		// requested (RequestOTP refuses register codes for existing
+		// addresses). Treat as a passwordless sign-in — the OTP verified
+		// control of the inbox.
+		if isBanned(existing) {
+			return nil, ErrAuthAccountBanned
+		}
 		_ = s.userRepo.MarkEmailVerified(ctx, existing.ID)
 		_ = s.userRepo.TouchLastLogin(ctx, existing.ID)
 		return s.issueSession(ctx, existing, ip, userAgent)
@@ -163,6 +182,11 @@ func (s *AuthService) LoginPassword(
 	if err := bcrypt.CompareHashAndPassword([]byte(*user.PasswordHash), []byte(password)); err != nil {
 		return nil, ErrAuthInvalidCredentials
 	}
+	// Checked after the password so the ban status isn't revealed to
+	// someone who doesn't know it.
+	if isBanned(user) {
+		return nil, ErrAuthAccountBanned
+	}
 	_ = s.userRepo.MarkEmailVerified(ctx, user.ID)
 	_ = s.userRepo.TouchLastLogin(ctx, user.ID)
 	return s.issueSession(ctx, user, ip, userAgent)
@@ -186,6 +210,9 @@ func (s *AuthService) LoginVerify(
 	}
 	if user == nil {
 		return nil, ErrAuthUserNotFound
+	}
+	if isBanned(user) {
+		return nil, ErrAuthAccountBanned
 	}
 	_ = s.userRepo.MarkEmailVerified(ctx, user.ID)
 	_ = s.userRepo.TouchLastLogin(ctx, user.ID)
@@ -243,6 +270,12 @@ func (s *AuthService) Refresh(ctx context.Context, plainRefresh, ip, userAgent s
 	}
 	if user == nil {
 		return nil, ErrAuthInvalidRefresh
+	}
+	if isBanned(user) {
+		// Banning revokes refresh tokens, but one issued in a race (or
+		// before the revoke landed) must not keep minting sessions.
+		_ = s.rtRepo.RevokeAllForUser(ctx, user.ID)
+		return nil, ErrAuthAccountBanned
 	}
 
 	access, accessExp, err := s.signer.IssueAccess(user.ID)

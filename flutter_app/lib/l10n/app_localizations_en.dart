@@ -1967,6 +1967,18 @@ class AppLocalizationsEn extends AppLocalizations {
       'That code didn\'t work. Try again or resend.';
 
   @override
+  String get authAccountSuspended =>
+      'This account has been suspended for violating the community guidelines.';
+
+  @override
+  String get authEmailAlreadyRegistered =>
+      'An account with this email already exists. Sign in instead.';
+
+  @override
+  String get authPasswordTooLong =>
+      'That password is too long. Use 72 characters or fewer.';
+
+  @override
   String get authOtpKickerConfirmEmail => 'CONFIRM YOUR EMAIL';
 
   @override

@@ -3710,6 +3710,24 @@ abstract class AppLocalizations {
   /// **'That code didn\'t work. Try again or resend.'**
   String get authOtpInvalidCode;
 
+  /// No description provided for @authAccountSuspended.
+  ///
+  /// In en, this message translates to:
+  /// **'This account has been suspended for violating the community guidelines.'**
+  String get authAccountSuspended;
+
+  /// No description provided for @authEmailAlreadyRegistered.
+  ///
+  /// In en, this message translates to:
+  /// **'An account with this email already exists. Sign in instead.'**
+  String get authEmailAlreadyRegistered;
+
+  /// No description provided for @authPasswordTooLong.
+  ///
+  /// In en, this message translates to:
+  /// **'That password is too long. Use 72 characters or fewer.'**
+  String get authPasswordTooLong;
+
   /// No description provided for @authOtpKickerConfirmEmail.
   ///
   /// In en, this message translates to:

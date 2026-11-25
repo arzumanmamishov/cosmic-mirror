@@ -13,12 +13,17 @@ final AuthStorage authStorage = AuthStorage();
 
 /// Callback invoked when a refresh attempt fails terminally — refresh token
 /// expired / revoked. The AuthController hooks this to sign the user out
-/// and let the router redirect to /auth.
+/// and let the router redirect to /auth. The same signature is used for
+/// [ApiClient.new]'s `onAccountSuspended`: the server answered
+/// `account_banned` (a moderator banned the account).
 typedef OnSessionExpired = void Function();
 
 class ApiClient {
-  ApiClient({Dio? dio, OnSessionExpired? onSessionExpired})
-      : _dio = dio ??
+  ApiClient({
+    Dio? dio,
+    OnSessionExpired? onSessionExpired,
+    OnSessionExpired? onAccountSuspended,
+  })  : _dio = dio ??
             Dio(
               BaseOptions(
                 baseUrl: Env.apiBaseUrl,
@@ -40,7 +45,11 @@ class ApiClient {
     _dio.interceptors.addAll([
       _LocaleInterceptor(),
       _LlmTimeoutInterceptor(),
-      _AuthInterceptor(_dio, _onSessionExpired),
+      _AuthInterceptor(
+        _dio,
+        _onSessionExpired,
+        onAccountSuspended ?? _onSessionExpired,
+      ),
       _RetryInterceptor(_dio),
       if (Env.isDev) _LoggingInterceptor(),
       _ErrorInterceptor(),
@@ -137,8 +146,20 @@ bool _isDomainException(Object? e) =>
 
 /// Thrown by [_refreshTokens] when the backend rejected the refresh token
 /// (401/403): the session is dead and the user must sign in again.
+/// [suspended] is true when the reason is a ban (`account_banned`).
 class _SessionDeadException implements Exception {
-  const _SessionDeadException();
+  const _SessionDeadException({this.suspended = false});
+  final bool suspended;
+}
+
+/// The `{"error": {"code": …}}` of an error response, or null.
+String? _responseErrorCode(DioException e) {
+  final data = e.response?.data;
+  if (data is Map<String, dynamic>) {
+    final error = data['error'];
+    if (error is Map<String, dynamic>) return error['code'] as String?;
+  }
+  return null;
 }
 
 /// The refresh currently in flight, shared by every [ApiClient] instance
@@ -177,7 +198,9 @@ Future<AuthTokens> _refreshTokens(BaseOptions options, String refreshToken) {
       } on DioException catch (e) {
         final status = e.response?.statusCode;
         if (status == 401 || status == 403) {
-          throw const _SessionDeadException();
+          throw _SessionDeadException(
+            suspended: _responseErrorCode(e) == 'account_banned',
+          );
         }
         rethrow;
       }
@@ -201,10 +224,11 @@ Future<AuthTokens> _refreshTokens(BaseOptions options, String refreshToken) {
 /// they're the calls that CREATE the token, so a stale one is worse than
 /// none.
 class _AuthInterceptor extends Interceptor {
-  _AuthInterceptor(this._dio, this._onSessionExpired);
+  _AuthInterceptor(this._dio, this._onSessionExpired, this._onAccountSuspended);
 
   final Dio _dio;
   final OnSessionExpired? _onSessionExpired;
+  final OnSessionExpired? _onAccountSuspended;
 
   bool _isAuthEndpoint(String path) {
     return path.contains('/auth/otp/request') ||
@@ -246,6 +270,18 @@ class _AuthInterceptor extends Interceptor {
     ErrorInterceptorHandler handler,
   ) async {
     final status = err.response?.statusCode;
+    // Banned by a moderator: every authenticated request now gets 403
+    // account_banned. End the session instead of leaving the user on
+    // screens that can only fail. (Sign-in calls return the same code;
+    // their screens show it, there's no session to end.)
+    if (status == 403 &&
+        _responseErrorCode(err) == 'account_banned' &&
+        !_isAuthEndpoint(err.requestOptions.path)) {
+      await authStorage.clear();
+      _onAccountSuspended?.call();
+      handler.next(err);
+      return;
+    }
     final alreadyRetried = err.requestOptions.extra['_refreshed'] == true;
     if (status != 401 ||
         alreadyRetried ||
@@ -270,12 +306,12 @@ class _AuthInterceptor extends Interceptor {
     } else {
       try {
         fresh = await _refreshTokens(_dio.options, tokens.refreshToken);
-      } on _SessionDeadException {
+      } on _SessionDeadException catch (dead) {
         // The server rejected the refresh token — the session is over.
         // Wipe stored tokens, notify the app, surface the original 401 so
         // callers can route to sign-in.
         await authStorage.clear();
-        _onSessionExpired?.call();
+        (dead.suspended ? _onAccountSuspended : _onSessionExpired)?.call();
         handler.next(err);
         return;
       } catch (_) {
