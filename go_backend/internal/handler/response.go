@@ -33,6 +33,8 @@ type Handlers struct {
 	Discovery              *DiscoveryHandler
 	// Reports, blocks and the admin moderation queue (UGC safety)
 	Moderation *ModerationHandler
+	// Web admin panel API (/api/v1/admin/*)
+	Admin *AdminHandler
 	// Numerology + Human Design
 	Numerology    *NumerologyHandler
 	HumanDesign   *HumanDesignHandler

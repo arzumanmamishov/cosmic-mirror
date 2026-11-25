@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"time"
 
+	"cosmic-mirror/internal/adminui"
 	"cosmic-mirror/internal/config"
 	"cosmic-mirror/internal/handler"
 	"cosmic-mirror/internal/middleware"
@@ -83,6 +84,14 @@ func NewRouter(h *handler.Handlers, auth *middleware.Auth, rl *middleware.RateLi
 		http.FileServer(middleware.NoDirFS{FS: http.Dir(cfg.UploadsDir)}),
 	)
 	r.Get("/uploads/*", uploadsServer.ServeHTTP)
+
+	// Web admin panel: static files embedded in the binary, served with
+	// their own CSP. Sign-in and data go through /api/v1 (same origin, so
+	// no CORS); only ADMIN_EMAILS accounts get past /api/v1/admin/me.
+	r.Get("/admin", func(w http.ResponseWriter, r *http.Request) {
+		http.Redirect(w, r, "/admin/", http.StatusFound)
+	})
+	r.Get("/admin/*", adminui.Handler("/admin/").ServeHTTP)
 
 	// API v1
 	r.Route("/api/v1", func(r chi.Router) {
@@ -263,12 +272,30 @@ func NewRouter(h *handler.Handlers, auth *middleware.Auth, rl *middleware.RateLi
 			r.Post("/users/{userID}/block", h.Moderation.Block)
 			r.Delete("/users/{userID}/block", h.Moderation.Unblock)
 
-			// Admin moderation queue — allow-listed by ADMIN_EMAILS
-			// (403 for everyone else, and for everyone when unset).
+			// Admin API (the /admin web panel) — allow-listed by
+			// ADMIN_EMAILS (403 for everyone else, and for everyone when
+			// unset). State changes are written to admin_audit_log.
 			r.Group(func(r chi.Router) {
 				r.Use(auth.RequireAdmin(cfg.AdminEmails))
+				r.Get("/admin/me", h.Admin.Me)
+				r.Get("/admin/stats", h.Admin.Stats)
+
+				// Customers
+				r.Get("/admin/users", h.Admin.ListUsers)
+				r.Get("/admin/users/{userID}", h.Admin.GetUser)
+				r.Post("/admin/users/{userID}/ban", h.Admin.BanUser)
+				r.Post("/admin/users/{userID}/unban", h.Admin.UnbanUser)
+				r.Post("/admin/users/{userID}/delete", h.Admin.DeleteUser)
+
+				// Moderation queue
 				r.Get("/admin/reports", h.Moderation.AdminListReports)
 				r.Post("/admin/reports/{reportID}/resolve", h.Moderation.AdminResolveReport)
+
+				// Settings (Stripe prices / trial) and audit log
+				r.Get("/admin/settings", h.Admin.GetSettings)
+				r.Put("/admin/settings/stripe", h.Admin.UpdateStripeSettings)
+				r.Get("/admin/stripe/prices", h.Admin.ListStripePrices)
+				r.Get("/admin/audit", h.Admin.ListAudit)
 			})
 
 			// Numerology

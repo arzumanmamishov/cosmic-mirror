@@ -16,10 +16,17 @@ import (
 // queue (App Store 1.2 / Google Play UGC requirements).
 type ModerationHandler struct {
 	modSvc *service.ModerationService
+	audit  *service.AdminService
 }
 
 func NewModerationHandler(modSvc *service.ModerationService) *ModerationHandler {
 	return &ModerationHandler{modSvc: modSvc}
+}
+
+// WithAudit records admin report decisions in the admin audit log.
+func (h *ModerationHandler) WithAudit(audit *service.AdminService) *ModerationHandler {
+	h.audit = audit
+	return h
 }
 
 // CreateReport — POST /reports. 201 for a new report, 200 (same body)
@@ -115,6 +122,18 @@ func (h *ModerationHandler) AdminResolveReport(w http.ResponseWriter, r *http.Re
 	if err != nil {
 		respondModerationError(w, err)
 		return
+	}
+	if h.audit != nil {
+		details := map[string]any{
+			"action":      input.Action,
+			"target_type": report.TargetType,
+			"target_id":   report.TargetID,
+			"reason":      report.Reason,
+		}
+		if input.Note != nil {
+			details["note"] = *input.Note
+		}
+		h.audit.Record(r.Context(), adminActor(r), domain.AuditReportResolve, "report", id.String(), details)
 	}
 	respondSuccess(w, report)
 }

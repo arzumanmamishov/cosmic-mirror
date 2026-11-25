@@ -34,7 +34,7 @@ The Postgres and Redis passwords must be hex. The compose file pastes them unesc
 | `SMTP_*` | Required. Sign-in and password-reset codes are sent by email. |
 | `API_DOMAIN`, `ACME_EMAIL` | Caddy uses these to get and renew the HTTPS certificate automatically. |
 | `REVENUECAT_*` | Required to sell Premium in the apps (App Store / Google Play). See [5a](#5a-in-app-purchases-revenuecat). |
-| `STRIPE_*` | Web checkout only (the apps never use Stripe). Use live keys. Register the webhook at `https://$API_DOMAIN/api/v1/stripe/webhook`. |
+| `STRIPE_*` | Web checkout only (the apps never use Stripe). Use live keys. Register the webhook at `https://$API_DOMAIN/api/v1/stripe/webhook`. The two price IDs are defaults; you can change prices later in the [admin panel](#3d-admin-panel). |
 | `CORS_ORIGINS` | Only browser origins, such as the website. The apps don't need CORS. |
 | `MODERATION_EMAIL`, `ADMIN_EMAILS` | Required for the app stores' user-generated-content rules. See [3c](#3c-community-moderation). |
 
@@ -92,7 +92,7 @@ Apple (guideline 1.2) and Google Play (UGC policy) require a way to report conte
 | Setting | Default | What it does |
 |---|---|---|
 | `MODERATION_EMAIL` | empty | Inbox that gets one email per new report. If it's empty, reports are only stored, and the server logs a warning at start-up. |
-| `ADMIN_EMAILS` | empty | Comma-separated account emails that may call `/api/v1/admin/*`. Everyone else gets 403. If it's empty, nobody can. |
+| `ADMIN_EMAILS` | empty | Comma-separated account emails that can use the [admin panel](#3d-admin-panel) and `/api/v1/admin/*`. Everyone else gets 403. If it's empty, nobody can. |
 | `MODERATION_AUTOHIDE_THRESHOLD` | `3` | A post or comment that gets this many open reports from different users is hidden right away. It stays hidden until you review it. Set it to `0` to turn auto-hide off. |
 
 Report emails use the same SMTP settings as sign-in codes.
@@ -103,9 +103,9 @@ Report emails use the same SMTP settings as sign-in codes.
 * **Block** a user: `POST` or `DELETE /api/v1/users/{id}/block`. Blocked users are listed at `GET /api/v1/users/me/blocks`. A block hides content in both directions: posts, comments, member lists, notifications, popular hashtags, and space discovery. It also stops comments, likes and notifications between the two users.
 * Space owners and mods can delete comments in their space.
 
-**Hidden and banned content.** Hidden content is visible only to its author. Every authenticated request from a banned account gets 403 `account_banned`, and its content is hidden from everyone.
+**Hidden and banned content.** Hidden content is visible only to its author. A banned account can't get a new session: sign-in, code requests, registration and token refresh all return 403 `account_banned`. Every request from an existing session gets the same 403, and the app then signs the user out and shows "account suspended". The account's content is hidden from everyone.
 
-**Handling a report.** Sign in to the app with an `ADMIN_EMAILS` account and copy the access token. Then list and resolve reports:
+**Handling a report.** Open the [admin panel](#3d-admin-panel) at `https://$API_DOMAIN/admin`, go to **Moderation** and pick an action on each report. The panel calls the same API, which you can also call directly with an admin's access token:
 
 ```sh
 TOKEN=...   # the admin's access token
@@ -145,6 +145,34 @@ WHERE target_type = 'post' AND target_id = '<post-id>' AND status = 'open';
 ```
 
 The tables come from migration `015_moderation.sql`: `content_reports`, `user_blocks`, `posts.hidden_at`, `comments.hidden_at` and `users.banned_at`.
+
+## 3d. Admin panel
+
+The admin panel is a web page served by the API at `https://$API_DOMAIN/admin`. It ships inside the API binary (`internal/adminui`), so `make prod-up` deploys it and there's nothing else to host.
+
+**Access.** Sign in with a Lively account whose email is in `ADMIN_EMAILS`, using an emailed code or the account's password. Any other account is turned away. To add or remove an admin, edit `ADMIN_EMAILS` in `.env.production` and run `make prod-up`. The sign-in session lasts until the browser tab is closed.
+
+**Pages**
+
+| Page | What it does |
+|---|---|
+| Dashboard | Customers, active users, sign-ups and active users per day, premium subscribers by channel (web, App Store, Google Play), plan mix, trials, cancellations, billing problems, and feature usage. |
+| Customers | Search by email, name, user ID or Stripe customer ID, and filter by plan or channel. Each customer's page shows their account, subscription (with links to Stripe), activity and admin history. From there you can ban, unban or delete the account. |
+| Moderation | The report queue from [3c](#3c-community-moderation). |
+| Settings | Stripe connection status, the web-checkout prices and the yearly free trial, admin list and moderation settings. |
+| Audit log | Every ban, unban, deletion, settings change and report decision: who did it and when. |
+
+**Changing Stripe prices.** On **Settings → Prices and free trial**, pick the monthly and yearly price from the active prices in your Stripe account, or paste a price ID. You can also set the yearly free trial (0–30 days; 0 turns it off). Before saving, the API checks each price with Stripe: it must be active, recurring, and bill every month or every year. New web checkouts use the change right away, with no redeploy. Existing subscribers keep the price they signed up with; move them in the Stripe dashboard if needed. Values left empty fall back to `STRIPE_PRICE_MONTHLY`, `STRIPE_PRICE_YEARLY` and a 3-day trial. App Store and Google Play prices are set in App Store Connect and the Play Console, not here. Also update the prices shown on the website (`website/src/components/Pricing.tsx`).
+
+**What the panel can't change.** Secrets stay in `.env.production` and never reach the browser. That covers `STRIPE_SECRET_KEY`, `STRIPE_PUBLISHABLE_KEY`, `STRIPE_WEBHOOK_SECRET`, RevenueCat keys, SMTP and the JWT secret. The panel shows only whether each Stripe key is set, the key's mode (live or test) and its last four characters.
+
+**Account actions**
+
+* **Ban:** the same as `ban_user` on a report. The account is signed out everywhere and can't sign back in (403 `account_banned`; the app shows "account suspended"), and its community content is hidden. The subscription isn't touched.
+* **Delete:** the same as the in-app "Delete account". It cancels a web (Stripe) subscription immediately, signs out every session, and soft-deletes the user; the cleanup worker erases the data after 30 days. You must type the customer's email to confirm. App Store and Google Play subscriptions can't be cancelled server-side, so tell the customer to cancel in their store settings.
+* Admin accounts can't be banned or deleted from the panel.
+
+Settings and the audit log live in the `app_settings` and `admin_audit_log` tables (migration `016_admin_panel.sql`).
 
 ## 4. Backups
 
@@ -227,4 +255,4 @@ Sandbox and TestFlight purchases are accepted by the production server on purpos
 - [ ] Monitoring: an uptime check on `/ready`, and release builds made with `SENTRY_DSN` (plus the Sentry upload variables) so app crashes are reported.
 - [ ] Detailed Destiny Matrix meanings generated: `cd go_backend && OPENAI_API_KEY=sk-... go run ./cmd/gen-interpretations`, then commit `internal/destinymatrix/interpretations.json`. Until then users see the short meanings.
 - [ ] CI (`.github/workflows/ci.yml`) is green on `master`.
-- [ ] `MODERATION_EMAIL` and `ADMIN_EMAILS` are set. File a test report from the app, check that the email arrives, then resolve it with the admin API. Someone checks the inbox at least once a day.
+- [ ] `MODERATION_EMAIL` and `ADMIN_EMAILS` are set. File a test report from the app, check that the email arrives, then resolve it in the admin panel (`https://$API_DOMAIN/admin`). Someone checks the inbox at least once a day.

@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"strconv"
@@ -8,9 +9,21 @@ import (
 	"time"
 )
 
+const adminEmailKey contextKey = "adminEmail"
+
+// AdminEmailFromContext returns the e-mail of the admin making the
+// request ("" outside RequireAdmin). The admin's user ID is
+// UserIDFromContext.
+func AdminEmailFromContext(ctx context.Context) string {
+	e, _ := ctx.Value(adminEmailKey).(string)
+	return e
+}
+
 // RequireAdmin allows the request only when the authenticated user's
 // e-mail is in [emails] (ADMIN_EMAILS, case-insensitive); everyone else
 // gets 403. Must run after Verify. An empty list locks the admin API.
+// The admin's e-mail is put on the context (AdminEmailFromContext) for
+// the audit log.
 func (a *Auth) RequireAdmin(emails []string) func(http.Handler) http.Handler {
 	allowed := make(map[string]bool, len(emails))
 	for _, e := range emails {
@@ -26,7 +39,9 @@ func (a *Auth) RequireAdmin(emails []string) func(http.Handler) http.Handler {
 				respondError(w, http.StatusForbidden, "forbidden", "Admin access required")
 				return
 			}
-			next.ServeHTTP(w, r)
+			// Admin responses carry customer data: keep them out of caches.
+			w.Header().Set("Cache-Control", "no-store")
+			next.ServeHTTP(w, r.WithContext(context.WithValue(r.Context(), adminEmailKey, user.Email)))
 		})
 	}
 }

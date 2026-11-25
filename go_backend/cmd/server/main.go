@@ -14,6 +14,7 @@ import (
 	"time"
 
 	"cosmic-mirror/internal/config"
+	"cosmic-mirror/internal/domain"
 	"cosmic-mirror/internal/handler"
 	"cosmic-mirror/internal/middleware"
 	"cosmic-mirror/internal/otp"
@@ -147,14 +148,22 @@ func main() {
 		WithRevenueCatAPI(cfg.RevenueCatSecretAPIKey, cfg.RevenueCatEntitlementID)
 	compatibilitySvc := service.NewCompatibilityService(compatibilityRepo, savedPeopleRepo, birthProfileRepo, openaiClient).
 		WithFreeDailyLimit(rdb, freeCompatibilityDailyLimit, subscriptionSvc.IsPremium)
+	// Admin-panel data + runtime settings. The Stripe price IDs and the
+	// yearly free trial can be changed in the admin panel; the env values
+	// are the defaults used until (or unless) an admin overrides them.
+	adminRepo := postgres.NewAdminRepository(db)
+	settingsSvc := service.NewSettingsService(adminRepo, domain.StripeSettings{
+		PriceMonthly:    cfg.StripePriceMonthly,
+		PriceYearly:     cfg.StripePriceYearly,
+		YearlyTrialDays: domain.DefaultYearlyTrialDays,
+	})
 	stripeSvc := service.NewStripeService(
 		subscriptionRepo,
 		userSvc,
+		settingsSvc,
 		cfg.StripeSecretKey,
 		cfg.StripePublishableKey,
 		cfg.StripeWebhookSecret,
-		cfg.StripePriceMonthly,
-		cfg.StripePriceYearly,
 	)
 	// Account deletion cancels the Stripe subscription and revokes every
 	// session (wired after the fact: StripeService depends on UserService).
@@ -174,6 +183,14 @@ func main() {
 		})
 	if cfg.ModerationEmail == "" && !cfg.IsDev() {
 		slog.Warn("MODERATION_EMAIL is empty — new content reports will not be e-mailed to anyone")
+	}
+	adminSvc := service.NewAdminService(adminRepo, userSvc, refreshTokenRepo, settingsSvc, stripeSvc,
+		cfg.AdminEmails, service.AdminModerationInfo{
+			EmailSet:          cfg.ModerationEmail != "",
+			AutoHideThreshold: cfg.ModerationAutoHideThreshold,
+		})
+	if len(cfg.AdminEmails) == 0 {
+		slog.Warn("ADMIN_EMAILS is empty — nobody can sign in to the admin panel (/admin)")
 	}
 	// Numerology + Human Design
 	numerologySvc := service.NewNumerologyService(userRepo, birthProfileRepo)
@@ -204,7 +221,8 @@ func main() {
 		Comments:               handler.NewCommentsHandler(commentSvc, likeSvc),
 		CommunityNotifications: handler.NewCommunityNotificationsHandler(communityNotifSvc),
 		Discovery:              handler.NewDiscoveryHandler(communitySvc, hashtagRepo),
-		Moderation:             handler.NewModerationHandler(moderationSvc),
+		Moderation:             handler.NewModerationHandler(moderationSvc).WithAudit(adminSvc),
+		Admin:                  handler.NewAdminHandler(adminSvc),
 		// Numerology + Human Design
 		Numerology:    handler.NewNumerologyHandler(numerologySvc),
 		HumanDesign:   handler.NewHumanDesignHandler(humanDesignSvc),

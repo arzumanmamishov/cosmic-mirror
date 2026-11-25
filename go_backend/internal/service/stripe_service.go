@@ -35,39 +35,51 @@ import (
 //
 //  3. Cancel — flags the subscription to terminate at period end so the
 //     user keeps Premium until the paid period elapses.
+//
+// The keys and webhook secret come from env. The price IDs and the yearly
+// free-trial length come from [settings], so an admin can change them in
+// the admin panel without a redeploy.
 type StripeService struct {
 	subRepo        repository.SubscriptionRepository
 	userSvc        *UserService
+	settings       StripeSettingsSource
 	secretKey      string
 	publishableKey string
 	webhookSecret  string
-	priceMonthly   string
-	priceYearly    string
+}
+
+// StripeSettingsSource supplies the effective checkout settings
+// (implemented by *SettingsService).
+type StripeSettingsSource interface {
+	Stripe(ctx context.Context) domain.StripeSettings
 }
 
 func NewStripeService(
 	subRepo repository.SubscriptionRepository,
 	userSvc *UserService,
-	secretKey, publishableKey, webhookSecret, priceMonthly, priceYearly string,
+	settings StripeSettingsSource,
+	secretKey, publishableKey, webhookSecret string,
 ) *StripeService {
 	stripe.Key = secretKey
 	return &StripeService{
 		subRepo:        subRepo,
 		userSvc:        userSvc,
+		settings:       settings,
 		secretKey:      secretKey,
 		publishableKey: publishableKey,
 		webhookSecret:  webhookSecret,
-		priceMonthly:   priceMonthly,
-		priceYearly:    priceYearly,
 	}
 }
 
-// Configured reports whether the service has the minimum env wired up.
-// Called from the handler so we can return a clean 503 before the SDK
-// barfs an opaque "no api key" error.
-func (s *StripeService) Configured() bool {
-	return s.secretKey != "" && s.publishableKey != "" &&
-		(s.priceMonthly != "" || s.priceYearly != "")
+// Configured reports whether checkout can work: keys set and at least one
+// plan has a price. Called from the handler so we can return a clean 503
+// before the SDK barfs an opaque "no api key" error.
+func (s *StripeService) Configured(ctx context.Context) bool {
+	if s.secretKey == "" || s.publishableKey == "" {
+		return false
+	}
+	st := s.settings.Stripe(ctx)
+	return st.PriceMonthly != "" || st.PriceYearly != ""
 }
 
 // PaymentSheetParams is the bundle a Stripe payment sheet / Payment
@@ -93,11 +105,6 @@ const (
 	intentTypeSetup   = "setup"
 )
 
-// yearlyTrialDays is the free trial on the yearly plan, offered once per
-// user (see trialEligible) — the same 3-day trial the stores run as an
-// introductory offer on the yearly product.
-const yearlyTrialDays = 3
-
 // Sentinel errors the Stripe handler maps to 409 Conflict.
 var (
 	// ErrAlreadySubscribed: the user already has a live (active/trialing,
@@ -120,21 +127,23 @@ var (
 //   - the row is only overwritten if it isn't premium at write time.
 //
 // planType picks between monthly/yearly using the configured price IDs.
-// The yearly plan starts with a yearlyTrialDays free trial for users who
-// never had a subscription or trial before; the card is then collected
-// with a SetupIntent and the first charge happens when the trial ends.
+// The yearly plan starts with a free trial (settings.YearlyTrialDays, 0 =
+// none) for users who never had a subscription or trial before; the card
+// is then collected with a SetupIntent and the first charge happens when
+// the trial ends.
 func (s *StripeService) Subscribe(
 	ctx context.Context,
 	userID uuid.UUID,
 	planType domain.PlanType,
 ) (*PaymentSheetParams, error) {
-	if !s.Configured() {
+	if !s.Configured(ctx) {
 		return nil, fmt.Errorf("stripe is not configured on this server")
 	}
 
-	priceID := s.priceMonthly
+	settings := s.settings.Stripe(ctx)
+	priceID := settings.PriceMonthly
 	if planType == domain.PlanYearly {
-		priceID = s.priceYearly
+		priceID = settings.PriceYearly
 	}
 	if priceID == "" {
 		return nil, fmt.Errorf("no price id configured for plan %q", planType)
@@ -185,8 +194,9 @@ func (s *StripeService) Subscribe(
 	}
 
 	trialDays := 0
-	if planType == domain.PlanYearly && s.trialEligible(ctx, existing, customerID, reusedCustomer) {
-		trialDays = yearlyTrialDays
+	if planType == domain.PlanYearly && settings.YearlyTrialDays > 0 &&
+		s.trialEligible(ctx, existing, customerID, reusedCustomer) {
+		trialDays = settings.YearlyTrialDays
 	}
 
 	// Create the subscription "incomplete" so the first charge happens

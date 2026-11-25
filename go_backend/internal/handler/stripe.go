@@ -25,7 +25,7 @@ func NewStripeHandler(svc *service.StripeService) *StripeHandler {
 // client_secret is a PaymentIntent ("payment") or, for the yearly free
 // trial, a SetupIntent ("setup").
 func (h *StripeHandler) PaymentSheet(w http.ResponseWriter, r *http.Request) {
-	if !h.svc.Configured() {
+	if !h.svc.Configured(r.Context()) {
 		respondError(w, http.StatusServiceUnavailable, "stripe_unconfigured",
 			"Stripe is not configured on this server")
 		return
